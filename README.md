@@ -8,7 +8,7 @@ This project is based on reverse engineering of a real Thermia iTec XTR M with t
 
 ## What you need
 
-- Thermia iTec XTR M with the compatible older/non-Genesis controller
+- Thermia iTec (XTR)  with the compatible older/non-Genesis controller
 - [Waveshare ESP32-S3-RS485-CAN-U](https://www.waveshare.com/esp32-s3-rs485-can.htm) or equivalent ESP32 + isolated RS485 interface
 - USB-C power supply for the ESP32
 - RJ45 breakout / cable for connecting to the Thermia communication port
