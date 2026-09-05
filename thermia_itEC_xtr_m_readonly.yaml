@@ -1,0 +1,3119 @@
+# =============================================================================
+# THERMIA ITEC XTR M - PRODUCTION READ-ONLY
+# Waveshare ESP32-S3-RS485-CAN
+#
+# READ ONLY / DIAGNOSTIC:
+# - RS485 RX: GPIO18
+# - RS485 TX: GPIO17 (NIET geconfigureerd)
+# - RS485 direction is handled by the Waveshare hardware
+#
+# Thermia bus:
+# - 9600 baud
+# - 8 data bits
+# - EVEN parity
+# - 1 stop bit
+# - Modbus RTU
+# =============================================================================
+
+
+# =============================================================================
+# ESP
+# =============================================================================
+
+esphome:
+  name: thermia
+  friendly_name: Thermia
+
+
+
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: esp32s3
+  flash_size: 16MB
+
+  framework:
+    type: esp-idf
+
+
+# =============================================================================
+# HOME ASSISTANT
+# =============================================================================
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+
+# =============================================================================
+# WIFI
+# =============================================================================
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+
+# =============================================================================
+# LOGGING
+# =============================================================================
+
+logger:
+  level: WARN
+  baud_rate: 0
+
+
+
+# =============================================================================
+# THERMIA UART
+#
+# Confirmed from bus captures:
+#
+# 9600 baud
+# 8E1
+# Modbus RTU CRC16
+#
+# Tested setup:
+# - RX is inverted in software
+# - ESP is powered separately via USB-C
+# - Only the isolated RS485 A/B pair is connected to Thermia
+# =============================================================================
+
+# =============================================================================
+# BUS HEALTH
+# =============================================================================
+
+globals:
+  - id: thermia_last_valid_frame_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+
+uart:
+  id: thermia_uart
+
+  rx_pin:
+    number: GPIO18
+    inverted: true
+
+  baud_rate: 9600
+  data_bits: 8
+  parity: EVEN
+  stop_bits: 1
+
+  rx_buffer_size: 2048
+
+  # Prevent ESP-IDF from splitting Modbus RTU frames into ~7-byte chunks.
+  rx_full_threshold: 120
+  rx_timeout: 2
+
+  debug:
+    direction: RX
+    dummy_receiver: true
+    debug_prefix: "[THERMIA] "
+
+    after:
+      timeout: 3ms
+
+    sequence:
+      - lambda: |-
+
+          // ===============================================================
+          // RAW DIAGNOSTIC LOGGING
+          // Always print the received UART chunk before parsing it.
+          // ===============================================================
+
+          std::string raw_hex;
+          raw_hex.reserve(bytes.size() * 3);
+
+          char hex_byte[4];
+
+          for (size_t i = 0; i < bytes.size(); i++) {
+            if (i > 0) {
+              raw_hex += " ";
+            }
+
+            snprintf(
+              hex_byte,
+              sizeof(hex_byte),
+              "%02X",
+              bytes[i]
+            );
+
+            raw_hex += hex_byte;
+          }
+
+          ESP_LOGI(
+            "thermia_raw",
+            "RX %u bytes: %s",
+            (unsigned) bytes.size(),
+            raw_hex.c_str()
+          );
+
+
+          // ===============================================================
+          // THERMIA ITEC LEGACY PASSIVE MODBUS RTU DECODER
+          // ===============================================================
+
+          if (bytes.size() < 5) {
+            ESP_LOGW(
+              "thermia",
+              "Chunk too short for Modbus RTU: %u bytes",
+              (unsigned) bytes.size()
+            );
+            return;
+          }
+
+
+          // ===============================================================
+          // HELPERS
+          // ===============================================================
+
+          auto crc16_modbus =
+            [](const uint8_t *data, size_t len) -> uint16_t {
+
+              uint16_t crc = 0xFFFF;
+
+              for (size_t i = 0; i < len; i++) {
+
+                crc ^= data[i];
+
+                for (uint8_t bit = 0; bit < 8; bit++) {
+
+                  if (crc & 0x0001) {
+                    crc = (crc >> 1) ^ 0xA001;
+                  } else {
+                    crc >>= 1;
+                  }
+                }
+              }
+
+              return crc;
+            };
+
+
+          auto u16 =
+            [](const std::vector<uint8_t> &b, size_t pos) -> uint16_t {
+
+              return
+                (uint16_t(b[pos]) << 8) |
+                uint16_t(b[pos + 1]);
+            };
+
+
+          auto s16 =
+            [](const std::vector<uint8_t> &b, size_t pos) -> int16_t {
+
+              return int16_t(
+                (uint16_t(b[pos]) << 8) |
+                uint16_t(b[pos + 1])
+              );
+            };
+
+
+          // ===============================================================
+          // CRC VALIDATION
+          // ===============================================================
+
+          const uint16_t received_crc =
+            uint16_t(bytes[bytes.size() - 2]) |
+            (uint16_t(bytes[bytes.size() - 1]) << 8);
+
+          const uint16_t calculated_crc =
+            crc16_modbus(
+              bytes.data(),
+              bytes.size() - 2
+            );
+
+
+          if (received_crc != calculated_crc) {
+
+            ESP_LOGW(
+              "thermia",
+              "CRC FAIL (%u bytes): received=0x%04X calculated=0x%04X",
+              (unsigned) bytes.size(),
+              received_crc,
+              calculated_crc
+            );
+
+            return;
+          }
+
+
+          const uint8_t slave = bytes[0];
+          const uint8_t fc = bytes[1];
+
+          id(thermia_last_valid_frame_ms) = millis();
+          id(thermia_bus_healthy)->publish_state(true);
+
+          ESP_LOGI(
+            "thermia",
+            "CRC OK: slave=0x%02X function=0x%02X length=%u",
+            slave,
+            fc,
+            (unsigned) bytes.size()
+          );
+
+
+          // ===============================================================
+          // REQUEST CONTEXT
+          //
+          // Responses to FC04/FC17 do not contain the original register
+          // address. Remember the request so the response can be decoded.
+          // ===============================================================
+
+          static uint16_t fc04_start[256] = {};
+          static uint16_t fc04_count[256] = {};
+          static bool fc04_pending[256] = {};
+
+          static uint16_t fc17_start[256] = {};
+          static uint16_t fc17_count[256] = {};
+          static bool fc17_pending[256] = {};
+
+          // ===============================================================
+          // MAPPER STATE
+          // Change-only logging for selected register blocks.
+          // ===============================================================
+
+          static bool mapper_initialized = false;
+
+          static int16_t prev_a7f8_block[0x0F] = {};
+          static int16_t prev_a80c_block[0x07] = {};
+          static int16_t prev_b3b0_block[0x03] = {};
+          static int16_t prev_b3c4_block[0x03] = {};
+          static int16_t prev_03e8_block[0x0E] = {};
+          static int16_t prev_1e_fc04_block[0x16] = {};
+
+          auto log_change =
+            [&](const char *group,
+                uint16_t address,
+                int16_t old_value,
+                int16_t new_value) {
+
+              if (old_value == new_value) {
+                return;
+              }
+
+              ESP_LOGI(
+                "thermia_map",
+                "%s 0x%04X: %d -> %d",
+                group,
+                address,
+                old_value,
+                new_value
+              );
+            };
+
+
+          // ===============================================================
+          // GENERIC REGISTER MAPPER
+          //
+          // Stores every register we see in supported Modbus blocks and
+          // logs only first-seen values and later changes.
+          //
+          // source:
+          //   1 = FC04 response (read)
+          //   2 = FC10 request  (write block sent by Thermia)
+          //   3 = FC17 request  (write part)
+          //   4 = FC17 response (read part)
+          // ===============================================================
+
+          static std::vector<uint32_t> generic_keys;
+          static std::vector<int16_t> generic_values;
+
+          auto publish_raw_register =
+            [&](uint8_t source,
+                uint8_t slave_id,
+                uint16_t address,
+                int16_t value) {
+
+              // Raw register entities are diagnostic + disabled by default.
+              // They preserve the reverse-engineering view without cluttering
+              // normal Home Assistant dashboards.
+              if (source == 1 && slave_id == 0x1E && address == 0x0000) {
+                id(thermia_raw_s1_1e_0000)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0001) {
+                id(thermia_raw_s1_1e_0001)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0002) {
+                id(thermia_raw_s1_1e_0002)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0003) {
+                id(thermia_raw_s1_1e_0003)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0004) {
+                id(thermia_raw_s1_1e_0004)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0005) {
+                id(thermia_raw_s1_1e_0005)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0006) {
+                id(thermia_raw_s1_1e_0006)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0007) {
+                id(thermia_raw_s1_1e_0007)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0008) {
+                id(thermia_raw_s1_1e_0008)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0009) {
+                id(thermia_raw_s1_1e_0009)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x000A) {
+                id(thermia_raw_s1_1e_000a)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x000B) {
+                id(thermia_raw_s1_1e_000b)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x000C) {
+                id(thermia_raw_s1_1e_000c)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x000D) {
+                id(thermia_raw_s1_1e_000d)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x000E) {
+                id(thermia_raw_s1_1e_000e)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x000F) {
+                id(thermia_raw_s1_1e_000f)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0010) {
+                id(thermia_raw_s1_1e_0010)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0011) {
+                id(thermia_raw_s1_1e_0011)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0012) {
+                id(thermia_raw_s1_1e_0012)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0013) {
+                id(thermia_raw_s1_1e_0013)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0014) {
+                id(thermia_raw_s1_1e_0014)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0015) {
+                id(thermia_raw_s1_1e_0015)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x001E) {
+                id(thermia_raw_s1_1e_001e)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x001F) {
+                id(thermia_raw_s1_1e_001f)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0020) {
+                id(thermia_raw_s1_1e_0020)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0021) {
+                id(thermia_raw_s1_1e_0021)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0022) {
+                id(thermia_raw_s1_1e_0022)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x1E && address == 0x0023) {
+                id(thermia_raw_s1_1e_0023)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x14 && address == 0x0000) {
+                id(thermia_raw_s1_14_0000)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x14 && address == 0x0001) {
+                id(thermia_raw_s1_14_0001)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x14 && address == 0x0002) {
+                id(thermia_raw_s1_14_0002)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x14 && address == 0x0003) {
+                id(thermia_raw_s1_14_0003)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x14 && address == 0x0004) {
+                id(thermia_raw_s1_14_0004)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x14 && address == 0x0005) {
+                id(thermia_raw_s1_14_0005)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x14 && address == 0x0006) {
+                id(thermia_raw_s1_14_0006)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x14 && address == 0x0007) {
+                id(thermia_raw_s1_14_0007)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x14 && address == 0x0008) {
+                id(thermia_raw_s1_14_0008)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x14 && address == 0x0009) {
+                id(thermia_raw_s1_14_0009)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x14 && address == 0x000A) {
+                id(thermia_raw_s1_14_000a)->publish_state(float(value));
+                return;
+              }
+              if (source == 1 && slave_id == 0x14 && address == 0x000B) {
+                id(thermia_raw_s1_14_000b)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03E8) {
+                id(thermia_raw_s2_0f_03e8)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03E9) {
+                id(thermia_raw_s2_0f_03e9)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03EA) {
+                id(thermia_raw_s2_0f_03ea)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03EB) {
+                id(thermia_raw_s2_0f_03eb)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03EC) {
+                id(thermia_raw_s2_0f_03ec)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03ED) {
+                id(thermia_raw_s2_0f_03ed)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03EE) {
+                id(thermia_raw_s2_0f_03ee)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03EF) {
+                id(thermia_raw_s2_0f_03ef)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03F0) {
+                id(thermia_raw_s2_0f_03f0)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03F1) {
+                id(thermia_raw_s2_0f_03f1)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03F2) {
+                id(thermia_raw_s2_0f_03f2)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03F3) {
+                id(thermia_raw_s2_0f_03f3)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03F4) {
+                id(thermia_raw_s2_0f_03f4)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x03F5) {
+                id(thermia_raw_s2_0f_03f5)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x085F) {
+                id(thermia_raw_s2_0f_085f)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x0860) {
+                id(thermia_raw_s2_0f_0860)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x0861) {
+                id(thermia_raw_s2_0f_0861)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x0862) {
+                id(thermia_raw_s2_0f_0862)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x0F && address == 0x0863) {
+                id(thermia_raw_s2_0f_0863)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x1E && address == 0x0000) {
+                id(thermia_raw_s2_1e_0000)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x1E && address == 0x0001) {
+                id(thermia_raw_s2_1e_0001)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x1E && address == 0x0002) {
+                id(thermia_raw_s2_1e_0002)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x1E && address == 0x0003) {
+                id(thermia_raw_s2_1e_0003)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x1E && address == 0x0004) {
+                id(thermia_raw_s2_1e_0004)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x1E && address == 0x0005) {
+                id(thermia_raw_s2_1e_0005)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x1E && address == 0x0006) {
+                id(thermia_raw_s2_1e_0006)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x1E && address == 0x0007) {
+                id(thermia_raw_s2_1e_0007)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x1E && address == 0x0008) {
+                id(thermia_raw_s2_1e_0008)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x1E && address == 0x0014) {
+                id(thermia_raw_s2_1e_0014)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x1E && address == 0x0015) {
+                id(thermia_raw_s2_1e_0015)->publish_state(float(value));
+                return;
+              }
+              if (source == 2 && slave_id == 0x1E && address == 0x0016) {
+                id(thermia_raw_s2_1e_0016)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x0A && address == 0xB3C4) {
+                id(thermia_raw_s3_0a_b3c4)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x0A && address == 0xB3C5) {
+                id(thermia_raw_s3_0a_b3c5)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x0A && address == 0xB3C6) {
+                id(thermia_raw_s3_0a_b3c6)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x02 && address == 0xA80C) {
+                id(thermia_raw_s3_02_a80c)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x02 && address == 0xA80D) {
+                id(thermia_raw_s3_02_a80d)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x02 && address == 0xA80E) {
+                id(thermia_raw_s3_02_a80e)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x02 && address == 0xA80F) {
+                id(thermia_raw_s3_02_a80f)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x02 && address == 0xA810) {
+                id(thermia_raw_s3_02_a810)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x02 && address == 0xA811) {
+                id(thermia_raw_s3_02_a811)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x02 && address == 0xA812) {
+                id(thermia_raw_s3_02_a812)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x06 && address == 0xAFDC) {
+                id(thermia_raw_s3_06_afdc)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x06 && address == 0xAFDD) {
+                id(thermia_raw_s3_06_afdd)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x06 && address == 0xAFDE) {
+                id(thermia_raw_s3_06_afde)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x06 && address == 0xAFDF) {
+                id(thermia_raw_s3_06_afdf)->publish_state(float(value));
+                return;
+              }
+              if (source == 3 && slave_id == 0x06 && address == 0xAFE0) {
+                id(thermia_raw_s3_06_afe0)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA7F8) {
+                id(thermia_raw_s4_02_a7f8)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA7F9) {
+                id(thermia_raw_s4_02_a7f9)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA7FA) {
+                id(thermia_raw_s4_02_a7fa)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA7FB) {
+                id(thermia_raw_s4_02_a7fb)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA7FC) {
+                id(thermia_raw_s4_02_a7fc)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA7FD) {
+                id(thermia_raw_s4_02_a7fd)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA7FE) {
+                id(thermia_raw_s4_02_a7fe)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA7FF) {
+                id(thermia_raw_s4_02_a7ff)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA800) {
+                id(thermia_raw_s4_02_a800)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA801) {
+                id(thermia_raw_s4_02_a801)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA802) {
+                id(thermia_raw_s4_02_a802)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA803) {
+                id(thermia_raw_s4_02_a803)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA804) {
+                id(thermia_raw_s4_02_a804)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA805) {
+                id(thermia_raw_s4_02_a805)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x02 && address == 0xA806) {
+                id(thermia_raw_s4_02_a806)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x0A && address == 0xB3B0) {
+                id(thermia_raw_s4_0a_b3b0)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x0A && address == 0xB3B1) {
+                id(thermia_raw_s4_0a_b3b1)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x0A && address == 0xB3B2) {
+                id(thermia_raw_s4_0a_b3b2)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x06 && address == 0xAFC8) {
+                id(thermia_raw_s4_06_afc8)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x06 && address == 0xAFC9) {
+                id(thermia_raw_s4_06_afc9)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x06 && address == 0xAFCA) {
+                id(thermia_raw_s4_06_afca)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x06 && address == 0xAFCB) {
+                id(thermia_raw_s4_06_afcb)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x06 && address == 0xAFCC) {
+                id(thermia_raw_s4_06_afcc)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x06 && address == 0xAFCD) {
+                id(thermia_raw_s4_06_afcd)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x06 && address == 0xAFCE) {
+                id(thermia_raw_s4_06_afce)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x06 && address == 0xAFCF) {
+                id(thermia_raw_s4_06_afcf)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x06 && address == 0xAFD0) {
+                id(thermia_raw_s4_06_afd0)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x06 && address == 0xAFD1) {
+                id(thermia_raw_s4_06_afd1)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x06 && address == 0xAFD2) {
+                id(thermia_raw_s4_06_afd2)->publish_state(float(value));
+                return;
+              }
+              if (source == 4 && slave_id == 0x06 && address == 0xAFD3) {
+                id(thermia_raw_s4_06_afd3)->publish_state(float(value));
+                return;
+              }
+            };
+
+          auto generic_map_update =
+            [&](uint8_t source,
+                uint8_t slave_id,
+                uint16_t address,
+                int16_t value) {
+
+              publish_raw_register(
+                source,
+                slave_id,
+                address,
+                value
+              );
+
+              const uint32_t key =
+                (uint32_t(source) << 24) |
+                (uint32_t(slave_id) << 16) |
+                uint32_t(address);
+
+              for (size_t i = 0; i < generic_keys.size(); i++) {
+
+                if (generic_keys[i] != key) {
+                  continue;
+                }
+
+                if (generic_values[i] != value) {
+
+                  ESP_LOGI(
+                    "thermia_scan",
+                    "SRC=%u SLAVE=0x%02X REG=0x%04X %d -> %d",
+                    source,
+                    slave_id,
+                    address,
+                    generic_values[i],
+                    value
+                  );
+
+                  generic_values[i] = value;
+                }
+
+                return;
+              }
+
+              generic_keys.push_back(key);
+              generic_values.push_back(value);
+
+              ESP_LOGD(
+                "thermia_scan",
+                "INIT SRC=%u SLAVE=0x%02X REG=0x%04X = %d",
+                source,
+                slave_id,
+                address,
+                value
+              );
+            };
+
+
+          // ===============================================================
+          // FC04 REQUEST
+          // Read Input Registers
+          // ===============================================================
+
+          if (
+            fc == 0x04 &&
+            bytes.size() == 8
+          ) {
+
+            fc04_start[slave] =
+              u16(bytes, 2);
+
+            fc04_count[slave] =
+              u16(bytes, 4);
+
+            fc04_pending[slave] = true;
+
+            return;
+          }
+
+
+          // ===============================================================
+          // FC04 RESPONSE
+          // ===============================================================
+
+          if (
+            fc == 0x04 &&
+            fc04_pending[slave] &&
+            bytes.size() >= 5 &&
+            bytes.size() == size_t(bytes[2]) + 5
+          ) {
+
+            const uint16_t start =
+              fc04_start[slave];
+
+            const uint16_t count =
+              fc04_count[slave];
+
+            const uint8_t byte_count =
+              bytes[2];
+
+
+            if (byte_count != count * 2) {
+
+              fc04_pending[slave] = false;
+              return;
+            }
+
+
+            auto reg_u =
+              [&](uint16_t address) -> uint16_t {
+
+                const size_t offset =
+                  size_t(address - start);
+
+                const size_t pos =
+                  3 + offset * 2;
+
+                return u16(bytes, pos);
+              };
+
+
+            auto reg_s =
+              [&](uint16_t address) -> int16_t {
+
+                const size_t offset =
+                  size_t(address - start);
+
+                const size_t pos =
+                  3 + offset * 2;
+
+                return s16(bytes, pos);
+              };
+
+
+            // Generic mapper: scan complete FC04 response block.
+            for (uint16_t i = 0; i < count; i++) {
+
+              const uint16_t address =
+                uint16_t(start + i);
+
+              generic_map_update(
+                1,
+                slave,
+                address,
+                reg_s(address)
+              );
+            }
+
+
+            // =============================================================
+            // SLAVE 0x1E
+            // Outdoor unit / compressor live data
+            //
+            // FC04 start 0x0000
+            //
+            // 0000 condenser inlet          x0.1 °C
+            // 0001 condenser outlet         x0.1 °C
+            // 0008 high pressure            x0.1 bar
+            // 000A requested temperature    x0.1 °C
+            // 000B compressor frequency     Hz
+            // 000D compressor current       x0.1 A
+            // 000E outdoor fan              rpm
+            // 0010 expansion valve          steps
+            // =============================================================
+
+            if (
+              slave == 0x1E &&
+              start == 0x0000 &&
+              count >= 17
+            ) {
+
+              // -----------------------------------------------------------
+              // Mapper: slave 0x1E FC04 block 0x0000..0x0015
+              // -----------------------------------------------------------
+
+              if (count >= 0x16) {
+                for (uint16_t addr = 0x0000; addr <= 0x0015; addr++) {
+                  const int16_t v = reg_s(addr);
+                  const size_t idx = size_t(addr);
+
+                  if (mapper_initialized) {
+                    log_change(
+                      "S1E_FC04",
+                      addr,
+                      prev_1e_fc04_block[idx],
+                      v
+                    );
+                  }
+
+                  prev_1e_fc04_block[idx] = v;
+                }
+              }
+
+              const float condenser_in =
+                float(reg_s(0x0000)) / 10.0f;
+
+              const float condenser_out =
+                float(reg_s(0x0001)) / 10.0f;
+
+              const float refrigerant_temperature_1 =
+                float(reg_s(0x0002)) / 10.0f;
+
+              const float discharge_gas_temperature =
+                float(reg_s(0x0003)) / 10.0f;
+
+              const float refrigerant_temperature_2 =
+                float(reg_s(0x0004)) / 10.0f;
+
+              const float average_outdoor_temperature =
+                float(reg_s(0x0005)) / 10.0f;
+
+              const float compressor_temperature =
+                float(reg_s(0x0006)) / 10.0f;
+
+              const float high_pressure =
+                float(reg_u(0x0008)) / 10.0f;
+
+              const float target_temperature =
+                float(reg_s(0x000A)) / 10.0f;
+
+              const float compressor_frequency =
+                float(reg_u(0x000B));
+
+              const float compressor_current =
+                float(reg_u(0x000D)) / 10.0f;
+
+              const float fan_speed =
+                float(reg_u(0x000E));
+
+              const float valve_steps =
+                float(reg_u(0x0010));
+
+
+              if (
+                condenser_in > -50.0f &&
+                condenser_in < 150.0f
+              ) {
+
+                id(thermia_condenser_in)->publish_state(condenser_in);
+              }
+
+
+              if (
+                condenser_out > -50.0f &&
+                condenser_out < 150.0f
+              ) {
+
+                id(thermia_condenser_out)->publish_state(condenser_out);
+              }
+
+
+              if (
+                condenser_in > -50.0f &&
+                condenser_in < 150.0f &&
+                condenser_out > -50.0f &&
+                condenser_out < 150.0f
+              ) {
+
+                id(thermia_condenser_delta_t)->publish_state(
+                    condenser_out - condenser_in
+                  );
+              }
+
+
+              if (refrigerant_temperature_1 > -80.0f &&
+                  refrigerant_temperature_1 < 200.0f) {
+                id(thermia_refrigerant_temperature_1)->publish_state(
+                    refrigerant_temperature_1
+                  );
+              }
+
+              if (discharge_gas_temperature > -80.0f &&
+                  discharge_gas_temperature < 250.0f) {
+                id(thermia_discharge_gas_temperature)->publish_state(
+                    discharge_gas_temperature
+                  );
+              }
+
+              if (refrigerant_temperature_2 > -80.0f &&
+                  refrigerant_temperature_2 < 200.0f) {
+                id(thermia_refrigerant_temperature_2)->publish_state(
+                    refrigerant_temperature_2
+                  );
+              }
+
+              if (average_outdoor_temperature > -80.0f &&
+                  average_outdoor_temperature < 100.0f) {
+                id(thermia_average_outdoor_temperature)->publish_state(
+                    average_outdoor_temperature
+                  );
+              }
+
+              if (compressor_temperature > -80.0f &&
+                  compressor_temperature < 200.0f) {
+                id(thermia_compressor_temperature)->publish_state(
+                    compressor_temperature
+                  );
+              }
+
+
+              if (
+                high_pressure >= 0.0f &&
+                high_pressure < 100.0f
+              ) {
+
+                id(thermia_high_pressure)->publish_state(high_pressure);
+              }
+
+
+              if (
+                target_temperature > -50.0f &&
+                target_temperature < 150.0f
+              ) {
+
+                id(thermia_target_temperature)->publish_state(
+                    target_temperature
+                  );
+              }
+
+
+              if (
+                compressor_frequency >= 0.0f &&
+                compressor_frequency < 200.0f
+              ) {
+
+                id(thermia_compressor_frequency)->publish_state(
+                    compressor_frequency
+                  );
+              }
+
+
+              if (
+                compressor_current >= 0.0f &&
+                compressor_current < 100.0f
+              ) {
+
+                id(thermia_compressor_current)->publish_state(
+                    compressor_current
+                  );
+              }
+
+
+              if (
+                fan_speed >= 0.0f &&
+                fan_speed < 5000.0f
+              ) {
+
+                id(thermia_fan_speed)->publish_state(
+                    fan_speed
+                  );
+              }
+
+
+              if (
+                valve_steps >= 0.0f &&
+                valve_steps < 10000.0f
+              ) {
+
+                id(thermia_expansion_valve_steps)->publish_state(
+                    valve_steps
+                  );
+              }
+
+
+              id(thermia_compressor_running)->publish_state(
+                  compressor_frequency > 0.0f
+                );
+            }
+
+
+            fc04_pending[slave] = false;
+            return;
+          }
+
+
+          // ===============================================================
+          // FC10
+          // Write Multiple Registers
+          //
+          // Deze frames worden DOOR THERMIA verzonden.
+          // De ESP luistert alleen.
+          // ===============================================================
+
+          if (
+            fc == 0x10 &&
+            bytes.size() >= 9
+          ) {
+
+            const uint16_t start =
+              u16(bytes, 2);
+
+            const uint16_t count =
+              u16(bytes, 4);
+
+            const uint8_t byte_count =
+              bytes[6];
+
+
+            if (
+              bytes.size() !=
+              size_t(byte_count) + 9
+            ) {
+
+              return;
+            }
+
+
+            if (
+              byte_count !=
+              count * 2
+            ) {
+
+              return;
+            }
+
+
+            auto reg_s =
+              [&](uint16_t address) -> int16_t {
+
+                const size_t offset =
+                  size_t(address - start);
+
+                const size_t pos =
+                  7 + offset * 2;
+
+                return s16(bytes, pos);
+              };
+
+
+            // Generic mapper: scan complete FC10 write block.
+            for (uint16_t i = 0; i < count; i++) {
+
+              const uint16_t address =
+                uint16_t(start + i);
+
+              generic_map_update(
+                2,
+                slave,
+                address,
+                reg_s(address)
+              );
+            }
+
+
+            // =============================================================
+            // SLAVE 0x0F
+            // Heating configuration block
+            //
+            // 03E8 Heating curve
+            // 03E9 Heating MIN
+            // 03EA Heating MAX
+            // 03EB Curve +5
+            // 03EC Curve 0
+            // 03ED Curve -5
+            // 03EE Heating stop
+            // 03EF Reduced temperature
+            // 03F0 Room factor
+            // 03F4 Room setpoint mirror
+            // =============================================================
+
+            if (
+              slave == 0x0F &&
+              start == 0x03E8 &&
+              count >= 13
+            ) {
+
+              // -----------------------------------------------------------
+              // Mapper: slave 0x0F FC10 block 0x03E8..0x03F5
+              // -----------------------------------------------------------
+
+              if (count >= 0x0E) {
+                for (uint16_t addr = 0x03E8; addr <= 0x03F5; addr++) {
+                  const int16_t v = reg_s(addr);
+                  const size_t idx = size_t(addr - 0x03E8);
+
+                  if (mapper_initialized) {
+                    log_change(
+                      "S0F_FC10",
+                      addr,
+                      prev_03e8_block[idx],
+                      v
+                    );
+                  }
+
+                  prev_03e8_block[idx] = v;
+                }
+              }
+
+              id(thermia_heating_curve)->publish_state(
+                  float(reg_s(0x03E8))
+                );
+
+
+              id(thermia_heating_min)->publish_state(
+                  float(reg_s(0x03E9))
+                );
+
+
+              id(thermia_heating_max)->publish_state(
+                  float(reg_s(0x03EA))
+                );
+
+
+              id(thermia_heating_stop)->publish_state(
+                  float(reg_s(0x03EE))
+                );
+
+
+              id(thermia_reduced_temperature)->publish_state(
+                  float(reg_s(0x03EF))
+                );
+
+
+              id(thermia_room_factor)->publish_state(
+                  float(reg_s(0x03F0))
+                );
+            }
+
+            return;
+          }
+
+
+          // ===============================================================
+          // FC17 REQUEST
+          // Read / Write Multiple Registers
+          // ===============================================================
+
+          if (
+            fc == 0x17 &&
+            bytes.size() >= 13
+          ) {
+
+            const uint16_t read_start =
+              u16(bytes, 2);
+
+            const uint16_t read_count =
+              u16(bytes, 4);
+
+            const uint16_t write_start =
+              u16(bytes, 6);
+
+            const uint16_t write_count =
+              u16(bytes, 8);
+
+            const uint8_t byte_count =
+              bytes[10];
+
+            const size_t expected_size =
+              size_t(byte_count) + 13;
+
+
+            if (
+              bytes.size() == expected_size &&
+              byte_count == write_count * 2
+            ) {
+
+              fc17_start[slave] =
+                read_start;
+
+              fc17_count[slave] =
+                read_count;
+
+              fc17_pending[slave] =
+                true;
+
+
+              auto write_reg_s =
+                [&](uint16_t address) -> int16_t {
+
+                  const size_t offset =
+                    size_t(address - write_start);
+
+                  const size_t pos =
+                    11 + offset * 2;
+
+                  return s16(bytes, pos);
+                };
+
+
+              // Generic mapper: scan complete FC17 write part.
+              for (uint16_t i = 0; i < write_count; i++) {
+
+                const uint16_t address =
+                  uint16_t(write_start + i);
+
+                generic_map_update(
+                  3,
+                  slave,
+                  address,
+                  write_reg_s(address)
+                );
+              }
+
+
+              // ===========================================================
+              // MAPPER: FC17 write blocks
+              // ===========================================================
+
+              if (
+                slave == 0x0A &&
+                write_start <= 0xB3C4 &&
+                (
+                  uint32_t(write_start) +
+                  uint32_t(write_count)
+                ) >= 0xB3C7
+              ) {
+
+                for (uint16_t addr = 0xB3C4; addr <= 0xB3C6; addr++) {
+                  const int16_t v = write_reg_s(addr);
+                  const size_t idx = size_t(addr - 0xB3C4);
+
+                  if (mapper_initialized) {
+                    log_change(
+                      "S0A_FC17W",
+                      addr,
+                      prev_b3c4_block[idx],
+                      v
+                    );
+                  }
+
+                  prev_b3c4_block[idx] = v;
+                }
+              }
+
+
+              if (
+                slave == 0x02 &&
+                write_start <= 0xA80C &&
+                (
+                  uint32_t(write_start) +
+                  uint32_t(write_count)
+                ) >= 0xA813
+              ) {
+
+                for (uint16_t addr = 0xA80C; addr <= 0xA812; addr++) {
+                  const int16_t v = write_reg_s(addr);
+                  const size_t idx = size_t(addr - 0xA80C);
+
+                  if (mapper_initialized) {
+                    log_change(
+                      "S02_FC17W",
+                      addr,
+                      prev_a80c_block[idx],
+                      v
+                    );
+                  }
+
+                  prev_a80c_block[idx] = v;
+                }
+              }
+
+
+              // ===========================================================
+              // SLAVE 0x0A
+              //
+              // B3C5 = requested room temperature
+              // ===========================================================
+
+              if (
+                slave == 0x0A &&
+                write_start <= 0xB3C5 &&
+                (
+                  uint32_t(write_start) +
+                  uint32_t(write_count)
+                ) > 0xB3C5
+              ) {
+
+                const float room_setpoint =
+                  float(
+                    write_reg_s(0xB3C5)
+                  );
+
+
+                if (
+                  room_setpoint >= 5.0f &&
+                  room_setpoint <= 40.0f
+                ) {
+
+                  id(thermia_room_setpoint)->publish_state(
+                      room_setpoint
+                    );
+                }
+              }
+
+              return;
+            }
+          }
+
+
+          // ===============================================================
+          // FC17 RESPONSE
+          // ===============================================================
+
+          if (
+            fc == 0x17 &&
+            fc17_pending[slave] &&
+            bytes.size() >= 5 &&
+            bytes.size() ==
+              size_t(bytes[2]) + 5
+          ) {
+
+            const uint16_t start =
+              fc17_start[slave];
+
+            const uint16_t count =
+              fc17_count[slave];
+
+            const uint8_t byte_count =
+              bytes[2];
+
+
+            if (
+              byte_count !=
+              count * 2
+            ) {
+
+              fc17_pending[slave] = false;
+              return;
+            }
+
+
+            auto reg_s =
+              [&](uint16_t address) -> int16_t {
+
+                const size_t offset =
+                  size_t(address - start);
+
+                const size_t pos =
+                  3 + offset * 2;
+
+                return s16(bytes, pos);
+              };
+
+
+            // Generic mapper: scan complete FC17 read response block.
+            for (uint16_t i = 0; i < count; i++) {
+
+              const uint16_t address =
+                uint16_t(start + i);
+
+              generic_map_update(
+                4,
+                slave,
+                address,
+                reg_s(address)
+              );
+            }
+
+
+            // =============================================================
+            // SLAVE 0x02
+            //
+            // A7F8 Supply temperature
+            // A7FB DHW upper
+            // A7FC DHW main
+            // A7FD SG discriminator 1
+            // A802 Outdoor temperature
+            // A803 SG discriminator 2
+            // =============================================================
+
+            if (
+              slave == 0x02 &&
+              start == 0xA7F8 &&
+              count >= 12
+            ) {
+
+              // -----------------------------------------------------------
+              // Mapper: slave 0x02 FC17 read block 0xA7F8..0xA806
+              // -----------------------------------------------------------
+
+              if (count >= 0x0F) {
+                for (uint16_t addr = 0xA7F8; addr <= 0xA806; addr++) {
+                  const int16_t v = reg_s(addr);
+                  const size_t idx = size_t(addr - 0xA7F8);
+
+                  if (mapper_initialized) {
+                    log_change(
+                      "S02_FC17R",
+                      addr,
+                      prev_a7f8_block[idx],
+                      v
+                    );
+                  }
+
+                  prev_a7f8_block[idx] = v;
+                }
+              }
+
+              const int16_t supply =
+                reg_s(0xA7F8);
+
+              const int16_t dhw_upper =
+                reg_s(0xA7FB);
+
+              const int16_t dhw =
+                reg_s(0xA7FC);
+
+              const int16_t outdoor =
+                reg_s(0xA802);
+
+              const int16_t sg_a =
+                reg_s(0xA7FD);
+
+              const int16_t sg_b =
+                reg_s(0xA803);
+
+
+              // ===========================================================
+              // DIAGNOSTIC: complete A7F8 block
+              // Useful to verify whether A7F8 really changes with supply.
+              // ===========================================================
+
+              ESP_LOGI(
+                "thermia_a7f8",
+                "A7F8=%d A7F9=%d A7FA=%d A7FB=%d A7FC=%d A7FD=%d "
+                "A7FE=%d A7FF=%d A800=%d A801=%d A802=%d A803=%d "
+                "A804=%d A805=%d A806=%d",
+                reg_s(0xA7F8),
+                reg_s(0xA7F9),
+                reg_s(0xA7FA),
+                reg_s(0xA7FB),
+                reg_s(0xA7FC),
+                reg_s(0xA7FD),
+                reg_s(0xA7FE),
+                reg_s(0xA7FF),
+                reg_s(0xA800),
+                reg_s(0xA801),
+                reg_s(0xA802),
+                reg_s(0xA803),
+                reg_s(0xA804),
+                reg_s(0xA805),
+                reg_s(0xA806)
+              );
+
+              ESP_LOGI(
+                "thermia_supply",
+                "Supply candidate A7F8 raw=%d -> %.1f C",
+                supply,
+                float(supply)
+              );
+
+
+              if (
+                supply != -1000 &&
+                supply > -50 &&
+                supply < 150
+              ) {
+
+                id(thermia_supply_temperature)->publish_state(
+                    float(supply)
+                  );
+              }
+
+
+              if (
+                dhw_upper != -1000 &&
+                dhw_upper > 0 &&
+                dhw_upper < 100
+              ) {
+
+                id(thermia_dhw_upper_temperature)->publish_state(
+                    float(dhw_upper)
+                  );
+              }
+
+
+              if (
+                dhw != -1000 &&
+                dhw > 0 &&
+                dhw < 100
+              ) {
+
+                id(thermia_dhw_temperature)->publish_state(
+                    float(dhw)
+                  );
+              }
+
+
+              if (
+                outdoor != -1000 &&
+                outdoor > -50 &&
+                outdoor < 70
+              ) {
+
+                id(thermia_outdoor_temperature)->publish_state(
+                    float(outdoor)
+                  );
+              }
+
+
+              if (
+                dhw_upper != -1000 &&
+                dhw != -1000
+              ) {
+
+                id(thermia_dhw_delta_t)->publish_state(
+                    float(
+                      dhw_upper - dhw
+                    )
+                  );
+              }
+
+
+              // ===========================================================
+              // SG MODE
+              //
+              // Controlled tests:
+              //
+              // A7FD    A803     SG input state from controlled tests
+              //
+              // -1000   232      Blocked  (SG 1-0)
+              //  1000   224      Normal   (SG 0-0)
+              //  1000   232      Enhanced (SG 0-1)
+              // -1000   224      Peak     (SG 1-1)
+              // ===========================================================
+
+              ESP_LOGI(
+                "thermia_sg",
+                "SG discriminators: A7FD=%d A803=%d",
+                sg_a,
+                sg_b
+              );
+
+
+              // Corrected from repeated physical SG1/SG2 test:
+              // 00 -> A7FD=-1000, A803=224 -> Normal
+              // 10 -> A7FD=-1000, A803=232 -> Blocked
+              // 01 -> A7FD= 1000, A803=224 -> Enhanced
+              // 11 -> A7FD= 1000, A803=232 -> Peak
+              //
+              // Intermediate A7FD values are treated as transitions.
+
+              if (
+                sg_a == -1000 &&
+                sg_b == 224
+              ) {
+
+                id(thermia_sg_mode)->publish_state(
+                    "Normal (0-0)"
+                  );
+              }
+
+              else if (
+                sg_a == -1000 &&
+                sg_b == 232
+              ) {
+
+                id(thermia_sg_mode)->publish_state(
+                    "Blocked (1-0)"
+                  );
+              }
+
+              else if (
+                sg_a == 1000 &&
+                sg_b == 224
+              ) {
+
+                id(thermia_sg_mode)->publish_state(
+                    "Enhanced (0-1)"
+                  );
+              }
+
+              else if (
+                sg_a == 1000 &&
+                sg_b == 232
+              ) {
+
+                id(thermia_sg_mode)->publish_state(
+                    "Peak (1-1)"
+                  );
+              }
+
+              else {
+
+                // Hold the last valid state during the short transition.
+                // Do not publish a misleading fifth SG mode.
+              }
+            }
+
+
+            // =============================================================
+            // SLAVE 0x0A
+            //
+            // B3B0 = room temperature x0.1 °C
+            // =============================================================
+
+            if (
+              slave == 0x0A &&
+              start == 0xB3B0 &&
+              count >= 1
+            ) {
+
+              // -----------------------------------------------------------
+              // Mapper: slave 0x0A FC17 read block 0xB3B0..0xB3B2
+              // -----------------------------------------------------------
+
+              if (count >= 3) {
+                for (uint16_t addr = 0xB3B0; addr <= 0xB3B2; addr++) {
+                  const int16_t v = reg_s(addr);
+                  const size_t idx = size_t(addr - 0xB3B0);
+
+                  if (mapper_initialized) {
+                    log_change(
+                      "S0A_FC17R",
+                      addr,
+                      prev_b3b0_block[idx],
+                      v
+                    );
+                  }
+
+                  prev_b3b0_block[idx] = v;
+                }
+              }
+
+              mapper_initialized = true;
+
+              const float room_temperature =
+                float(
+                  reg_s(0xB3B0)
+                ) / 10.0f;
+
+
+              if (
+                room_temperature > -20.0f &&
+                room_temperature < 60.0f
+              ) {
+
+                id(thermia_room_temperature)->publish_state(
+                    room_temperature
+                  );
+              }
+            }
+
+
+            fc17_pending[slave] = false;
+            return;
+          }
+
+
+# =============================================================================
+# HOME ASSISTANT SENSORS
+# =============================================================================
+
+sensor:
+
+  # ===========================================================================
+  # ROOM / SYSTEM
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_room_temperature
+    name: "Room Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_room_setpoint
+    name: "Room Setpoint"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_outdoor_temperature
+    name: "Outdoor Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_supply_temperature
+    name: "Supply Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  # Return temperature is deliberately omitted.
+  # We have not mapped a reliable Thermia register yet.
+
+
+  # ===========================================================================
+  # DOMESTIC HOT WATER
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_dhw_temperature
+    name: "DHW Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_dhw_upper_temperature
+    name: "DHW Upper Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_dhw_delta_t
+    name: "DHW Delta T"
+    unit_of_measurement: "°C"
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  # ===========================================================================
+  # REQUESTED TEMPERATURE
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_target_temperature
+    name: "Target Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  # ===========================================================================
+  # COMPRESSOR
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_compressor_frequency
+    name: "Compressor Frequency"
+    unit_of_measurement: "Hz"
+    device_class: frequency
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_compressor_current
+    name: "Compressor Current"
+    unit_of_measurement: "A"
+    device_class: current
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  # ===========================================================================
+  # OUTDOOR UNIT
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_high_pressure
+    name: "High Pressure"
+    unit_of_measurement: "bar"
+    device_class: pressure
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_fan_speed
+    name: "Outdoor Fan Speed"
+    unit_of_measurement: "rpm"
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_expansion_valve_steps
+    name: "Expansion Valve Steps"
+    unit_of_measurement: "steps"
+    state_class: measurement
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+
+  # ===========================================================================
+  # CONDENSER
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_condenser_in
+    name: "Condenser Inlet"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_condenser_out
+    name: "Condenser Outlet"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_condenser_delta_t
+    name: "Condenser Delta T"
+    unit_of_measurement: "°C"
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  # ===========================================================================
+  # REFRIGERANT / COMPRESSOR DIAGNOSTICS
+  # Disabled by default: useful for service and further mapping.
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_refrigerant_temperature_1
+    name: "Refrigerant Temperature 1"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_discharge_gas_temperature
+    name: "Discharge Gas Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_refrigerant_temperature_2
+    name: "Refrigerant Temperature 2"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_average_outdoor_temperature
+    name: "Average Outdoor Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_compressor_temperature
+    name: "Compressor Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+
+  # ===========================================================================
+  # HEATING CONFIGURATION
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_heating_curve
+    name: "Heating Curve"
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_heating_min
+    name: "Heating MIN"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_heating_max
+    name: "Heating MAX"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_heating_stop
+    name: "Heating Stop"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_reduced_temperature
+    name: "Reduced Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_room_factor
+    name: "Room Factor"
+    accuracy_decimals: 0
+    update_interval: never
+
+
+
+  # ===========================================================================
+  # RAW MODBUS REGISTERS
+  # All are diagnostic and disabled by default.
+  # Source: 1=FC04 read, 2=FC10 Thermia write, 3=FC17 write part,
+  #         4=FC17 read response.
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_raw_s1_1e_0000
+    name: "Raw S1 Slave 0x1E Reg 0x0000"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0001
+    name: "Raw S1 Slave 0x1E Reg 0x0001"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0002
+    name: "Raw S1 Slave 0x1E Reg 0x0002"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0003
+    name: "Raw S1 Slave 0x1E Reg 0x0003"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0004
+    name: "Raw S1 Slave 0x1E Reg 0x0004"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0005
+    name: "Raw S1 Slave 0x1E Reg 0x0005"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0006
+    name: "Raw S1 Slave 0x1E Reg 0x0006"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0007
+    name: "Raw S1 Slave 0x1E Reg 0x0007"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0008
+    name: "Raw S1 Slave 0x1E Reg 0x0008"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0009
+    name: "Raw S1 Slave 0x1E Reg 0x0009"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_000a
+    name: "Raw S1 Slave 0x1E Reg 0x000A"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_000b
+    name: "Raw S1 Slave 0x1E Reg 0x000B"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_000c
+    name: "Raw S1 Slave 0x1E Reg 0x000C"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_000d
+    name: "Raw S1 Slave 0x1E Reg 0x000D"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_000e
+    name: "Raw S1 Slave 0x1E Reg 0x000E"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_000f
+    name: "Raw S1 Slave 0x1E Reg 0x000F"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0010
+    name: "Raw S1 Slave 0x1E Reg 0x0010"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0011
+    name: "Raw S1 Slave 0x1E Reg 0x0011"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0012
+    name: "Raw S1 Slave 0x1E Reg 0x0012"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0013
+    name: "Raw S1 Slave 0x1E Reg 0x0013"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0014
+    name: "Raw S1 Slave 0x1E Reg 0x0014"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0015
+    name: "Raw S1 Slave 0x1E Reg 0x0015"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_001e
+    name: "Raw S1 Slave 0x1E Reg 0x001E"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_001f
+    name: "Raw S1 Slave 0x1E Reg 0x001F"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0020
+    name: "Raw S1 Slave 0x1E Reg 0x0020"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0021
+    name: "Raw S1 Slave 0x1E Reg 0x0021"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0022
+    name: "Raw S1 Slave 0x1E Reg 0x0022"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_1e_0023
+    name: "Raw S1 Slave 0x1E Reg 0x0023"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_14_0000
+    name: "Raw S1 Slave 0x14 Reg 0x0000"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_14_0001
+    name: "Raw S1 Slave 0x14 Reg 0x0001"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_14_0002
+    name: "Raw S1 Slave 0x14 Reg 0x0002"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_14_0003
+    name: "Raw S1 Slave 0x14 Reg 0x0003"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_14_0004
+    name: "Raw S1 Slave 0x14 Reg 0x0004"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_14_0005
+    name: "Raw S1 Slave 0x14 Reg 0x0005"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_14_0006
+    name: "Raw S1 Slave 0x14 Reg 0x0006"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_14_0007
+    name: "Raw S1 Slave 0x14 Reg 0x0007"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_14_0008
+    name: "Raw S1 Slave 0x14 Reg 0x0008"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_14_0009
+    name: "Raw S1 Slave 0x14 Reg 0x0009"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_14_000a
+    name: "Raw S1 Slave 0x14 Reg 0x000A"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s1_14_000b
+    name: "Raw S1 Slave 0x14 Reg 0x000B"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03e8
+    name: "Raw S2 Slave 0x0F Reg 0x03E8"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03e9
+    name: "Raw S2 Slave 0x0F Reg 0x03E9"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03ea
+    name: "Raw S2 Slave 0x0F Reg 0x03EA"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03eb
+    name: "Raw S2 Slave 0x0F Reg 0x03EB"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03ec
+    name: "Raw S2 Slave 0x0F Reg 0x03EC"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03ed
+    name: "Raw S2 Slave 0x0F Reg 0x03ED"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03ee
+    name: "Raw S2 Slave 0x0F Reg 0x03EE"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03ef
+    name: "Raw S2 Slave 0x0F Reg 0x03EF"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03f0
+    name: "Raw S2 Slave 0x0F Reg 0x03F0"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03f1
+    name: "Raw S2 Slave 0x0F Reg 0x03F1"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03f2
+    name: "Raw S2 Slave 0x0F Reg 0x03F2"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03f3
+    name: "Raw S2 Slave 0x0F Reg 0x03F3"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03f4
+    name: "Raw S2 Slave 0x0F Reg 0x03F4"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_03f5
+    name: "Raw S2 Slave 0x0F Reg 0x03F5"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_085f
+    name: "Raw S2 Slave 0x0F Reg 0x085F"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_0860
+    name: "Raw S2 Slave 0x0F Reg 0x0860"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_0861
+    name: "Raw S2 Slave 0x0F Reg 0x0861"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_0862
+    name: "Raw S2 Slave 0x0F Reg 0x0862"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_0f_0863
+    name: "Raw S2 Slave 0x0F Reg 0x0863"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_1e_0000
+    name: "Raw S2 Slave 0x1E Reg 0x0000"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_1e_0001
+    name: "Raw S2 Slave 0x1E Reg 0x0001"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_1e_0002
+    name: "Raw S2 Slave 0x1E Reg 0x0002"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_1e_0003
+    name: "Raw S2 Slave 0x1E Reg 0x0003"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_1e_0004
+    name: "Raw S2 Slave 0x1E Reg 0x0004"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_1e_0005
+    name: "Raw S2 Slave 0x1E Reg 0x0005"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_1e_0006
+    name: "Raw S2 Slave 0x1E Reg 0x0006"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_1e_0007
+    name: "Raw S2 Slave 0x1E Reg 0x0007"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_1e_0008
+    name: "Raw S2 Slave 0x1E Reg 0x0008"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_1e_0014
+    name: "Raw S2 Slave 0x1E Reg 0x0014"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_1e_0015
+    name: "Raw S2 Slave 0x1E Reg 0x0015"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s2_1e_0016
+    name: "Raw S2 Slave 0x1E Reg 0x0016"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_0a_b3c4
+    name: "Raw S3 Slave 0x0A Reg 0xB3C4"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_0a_b3c5
+    name: "Raw S3 Slave 0x0A Reg 0xB3C5"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_0a_b3c6
+    name: "Raw S3 Slave 0x0A Reg 0xB3C6"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_02_a80c
+    name: "Raw S3 Slave 0x02 Reg 0xA80C"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_02_a80d
+    name: "Raw S3 Slave 0x02 Reg 0xA80D"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_02_a80e
+    name: "Raw S3 Slave 0x02 Reg 0xA80E"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_02_a80f
+    name: "Raw S3 Slave 0x02 Reg 0xA80F"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_02_a810
+    name: "Raw S3 Slave 0x02 Reg 0xA810"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_02_a811
+    name: "Raw S3 Slave 0x02 Reg 0xA811"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_02_a812
+    name: "Raw S3 Slave 0x02 Reg 0xA812"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_06_afdc
+    name: "Raw S3 Slave 0x06 Reg 0xAFDC"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_06_afdd
+    name: "Raw S3 Slave 0x06 Reg 0xAFDD"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_06_afde
+    name: "Raw S3 Slave 0x06 Reg 0xAFDE"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_06_afdf
+    name: "Raw S3 Slave 0x06 Reg 0xAFDF"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s3_06_afe0
+    name: "Raw S3 Slave 0x06 Reg 0xAFE0"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a7f8
+    name: "Raw S4 Slave 0x02 Reg 0xA7F8"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a7f9
+    name: "Raw S4 Slave 0x02 Reg 0xA7F9"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a7fa
+    name: "Raw S4 Slave 0x02 Reg 0xA7FA"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a7fb
+    name: "Raw S4 Slave 0x02 Reg 0xA7FB"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a7fc
+    name: "Raw S4 Slave 0x02 Reg 0xA7FC"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a7fd
+    name: "Raw S4 Slave 0x02 Reg 0xA7FD"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a7fe
+    name: "Raw S4 Slave 0x02 Reg 0xA7FE"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a7ff
+    name: "Raw S4 Slave 0x02 Reg 0xA7FF"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a800
+    name: "Raw S4 Slave 0x02 Reg 0xA800"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a801
+    name: "Raw S4 Slave 0x02 Reg 0xA801"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a802
+    name: "Raw S4 Slave 0x02 Reg 0xA802"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a803
+    name: "Raw S4 Slave 0x02 Reg 0xA803"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a804
+    name: "Raw S4 Slave 0x02 Reg 0xA804"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a805
+    name: "Raw S4 Slave 0x02 Reg 0xA805"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_02_a806
+    name: "Raw S4 Slave 0x02 Reg 0xA806"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_0a_b3b0
+    name: "Raw S4 Slave 0x0A Reg 0xB3B0"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_0a_b3b1
+    name: "Raw S4 Slave 0x0A Reg 0xB3B1"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_0a_b3b2
+    name: "Raw S4 Slave 0x0A Reg 0xB3B2"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_06_afc8
+    name: "Raw S4 Slave 0x06 Reg 0xAFC8"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_06_afc9
+    name: "Raw S4 Slave 0x06 Reg 0xAFC9"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_06_afca
+    name: "Raw S4 Slave 0x06 Reg 0xAFCA"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_06_afcb
+    name: "Raw S4 Slave 0x06 Reg 0xAFCB"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_06_afcc
+    name: "Raw S4 Slave 0x06 Reg 0xAFCC"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_06_afcd
+    name: "Raw S4 Slave 0x06 Reg 0xAFCD"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_06_afce
+    name: "Raw S4 Slave 0x06 Reg 0xAFCE"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_06_afcf
+    name: "Raw S4 Slave 0x06 Reg 0xAFCF"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_06_afd0
+    name: "Raw S4 Slave 0x06 Reg 0xAFD0"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_06_afd1
+    name: "Raw S4 Slave 0x06 Reg 0xAFD1"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_06_afd2
+    name: "Raw S4 Slave 0x06 Reg 0xAFD2"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_raw_s4_06_afd3
+    name: "Raw S4 Slave 0x06 Reg 0xAFD3"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+
+# =============================================================================
+# DERIVED STATES
+# =============================================================================
+
+binary_sensor:
+
+  - platform: template
+    id: thermia_bus_healthy
+    name: "Bus Healthy"
+    device_class: connectivity
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_compressor_running
+    name: "Compressor Running"
+    device_class: running
+
+
+text_sensor:
+
+  - platform: template
+    id: thermia_sg_mode
+    name: "SG Mode"
+
+# =============================================================================
+# PERIODIC BUS HEALTH CHECK
+# =============================================================================
+
+interval:
+  - interval: 5s
+    then:
+      - lambda: |-
+          const uint32_t last = id(thermia_last_valid_frame_ms);
+          if (last == 0 || (millis() - last) > 10000UL) {
+            id(thermia_bus_healthy)->publish_state(false);
+          }
