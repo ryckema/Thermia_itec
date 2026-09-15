@@ -480,6 +480,4 @@ Start with read-only operation and verify the RJ45 pinout on your own hardware b
 
 ## Development status
 
-The mapping is still being expanded, with return temperature, operating states/status bits and additional internal temperatures among the remaining targets.
-
-Write support will also be investigated further, but the public YAML will remain read-only until bus arbitration and safe write behaviour are understood.
+The mapping is still being expanded, I hope to include write support in the future but initial test to write the room temperature weren't positive
