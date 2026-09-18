@@ -100,8 +100,10 @@ The currently decoded values include:
 
 - Supply temperature
 - Outdoor temperature
+- Propagated outdoor temperature on the room-sensor / DCM buses
 - DHW temperature
 - DHW upper temperature
+- DHW delta-T
 - Room temperature
 - Room setpoint
 - Heating curve
@@ -116,23 +118,46 @@ The currently decoded values include:
 - Compressor current
 - Compressor running
 - High pressure
-- Target temperature
+- Outdoor-unit target temperature
+- Commanded target temperature
 - Outdoor fan speed
 - Expansion valve steps
+- Controller context
+- Outdoor-unit operating state
+- Outdoor-unit cycle request / run enable
 - SG Ready mode
+- Heating / DHW / cooling active state
 - Bus health
 
-Additional refrigerant/compressor values and raw registers are also exposed as **diagnostic entities** and are **disabled by default** in Home Assistant. They can be enabled from the device's entity list when needed for testing.
+Additional controller, refrigerant/compressor, DCM and raw-register values are exposed as **diagnostic entities**. Many are disabled by default in Home Assistant and can be enabled from the device entity list when needed for reverse engineering or troubleshooting.
+
+For high-level Home Assistant status, do **not** treat outdoor-unit state `0x0014` as a compressor-running flag. Physical compressor operation is derived from compressor frequency (`0x1E FC04 0x000B > 0 Hz`).
 
 
 ## Register map
 
-Certainty levels used below:
+The map below contains the mappings that are most useful for the shared integration. A separate detailed register-map document can be used for the full reverse-engineering notes and unresolved observations.
 
-- **Confirmed** — matched against a known value or controlled test.
-- **High** — behaviour and scaling strongly match the proposed meaning, but it has not yet been independently verified in every operating state.
-- **Tentative** — plausible based on behaviour, naming context or correlation, but still needs a targeted test.
-- **Unknown** — register is observed on the bus, but its meaning has not yet been identified.
+Certainty levels:
+
+- **Confirmed** — matched against a known value, controlled test, repeated operating behaviour or the physical Thermia display.
+- **High** — behaviour and scaling strongly match the proposed meaning, but have not yet been independently verified in every operating state.
+- **Tentative** — plausible and correlated, but still needs a targeted test.
+- **External** — reported for a related Thermia / Danfoss implementation but not yet verified on this XTR M.
+- **Unknown** — observed on the bus, but meaning not identified.
+
+### Protocol overview
+
+- Modbus RTU
+- 9600 baud
+- 8 data bits
+- Even parity
+- 1 stop bit
+- Observed slave IDs: `0x02`, `0x06`, `0x0A`, `0x0F`, `0x14`, `0x1E`
+- Observed functions: FC04, FC16 (`0x10`), FC17
+
+---
+
 ## Slave `0x02`
 
 ### FC17 read block — `0xA7F8`
@@ -144,7 +169,7 @@ Certainty levels used below:
 | `0xA7FA` | Unknown / often unavailable | often `-1000` | **Unknown** |
 | `0xA7FB` | DHW upper temperature | °C | **Confirmed** |
 | `0xA7FC` | DHW main / lower / control temperature | °C | **Confirmed** |
-| `0xA7FD` | SG Ready discriminator 1 | usually `-1000` / `+1000` | **Confirmed** |
+| `0xA7FD` | SG Ready discriminator 1 | stable values `-1000` / `+1000` | **Confirmed** |
 | `0xA7FE` | Unknown | often `-1000` | **Unknown** |
 | `0xA7FF` | Unknown | often `-1000` | **Unknown** |
 | `0xA800` | Unknown | often `-1000` | **Unknown** |
@@ -161,8 +186,8 @@ Certainty levels used below:
 |---|---|---|---|
 | `0xA80C` | Controller context / state | observed `64`, `65`, `66`, `112`, `193` | **High** |
 | `0xA80D` | Unknown | often `0` | **Unknown** |
-| `0xA80E` | Controller bitfield | observed `0`, `8`, `32`, `40` | **Tentative** |
-| `0xA80F` | Control Request Level Raw | observed `5`, `10`, `50`, `80`, `100` | **High** |
+| `0xA80E` | Controller / accessory status bitfield | observed `0`, `8`, `32`, `40` | **Tentative** |
+| `0xA80F` | Controller Sequence Value Raw | observed `5`, `10`, `50`, `75–80`, `81–100` | **High** |
 | `0xA810` | Unknown | often `10` | **Unknown** |
 | `0xA811` | Unknown | often `-1` | **Unknown** |
 | `0xA812` | Unknown | often `0` | **Unknown** |
@@ -173,22 +198,22 @@ Observed `A80C` contexts:
 |---:|---|---|
 | `64` | Normal / baseline controller context | **High** |
 | `65` | DHW / high-temperature context | **High** |
-| `66` | Cooling requested / cooling context | **High** |
-| `112` | Transition state | **Tentative** |
+| `66` | Cooling context | **High** |
+| `112` | Controller housekeeping / transition | **Tentative** |
 | `193` | Compound / unknown state | **Tentative** |
 
-> `A80F` should not be interpreted as a percentage. It is a raw controller request level.
+`A80F` should **not** be interpreted as a percentage. Repeated heating cycles show the pattern `50 → 80` before cycle start, followed later by `80 → 79 → 78 → 77 → 76 → 75`. During shutdown it returns via `75 → 80 → 50`. The exact internal meaning is still unknown, but it behaves like a controller sequence/control value rather than a simple demand percentage.
 
 ### SG Ready mapping
 
-Observed real combinations:
+| SG state | `A7FD` | `A803` | Certainty |
+|---|---:|---:|---|
+| Normal | `-1000` | `224` | **Confirmed** |
+| Blocked | `-1000` | `232` | **Confirmed** |
+| Enhanced | `+1000` | `224` | **Confirmed** |
+| Peak | `+1000` | `232` | **Confirmed** |
 
-| SG state | `A7FD` | `A803` |
-|---|---:|---:|
-| Normal | `-1000` | `224` |
-| Blocked | `-1000` | `232` |
-| Enhanced | `+1000` | `224` |
-| Peak | `+1000` | `232` |
+Short-lived intermediate values such as `A7FD = 85` have been observed while switching and should be treated as transient/invalid rather than as an additional SG mode.
 
 ---
 
@@ -206,11 +231,11 @@ Observed real combinations:
 
 | Register | Meaning | Scale / values | Certainty |
 |---|---|---|---|
-| `0xB3C4` | Propagated outdoor temperature | °C | **High** |
+| `0xB3C4` | Propagated outdoor temperature | °C | **Confirmed** |
 | `0xB3C5` | Room setpoint | °C | **Confirmed** |
 | `0xB3C6` | Room-sensor boost / enhanced request | observed `0` / `2` | **High** |
 
-External researcher note: the display pushes `[outdoor, room setpoint, 0]` to the room-sensor accessory, while a genuine sensor returns its own payload rather than echoing the push.
+Repeated logging shows the central outdoor temperature propagating from `0x02:A802` to `0x0A:B3C4` and then to `0x06:AFE0`.
 
 ---
 
@@ -237,35 +262,11 @@ External researcher note: the display pushes `[outdoor, room setpoint, 0]` to th
 
 ### DHW settings block — reported externally
 
-Another researcher reports a DHW settings block at decimal registers `1053–1059`.
-
-| Decimal range | Hex range | Meaning | Certainty |
-|---|---|---|---|
-| `1053–1059` | `0x041D–0x0423` | DHW start temperature, run time, top-up interval / stop / time, sensor influence, ECO influence | **External** |
-
-These values should be verified against the physical display before being promoted to confirmed mappings.
+Another researcher reports a DHW settings block at decimal registers `1053–1059` (`0x041D–0x0423`). The exact mapping has not yet been verified on this XTR M and remains **External**.
 
 ### Cooling settings block — reported externally
 
-Another researcher reports the cooling settings block at decimal registers `1090–1102`.
-
-| Decimal range | Hex range | Meaning | Certainty |
-|---|---|---|---|
-| `1090–1102` | `0x0442–0x044E` | Cooling enabled, desired cooling temperature, hysteresis / room-sensor related cooling settings | **External** |
-
-On the tested XTR M, the physical display currently shows cooling parameters including:
-
-- Cooling: ON
-- Desired cooling temperature: 18 °C
-- Cooling active threshold: 25 °C
-- START: 50
-- STOP: -30
-- Cooling time: 20 min
-- Room sensor: ON
-- Low room deviation: 1.0 °C
-- High room deviation: 1.0 °C
-
-The exact register-to-setting mapping within `1090–1102` still needs a targeted capture.
+Another researcher reports cooling-related settings at decimal registers `1090–1102` (`0x0442–0x044E`). The exact register-to-setting mapping still needs controlled captures while changing one display setting at a time.
 
 ---
 
@@ -295,32 +296,60 @@ The exact register-to-setting mapping within `1090–1102` still needs a targete
 | `0x0011` | Unknown | — | **Unknown** |
 | `0x0012` | Unknown on tested unit; externally reported max-frequency ratio | % | **External** |
 | `0x0013` | Unknown | — | **Unknown** |
-| `0x0014` | Outdoor-unit operating state | enum | **Confirmed / High** |
-| `0x0015` | Outdoor-unit status / mode bitfield | bitfield | **High** |
-
-External report:
-- `0x0014` decimal register `20` / `0x0014`
-- `0x0015` decimal register `21` / `0x0015`
-- another researcher also reports reg20/21 as superheat/subcooling on a related interpretation; this conflicts with the state/status behaviour observed on the tested XTR M and should therefore **not** be applied without model-specific verification.
+| `0x0014` | Outdoor-unit operating / sequence state | enum | **Confirmed / High** |
+| `0x0015` | Outdoor-unit status / context bitfield | bitfield | **High** |
+| `0x001F` | Unknown, observed during state-20 recovery sequence | observed `0 → 911` | **Unknown / correlated** |
+| `0x0023` | Unknown, observed during state-20 recovery sequence | observed `0 → 4` | **Unknown / correlated** |
 
 ### `0x0014` operating-state values
 
 | Raw value | Meaning | Certainty |
 |---:|---|---|
 | `16` | Idle | **Confirmed** |
-| `24` | Preparing / transition | **Confirmed** |
-| `26` | Cooling shutdown / post-run stage | **High** |
-| `27` | Cooling shutdown / post-run stage | **High** |
-| `28` | Heating / DHW pre-run | **High** |
-| `29` | Heating / DHW compressor running | **Confirmed** |
-| `30` | Cooling pre-run | **Confirmed** |
-| `31` | Cooling compressor running | **Confirmed** |
+| `18` | Late shutdown / final transition | **Tentative** |
+| `20` | Recovery / autonomous outdoor-unit sequence | **Tentative** |
+| `24` | Preparation / transition / shared finalisation | **Confirmed / High** |
+| `25` | Heating/DHW shutdown / fan-stop stage | **High** |
+| `26` | Cooling shutdown transition | **High** |
+| `27` | Cooling shutdown / likely earlier fan-stop stage | **High** |
+| `28` | Heating/DHW startup / ramp; also seen in shutdown | **High** |
+| `29` | Heating/DHW established sequence | **Confirmed as sequence-state** |
+| `30` | Cooling startup / ramp | **High** |
+| `31` | Cooling established sequence | **High** |
 
-Observed cooling shutdown sequence:
+`0x0014` is a **sequence state**, not a compressor-running flag. The compressor may already be running in state `28` / `30`, and state `29` may persist after compressor frequency reaches zero.
+
+### Observed state-machine paths
+
+Heating / DHW startup:
+
+`16 → 24 → 28 → 29`
+
+Common Heating / DHW shutdown:
+
+`29 → 25 → 24 → 16`
+
+Alternative Heating / DHW shutdown:
+
+`29 → 28 → 24 → 16`
+
+Cooling startup:
+
+`16 → 24 → 30 → 31`
+
+Cooling shutdown:
 
 `31 → 27 → 26 → 24 → 16`
 
-### `0x0015` status bitfield
+### State `20` — recovery / autonomous sequence
+
+State `20` was observed after an SG-triggered DHW start was aborted. The normal controller request had already been removed (`FC16 0x0007 = 0`, `0x0008 = 0`) before the outside unit entered `16 → 20` on its own.
+
+During that sequence the outdoor fan started and ramped, the expansion valve moved, `0x001F` changed to `911`, `0x0023` changed to `4`, and the compressor briefly ran up to about 20 Hz even though the normal controller cycle request was already off.
+
+The safest current label is therefore **Recovery / autonomous outdoor-unit sequence**. It should not yet be called defrost.
+
+### `0x0015` status / context bitfield
 
 Observed values include:
 
@@ -331,23 +360,19 @@ Observed values include:
 - `577` = `0x241`
 - `641` = `0x281`
 
-Current bit interpretation:
-
 | Bit | Meaning | Certainty |
 |---|---|---|
 | `0x0001` | Common / base flag | **Tentative** |
 | `0x0020` | Heating context | **High** |
 | `0x0040` | DHW / high-temperature context | **Confirmed** |
 | `0x0080` | Cooling context | **Confirmed** |
-| `0x0200` | Outdoor-unit run / request active | **Confirmed** |
+| `0x0200` | Controller run-enable acknowledged / active | **Confirmed** |
 
-> `0x0200` is not the same as physical compressor running. Physical compressor running is best derived from `0x000B > 0 Hz`.
+`0x0200` is **not** physical compressor-running state and is not a universal prerequisite for compressor operation; the state-20 recovery sequence demonstrated a brief compressor run after this bit had cleared.
 
 ---
 
-## Slave `0x1E` — FC16 / command block from controller to outdoor unit
-
-The controller writes a command block to the outdoor unit. The ESPHome implementation remains passive and only observes these writes.
+## Slave `0x1E` — FC16 command block from controller to outdoor unit
 
 | Register | Meaning | Scale / values | Certainty |
 |---|---|---|---|
@@ -357,31 +382,13 @@ The controller writes a command block to the outdoor unit. The ESPHome implement
 | `0x0003` | Unknown | — | **Unknown** |
 | `0x0004` | Mode request | `1=Heating`, `2=DHW/high-temp`, `3=Cooling` | **Confirmed / High** |
 | `0x0005` | Unknown | — | **Unknown** |
-| `0x0006` | Unknown | — | **Unknown** |
-| `0x0007` | Outdoor-unit cycle / flow request | `0/1` | **High** |
+| `0x0006` | Unknown; possible periodic counter/state | observed `0→1→2`, ~2 h spacing in one capture | **Tentative** |
+| `0x0007` | Outdoor-unit cycle / sequence request | `0/1` | **Confirmed** |
 | `0x0008` | Outdoor-unit run enable | `0/1` | **Confirmed** |
 
-Important model-specific observation:
+Repeated heating cycles show `A80F 50 → 80` immediately before `0x0007` turns on, and `A80F 80 → 50` immediately before `0x0007` turns off. This makes `0x0007` a reliable overall cycle/sequence request.
 
-On the tested XTR M, FC16 register `0x0008` behaves as a **run-enable** signal. During cooling it changes `0 → 1` before the outside unit enters its running state and before compressor frequency rises above zero. This does **not** match an external mapping that labelled the same word as an electric-heater state.
-
-### Confirmed cooling start sequence
-
-Observed sequence:
-
-1. Controller context changes to cooling (`A80C = 66`)
-2. `A80F` request level rises
-3. FC16 `0x0001` target changes toward cooling target
-4. FC16 `0x0004 = 3`
-5. FC16 `0x0007 = 1`
-6. FC04 `0x000A` mirrors the target
-7. FC04 `0x0015`: DHW/previous context → cooling context (`129`)
-8. FC04 `0x0014`: `16 → 24`
-9. FC16 `0x0008 = 1`
-10. FC04 `0x0015`: `129 → 641`
-11. FC04 `0x0014`: `24 → 30`
-12. Compressor frequency rises above `0 Hz`
-13. FC04 `0x0014`: `30 → 31`
+`0x0008` is a separate run-enable command. This does **not** match an external mapping that labelled the same register as an electric-heater state.
 
 ---
 
@@ -394,15 +401,11 @@ Observed polling:
 
 | Register | Meaning | Scale / values | Certainty |
 |---|---|---|---|
-| `0xAFDC` | Status / control-related word | — | **Tentative** |
-| `0xAFDD` | Prep / status-related word | — | **Tentative** |
-| `0xAFE0` | Propagated outdoor temperature | °C | **High** |
+| `0xAFDC` | DCM / accessory status word | observed `0`, `16`, `32` and compound states | **High correlation / semantic Tentative** |
+| `0xAFDD` | DCM / accessory housekeeping / preparation word | observed `0`, `16` | **Tentative** |
+| `0xAFE0` | Propagated outdoor temperature | °C | **Confirmed** |
 
-External researcher observation:
-
-An accessory responds with its own data rather than echoing the display's write payload. Therefore the 12-register response from a Thermia Online / Connect / Danfoss DCM accessory should be treated as the module's own payload, not as a mirror of the controller push.
-
-The accessory protocol appears stable across display firmware 2.3.0 and 2.4.2 according to external testing.
+`AFDC` should not be interpreted as a heating/DHW/cooling mode. `AFDC 0x20` repeatedly correlates with `A80E 0x20`, while `AFDC 0x10` and `AFDD 0x10` have been seen during controller/accessory housekeeping and propagation events.
 
 ---
 
@@ -420,19 +423,21 @@ Meaning is still unknown; likely an optional module / accessory block.
 
 | Derived value | Source | Certainty |
 |---|---|---|
-| Compressor running | `0x1E:0x000B > 0 Hz` | **Confirmed** |
-| Heating active | heating context bit + compressor running | **High** |
-| DHW active | DHW context bit + compressor running | **High** |
-| Cooling active | cooling context bit + compressor running | **Confirmed** |
+| Compressor running | `0x1E FC04 0x000B > 0 Hz` | **Confirmed** |
+| Heating active | heating context + compressor running + FC16 `0x0007 = 1` | **High** |
+| DHW active | DHW context + compressor running + FC16 `0x0007 = 1` | **High** |
+| Cooling active | cooling context + compressor running + FC16 `0x0007 = 1` | **High** |
 | Condenser delta-T | `0x0001 - 0x0000` | **Confirmed** |
 | DHW delta-T | `0xA7FB - 0xA7FC` | **Confirmed** |
-| SG Ready mode | combination of `0xA7FD` + `0xA803` | **Confirmed** |
+| SG Ready mode | stable combination of `0xA7FD` + `0xA803` | **Confirmed** |
+
+The extra `0x0007 = 1` condition prevents an autonomous state-20 compressor run from being incorrectly labelled as Heating, DHW or Cooling active.
 
 ---
 
 ## Display-correlated values
 
-A physical-display snapshot taken while the bus was being logged provided direct cross-checks for the following telemetry:
+A physical-display snapshot provided direct cross-checks for:
 
 | Display value | Bus register |
 |---|---|
@@ -444,7 +449,23 @@ A physical-display snapshot taken while the bus was being logged provided direct
 | Outdoor fan speed | `0x1E FC04 0x000E` |
 | Expansion valve steps | `0x1E FC04 0x0010` |
 
-During the display capture, the outdoor-unit target was 19.0 °C, compressor frequency was about 16–17 Hz, compressor current about 0.8–0.9 A, and high pressure about 13.2–13.5 bar. These values matched the live bus decode.
+---
+
+## Recommended Home Assistant interpretation
+
+For a single user-facing heat-pump state, the safest current order is:
+
+1. ESP unavailable → `Offline`
+2. bus unhealthy → `Bus fault`
+3. compressor running + cooling context + `0x0007 = 1` → `Cooling`
+4. compressor running + DHW context + `0x0007 = 1` → `DHW`
+5. compressor running + heating context + `0x0007 = 1` → `Heating`
+6. `0x0014 = 20` → `Recovery / autonomous sequence`
+7. startup sequence (`24`, `28`, `30`) before compressor operation → `Starting / transition`
+8. compressor off while `0x0014 != 16` → `Post-run / transition`
+9. `0x0014 = 16` → `Idle`
+
+This deliberately keeps raw controller / sequence values separate from the normal user-facing status.
 
 ## Troubleshooting
 
@@ -480,4 +501,6 @@ Start with read-only operation and verify the RJ45 pinout on your own hardware b
 
 ## Development status
 
-The mapping is still being expanded, I hope to include write support in the future but initial test to write the room temperature weren't positive
+Read-only monitoring is stable on the tested installation and the register map is still being expanded. Several controller and outdoor-unit sequence states have now been decoded, including normal heating/cooling startup and shutdown paths, SG Ready state, run-enable signalling and a special autonomous recovery sequence.
+
+Write support is intentionally not included. Initial tests involving writable values were not reliable enough, and adding another transmitter to the existing bus requires correct timing and arbitration. The shared integration therefore remains passive/read-only.
