@@ -4,14 +4,17 @@
 # Updated 2026-09-19
 #
 # Reference hardware:
-# - ESP32
-# - External TTL <-> RS485 receiver/converter
+# - Waveshare ESP32-S3-RS485-CAN / ESP32-S3-RS485-CAN-U
+# - Onboard isolated RS485 transceiver
 #
 # READ ONLY / DIAGNOSTIC:
-# - Converter TTL RX output (RO) -> ESP32 GPIO4
-# - ESP TX is NOT connected (passive / read-only)
-# - Converter TTL GND -> ESP32 GND
-# - Thermia side: RJ45 pin 1 -> RS485 A, pin 3 -> RS485 B
+# - Thermia RJ45 pin 1 (RS485 A) -> Waveshare A+
+# - Thermia RJ45 pin 3 (RS485 B) -> Waveshare B-
+# - Waveshare RS485 RX = GPIO18
+# - Waveshare RS485 TX = GPIO17, intentionally NOT configured here
+# - Waveshare RS485 direction/DE = GPIO21, forced LOW (receive mode)
+# - Leave the Waveshare 120-ohm RS485 termination jumper OPEN/OFF when
+#   passively attaching to the existing Thermia bus.
 #
 # Thermia bus observed on the tested installation:
 # - 9600 baud
@@ -23,6 +26,7 @@
 # IMPORTANT:
 # - This project is based on passive bus observation and reverse engineering.
 # - It does not transmit Modbus frames to the Thermia bus.
+# - On the Waveshare board, GPIO21 is held LOW and no UART TX pin is configured.
 # - Register meanings marked as tentative/diagnostic may change as more captures
 #   become available.
 # - Keep Wi-Fi, API and OTA credentials in ESPHome secrets.yaml. Never commit
@@ -34,22 +38,24 @@
 # ESP
 # =============================================================================
 
-# Board: Generic ESP32 Board (Generic)
+# Board: Waveshare ESP32-S3-RS485-CAN
+# MCU: ESP32-S3R8, external 16 MB flash, 8 MB octal PSRAM
 
 esphome:
   name: thermia
   friendly_name: Thermia iTec XTR M
 
 esp32:
-  variant: esp32
+  variant: esp32s3
+  flash_size: 16MB
   framework:
     type: esp-idf
-    advanced:
-      # This physical board reports ESP32 rev3.1 in the boot log.
-      # Saves legacy-revision workarounds and exposes the bootloader-supported
-      # SRAM1 region as an extra 40 KB IRAM for Wi-Fi/API-heavy code.
-      minimum_chip_revision: "3.1"
-      sram1_as_iram: true
+
+# ESP32-S3R8 provides 8 MB octal PSRAM. Explicit PSRAM configuration is
+# required by current ESPHome releases for ESP32-S3.
+psram:
+  mode: octal
+  speed: 80MHz
 
 api:
   encryption:
@@ -65,7 +71,7 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
 
-  # ESP32 is mains-powered: prefer reliability over Wi-Fi power saving.
+  # This controller is continuously powered: prefer reliability over Wi-Fi power saving.
   power_save_mode: none
 
   # Keep a network-stack recovery watchdog, but make it much less aggressive
@@ -111,10 +117,32 @@ logger:
 # 8E1
 # Modbus RTU CRC16
 #
-# External converter TTL output is connected to GPIO4.
-# CONFIRMED for the currently working external converter:
-# GPIO4 RX, inverted: false, 9600 8E1.
+# Waveshare ESP32-S3-RS485-CAN onboard RS485 interface:
+# - GPIO17 = RS485 TX (not configured; this project never transmits)
+# - GPIO18 = RS485 RX
+# - GPIO21 = RS485 DE/direction; LOW = receive, HIGH = transmit
+#
+# GPIO21 is held LOW by the internal switch below so the transceiver remains
+# permanently in receive mode. This gives an additional hardware-level guard
+# against accidental transmission from this ESPHome configuration.
 # =============================================================================
+
+# =============================================================================
+# WAVESHARE RS485 DIRECTION
+# =============================================================================
+
+# SP3485 DE and /RE are controlled by GPIO21 on this board.
+# ALWAYS_OFF => GPIO21 LOW => receiver enabled, driver disabled.
+# This switch is internal and is not exposed to Home Assistant.
+switch:
+  - platform: gpio
+    id: waveshare_rs485_direction
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin:
+      number: GPIO21
+      inverted: false
+
 
 # =============================================================================
 # BUS HEALTH
@@ -130,8 +158,9 @@ globals:
 uart:
   id: thermia_uart
 
+  # Receive-only: no tx_pin is configured.
   rx_pin:
-    number: GPIO4
+    number: GPIO18
     inverted: false
 
   baud_rate: 9600
