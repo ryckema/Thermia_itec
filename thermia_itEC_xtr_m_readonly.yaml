@@ -1,20 +1,32 @@
 # =============================================================================
-# THERMIA ITEC XTR M - PRODUCTION READ-ONLY / CHANGE-ONLY API
-# Updated 2026-09-15: register-map refresh, cooling shutdown states, diagnostic DHW/cooling setting blocks
-# ESP32 + external TTL<->RS485 converter
+# THERMIA iTec XTR M - PASSIVE READ-ONLY ESPHOME INTEGRATION
+# Public / GitHub-safe reference configuration
+# Updated 2026-09-19
+#
+# Reference hardware:
+# - ESP32
+# - External TTL <-> RS485 receiver/converter
 #
 # READ ONLY / DIAGNOSTIC:
 # - Converter TTL RX output (RO) -> ESP32 GPIO4
 # - ESP TX is NOT connected (passive / read-only)
 # - Converter TTL GND -> ESP32 GND
-# - Thermia side: RJ45 pin 1 -> A, pin 3 -> B
+# - Thermia side: RJ45 pin 1 -> RS485 A, pin 3 -> RS485 B
 #
-# Thermia bus:
+# Thermia bus observed on the tested installation:
 # - 9600 baud
 # - 8 data bits
 # - EVEN parity
 # - 1 stop bit
 # - Modbus RTU
+#
+# IMPORTANT:
+# - This project is based on passive bus observation and reverse engineering.
+# - It does not transmit Modbus frames to the Thermia bus.
+# - Register meanings marked as tentative/diagnostic may change as more captures
+#   become available.
+# - Keep Wi-Fi, API and OTA credentials in ESPHome secrets.yaml. Never commit
+#   real credentials to a public repository.
 # =============================================================================
 
 
@@ -26,16 +38,24 @@
 
 esphome:
   name: thermia
-  friendly_name: Thermia itec XTR M
+  friendly_name: Thermia iTec XTR M
 
 esp32:
   variant: esp32
   framework:
     type: esp-idf
+    advanced:
+      # This physical board reports ESP32 rev3.1 in the boot log.
+      # Saves legacy-revision workarounds and exposes the bootloader-supported
+      # SRAM1 region as an extra 40 KB IRAM for Wi-Fi/API-heavy code.
+      minimum_chip_revision: "3.1"
+      sram1_as_iram: true
 
 api:
   encryption:
     key: !secret thermia_api_encryption_key
+  # Do not reboot merely because Home Assistant/API is temporarily unreachable.
+  reboot_timeout: 0s
 
 ota:
   - platform: esphome
@@ -44,9 +64,22 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+
+  # ESP32 is mains-powered: prefer reliability over Wi-Fi power saving.
+  power_save_mode: none
+
+  # Keep a network-stack recovery watchdog, but make it much less aggressive
+  # than the ESPHome default. No access-point BSSID is hard-coded.
+  reboot_timeout: 30min
+
   ap:
-    ssid: Play Fallback Hotspot
+    ssid: "Thermia Fallback Hotspot"
     password: !secret thermia_fallback_password
+
+# Publish reset/heap/loop diagnostics so Wi-Fi loss can be separated from
+# brownouts, watchdog resets, API loss and parser/resource problems.
+debug:
+  update_interval: 30s
 
 
 # =============================================================================
@@ -72,7 +105,7 @@ logger:
 # =============================================================================
 # THERMIA UART
 #
-# Bevestigd uit onze captures:
+# Confirmed from passive captures:
 #
 # 9600 baud
 # 8E1
@@ -762,6 +795,8 @@ uart:
                   }
                   if (source == 3 && slave_id == 0x0A && address == 0xB3C4) {
                     id(thermia_raw_s3_0a_b3c4)->publish_state(float(value));
+                    // Confirmed: propagated central outdoor temperature -> room-sensor bus.
+                    publish_float_if_changed(id(thermia_room_bus_outdoor_temperature), float(value), 0.5f);
                     return;
                   }
                   if (source == 3 && slave_id == 0x0A && address == 0xB3C5) {
@@ -802,6 +837,8 @@ uart:
                   }
                   if (source == 3 && slave_id == 0x06 && address == 0xAFDC) {
                     id(thermia_raw_s3_06_afdc)->publish_state(float(value));
+                    // DCM/Online status is related to A80E but is NOT a byte-for-byte mirror.
+                    publish_float_if_changed(id(thermia_dcm_status_afdc), float(value), 0.5f);
                     return;
                   }
                   if (source == 3 && slave_id == 0x06 && address == 0xAFDD) {
@@ -818,6 +855,8 @@ uart:
                   }
                   if (source == 3 && slave_id == 0x06 && address == 0xAFE0) {
                     id(thermia_raw_s3_06_afe0)->publish_state(float(value));
+                    // Confirmed: propagated central outdoor temperature -> DCM/Online slot.
+                    publish_float_if_changed(id(thermia_dcm_outdoor_temperature), float(value), 0.5f);
                     return;
                   }
                   if (source == 4 && slave_id == 0x02 && address == 0xA7F8) {
@@ -1329,19 +1368,19 @@ uart:
                     //   0x0020 = heating context
                     //   0x0040 = DHW / high-temperature context
                     //   0x0080 = cooling context
-                    //   0x0200 = outdoor-unit run request active
+                    //   0x0200 = outdoor-unit run-enable acknowledged
                     //
                     // Observed examples:
-                    //   0x021 (33)  = heating context, no run request
-                    //   0x041 (65)  = DHW context, no run request
-                    //   0x081 (129) = cooling context, no run request
-                    //   0x221 (545) = heating + run request
-                    //   0x241 (577) = DHW + run request
-                    //   0x281 (641) = cooling + run request
+                    //   0x021 (33)  = heating context, run-enable inactive
+                    //   0x041 (65)  = DHW context, run-enable inactive
+                    //   0x081 (129) = cooling context, run-enable inactive
+                    //   0x221 (545) = heating + run-enable acknowledged
+                    //   0x241 (577) = DHW + run-enable acknowledged
+                    //   0x281 (641) = cooling + run-enable acknowledged
                     const bool heating_context = (status_flags & 0x0020U) != 0;
                     const bool dhw_context = (status_flags & 0x0040U) != 0;
                     const bool cooling_context = (status_flags & 0x0080U) != 0;
-                    const bool run_request_active = (status_flags & 0x0200U) != 0;
+                    const bool run_enable_acknowledged = (status_flags & 0x0200U) != 0;
 
                     publish_float_if_changed(
                       id(thermia_outdoor_unit_operating_state_raw),
@@ -1360,55 +1399,103 @@ uart:
                     publish_bool_if_changed(id(thermia_cooling_context), cooling_context);
 
                     // "Context" says which mode is selected/requested.
-                    // "Active" additionally requires the compressor to be
-                    // physically running (000B > 0).
+                    //
+                    // "Active" requires:
+                    //   - matching mode context from 0015,
+                    //   - physical compressor operation (000B > 0 Hz),
+                    //   - FC10 0007 overall outdoor-unit cycle request,
+                    //   - FC10 0008 immediate outdoor-unit run enable.
+                    //
+                    // Requiring 0007 + 0008 avoids false mode-active states during
+                    // heating <-> DHW handovers and during autonomous recovery
+                    // sequences where the compressor can briefly run independently.
+                    const bool cycle_request_active =
+                      id(thermia_outdoor_unit_command_0007).has_state() &&
+                      id(thermia_outdoor_unit_command_0007).state;
+
+                    const bool run_enable_command_active =
+                      id(thermia_outdoor_unit_command_0008).has_state() &&
+                      id(thermia_outdoor_unit_command_0008).state;
+
                     publish_bool_if_changed(
                       id(thermia_heating_active),
-                      heating_context && compressor_running
+                      heating_context &&
+                      compressor_running &&
+                      cycle_request_active &&
+                      run_enable_command_active
                     );
                     publish_bool_if_changed(
                       id(thermia_dhw_active),
-                      dhw_context && compressor_running
+                      dhw_context &&
+                      compressor_running &&
+                      cycle_request_active &&
+                      run_enable_command_active
                     );
                     publish_bool_if_changed(
                       id(thermia_cooling_active),
-                      cooling_context && compressor_running
+                      cooling_context &&
+                      compressor_running &&
+                      cycle_request_active &&
+                      run_enable_command_active
                     );
 
                     // Keep the existing ESPHome id for compatibility, but give the
                     // entity its corrected meaning in Home Assistant.
                     publish_bool_if_changed(
                       id(thermia_outdoor_unit_enabled),
-                      run_request_active
+                      run_enable_acknowledged
                     );
 
-                    // 0014 is an outdoor-unit state machine. Heating/DHW and cooling
-                    // have parallel pre-run/running state pairs.
+                    // 0014 is an internal outdoor-unit sequence/state machine.
+                    // IMPORTANT: it is NOT a direct compressor-running indicator.
+                    // Physical compressor running remains FC04 000B > 0 Hz.
+                    //
+                    // Extended captures show:
+                    //   16 = idle
+                    //   18 = late shutdown / final transition (exact subfunction tentative)
+                    //   20 = recovery / autonomous outdoor-unit sequence (purpose tentative)
+                    //   24 = common transition / sequence stage
+                    //   25 = heating/DHW shutdown / fan-stop stage
+                    //   26 = cooling shutdown stage
+                    //   27 = cooling shutdown / fan-stop stage
+                    //   28 = heating/DHW transition/ramp; compressor may already run
+                    //   29 = heating/DHW established sequence; can persist after compressor stops
+                    //   30 = cooling transition/ramp; compressor may already run
+                    //   31 = cooling established sequence
                     const char *unit_state = "Unknown";
                     switch (operating_state) {
                       case 16:
                         unit_state = "Idle";
                         break;
+                      case 18:
+                        unit_state = "Late shutdown / final transition";
+                        break;
+                      case 20:
+                        unit_state = "Recovery / autonomous sequence";
+                        break;
                       case 24:
-                        unit_state = "Preparing / transition";
+                        unit_state = "Transition / sequence";
+                        break;
+                      case 25:
+                        unit_state = "Heating/DHW shutdown / fan stop";
                         break;
                       case 26:
-                        unit_state = "Cooling post-run / shutdown 2";
+                        unit_state = "Cooling shutdown stage 2";
                         break;
                       case 27:
-                        unit_state = "Cooling post-run / shutdown 1";
+                        unit_state = "Cooling shutdown / fan stop";
                         break;
                       case 28:
-                        unit_state = "Heating/DHW pre-run / fan";
+                        unit_state = "Heating/DHW transition / ramp";
                         break;
                       case 29:
-                        unit_state = "Heating/DHW running";
+                        unit_state = "Heating/DHW established sequence";
                         break;
                       case 30:
-                        unit_state = "Cooling pre-run / fan";
+                        unit_state = "Cooling transition / ramp";
                         break;
                       case 31:
-                        unit_state = "Cooling running";
+                        unit_state = "Cooling established sequence";
                         break;
                       default:
                         unit_state = "Unknown";
@@ -1446,8 +1533,8 @@ uart:
               // FC10
               // Write Multiple Registers
               //
-              // Deze frames worden DOOR THERMIA verzonden.
-              // De ESP luistert alleen.
+              // These frames are transmitted BY THERMIA.
+              // The ESP only listens.
               // ===============================================================
 
               if (
@@ -1515,8 +1602,8 @@ uart:
                 // Current functional map:
                 //   0001 = commanded/live target temperature x0.1 °C
                 //   0004 = operating/request mode: 1 heating, 2 DHW, 3 cooling
-                //   0007 = broad cycle request
-                //   0008 = run enable
+                //   0007 = overall outdoor-unit cycle / sequence request
+                //   0008 = immediate outdoor-unit run enable
                 if (slave == 0x1E) {
                   if (start <= 0x0001 && (uint32_t(start) + uint32_t(count)) > 0x0001) {
                     const float commanded_target = float(reg_s(0x0001)) / 10.0f;
@@ -1788,10 +1875,10 @@ uart:
                         controller_context = "DHW / high temperature";
                         break;
                       case 66:
-                        controller_context = "Cooling requested";
+                        controller_context = "Cooling context / available";
                         break;
                       case 112:
-                        controller_context = "Transition";
+                        controller_context = "Controller housekeeping / transition";
                         break;
                       case 193:
                         controller_context = "Compound / unknown";
@@ -1811,9 +1898,9 @@ uart:
                       0.5f
                     );
 
-                    // Keep bit names neutral until more operating modes are
-                    // captured. A80C was seen at 0x40 and 0x70; A80E at
-                    // 0x00, 0x08, 0x20 and 0x28.
+                    // Keep these raw bit sensors neutral. A80C is primarily
+                    // treated as a controller context/sequence value, while A80E
+                    // behaves as a controller/accessory status bitfield.
                     publish_bool_if_changed(id(thermia_a80c_flag_0x10), (a80c & 0x0010U) != 0);
                     publish_bool_if_changed(id(thermia_a80c_flag_0x20), (a80c & 0x0020U) != 0);
                     publish_bool_if_changed(id(thermia_a80e_flag_0x08), (a80e & 0x0008U) != 0);
@@ -1822,12 +1909,15 @@ uart:
 
 
                   // ===========================================================
-                  // SLAVE 0x02 - control request level
+                  // SLAVE 0x02 - controller sequence value (A80F)
                   //
-                  // A80F takes values such as 5, 10, 50, 80 and 100 across
-                  // idle/transition/heating/DHW/cooling sequences. It is NOT a
-                  // percentage and is not a reliable heating-demand indicator.
-                  // Keep it as a raw diagnostic control-request level.
+                  // A80F takes values such as 5, 10, 50, 75..100 across
+                  // idle/transition/heating/DHW/cooling sequences. Repeated
+                  // captures show strong correlation with controller sequencing,
+                  // but the exact semantics remain tentative.
+                  //
+                  // IMPORTANT: A80F is NOT compressor frequency, compressor
+                  // power, a percentage, or a linear heat-demand value.
                   // ===========================================================
 
                   if (
@@ -2290,6 +2380,24 @@ sensor:
     entity_category: diagnostic
     update_interval: 30s
 
+  - platform: debug
+    free:
+      name: "Thermia ESP Heap Free"
+      entity_category: diagnostic
+      disabled_by_default: true
+    min_free:
+      name: "Thermia ESP Heap Min Free"
+      entity_category: diagnostic
+      disabled_by_default: true
+    fragmentation:
+      name: "Thermia ESP Heap Fragmentation"
+      entity_category: diagnostic
+      disabled_by_default: true
+    loop_time:
+      name: "Thermia ESP Loop Time"
+      entity_category: diagnostic
+      disabled_by_default: true
+
 
   # ===========================================================================
   # REVERSE-ENGINEERING / CONTROL DIAGNOSTICS
@@ -2297,14 +2405,14 @@ sensor:
 
   - platform: template
     id: thermia_demand_raw
-    name: "Control Request Level Raw"
+    name: "Controller Sequence Value Raw"
     accuracy_decimals: 0
     entity_category: diagnostic
     update_interval: never
 
   - platform: template
     id: thermia_controller_state_a80c
-    name: "Controller State A80C"
+    name: "Controller Context Raw A80C"
     accuracy_decimals: 0
     entity_category: diagnostic
     disabled_by_default: true
@@ -2312,7 +2420,7 @@ sensor:
 
   - platform: template
     id: thermia_controller_state_a80e
-    name: "Controller State A80E"
+    name: "Controller / Accessory Status Raw A80E"
     accuracy_decimals: 0
     entity_category: diagnostic
     disabled_by_default: true
@@ -2349,6 +2457,33 @@ sensor:
     device_class: temperature
     state_class: measurement
     accuracy_decimals: 1
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_room_bus_outdoor_temperature
+    name: "Room Bus Propagated Outdoor Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_dcm_outdoor_temperature
+    name: "DCM Propagated Outdoor Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_dcm_status_afdc
+    name: "DCM Status AFDC Raw"
+    accuracy_decimals: 0
     entity_category: diagnostic
     update_interval: never
 
@@ -2611,7 +2746,7 @@ sensor:
 
   - platform: template
     id: thermia_heating_min
-    name: "Heating MIN"
+    name: "Heating Minimum"
     unit_of_measurement: "°C"
     device_class: temperature
     accuracy_decimals: 0
@@ -2620,7 +2755,7 @@ sensor:
 
   - platform: template
     id: thermia_heating_max
-    name: "Heating MAX"
+    name: "Heating Maximum"
     unit_of_measurement: "°C"
     device_class: temperature
     accuracy_decimals: 0
@@ -2675,7 +2810,7 @@ sensor:
 
   - platform: template
     id: thermia_room_setpoint_mirror
-    name: "Room Setpoint Settings Mirror"
+    name: "Room Setpoint Mirror"
     unit_of_measurement: "°C"
     device_class: temperature
     accuracy_decimals: 0
@@ -3811,7 +3946,7 @@ binary_sensor:
 
   - platform: template
     id: thermia_outdoor_unit_enabled
-    name: "Outdoor Unit Run Request Active"
+    name: "Outdoor Unit Run Enable Acknowledged"
     device_class: running
 
   - platform: template
@@ -3885,6 +4020,27 @@ binary_sensor:
 
 
 text_sensor:
+
+  - platform: debug
+    reset_reason:
+      name: "Thermia ESP Reset Reason"
+      entity_category: diagnostic
+    device:
+      name: "Thermia ESP Device Info"
+      entity_category: diagnostic
+      disabled_by_default: true
+
+  - platform: wifi_info
+    ip_address:
+      name: "Thermia IP Address"
+      entity_category: diagnostic
+    bssid:
+      name: "Thermia WiFi BSSID"
+      entity_category: diagnostic
+    power_save_mode:
+      name: "Thermia WiFi Power Save Mode"
+      entity_category: diagnostic
+      disabled_by_default: true
 
   - platform: template
     id: thermia_sg_mode
