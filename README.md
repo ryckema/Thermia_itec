@@ -4,7 +4,7 @@ A **local, read-only ESPHome integration** for a Thermia iTec XTR M heat pump us
 
 This project is based on reverse engineering of a real Thermia iTec XTR M with the older/non-Genesis controller. The bus traffic has been identified as **Modbus RTU** and a number of useful values are decoded into native Home Assistant entities.
 
-> **Current status:** reading is working reliably on the tested system. Writing/control is intentionally disabled for now while bus timing and arbitration are still being investigated.
+> **Current status:** read-only monitoring is working reliably on the tested system. Writing/control is intentionally disabled. Direct writes to several known mirror/broadcast registers did not change the controller's master state, and the Online/DCM command protocol is not yet understood well enough for safe control.
 
 ## What you need
 
@@ -14,13 +14,13 @@ This project is based on reverse engineering of a real Thermia iTec XTR M with t
 - RJ45 breakout / cable for connecting to the Thermia communication port
 - ESPHome + Home Assistant
 
-The provided YAML is written for the **Waveshare ESP32-S3-RS485-CAN-U**.
+The provided YAML variants are written for the **Waveshare ESP32-S3-RS485-CAN-U**.
 
 ## Thermia RJ45 bus
 
 On the tested controller the two RJ45 connectors are similar to the 122 / 123 connectors found on older Thermia boards.
 
-Measured pin groups:
+Pin groups reported for this Thermia/iTec bus family (only pins 1=A and 3=B are required and were used in the tested read-only setup):
 
 | RJ45 pins | Function |
 |---|---|
@@ -55,7 +55,7 @@ The bus parameters found on the tested system are:
 - 8 data bits
 - Even parity
 - 1 stop bit
-- RX inverted in ESPHome
+- RX is **not inverted** in the current Waveshare ESPHome configuration
 
 Relevant ESPHome configuration:
 
@@ -65,7 +65,7 @@ uart:
 
   rx_pin:
     number: GPIO18
-    inverted: true
+    inverted: false
 
   baud_rate: 9600
   data_bits: 8
@@ -73,13 +73,63 @@ uart:
   stop_bits: 1
 ```
 
-TX is intentionally not configured in the shared YAML, so the ESP32 remains passive/read-only.
+TX is intentionally not configured in either shared YAML, so the ESP32 remains passive/read-only.
+
+## Which YAML should I use?
+
+Two read-only variants are maintained:
+
+### Public / optimized
+
+Use this for normal Home Assistant operation and for sharing with other users.
+
+- Passive **RX-only** operation
+- Quiet production logging
+- Only the useful decoded entities and a small set of diagnostics
+- Generic reverse-engineering register database removed
+- Raw register entities removed
+- Lower log/API/heap overhead
+- Device name can be changed through `substitutions`
+
+Current file:
+
+`thermia_itec_xtr_m_waveshare_public_v26.yaml`
+
+### Research / register mapping
+
+Use this when capturing the bus to identify or verify additional registers.
+
+- Still passive **RX-only** — no Thermia writes are performed
+- Raw Modbus frame logging
+- Generic change-only register mapper
+- Raw diagnostic register entities retained
+- More verbose and uses more resources than the public build
+- Intended for controlled captures and reverse engineering rather than minimum-overhead 24/7 use
+
+Current file:
+
+`thermia_itec_xtr_m_waveshare_research_v26.yaml`
+
+Both variants use the same confirmed bus parameters and decoded register logic. New discoveries should first be verified in the research build and only then promoted to the public build.
+
+### v26 changes
+
+Compared with v25, v26 does **not** add Thermia TX or write controls. It is a register-interpretation/documentation update:
+
+- `0x0A:B3B1` is documented as the pending room-sensor setpoint request path.
+- `0x0A:B3C5` is explicitly treated as the controller-propagated/confirmed room setpoint, not the master write input.
+- `0x0A:B3C6` is returned to a neutral unknown control/status label; the old boost/enhanced interpretation was too strong.
+- `0x02:A80F` is refined as a controller sequence/control value and explicitly not a percentage.
+- `0x1E` FC16 `0x0006` is documented as a repeating `0/1/2` periodic state/counter with roughly two-hour steps; purpose remains unknown.
+- FC16 `0x0007` versus `0x0008` is clarified using captured heating↔DHW handovers.
+- The strong delayed correlation between `0x02:A80E` and `0x06:AFDC` is documented without treating either as a DCM-present flag.
+- The `0x06` Online/DCM command-mailbox hypothesis is documented as **Tentative/External**, not implemented.
 
 ## Installation
 
-1. Copy `thermia_itEC_xtr_m_readonly.yaml` into your ESPHome configuration directory.
+1. Choose either `thermia_itec_xtr_m_waveshare_public_v26.yaml` or `thermia_itec_xtr_m_waveshare_research_v26.yaml` and copy it into your ESPHome configuration directory.
 2. Copy the entries from `secrets.example.yaml` into your ESPHome `secrets.yaml`.
-3. Replace the placeholder values with your Wi-Fi, API encryption key and OTA password.
+3. Replace the placeholder values with your Wi-Fi, API encryption key, OTA password and fallback-AP password.
 4. Connect the RS485 bus as shown above.
 5. Power the Waveshare board over USB-C.
 6. Validate and install the YAML from ESPHome.
@@ -90,8 +140,10 @@ Example `secrets.yaml`:
 ```yaml
 wifi_ssid: "MyWiFi"
 wifi_password: "MyWiFiPassword"
-api_encryption_key: "GENERATED_BASE64_KEY"
-ota_password: "MyOTAPassword"
+
+thermia_api_encryption_key: "GENERATED_BASE64_KEY"
+thermia_ota_password: "MyOTAPassword"
+thermia_fallback_password: "MyFallbackAPPassword"
 ```
 
 ## Home Assistant entities
@@ -129,7 +181,7 @@ The currently decoded values include:
 - Heating / DHW / cooling active state
 - Bus health
 
-Additional controller, refrigerant/compressor, DCM and raw-register values are exposed as **diagnostic entities**. Many are disabled by default in Home Assistant and can be enabled from the device entity list when needed for reverse engineering or troubleshooting.
+Additional controller, refrigerant/compressor and DCM values are exposed as **diagnostic entities** where useful. The **research** build additionally exposes raw-register diagnostic entities and the generic register mapper; these are intentionally removed from the **public/optimized** build.
 
 For high-level Home Assistant status, do **not** treat outdoor-unit state `0x0014` as a compressor-running flag. Physical compressor operation is derived from compressor frequency (`0x1E FC04 0x000B > 0 Hz`).
 
@@ -145,6 +197,8 @@ Certainty levels:
 - **Tentative** — plausible and correlated, but still needs a targeted test.
 - **External** — reported for a related Thermia / Danfoss implementation but not yet verified on this XTR M.
 - **Unknown** — observed on the bus, but meaning not identified.
+
+For the **public/optimized** YAML, only mappings considered sufficiently stable for normal use should be exposed by default. Tentative, External and Unknown values belong in diagnostics or the research build until verified.
 
 ### Protocol overview
 
@@ -186,8 +240,8 @@ Certainty levels:
 |---|---|---|---|
 | `0xA80C` | Controller context / state | observed `64`, `65`, `66`, `112`, `193` | **High** |
 | `0xA80D` | Unknown | often `0` | **Unknown** |
-| `0xA80E` | Controller / accessory status bitfield | observed `0`, `8`, `32`, `40` | **Tentative** |
-| `0xA80F` | Controller Sequence Value Raw | observed `5`, `10`, `50`, `75–80`, `81–100` | **High** |
+| `0xA80E` | Controller / accessory status bitfield | observed `0`, `8`, `32`, `40` | **High correlation / semantic Tentative** |
+| `0xA80F` | Controller Sequence / Control Value Raw | observed `5`, `10`, `50`, `75–100` | **High correlation / semantic Unknown** |
 | `0xA810` | Unknown | often `10` | **Unknown** |
 | `0xA811` | Unknown | often `-1` | **Unknown** |
 | `0xA812` | Unknown | often `0` | **Unknown** |
@@ -202,7 +256,9 @@ Observed `A80C` contexts:
 | `112` | Controller housekeeping / transition | **Tentative** |
 | `193` | Compound / unknown state | **Tentative** |
 
-`A80F` should **not** be interpreted as a percentage. Repeated heating cycles show the pattern `50 → 80` before cycle start, followed later by `80 → 79 → 78 → 77 → 76 → 75`. During shutdown it returns via `75 → 80 → 50`. The exact internal meaning is still unknown, but it behaves like a controller sequence/control value rather than a simple demand percentage.
+`A80E` is a controller/accessory status path, not a heating/DHW/cooling mode and not a DCM-present flag. In long captures `A80E 0x20` is repeatedly followed a few seconds later by `0x06:AFDC 0x20`; normal controller startup can also produce `A80E 0 → 8 → 40` without a DCM connected.
+
+`A80F` should **not** be interpreted as a percentage. Heating captures show `10 → 50` before a cycle, `50 → 80` at cycle start and later `80 → 79 → 78 → 77 → 76 → 75`. A full DHW capture showed `80 → ... → 100`, followed during shutdown by `100 → 80 → 5 → 10`. The correlation with sequencing/load is strong, but the exact internal meaning remains unknown.
 
 ### SG Ready mapping
 
@@ -224,18 +280,20 @@ Short-lived intermediate values such as `A7FD = 85` have been observed while swi
 | Register | Meaning | Scale / values | Certainty |
 |---|---|---|---|
 | `0xB3B0` | Room temperature | ×0.1 °C | **Confirmed** |
-| `0xB3B1` | Genuine room-sensor payload word 1 | genuine sensor reported `0` | **External / High** |
-| `0xB3B2` | Genuine room-sensor payload word 2 | genuine sensor reported `0` | **External / High** |
+| `0xB3B1` | Pending room-sensor setpoint request | integer °C while a local change is pending, otherwise `0` | **Confirmed / High** |
+| `0xB3B2` | Unknown room-sensor response word | observed `0` in current captures | **Unknown** |
 
 ### FC17 write part
 
 | Register | Meaning | Scale / values | Certainty |
 |---|---|---|---|
-| `0xB3C4` | Propagated outdoor temperature | °C | **Confirmed** |
-| `0xB3C5` | Room setpoint | °C | **Confirmed** |
-| `0xB3C6` | Room-sensor boost / enhanced request | observed `0` / `2` | **High** |
+| `0xB3C4` | Propagated outdoor temperature | °C | **Confirmed / High** |
+| `0xB3C5` | Controller-propagated / confirmed room setpoint | °C | **Confirmed** |
+| `0xB3C6` | Unknown room-sensor control/status word | observed `0` / `2` | **Tentative** |
 
 Repeated logging shows the central outdoor temperature propagating from `0x02:A802` to `0x0A:B3C4` and then to `0x06:AFE0`.
+
+Setpoint direction is important: a genuine room-sensor adjustment appears in the sensor's FC17 **response** at `B3B1`; the controller then propagates the resulting confirmed setpoint through `B3C5`, while `0x0F:03F4` follows later as a mirror. A direct write to `B3C5` did not change the controller's master setpoint.
 
 ---
 
@@ -259,6 +317,8 @@ Repeated logging shows the central outdoor temperature propagating from `0x02:A8
 | `0x03F3` | `1011` | Unknown | often `1` | **Unknown** |
 | `0x03F4` | `1012` | Room setpoint mirror | °C | **High** |
 | `0x03F5` | `1013` | Unknown | often `2` | **Unknown** |
+
+`0x03F4` is a **room-setpoint mirror**, not a proven writable master input. During a main-display change, `B3C5` changed first and `03F4` followed roughly 6.5 seconds later. Direct writes to the mirror did not produce a persistent controller change.
 
 ### DHW settings block — reported externally
 
@@ -382,13 +442,11 @@ Observed values include:
 | `0x0003` | Unknown | — | **Unknown** |
 | `0x0004` | Mode request | `1=Heating`, `2=DHW/high-temp`, `3=Cooling` | **Confirmed / High** |
 | `0x0005` | Unknown | — | **Unknown** |
-| `0x0006` | Unknown; possible periodic counter/state | observed `0→1→2`, ~2 h spacing in one capture | **Tentative** |
-| `0x0007` | Outdoor-unit cycle / sequence request | `0/1` | **Confirmed** |
-| `0x0008` | Outdoor-unit run enable | `0/1` | **Confirmed** |
+| `0x0006` | Periodic state/counter; purpose unknown | repeating `0/1/2`; ~2 h steps observed | **High for periodic behaviour / semantic Unknown** |
+| `0x0007` | Outdoor-unit cycle / sequence request | `0/1`; can stay active across heating↔DHW handovers | **Confirmed** |
+| `0x0008` | Immediate outdoor-unit run enable | `0/1`; can toggle off/on within an ongoing cycle | **Confirmed** |
 
-Repeated heating cycles show `A80F 50 → 80` immediately before `0x0007` turns on, and `A80F 80 → 50` immediately before `0x0007` turns off. This makes `0x0007` a reliable overall cycle/sequence request.
-
-`0x0008` is a separate run-enable command. This does **not** match an external mapping that labelled the same register as an electric-heater state.
+Repeated cycles show `A80F 50 → 80` immediately before `0x0007` turns on. A captured heating → DHW handover is especially useful: mode changed `1 → 2` and `0x0008` temporarily changed `1 → 0`, while `0x0007` remained active. This makes `0x0007` a reliable **overall cycle/sequence request** and `0x0008` the more immediate run-enable command. `0x0015 bit 0x0200` follows `0x0008` as an acknowledgement/context flag with a short delay. Physical compressor operation should still be derived from compressor frequency.
 
 ---
 
@@ -401,11 +459,13 @@ Observed polling:
 
 | Register | Meaning | Scale / values | Certainty |
 |---|---|---|---|
-| `0xAFDC` | DCM / accessory status word | observed `0`, `16`, `32` and compound states | **High correlation / semantic Tentative** |
+| `0xAFDC` | Online/DCM accessory context word | observed `0`, `16`, `32` and compound states | **High correlation / semantic Tentative** |
 | `0xAFDD` | DCM / accessory housekeeping / preparation word | observed `0`, `16` | **Tentative** |
-| `0xAFE0` | Propagated outdoor temperature | °C | **Confirmed** |
+| `0xAFE0` | Propagated outdoor temperature | °C | **High** |
 
-`AFDC` should not be interpreted as a heating/DHW/cooling mode. `AFDC 0x20` repeatedly correlates with `A80E 0x20`, while `AFDC 0x10` and `AFDD 0x10` have been seen during controller/accessory housekeeping and propagation events.
+`AFDC` should not be interpreted as a heating/DHW/cooling mode or as proof that a DCM is present. In long captures `AFDC 0x20` repeatedly follows `A80E 0x20` after a short delay, while startup/housekeeping values such as `0x10` can occur without a DCM connected. The exact semantics remain unresolved.
+
+The FC17 direction suggests an important research hypothesis: the controller writes `AFDC..AFE0` **to** the Online/DCM accessory while reading `AFC8..AFD3` **from** the accessory response. A legacy ThermIQ implementation for older Thermia systems used a controller-polled accessory mailbox where the heat pump stayed master and the accessory returned pending read/write requests. That is an **External architectural clue**, not proof that the XTR uses the same encoding. The v26 shared YAMLs remain RX-only.
 
 ---
 
@@ -476,7 +536,7 @@ Check:
 - A/B wiring
 - 9600 8E1 settings
 - that `GPIO18` is used as RS485 RX on the Waveshare board
-- that RX remains configured with `inverted: true`
+- that RX remains configured with `inverted: false`
 - that the ESP is connected to the correct Thermia communication port
 
 If necessary, try swapping A and B. RS485 naming conventions are unfortunately not consistent between manufacturers.
@@ -489,7 +549,9 @@ That is expected for some raw registers. The controller uses sentinel values suc
 
 Not yet in this shared version.
 
-The bus contains writable parameters, including the room setpoint, but adding another transmitter to a bus with an existing master requires proper timing/arbitration. TX is therefore intentionally disabled until this can be done safely and reliably.
+Some frames contain fields that look writable, but direct writes to the known room-setpoint and settings mirrors have **not** changed the controller's master state. The room sensor uses an FC17 response field (`B3B1`) to report a pending local setpoint change back to the controller, so simply writing `B3C5` or `03F4` is the wrong direction.
+
+The controller additionally polls an Online/DCM slot (`0x06`). The current best hypothesis is that `AFC8..AFD3` forms an accessory→controller handshake/command mailbox while `AFDC..AFE0` carries controller→accessory context. A valid synthetic `0x06` response changes the poll cadence, proving transport-level detection, but the application protocol is not yet solved. TX is therefore intentionally disabled in both shared v26 versions.
 
 ## Safety / compatibility
 
@@ -503,4 +565,4 @@ Start with read-only operation and verify the RJ45 pinout on your own hardware b
 
 Read-only monitoring is stable on the tested installation and the register map is still being expanded. Several controller and outdoor-unit sequence states have now been decoded, including normal heating/cooling startup and shutdown paths, SG Ready state, run-enable signalling and a special autonomous recovery sequence.
 
-Write support is intentionally not included. Initial tests involving writable values were not reliable enough, and adding another transmitter to the existing bus requires correct timing and arbitration. The shared integration therefore remains passive/read-only.
+Write support is intentionally not included. Tests confirmed that valid frames can be transmitted and that the controller detects activity on the Online/DCM slot, but direct writes to known room/settings mirror registers did not produce a persistent controller change. Responding as `0x06` during boot also did not complete DCM recognition. The most promising next steps are passive high-resolution captures of real display changes and carefully bounded `0x06` accessory-response experiments based on the command-mailbox hypothesis. The shared integrations remain passive/read-only.
