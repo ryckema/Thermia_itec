@@ -1,7 +1,7 @@
 # =============================================================================
-# THERMIA iTec XTR M - RESEARCH / REGISTER-MAPPING ESPHOME v25
+# THERMIA iTec XTR M - RESEARCH / REGISTER-MAPPING ESPHOME v26
 # Public / GitHub-safe reference configuration
-# Updated 2026-09-20
+# Updated 2026-09-21
 #
 # Reference hardware:
 # - Waveshare ESP32-S3-RS485-CAN / ESP32-S3-RS485-CAN-U
@@ -33,6 +33,16 @@
 # - Persisted values are refreshed only from a real 0x0F FC10 03E8..03F5 block.
 # - Keep Wi-Fi, API and OTA credentials in ESPHome secrets.yaml. Never commit
 #   real credentials to a public repository.
+#
+# v26 register-interpretation update (still RX-only):
+# - 0x0A:B3B1 documented as pending room-sensor setpoint request.
+# - 0x0A:B3C5 documented as controller-propagated/confirmed setpoint.
+# - 0x0A:B3C6 returned to neutral/unknown semantics (0/2 observed).
+# - 0x02:A80F refined as controller sequence/control value, not demand %.
+# - 0x1E FC16:0006 documented as a ~2-hour 0/1/2 periodic state/counter.
+# - 0x1E FC16:0007/0008 distinction refined using mode-handover captures.
+# - 0x02:A80E -> 0x06:AFDC delayed propagation correlation documented.
+# - No write/injection support has been added to either shared build.
 # =============================================================================
 
 
@@ -982,7 +992,8 @@ uart:
                   }
                   if (source == 3 && slave_id == 0x06 && address == 0xAFDC) {
                     id(thermia_raw_s3_06_afdc)->publish_state(float(value));
-                    // DCM/Online status is related to A80E but is NOT a byte-for-byte mirror.
+                    // AFDC repeatedly follows A80E changes after a short delay (notably 0<->0x20).
+                    // Compound/housekeeping states are not always a literal mirror; exact semantics remain unknown.
                     publish_float_if_changed(id(thermia_dcm_status_afdc), float(value), 0.5f);
                     return;
                   }
@@ -1000,7 +1011,7 @@ uart:
                   }
                   if (source == 3 && slave_id == 0x06 && address == 0xAFE0) {
                     id(thermia_raw_s3_06_afe0)->publish_state(float(value));
-                    // Confirmed: propagated central outdoor temperature -> DCM/Online slot.
+                    // High-confidence: propagated central outdoor temperature -> Online/DCM slot.
                     publish_float_if_changed(id(thermia_dcm_outdoor_temperature), float(value), 0.5f);
                     return;
                   }
@@ -1761,8 +1772,9 @@ uart:
                 // Current functional map:
                 //   0001 = commanded/live target temperature x0.1 °C
                 //   0004 = operating/request mode: 1 heating, 2 DHW, 3 cooling
-                //   0007 = overall outdoor-unit cycle / sequence request
-                //   0008 = immediate outdoor-unit run enable
+                //   0006 = periodic 0/1/2 state/counter; ~2 h steps observed, purpose unknown
+                //   0007 = overall outdoor-unit cycle / sequence request; can stay ON across mode handovers
+                //   0008 = immediate outdoor-unit run enable; can toggle OFF/ON during a heating<->DHW handover
                 if (slave == 0x1E) {
                   if (start <= 0x0001 && (uint32_t(start) + uint32_t(count)) > 0x0001) {
                     const float commanded_target = float(reg_s(0x0001)) / 10.0f;
@@ -2006,8 +2018,10 @@ uart:
                       prev_b3c4_block[idx] = v;
                     }
 
-                    // B3C6 has repeatedly behaved as the room-sensor
-                    // boost/enhanced request (observed 0 / 2).
+                    // B3C6 is an unresolved room-sensor control/status word.
+                    // Values 0 / 2 have been observed, but "boost/enhanced" is
+                    // not sufficiently proven. Keep the binary entity diagnostic
+                    // and neutral: ON only means B3C6 is non-zero.
                     publish_bool_if_changed(
                       id(thermia_room_boost_request),
                       write_reg_s(0xB3C6) != 0
@@ -2094,13 +2108,15 @@ uart:
                   // ===========================================================
                   // SLAVE 0x02 - controller sequence value (A80F)
                   //
-                  // A80F takes values such as 5, 10, 50, 75..100 across
-                  // idle/transition/heating/DHW/cooling sequences. Repeated
-                  // captures show strong correlation with controller sequencing,
-                  // but the exact semantics remain tentative.
+                  // A80F takes values such as 5, 10, 50 and 75..100.
+                  // Heating captures show 10->50 before a cycle, 50->80 at
+                  // cycle start and 80->79->...->75 while established. A DHW
+                  // capture showed 80->...->100, then 100->80->5->10 on stop.
+                  // This strongly ties A80F to controller sequencing/control,
+                  // but its exact internal semantics remain unknown.
                   //
                   // IMPORTANT: A80F is NOT compressor frequency, compressor
-                  // power, a percentage, or a linear heat-demand value.
+                  // power, a percentage, or a simple linear heat-demand value.
                   // ===========================================================
 
                   if (
@@ -2118,7 +2134,7 @@ uart:
                   // ===========================================================
                   // SLAVE 0x0A
                   //
-                  // B3C5 = requested room temperature
+                  // B3C5 = controller-propagated / confirmed room setpoint
                   // ===========================================================
 
                   if (
@@ -2665,7 +2681,7 @@ sensor:
 
   - platform: template
     id: thermia_dcm_status_afdc
-    name: "DCM Status AFDC Raw"
+    name: "Online/DCM Context Raw AFDC"
     accuracy_decimals: 0
     entity_category: diagnostic
     update_interval: never
@@ -4162,7 +4178,7 @@ binary_sensor:
 
   - platform: template
     id: thermia_room_boost_request
-    name: "Room Sensor Boost Request"
+    name: "Room Sensor Control Flag B3C6"
     entity_category: diagnostic
 
   - platform: template
