@@ -14,6 +14,24 @@ The main goals are:
 
 > This work applies to the tested older/non-Genesis iTec platform. Register meanings and protocol behaviour should not automatically be assumed to apply to other Thermia generations.
 
+
+## Acknowledgements
+
+Special thanks to **Piotr Romanowski** and his [`thermia-bus-sniffer`](https://github.com/piotr-romanowski/thermia-bus-sniffer) project.
+
+Piotr's independent work on a 2017-era **Thermia iTec Eco 8 / Danfoss DHP-AQ** installation provided valuable cross-model verification and helped move this research forward. In particular, his captures and experiments helped independently confirm or clarify:
+
+- the `0x0A` room-sensor request path, including `B3B1` as a real room-setpoint request channel;
+- `B3C5` as the controller-propagated room setpoint;
+- the `0x1E` operating-state and status behaviour across heating/DHW transitions;
+- the `0x02:A80C` DHW/compressor status bits;
+- that `A80F` should **not** be interpreted as compressor modulation/load percentage;
+- that the `0x1E 0x001E..0x0033` region is not a simple live mirror of `0x0000..0x0015`;
+- the broader conclusion that the `0x06` Online/DCM slot is a shared platform feature rather than something unique to the XTR M.
+
+The cross-model comparison has been especially useful for separating likely **DHP-AQ/iTec platform behaviour** from observations that may be specific to this XTR M installation.
+
+
 ---
 
 ## Status legend
