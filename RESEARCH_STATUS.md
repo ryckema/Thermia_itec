@@ -1,6 +1,6 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
-_Last updated: 2026-09-22_
+_Last updated: 2026-09-23_
 
 This document summarizes the reverse-engineering work performed so far on a **Thermia iTec XTR M + Total Compact** installation using an **ESP32-S3 / isolated RS485 interface** and Home Assistant.
 
@@ -126,11 +126,11 @@ write B3C4 count 3
 | Register | Direction | Meaning | Status |
 |---|---|---|---|
 | `B3B0` | room sensor → controller | room temperature, tenths of °C | PROVEN |
-| `B3B1` | room sensor → controller | pending/requested room setpoint | STRONGLY INDICATED |
+| `B3B1` | room sensor → controller | pending/requested room setpoint | PROVEN (cross-model; works when returned in the polled room-sensor response slot) |
 | `B3B2` | room sensor → controller | unknown | OPEN |
 | `B3C4` | controller → room sensor | unknown/controller data | OPEN |
 | `B3C5` | controller → room sensor | propagated/confirmed room setpoint | PROVEN |
-| `B3C6` | controller → room sensor | likely boost/request/status | STRONGLY INDICATED |
+| `B3C6` | controller → room sensor | unknown; possible alarm/status carrier | OPEN |
 
 Example room-sensor response:
 
@@ -152,21 +152,44 @@ A genuine room-sensor-originated setpoint event caused:
 
 This proves that the room-sensor path is a real semantic write path into the controller.
 
-## Direct write attempt to `B3B1`
+## `B3B1` request semantics
 
-A separate Modbus-master request to the room sensor was ACKed by the room sensor, but the Thermia controller did **not** adopt the new setpoint.
+A separate Modbus-master write to the physical room sensor was ACKed by the room sensor, but the Thermia controller did **not** adopt the new setpoint.
 
 **Conclusion:** writing the register independently is not equivalent to behaving as the room sensor in the controller's expected response slot.
 
+However, the independent iTec Eco 8 / DHP-AQ cross-check has now confirmed the actual slave-response semantics:
+
+- `B3B0` = measured room temperature ×10;
+- `B3B1` = pending room-setpoint request, whole °C;
+- `B3B2` = zero when nothing else is requested/known.
+
+Returning a non-zero `B3B1` value in the controller's own FC23 poll response causes the controller to adopt that room setpoint and propagate it back through `B3C5`. Returning `0` means “no request”; it does not clear or restore the previous setpoint.
+
+This is therefore a real semantic write path, but it is a **room-sensor control path**, not the target Online/DCM `0x06` path.
+
 ## Current room-sensor avenue
 
-A promising future test is:
+The path is technically understood well enough to emulate, provided collision handling with a physical room sensor is deterministic. It remains useful as a reference implementation of how Thermia accessory writes are expressed through a polled slave response, but the main research target is native `0x06` Online/DCM write access.
 
-- disable/unplug the physical room sensor or otherwise avoid collision;
-- answer the controller's exact `0x0A` FC17 poll as the slave;
-- return a controlled `B3B1` setpoint request.
+---
 
-This route has not yet been completed in a collision-safe final experiment.
+# 4A. Independent iTec Eco 8 / DHP-AQ cross-check
+
+A second researcher has independently reproduced several mappings on a 2017-era **iTec Eco 8** using the Danfoss DHP-AQ board. This helps separate platform properties from XTR-M-specific observations.
+
+Confirmed cross-model results include:
+
+- `0x1E FC04 0x0014` operating-state sequence `29 → 28 → 24 → 16`;
+- state `20` is an autonomous sequence, **not defrost**;
+- `0x1E FC04 0x0015`: `0x0200` outdoor active, `0x0040` DHW context, `0x0020` heating context;
+- `0x1E FC16 0x0004`: `1` heating, `2` hot water (`3` cooling on the XTR M map, not yet observed on the Eco 8);
+- `0x02:A80C`: bit `0x01` = DHW request, bit `0x40` = compressor running;
+- `0x02:A80F` is **not** modulation/output/load percentage;
+- `0x1E FC04 0x001E..0x0033` is not a live mirror of `0x0000..0x0015`; it behaves like a delayed/latched copy;
+- `0x0A:B3B1` setpoint-request semantics are independently confirmed.
+
+The Eco 8 address scan found only `0x02` and `0x1E` as normal readable slaves plus polled accessory slots `0x06` and `0x0A`; slave `0x14` appears installation/model-specific rather than universal.
 
 ---
 
@@ -768,32 +791,19 @@ Result:
 
 ---
 
-# 14. Historical natural `A80E/AFDC` cycle
+# 14. Natural `A80E/AFDC` lifecycle
 
-Older captures showed a repeating natural cycle roughly every ~65 s:
+Older and newer passive captures show a repeating natural controller lifecycle:
 
 ```text
 A80E 0 -> 32
 AFDC 0 -> 32
-
-~17 s later:
-
+...
 A80E 32 -> 0
 AFDC 32 -> 0
 ```
 
-This occurred repeatedly in older passive captures.
-
-This matters because newer EXP88/90/91 presence tests did **not** reproduce it.
-
-Possible explanations still open:
-
-1. a different controller state was active in the old captures;
-2. a real/previous DCM session had already established hidden state;
-3. the cycle is triggered by another accessory field not yet identified;
-4. boot or controller-session history matters;
-5. a completed REQ/ACK transaction is needed before the state machine begins;
-6. another device or condition on the bus was different.
+Later passive experiments proved that this lifecycle occurs **without any ESP transmission**. Therefore `A80E=0x20` and `AFDC=0x20` are not evidence of DCM login/session acceptance. EXP106 further showed the same cycle while `A80F` was at least `75`, `80` and `50`, so `A80F=50` is not a unique gate either.
 
 ---
 
@@ -804,55 +814,27 @@ This is intentionally compact. Individual YAML/log files contain the full detail
 | Experiment(s) | Main question | Result |
 |---|---|---|
 | EXP10–18 | Which response word triggers controller ACK? | `word2=03E8` in correct phase is decisive |
-| EXP21–28 | Do trailing words/selectors/counts produce a setting write? | No |
-| EXP29 | Passive correlator | diagnostic only |
-| EXP30–31,33 | outdoor-related probes | no semantic write discovered |
-| EXP35–42 | passive mapping | useful telemetry, no write path |
-| EXP43+ | active `0x02` probes | no final semantic write path |
-| EXP48–49 | presence / multi-poll sequencing | fast cadence/state behaviour refined |
-| EXP50 | passive DCM audit | mapped recurring structure |
-| EXP51 | single presence-like response | cadence/state only |
-| EXP52 | `00FF,1,03E8,1...` | ACK works; no setting write |
-| EXP53 | `word2=440C` | no ACK |
-| EXP54 | `word2=03F4` | no ACK |
-| EXP55 | `word2=04A6` | no ACK |
-| EXP56B/C | `word2=03E8`, varying `word3` | ACK independent of simple word3 value |
-| EXP57 | bare `03E8` | ACK works |
-| EXP58 | bare `03E8` at wrong/normal-long phase | fast cadence, no `0861` ACK |
-| EXP59 | all-zero stage then SHORT `03E8` | ACK; `00FF` unnecessary |
-| EXP60 | same `03E8` on LONG vs SHORT | SHORT phase matters |
-| EXP61 | later valid SHORT `03E8` | ACK repeats |
-| EXP62 | selector `03E9` | no ACK |
-| EXP63 | trailing `03F4,22` | ACK transport only, no setting |
-| EXP64 | words4/5=`03F4,23` | no setting |
-| EXP65 | words3/4 register/value variant | no setting |
-| EXP66 | HE-like GET `0x440C` | handshake only, no semantic response |
-| EXP67 | post-close bare `03E8` on first FAST-LONG | no second ACK |
-| EXP68 | raw 12-word local settings block | no change |
-| EXP69B | same on second SHORT | no change |
-| EXP70 | repeated zero responses | fast cadence only |
-| EXP71 | apparent online promotion | later shown to be natural boot behaviour, not EXP-caused |
-| EXP71B | zero replies after boot state | maintained fast cadence |
-| EXP72 | natural boot AFDC/A80E state + bare `03E8` | transport behaviour confirmed |
-| EXP73/73B | passive/manual curve correlation | local curve changes do not announce through AFDC/A80E |
-| EXP74 | one-shot `[03E8,1,36]` | ACK, no curve write |
-| EXP75 | persistent `[03E8,1,36]` | no write; ACK remains high while REQ held |
-| EXP76B | canonical four-phase handshake | PROVEN |
-| EXP77 | canonical HE GET endpoint 1 | no semantic response |
-| EXP78 | endpoint 0 direct | negative |
-| EXP79 | byte-swapped endpoint 0 | negative |
-| EXP80 | +1-byte shifted HE layout | negative |
-| EXP81 | historical envelope + raw HE body | negative |
-| EXP82 | envelope + length=2 + HE body | negative |
-| EXP83 | historical envelope + scalar curve candidate | handshake works; no write |
-| EXP84 | passive room-setpoint correlation | AFDC..AFE0 unaffected |
-| EXP85 | passive DCM source correlator | no source edge during capture |
-| EXP86 | 30-minute passive first-edge capture | no A80E/A802/AFDC edge |
-| EXP87 | zero presence | implementation guard stopped ~35 s; no semantic edge before stop |
-| EXP88 | fixed zero presence, 180 s | negative |
-| EXP89 | intended persistent `00FF` | invalid due second-buffer bug |
-| EXP90 | corrected persistent `00FF`, 90 s | negative |
-| EXP91 | `00FF,1,REQ-low,1` envelope, 90 s | negative |
+| EXP21–28 | trailing words/selectors/counts | no semantic write |
+| EXP29–50 | passive mapping / presence / controller-state work | transport and telemetry refined |
+| EXP51–75 | presence, selector, scalar, register/value and persistence hypotheses | ACK/cadence effects only; no semantic write |
+| EXP76B | canonical four-phase handshake | **PROVEN** |
+| EXP77–83 | direct/raw HE layouts and historical-envelope variants | all negative semantically |
+| EXP84–91 | passive correlations / presence variants | no semantic DCM state |
+| EXP92 | full canonical handshake + historical envelope | transport ACK only |
+| EXP93 | `A80F=50` discriminator | inconclusive then; superseded by EXP106 |
+| EXP94 | passive cold boot baseline | deterministic boot sequence mapped |
+| EXP95 | zero presence from cold boot | fast cadence only |
+| EXP96 | historical envelope from cold boot | ACK only; no session effect |
+| EXP97 | passive natural-state correlation | `A80E/AFDC` can cycle with no ESP TX |
+| EXP98 | AFC8 A/B/A influence | negative |
+| EXP99 | historical non-REQ field matrix | negative |
+| EXP100 | AFC8/AFC9/AFCB combination matrix | negative |
+| EXP101 | one-word matrix over `AFCC..AFD3` | negative |
+| EXP102 | AFC9/AFCB count/structure matrix | negative |
+| EXP103 | repeated identical canonical transaction chain | all ACKed; no semantic state |
+| EXP104 | AFC8 sequence toggle `00FF→00FE→00FF` | all ACKed; no semantic state |
+| EXP105 | canonical transaction gated on natural `A80E=AFDC=0x20` | ACKed; no semantic state |
+| EXP106 | passive `A80F=50` sync discriminator | partial triggered run; 50 not unique/required for A80E/AFDC lifecycle |
 
 ---
 
@@ -879,160 +861,77 @@ Do **not** repeat these without new evidence:
 - persistent `w0=00FF` as an online-state trigger;
 - persistent `00FF,1,REQ-low,1` as an online-state trigger;
 - direct independent Modbus-master write to room-sensor `B3B1` expecting the controller to adopt it.
+- treating `A80E=0x20` or `AFDC=0x20` as proof of DCM login/session acceptance;
+- using `A80F=50` as a unique gate for the natural A80E/AFDC lifecycle;
+- simple AFC8 identity/sequence toggling (`00FF→00FE→00FF`);
+- repeating identical canonical transactions as a session-establishment mechanism;
+- simple AFC9/AFCB count/length interpretations;
+- isolated one-word activation hypotheses across `AFCC..AFD3`;
+- timing the known canonical transaction specifically inside the natural `A80E=AFDC=0x20` window.
 
 ---
 
 # 17. Current protocol model
 
-The best current model is:
+The best current model has **three distinct layers**:
 
 ```text
-Controller normal poll
-    |
-    | 0x06 FC17 ~4.3 s
-    v
-Accessory gives any syntactically valid response
-    |
-    v
-Fast accessory cadence starts
-    |
-    +--> SHORT ~0.7 s
-    |
-    +--> FAST-LONG ~1.4 s
+1. Transport presence
+   valid 0x06 response -> fast ~0.7 / ~1.4 s cadence
+
+2. Transaction transport
+   AFCA 0 -> 03E8 -> 0
+   0861 0 -> 16 -> 0
+
+3. DCM application/session semantics
+   UNKNOWN -> actual parameter read/write
 ```
 
-For a transaction:
-
-```text
-semantic data stable
-REQ / AFCA = 0
-        |
-        v
-REQ / AFCA = 03E8
-        |
-        v
-controller sets 0x0F:0861 = 16
-        |
-        v
-REQ / AFCA = 0
-(data held stable)
-        |
-        v
-controller sets 0861 = 0
-        |
-        v
-transaction closed
-```
-
-What is still missing is the meaning/encoding of the remaining accessory semantic fields.
+Layers 1 and 2 are proven. Layer 3 remains unresolved. Fast cadence does not imply semantic acceptance; a complete `0861` handshake does not imply semantic acceptance; repeated transactions, AFC8 sequence toggling, and `A80E=AFDC=0x20` state gating have all been tested without semantic effect.
 
 ---
 
 # 18. Most likely architecture now
 
-Current working hypothesis:
+The current working architecture is:
 
 ```text
-AFC8..AFD3
-```
-
-are not a generic packet buffer.
-
-They are more likely a **fixed semantic DCM register bank**, analogous to the room-sensor registers:
-
-```text
-room sensor:
-B3B0  room temperature
-B3B1  requested setpoint
-B3B2  status/unknown
-```
-
-The DCM may similarly expose fixed fields for:
-
-- integration/online state;
-- setting ownership;
-- parameter value;
-- parameter selector or category;
-- request type;
-- controller demand;
-- mode/status.
-
-`AFCA / word2` is already known to be the REQ/data-valid level.
-
-The remaining fixed fields still need to be identified.
-
----
-
-# 19. Next high-value experiments
-
-## A. Completed handshake → long REQ-low observation
-
-A strong next test is:
-
-1. establish fast cadence;
-2. present the historical envelope;
-3. perform one **bare, non-semantic four-phase `03E8` handshake**;
-4. close it correctly;
-5. continue with the historical REQ-low envelope for ~90 s;
-6. observe whether `A80E/AFDC` begins the historical cycle.
-
-This tests whether a **completed transaction/session** is required before the controller considers the accessory fully initialized.
-
-No setting payload is needed.
-
----
-
-## B. Room-sensor slave emulation
-
-Potentially the most direct semantic control route:
-
-```text
-controller polls 0x0A
+Danfoss Link / Thermia Online host
         ↓
-ESP answers in the room-sensor response slot
+HE/DHP parameter model
         ↓
-B3B1 = requested room setpoint
+DCM03 internal serializer / state machine
+        ↓
+fixed 12-word Thermia accessory bank AFC8..AFD3
+        ↓
+controller
 ```
 
-Requirements:
-
-- physical room sensor must not answer at the same time;
-- collision handling must be deterministic;
-- start with a harmless/no-op response;
-- then one controlled setpoint change;
-- verify central `03F4` and returned `B3C5`.
-
-This route is based on observed real semantic behaviour and may be more promising than continuing to guess DCM payloads.
+Proven inside the 12-word bank: `AFCA`/word2 is the REQ/data-valid level, and the controller returns the transport ACK through `0x0F:0861`. The remaining identity/integration/parameter-selector/value/session fields are still unknown. The inspected Link firmware does not expose this final serializer, so the missing translation is most likely inside DCM03 hardware/firmware.
 
 ---
 
-## C. Recover actual DCM03 firmware / protocol material
+# 19. Next high-value work
 
-The highest-value external evidence would be:
+## A. Obtain one real DCM03 / Thermia Online bus capture
 
-- DCM03 firmware image;
-- DCM03 MCU identification;
-- service-tool protocol;
-- factory test software;
-- schematic;
-- old Danfoss/Thermia integration documentation;
-- another reverse engineer's real DCM bus capture.
+This is now the highest-value path. Capture from before power-up for 60–120 s, then make one safe official setting change (ideally `HeatCurve 36 → 37`), capture 10 s before through at least 30 s after, then restore `37 → 36`. The critical evidence is the **response from slave `0x06`**.
 
-This could reveal the missing HE → local RS485 translation directly.
+## B. Recover DCM03 firmware / hardware details
 
----
+Useful targets: MCU identification, PCB/debug pads, firmware dump, service/factory software, Z-Wave Manufacturer Specific / Version information, or old Danfoss Link HP-kit engineering material.
 
-## D. Correlate AFDD..AFDF with real controller state changes
+## C. Cross-model validation on iTec Eco 8 / DHP-AQ
 
-Natural or deliberately safe state changes could help identify the remaining controller→DCM fields:
+Directly test whether valid `0x06` responses cause fast cadence and whether `AFCA=03E8` produces the same `0861` ACK cycle. Reproduction would strongly support a platform-wide DHP-AQ/iTec transport layer.
 
-- heating start/stop;
-- DHW start/stop;
-- SG Ready transitions;
-- heating/cooling mode changes;
-- controller demand changes.
+## D. Passive correlation only when tied to a new clue
 
-No accessory write is required for this research.
+EXP106 shows `A80F=50` is not a unique DCM-sync discriminator. More long waits or near-identical timing variants are low value without new external evidence.
+
+## E. Room-sensor path as reference
+
+`0x0A:B3B1` is a proven semantic accessory-write path and a useful reference, but the project target remains native `0x06` Online/DCM access.
 
 ---
 
@@ -1094,44 +993,31 @@ Please include:
 
 # 23. Short version
 
-What we know:
-
 ```text
 RS485 = Modbus RTU 9600 8E1
 
 0x0A = room sensor
-0x0F = local controller settings
+0x0F = local controller settings/state
 0x06 = DCM/Online accessory slot
 
 0x06:
-  controller reads  AFC8..AFD3
-  controller writes AFDC..AFE0
+  controller reads  AFC8..AFD3 (12 words)
+  controller writes AFDC..AFE0 (5 words)
 
-AFCA / response word2:
-  0000 = REQ low
-  03E8 = REQ high
-
-0x0F:0861:
-  0  = ACK low
-  16 = ACK high
-```
-
-Four-phase handshake:
-
-```text
-REQ 0
-REQ 03E8
-ACK 16
-REQ 0
-ACK 0
+valid 0x06 response -> fast ~0.7 / ~1.4 s cadence
+AFCA 0000 -> 03E8 -> 0000
+0861 0000 -> 0010 -> 0000
 ```
 
 But:
 
 ```text
-transport ACK != semantic command success
+valid response != semantic session
+fast cadence    != semantic session
+transport ACK   != semantic command success
+A80E/AFDC=0x20  != DCM login proof
+A80F=50         != unique DCM sync gate
 ```
 
-The remaining challenge is identifying the **fixed semantic meaning of the other `AFC8..AFD3` fields**.
+The remaining challenge is the **DCM03 application/session serializer** inside `AFC8..AFD3`. A real DCM03/Thermia Online cold-boot capture plus one safe official setting change is now far more valuable than further isolated-word guessing.
 
-That is the current frontier of the reverse engineering.
