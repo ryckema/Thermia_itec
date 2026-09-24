@@ -1,7 +1,7 @@
 # =============================================================================
 # THERMIA iTec XTR M - RESEARCH / REGISTER-MAPPING ESPHOME v27
 # Public / GitHub-safe reference configuration
-# Updated 2026-09-24
+# Updated 2026-09-25
 #
 # Reference hardware:
 # - Waveshare ESP32-S3-RS485-CAN / ESP32-S3-RS485-CAN-U
@@ -35,14 +35,22 @@
 #   real credentials to a public repository.
 #
 # v27 protocol-model update (still RX-only):
-# - 0x06 is the Online/DCM-facing accessory transport slot.
-# - 0x0F is native controller settings/state.
-# - Valid 0x06 response = accessory presence only.
-# - AFCA 0000->03E8->0000 with 0x0F:0861 0000->0010->0000 is the
-#   proven transport-level REQ/ACK transaction.
-# - Identity/binding/IntegrationMode/initial-sync serialization remains open.
-# - EXP135: manual DHW START +/-1 did not change recurrent 03E8..03F5.
-# - EXP136: manual DHW COMFORT<->ECO did not change recurrent 03E8..03F5.
+# - 0x06 is an expansion/accessory FC17 interface. A valid response proves
+#   transport presence only; it is not proof that 0x06 itself is the DCM.
+# - Genuine Thermia Online traffic shows slave 0x0F as a bidirectional mailbox:
+#   controller/master FC16 writes state/snapshot blocks TO 0x0F, while FC03
+#   reads command/desired-state blocks FROM 0x0F.
+# - A genuine Online capture confirms FC03 0x03E8/count13 (1000..1012), matching
+#   an independently reconstructed DCM mailbox block.
+# - Public Online indices 0x0553 Operation Mode and 0x0559 Link Integration
+#   occur inside an FC16 state/snapshot block in the external evidence set;
+#   do not treat 0x0559 as a proven DCM->controller activation write.
+# - Genuine Online topology additionally exposes slaves 0xA5 and 0xA4 and
+#   slave 0x04 traffic. The research parser now preserves these passively.
+# - AFCA 0000->03E8->0000 with 0x0F:0861 0000->0010->0000 remains a
+#   proven transport-level REQ/ACK transaction only.
+# - EXP135: manual DHW START +/-1 did not change recurrent FC16 03E8..03F5.
+# - EXP136: manual DHW COMFORT<->ECO did not change recurrent FC16 03E8..03F5.
 # - 03F1/03F2/03F3/03F5 therefore remain unknown; do not label them DHW.
 # - No write/injection support has been added to either shared build.
 # =============================================================================
@@ -163,6 +171,7 @@ logger:
   logs:
     thermia_scan: INFO
     thermia_map: INFO
+    thermia_mailbox: INFO
     thermia_raw: DEBUG
     thermia: WARN
     thermia_a7f8: WARN
@@ -336,8 +345,9 @@ uart:
           };
 
           auto known_slave = [](uint8_t s) -> bool {
-            return s == 0x02 || s == 0x06 || s == 0x0A ||
-                   s == 0x0F || s == 0x14 || s == 0x1E;
+            return s == 0x02 || s == 0x04 || s == 0x06 || s == 0x0A ||
+                   s == 0x0F || s == 0x14 || s == 0x1E ||
+                   s == 0xA4 || s == 0xA5;
           };
 
           auto process_frame = [&](const std::vector<uint8_t> &bytes) {
@@ -517,6 +527,10 @@ uart:
               // Responses to FC04/FC17 do not contain the original register
               // address. Remember the request so the response can be decoded.
               // ===============================================================
+
+              static uint16_t fc03_start[256] = {};
+              static uint16_t fc03_count[256] = {};
+              static bool fc03_pending[256] = {};
 
               static uint16_t fc04_start[256] = {};
               static uint16_t fc04_count[256] = {};
@@ -1219,6 +1233,120 @@ uart:
                     value
                   );
                 };
+
+
+              // ===============================================================
+              // FC03 REQUEST / RESPONSE
+              // Read Holding Registers
+              //
+              // Genuine Thermia Online captures use FC03 on 0x0F as the
+              // read/command-mailbox direction. A5/A4 also use FC03.
+              // This research build remains passive: it only records traffic.
+              // ===============================================================
+
+              if (
+                fc == 0x03 &&
+                bytes.size() == 8
+              ) {
+
+                fc03_start[slave] =
+                  u16(bytes, 2);
+
+                fc03_count[slave] =
+                  u16(bytes, 4);
+
+                fc03_pending[slave] = true;
+
+                ESP_LOGI(
+                  "thermia_mailbox",
+                  "FC03 REQ slave=0x%02X start=0x%04X count=%u end=0x%04X",
+                  slave,
+                  fc03_start[slave],
+                  fc03_count[slave],
+                  uint16_t(fc03_start[slave] + fc03_count[slave] - 1)
+                );
+
+                return;
+              }
+
+
+              if (
+                fc == 0x03 &&
+                fc03_pending[slave] &&
+                bytes.size() >= 5 &&
+                bytes.size() == size_t(bytes[2]) + 5
+              ) {
+
+                const uint16_t start =
+                  fc03_start[slave];
+
+                const uint16_t count =
+                  fc03_count[slave];
+
+                const uint8_t byte_count =
+                  bytes[2];
+
+                if (byte_count != count * 2) {
+                  fc03_pending[slave] = false;
+                  return;
+                }
+
+                std::string values_text;
+                values_text.reserve(size_t(count) * 20);
+
+                for (uint16_t i = 0; i < count; i++) {
+                  const uint16_t address =
+                    uint16_t(start + i);
+
+                  const size_t pos =
+                    3 + size_t(i) * 2;
+
+                  const int16_t value =
+                    s16(bytes, pos);
+
+                  generic_map_update(
+                    5,
+                    slave,
+                    address,
+                    value
+                  );
+
+                  char item[40];
+                  snprintf(
+                    item,
+                    sizeof(item),
+                    "%s%04X=%d(0x%04X)",
+                    i == 0 ? "" : " ",
+                    address,
+                    int(value),
+                    unsigned(uint16_t(value))
+                  );
+                  values_text += item;
+                }
+
+                ESP_LOGI(
+                  "thermia_mailbox",
+                  "FC03 RSP slave=0x%02X start=0x%04X count=%u values=[%s]",
+                  slave,
+                  start,
+                  count,
+                  values_text.c_str()
+                );
+
+                if (
+                  slave == 0x0F &&
+                  start == 0x03E8 &&
+                  count == 13
+                ) {
+                  ESP_LOGI(
+                    "thermia_mailbox",
+                    "0x0F COMMAND MAILBOX anchor observed: 03E8..03F4 / 13 words"
+                  );
+                }
+
+                fc03_pending[slave] = false;
+                return;
+              }
 
 
               // ===============================================================
@@ -2506,7 +2634,7 @@ uart:
 
             uint8_t slave = pending[0];
             uint8_t fn = pending[1];
-            bool known_fn = fn == 0x04 || fn == 0x10 || fn == 0x17 || (fn & 0x80);
+            bool known_fn = fn == 0x03 || fn == 0x04 || fn == 0x10 || fn == 0x17 || (fn & 0x80);
             if (!known_slave(slave) || !known_fn) {
               pending.erase(pending.begin());
               continue;
@@ -2514,6 +2642,11 @@ uart:
 
             std::vector<size_t> candidates;
             if (fn & 0x80) candidates.push_back(5);
+            if (fn == 0x03) {
+              candidates.push_back(8);
+              if (pending.size() >= 3 && pending[2] <= 80)
+                candidates.push_back(5 + size_t(pending[2]));
+            }
             if (fn == 0x04) {
               candidates.push_back(8);
               if (pending.size() >= 3 && pending[2] <= 80)
