@@ -249,7 +249,7 @@ Current mapping:
 | `03EE` | Heating Stop | PROVEN |
 | `03EF` | Reduced temperature / related setting | STRONGLY INDICATED |
 | `03F0` | Room Factor | STRONGLY INDICATED |
-| `03F1` | Hot Water Start | STRONGLY INDICATED |
+| `03F1` | unknown; recurrent block did not follow manual DHW START | OPEN / NEGATIVE for DHW START correlation |
 | `03F2` | unknown | OPEN |
 | `03F3` | unknown | OPEN |
 | `03F4` | room setpoint mirror | PROVEN |
@@ -863,9 +863,7 @@ The best current model has at least four logical layers:
    serializer still UNKNOWN
 ```
 
-Layers 1 and 2 are proven on two different iTec/DHP-AQ systems.
-
-EXP123 shows layer 1 is **not** sufficient for UI-level DCM recognition. EXP124 is explicitly testing whether completing layer 2 changes that.
+Layers 1 and 2 are proven on two different iTec/DHP-AQ systems. Later XTR experiments showed that neither transport presence nor a correctly completed AFCA/0861 transaction is sufficient to establish the missing semantic Online/DCM session.
 
 The semantic serializer behind layers 3–4 remains the central unresolved problem.
 
@@ -897,11 +895,11 @@ The public Online dump proves that the DCM stack knows native-looking register i
 
 # 20. Next high-value work
 
-## A. Finish EXP124
+## A. Obtain one real Thermia Online / Connect / DCM bus capture
 
-The immediate controlled discriminator is whether a completed, already-proven AFCA/0861 transaction changes UI-level accessory recognition compared with EXP123's presence-only negative.
+A genuine module capture is now the highest-value next artifact. Presence, cadence and the transport REQ/ACK mechanism are already understood; what remains is the layer above them.
 
-## B. Obtain one real Thermia Online / Connect / DCM bus capture
+## B. Analyse initialization and one official setting change
 
 This remains the highest-value external evidence. Ideally capture:
 
@@ -1003,7 +1001,7 @@ RS485 = Modbus RTU-like 9600 8E1
 
 0x0A = room sensor
 0x0F = native controller settings/state
-0x06 = Online/DCM accessory slot
+0x06 = Online/DCM-facing accessory transport slot
 
 0x06 controller poll:
   reads  AFC8..AFD3 (12 words) from accessory
@@ -1044,4 +1042,76 @@ A80F=50         != unique DCM sync gate
 plain presence  != UI-level DCM recognition
 ```
 
-The remaining challenge is the **DCM/Connect identity/binding/application serializer** inside the `0x06` accessory interface. A genuine Thermia Online/Connect cold-boot capture is still the single most valuable missing artifact.
+The remaining challenge is the **DCM/Connect identity/binding/integration/initial-sync and semantic serializer** inside the `0x06` accessory interface. A genuine Thermia Online/Connect cold-boot capture with one safe official setting change is still the single most valuable missing artifact.
+
+---
+
+# 25. EXP133-136 update
+
+## EXP133 — passive native 0x0F block census — COMPLETE
+
+Hypothesis: the XTR uses stable native slave-`0x0F` block families beyond the already-known `03E8` settings block.
+
+Observed on the XTR M while strictly passive / DE LOW:
+
+- recurrent FC10 block `04A6..04B2` (13 words);
+- recurrent FC10 block `085F..0863` (5 words);
+- `0861` is the third word of that native five-word block;
+- no parser resyncs or RX drops in the completed capture.
+
+Strong conclusion: `0861` is a field in a native controller block, and native `0x0F` traffic consists of multiple block families rather than one flat continuously emitted register map.
+
+## EXP134 — passive DHW START correlation — PROCEDURAL / INCIDENTAL
+
+The run did not produce a valid DHW A/B/A correlation. The only observed word change was `03E8 34 -> 35`, tracking Heating Curve. It therefore added another local confirmation of `03E8 = Heating Curve` but did not map DHW START.
+
+## EXP135 — passive DHW START A/B/A — COMPLETE / NEGATIVE FOR 03F1
+
+Hypothesis: changing only `SERVICE -> WARMWATER -> START` by exactly 1 °C would produce a reversible native `0x0F` word change, with `03F1` and external candidate `041D` treated only as candidates.
+
+Observed:
+
+- valid baseline/change/restore procedure;
+- recurrent `03E8..03F5` block remained unchanged;
+- `03F1` remained `40`;
+- no block covering `041D` was observed during the run.
+
+Conclusion:
+
+- the previous `03F1 = Hot Water Start` interpretation is **not supported on this XTR M** and is downgraded to OPEN;
+- `041D` remains OPEN because the relevant native block was not observed.
+
+## EXP136 — passive DHW COMFORT/ECO mode A/B/A — COMPLETE / NEGATIVE
+
+Hypothesis: changing only DHW mode `COMFORT <-> ECO` would alter one of the unknown words `03F2`, `03F3`, or `03F5`.
+
+Observed:
+
+- the physical Thermia setting was genuinely changed and restored;
+- valid CHANGED and RESTORED phases;
+- 127 native `0x0F` FC10 writes observed across two shapes;
+- `wordChanges=0`;
+- `03F2`, `03F3`, and `03F5` did not change;
+- parser resync and RX-drop deltas remained zero.
+
+Strong conclusion: DHW COMFORT/ECO mode is **not reflected in the recurrent `03E8..03F5` block** on the tested XTR M.
+
+Combined with EXP135, this materially weakens the old assumption that the tail of `03E8..03F5` is a DHW-settings family. The safest current interpretation is that `03F1`, `03F2`, `03F3`, and `03F5` remain unknown until independently correlated.
+
+---
+
+# 26. v27 shared-build policy
+
+The shared v27 YAML files remain strictly receive-only:
+
+- `thermia_itec_xtr_m_waveshare_public_v27.yaml` — optimized normal Home Assistant use;
+- `thermia_itec_xtr_m_waveshare_research_v27.yaml` — passive register mapping and diagnostics.
+
+v26 remains available as a historical/reference snapshot.
+
+v27 does **not** add active write experiments. It updates the protocol model to distinguish:
+
+1. accessory presence;
+2. AFCA/0861 transaction transport;
+3. unresolved identity/binding/integration/initial-sync state;
+4. unresolved semantic parameter serializer.
