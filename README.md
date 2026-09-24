@@ -93,7 +93,7 @@ Use this for normal Home Assistant operation and for sharing with other users.
 
 Current file:
 
-`thermia_itec_xtr_m_waveshare_public_v26.yaml`
+`thermia_itec_xtr_m_waveshare_public_v27.yaml`
 
 ### Research / register mapping
 
@@ -108,9 +108,22 @@ Use this when capturing the bus to identify or verify additional registers.
 
 Current file:
 
-`thermia_itec_xtr_m_waveshare_research_v26.yaml`
+`thermia_itec_xtr_m_waveshare_research_v27.yaml`
 
 Both variants use the same confirmed bus parameters and decoded register logic. New discoveries should first be verified in the research build and only then promoted to the public build.
+
+### v27 changes
+
+v27 keeps both shared YAMLs strictly **passive RX-only**. The functional production decoder remains conservative; this release mainly updates the protocol model and removes interpretations disproved by later controlled experiments.
+
+- `0x06` is now described as the **Online/DCM-facing accessory transport slot** rather than as a proven physical DCM identity.
+- `0x0F` is described as **native controller settings/state**.
+- A valid `0x06` response is explicitly only **transport presence**; it causes the fast ~0.7 / ~1.4 s polling cadence but does not establish a semantic Online/DCM session.
+- The `AFCA 0000 -> 03E8 -> 0000` / `0x0F:0861 0000 -> 0010 -> 0000` cycle is documented as a **proven transport REQ/ACK transaction**, not semantic write success.
+- EXP135 showed that changing `SERVICE -> WARMWATER -> START` by 1 °C did **not** change the recurrent `03E8..03F5` block.
+- EXP136 showed that changing DHW mode `COMFORT <-> ECO` did **not** change any word in the recurrent `03E8..03F5` block.
+- Therefore `03F1`, `03F2`, `03F3`, and `03F5` remain **unknown** on the tested XTR M; the old `03F1 = Hot Water Start` interpretation is not retained.
+- v26 remains in the repository as a historical/reference snapshot.
 
 ### v26 changes
 
@@ -127,7 +140,7 @@ Compared with v25, v26 does **not** add Thermia TX or write controls. It is a re
 
 ## Installation
 
-1. Choose either `thermia_itec_xtr_m_waveshare_public_v26.yaml` or `thermia_itec_xtr_m_waveshare_research_v26.yaml` and copy it into your ESPHome configuration directory.
+1. Choose either `thermia_itec_xtr_m_waveshare_public_v27.yaml` or `thermia_itec_xtr_m_waveshare_research_v27.yaml` and copy it into your ESPHome configuration directory.
 2. Copy the entries from `secrets.example.yaml` into your ESPHome `secrets.yaml`.
 3. Replace the placeholder values with your Wi-Fi, API encryption key, OTA password and fallback-AP password.
 4. Connect the RS485 bus as shown above.
@@ -328,7 +341,7 @@ Setpoint direction is important: a genuine room-sensor adjustment appears in the
 
 | Register / block | Decimal | Meaning | Certainty |
 |---|---:|---|---|
-| `0x041D` | `1053` | DHW START candidate | **External — EXP134 target, not yet XTR-confirmed** |
+| `0x041D` | `1053` | DHW START candidate from external ATEC/DHP-AQ material | **External only; still OPEN on XTR M** |
 | `0x042E` | `1070` | Integral A1 | **External Online dump** |
 | `0x0442` | `1090` | Activate Cooling | **Confirmed on XTR M by display A/B test** |
 | `0x0553` | `1363` | Operation Mode | **External Online dump** |
@@ -573,7 +586,7 @@ Not yet in this shared version.
 
 Some frames contain fields that look writable, but direct writes to the known room-setpoint and settings mirrors have **not** changed the controller's master state. The room sensor uses an FC17 response field (`B3B1`) to report a pending local setpoint change back to the controller, so simply writing `B3C5` or `03F4` is the wrong direction.
 
-The controller additionally polls an Online/DCM slot (`0x06`). The current best hypothesis is that `AFC8..AFD3` forms an accessory→controller handshake/command mailbox while `AFDC..AFE0` carries controller→accessory context. A valid synthetic `0x06` response changes the poll cadence, proving transport-level detection, but the application protocol is not yet solved. TX is therefore intentionally disabled in both shared v26 versions.
+The controller additionally polls an Online/DCM-facing accessory slot (`0x06`) with FC23/0x17. The controller reads `AFC8..AFD3` (12 words) from the accessory while writing `AFDC..AFE0` (5 words) toward it. A valid response proves accessory presence and changes the poll cadence, but does not establish a semantic session. The `AFCA 0 -> 03E8 -> 0` / `0x0F:0861 0 -> 16 -> 0` exchange is a proven transport transaction. The still-missing layer is the genuine DCM/Connect identity, binding, integration/initial-sync and semantic serializer. TX is therefore intentionally disabled in both shared v27 versions.
 
 ## Safety / compatibility
 
@@ -587,4 +600,4 @@ Start with read-only operation and verify the RJ45 pinout on your own hardware b
 
 Read-only monitoring is stable on the tested installation and the register map is still being expanded. Several controller and outdoor-unit sequence states have now been decoded, including normal heating/cooling startup and shutdown paths, SG Ready state, run-enable signalling and a special autonomous recovery sequence.
 
-Write support is intentionally not included. Tests confirmed that valid frames can be transmitted and that the controller detects activity on the Online/DCM slot, but direct writes to known room/settings mirror registers did not produce a persistent controller change. Responding as `0x06` during boot also did not complete DCM recognition. The most promising next steps are passive high-resolution captures of real display changes and carefully bounded `0x06` accessory-response experiments based on the command-mailbox hypothesis. The shared integrations remain passive/read-only.
+Write support is intentionally not included. Presence on `0x06` and the AFCA/0861 transport transaction are now understood, but neither is sufficient for semantic control. Later experiments also showed that manual DHW START and COMFORT/ECO changes do not alter the recurrent `03E8..03F5` block, so earlier DHW labels in that block are not retained. The central unresolved problem is the DCM/Connect identity/binding/IntegrationMode/initial-sync serializer inside the 12-word accessory interface. A genuine Thermia Online/Connect cold-boot capture with one safe official setting change is the highest-value next artifact. The shared integrations remain passive/read-only.
