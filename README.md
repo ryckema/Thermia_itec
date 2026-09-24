@@ -238,27 +238,31 @@ For the **public/optimized** YAML, only mappings considered sufficiently stable 
 
 | Register | Meaning | Scale / values | Certainty |
 |---|---|---|---|
-| `0xA80C` | Controller context / state | observed `64`, `65`, `66`, `112`, `193` | **High** |
-| `0xA80D` | Unknown | often `0` | **Unknown** |
+| `0xA80C` | Controller output/context bitfield | bitfield; see mapping below | **High locally; individual output bits partly External** |
+| `0xA80D` | Additional controller output bitfield | Eco 8: bit `0x10` = immersion heater stage 2 | **External** |
 | `0xA80E` | Controller / accessory status bitfield | observed `0`, `8`, `32`, `40` | **High correlation / semantic Tentative** |
-| `0xA80F` | Controller Sequence / Control Value Raw | observed `5`, `10`, `50`, `75–100` | **High correlation / semantic Unknown** |
+| `0xA80F` | Condenser / circulation pump speed candidate | observed `5`, `10`, `50`, `75–100`; Eco 8 manual test tracked 30→40→50→40→30 exactly | **External controlled test; XTR correlation strong** |
 | `0xA810` | Unknown | often `10` | **Unknown** |
 | `0xA811` | Unknown | often `-1` | **Unknown** |
 | `0xA812` | Unknown | often `0` | **Unknown** |
 
-Observed `A80C` contexts:
+Observed / cross-model `A80C` bit mapping:
 
-| Raw value | Interpretation | Certainty |
+| Bit | Meaning | Evidence / certainty |
 |---:|---|---|
-| `64` | Normal / baseline controller context | **High** |
-| `65` | DHW / high-temperature context | **High** |
-| `66` | Cooling context | **High** |
-| `112` | Controller housekeeping / transition | **Tentative** |
-| `193` | Compound / unknown state | **Tentative** |
+| `0x01` | DHW reversing valve / DHW request context | **High locally; External manual-test confirmation** |
+| `0x02` | Bypass cooling output | **External controlled manual test** |
+| `0x04` | Potential-free output | **External controlled manual test** |
+| `0x08` | External auxiliary heater output | **External controlled manual test** |
+| `0x20` | Unresolved manual-test/context bit | **External / Unknown** |
+| `0x40` | Controller active context | **High correlation; External manual-test confirmation** |
+| `0x80` | Immersion heater stage 1 | **External controlled manual test** |
 
-`A80E` is a controller/accessory status path, not a heating/DHW/cooling mode and not a DCM-present flag. In long captures `A80E 0x20` is repeatedly followed a few seconds later by `0x06:AFDC 0x20`; normal controller startup can also produce `A80E 0 → 8 → 40` without a DCM connected.
+This explains compound values such as `65 = 64 + 1` and `193 = 128 + 64 + 1`. Treat the individual output-bit meanings as cross-model evidence until reproduced on the XTR M.
 
-`A80F` should **not** be interpreted as a percentage. Heating captures show `10 → 50` before a cycle, `50 → 80` at cycle start and later `80 → 79 → 78 → 77 → 76 → 75`. A full DHW capture showed `80 → ... → 100`, followed during shutdown by `100 → 80 → 5 → 10`. The correlation with sequencing/load is strong, but the exact internal meaning remains unknown.
+`A80E` is a controller/accessory status path, not a heating/DHW/cooling mode and not a DCM-present flag. The apparent delay from `A80E 0x20` to `0x06:AFDC 0x20` is cadence-dependent: external frame-timed captures show AFDC following on the next 0x06 push, typically `0.0–0.2 s` in fast cadence and up to about `3.7 s` in slow cadence.
+
+`A80F` now has a strong cross-model candidate meaning: on an Eco 8 / DHP-AQ, `SERVICE → MANUAL TEST → CONDENSER PUMP (%)` made A80F follow `30 → 40 → 50 → 40 → 30` exactly, while values below 30% fell to `5`. The XTR M values `5`, `10`, `50`, `75–100` are consistent with a condenser/circulation-pump speed signal, but local XTR manual-test confirmation is still required before calling it Confirmed.
 
 ### SG Ready mapping
 
@@ -320,13 +324,22 @@ Setpoint direction is important: a genuine room-sensor adjustment appears in the
 
 `0x03F4` is a **room-setpoint mirror**, not a proven writable master input. During a main-display change, `B3C5` changed first and `03F4` followed roughly 6.5 seconds later. Direct writes to the mirror did not produce a persistent controller change.
 
-### DHW settings block — reported externally
+### Additional native / Online-index findings
 
-Another researcher reports a DHW settings block at decimal registers `1053–1059` (`0x041D–0x0423`). The exact mapping has not yet been verified on this XTR M and remains **External**.
+| Register / block | Decimal | Meaning | Certainty |
+|---|---:|---|---|
+| `0x041D` | `1053` | DHW START candidate | **External — EXP134 target, not yet XTR-confirmed** |
+| `0x042E` | `1070` | Integral A1 | **External Online dump** |
+| `0x0442` | `1090` | Activate Cooling | **Confirmed on XTR M by display A/B test** |
+| `0x0553` | `1363` | Operation Mode | **External Online dump** |
+| `0x0559` | `1369` | Link Integration | **External Online dump** |
+| `0x04A6..0x04B2` | `1190..1202` | Native runtime FC10 block; `0x04B0=0x4020` seen in first EXP133 sample | **Observed locally / semantics Unknown** |
+| `0x085F..0x0863` | `2143..2147` | Native five-word FC10 block containing transaction field `0x0861` | **Observed locally** |
+| `0x0861` | `2145` | Transport ACK field: `0 → 16 → 0` follows the proven AFCA REQ cycle | **Confirmed transport semantics** |
 
-### Cooling settings block — reported externally
+A related ATEC/DHP-AQ map reports a DHW settings family around decimal `1053–1059` (`0x041D–0x0423`). On the XTR M, `0x041D` is currently only a candidate for `SERVICE → WARMWATER → START` and is being treated as a passive-correlation target rather than as an assumed mapping.
 
-Another researcher reports cooling-related settings at decimal registers `1090–1102` (`0x0442–0x044E`). The exact register-to-setting mapping still needs controlled captures while changing one display setting at a time.
+The low Online indices appear substantially more portable across this Thermia/Danfoss platform than the higher telemetry ranges: `0x0442 Activate Cooling` has already been independently verified on the XTR M, while some 2xxx Online indices differ between ATEC and iTec models.
 
 ---
 
@@ -356,28 +369,34 @@ Another researcher reports cooling-related settings at decimal registers `1090�
 | `0x0011` | Unknown | — | **Unknown** |
 | `0x0012` | Unknown on tested unit; externally reported max-frequency ratio | % | **External** |
 | `0x0013` | Unknown | — | **Unknown** |
-| `0x0014` | Outdoor-unit operating / sequence state | enum | **Confirmed / High** |
+| `0x0014` | Outdoor-unit actuator / sequence-status bitfield | bitfield; common combinations listed below | **High locally; bit meanings externally controlled/correlated** |
 | `0x0015` | Outdoor-unit status / context bitfield | bitfield | **High** |
 | `0x001F` | Unknown, observed during state-20 recovery sequence | observed `0 → 911` | **Unknown / correlated** |
 | `0x0023` | Unknown, observed during state-20 recovery sequence | observed `0 → 4` | **Unknown / correlated** |
 
-### `0x0014` operating-state values
+### `0x0014` status-bit combinations
 
-| Raw value | Meaning | Certainty |
+Cross-model correlation now shows that `0x0014` behaves as a **bitfield**, not a simple enum. On an Eco 8 / DHP-AQ, seven days of 30 s samples gave the following bit meanings with 100% correlation in that dataset:
+
+| Bit | Meaning | Certainty |
 |---:|---|---|
-| `16` | Idle | **Confirmed** |
-| `18` | Late shutdown / final transition | **Tentative** |
-| `20` | Recovery / autonomous outdoor-unit sequence | **Tentative** |
-| `24` | Preparation / transition / shared finalisation | **Confirmed / High** |
-| `25` | Heating/DHW shutdown / fan-stop stage | **High** |
-| `26` | Cooling shutdown transition | **High** |
-| `27` | Cooling shutdown / likely earlier fan-stop stage | **High** |
-| `28` | Heating/DHW startup / ramp; also seen in shutdown | **High** |
-| `29` | Heating/DHW established sequence | **Confirmed as sequence-state** |
-| `30` | Cooling startup / ramp | **High** |
-| `31` | Cooling established sequence | **High** |
+| `0x01` | Compressor running | **External strong correlation** |
+| `0x04` | Outdoor fan turning | **External strong correlation** |
+| `0x08` | Water flow / circulation pump | **External strong correlation** |
+| `0x10` | Base / controller-active bit | **External strong correlation; exact semantics unresolved** |
 
-`0x0014` is a **sequence state**, not a compressor-running flag. The compressor may already be running in state `28` / `30`, and state `29` may persist after compressor frequency reaches zero.
+This decodes common raw values naturally:
+
+| Raw value | Bit interpretation | XTR observation |
+|---:|---|---|
+| `16` | base only | Idle |
+| `20` | base + fan | Autonomous/recovery sequence observed locally |
+| `24` | base + circulation pump | Preparation / transition |
+| `25` | base + pump + compressor | Seen in heating/DHW shutdown |
+| `28` | base + pump + fan | Heating/DHW startup / ramp |
+| `29` | base + pump + fan + compressor | Established heating/DHW sequence |
+
+Cooling combinations `26`, `27`, `30`, and `31` remain useful observed XTR states, but their exact additional-bit semantics should stay provisional until locally correlated. Physical compressor operation in the shared integration should continue to use compressor frequency as the local source of truth until the `0x0014 bit 0` mapping is independently reproduced on the XTR M.
 
 ### Observed state-machine paths
 
@@ -450,7 +469,7 @@ Repeated cycles show `A80F 50 → 80` immediately before `0x0007` turns on. A ca
 
 ---
 
-## Slave `0x06` — Online / Connect / DCM slot
+## Slave `0x06` — accessory / expansion slot (Online/DCM relationship unresolved)
 
 Observed polling:
 
@@ -459,13 +478,16 @@ Observed polling:
 
 | Register | Meaning | Scale / values | Certainty |
 |---|---|---|---|
-| `0xAFDC` | Online/DCM accessory context word | observed `0`, `16`, `32` and compound states | **High correlation / semantic Tentative** |
-| `0xAFDD` | DCM / accessory housekeeping / preparation word | observed `0`, `16` | **Tentative** |
+| `0xAFD1` | Accessory EXP version metadata | displayed as value / 10 (e.g. `16 → 1.6`) | **Confirmed** |
+| `0xAFDC` | Accessory/controller context word | observed `0`, `16`, `32` and compound states | **High correlation / semantic Tentative** |
+| `0xAFDD` | Accessory housekeeping / preparation word | observed `0`, `16` | **Tentative** |
 | `0xAFE0` | Propagated outdoor temperature | °C | **High** |
 
 `AFDC` should not be interpreted as a heating/DHW/cooling mode or as proof that a DCM is present. In long captures `AFDC 0x20` repeatedly follows `A80E 0x20` after a short delay, while startup/housekeeping values such as `0x10` can occur without a DCM connected. The exact semantics remain unresolved.
 
-The FC17 direction suggests an important research hypothesis: the controller writes `AFDC..AFE0` **to** the Online/DCM accessory while reading `AFC8..AFD3` **from** the accessory response. A legacy ThermIQ implementation for older Thermia systems used a controller-polled accessory mailbox where the heat pump stayed master and the accessory returned pending read/write requests. That is an **External architectural clue**, not proof that the XTR uses the same encoding. The v26 shared YAMLs remain RX-only.
+The FC17 direction is now proven at transport level: the controller writes `AFDC..AFE0` **to** the accessory slot while reading `AFC8..AFD3` **from** the accessory response. A valid responder establishes the fast accessory cadence, and `AFCA=0x03E8` drives the `0x0F:0861` ACK `0→16`; clearing AFCA returns it to `0`.
+
+However, EXP129–132 show that `0x06` should **not** currently be labelled as a proven DCM/Online device identity. A valid responder makes the controller expose an `EXP / expansion board` version entry, and `AFD1` is rendered as that version number in tenths. This proves an accessory/expansion presence + metadata path; whether the genuine Online/Connect/DCM hardware owns this slot directly or uses it as part of a larger session remains unresolved.
 
 ---
 
