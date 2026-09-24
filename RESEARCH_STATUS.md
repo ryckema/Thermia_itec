@@ -1,6 +1,6 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
-_Last updated: 2026-09-23_
+_Last updated: 2026-09-24_
 
 This document summarizes the reverse-engineering work performed so far on a **Thermia iTec XTR M + Total Compact** installation using an **ESP32-S3 / isolated RS485 interface** and Home Assistant.
 
@@ -14,23 +14,27 @@ The main goals are:
 
 > This work applies to the tested older/non-Genesis iTec platform. Register meanings and protocol behaviour should not automatically be assumed to apply to other Thermia generations.
 
+---
 
 ## Acknowledgements
 
 Special thanks to **Piotr Romanowski** and his [`thermia-bus-sniffer`](https://github.com/piotr-romanowski/thermia-bus-sniffer) project.
 
-Piotr's independent work on a 2017-era **Thermia iTec Eco 8 / Danfoss DHP-AQ** installation provided valuable cross-model verification and helped move this research forward. In particular, his captures and experiments helped independently confirm or clarify:
+Piotr's independent work on a 2017-era **Thermia iTec Eco 8 / Danfoss DHP-AQ** installation has provided unusually valuable cross-model verification. The second unit has now independently reproduced not only several register mappings, but also the core `0x06` transport behaviour found on the XTR M.
 
-- the `0x0A` room-sensor request path, including `B3B1` as a real room-setpoint request channel;
-- `B3C5` as the controller-propagated room setpoint;
-- the `0x1E` operating-state and status behaviour across heating/DHW transitions;
-- the `0x02:A80C` DHW/compressor status bits;
-- that `A80F` should **not** be interpreted as compressor modulation/load percentage;
-- that the `0x1E 0x001E..0x0033` region is not a simple live mirror of `0x0000..0x0015`;
-- the broader conclusion that the `0x06` Online/DCM slot is a shared platform feature rather than something unique to the XTR M.
+Important cross-model contributions include:
 
-The cross-model comparison has been especially useful for separating likely **DHP-AQ/iTec platform behaviour** from observations that may be specific to this XTR M installation.
+- `0x0A:B3B1` as a genuine room-setpoint request channel when returned in the controller's own poll-response slot;
+- `0x0A:B3C5` as the controller-propagated/confirmed room setpoint;
+- `0x1E FC04 0x0014` as a bitfield rather than a simple enum;
+- confirmation that the `0x06` Online/DCM slot is a shared DHP-AQ/iTec platform feature;
+- reproduction of the slow-to-fast `0x06` polling transition after any syntactically valid accessory reply;
+- reproduction of the `AFCA=0x03E8` → `0x0F:0861=16` transport ACK and its clear when AFCA returns to zero;
+- observation that the fast presence cadence survives for roughly two minutes after the accessory stops answering;
+- long-history evidence that the recurring `AFDC 0x20` activity is strongly related to the controller's heating-stop/heating-season condition rather than DCM login/session acceptance;
+- correction of the earlier `A80C bit 0x40 = compressor` interpretation: on the Eco 8 it remains set through compressor stops and is better treated as a broader controller context bit.
 
+This cross-model work has been especially useful for separating likely **DHP-AQ/iTec platform behaviour** from observations that may be specific to this XTR M installation.
 
 ---
 
@@ -58,7 +62,7 @@ Test hardware:
 
 Observed Thermia bus:
 
-- Modbus RTU
+- Modbus RTU-like framing
 - 9600 baud
 - 8 data bits
 - EVEN parity
@@ -122,16 +126,13 @@ Known/usable values include:
 - derived compressor status
 - derived delta-T values
 
-Long clean captures have been observed with:
-
-- `resync_delta = 0`
-- `drop_delta = 0`
+Long clean captures have been observed with no RX buffer drops and very few or zero parser resyncs.
 
 ---
 
 # 4. Slave `0x0A` – room sensor path
 
-The controller periodically sends FC17 to the room sensor:
+The controller periodically sends FC17/FC23-style combined read/write traffic to the room sensor:
 
 ```text
 0A 17
@@ -144,74 +145,88 @@ write B3C4 count 3
 | Register | Direction | Meaning | Status |
 |---|---|---|---|
 | `B3B0` | room sensor → controller | room temperature, tenths of °C | PROVEN |
-| `B3B1` | room sensor → controller | pending/requested room setpoint | PROVEN (cross-model; works when returned in the polled room-sensor response slot) |
+| `B3B1` | room sensor → controller | pending/requested room setpoint | PROVEN cross-model |
 | `B3B2` | room sensor → controller | unknown | OPEN |
 | `B3C4` | controller → room sensor | unknown/controller data | OPEN |
 | `B3C5` | controller → room sensor | propagated/confirmed room setpoint | PROVEN |
-| `B3C6` | controller → room sensor | unknown; possible alarm/status carrier | OPEN |
+| `B3C6` | controller → room sensor | unknown; possible status carrier | OPEN |
 
-Example room-sensor response:
+A genuine room-sensor-originated setpoint event causes:
 
-```text
-0A 17 06
-00 DD   # 22.1 °C
-00 00
-00 00
-CRC
-```
-
-## Real room-sensor setpoint behaviour
-
-A genuine room-sensor-originated setpoint event caused:
-
-1. a room-sensor request;
+1. a non-zero `B3B1` request;
 2. the central Thermia room-setpoint setting to update;
-3. the value to propagate back through `B3C5`.
+3. the accepted value to propagate back through `B3C5`.
 
-This proves that the room-sensor path is a real semantic write path into the controller.
+Returning `B3B1=0` means **no request**; it does not clear or revert the previous setpoint.
 
-## `B3B1` request semantics
+A separate Modbus-master write directly to the physical room sensor can be ACKed by that slave without the Thermia controller adopting the value. The important semantic action is therefore the value returned **inside the controller's expected poll-response slot**, not an arbitrary independent register write.
 
-A separate Modbus-master write to the physical room sensor was ACKed by the room sensor, but the Thermia controller did **not** adopt the new setpoint.
-
-**Conclusion:** writing the register independently is not equivalent to behaving as the room sensor in the controller's expected response slot.
-
-However, the independent iTec Eco 8 / DHP-AQ cross-check has now confirmed the actual slave-response semantics:
-
-- `B3B0` = measured room temperature ×10;
-- `B3B1` = pending room-setpoint request, whole °C;
-- `B3B2` = zero when nothing else is requested/known.
-
-Returning a non-zero `B3B1` value in the controller's own FC23 poll response causes the controller to adopt that room setpoint and propagate it back through `B3C5`. Returning `0` means “no request”; it does not clear or restore the previous setpoint.
-
-This is therefore a real semantic write path, but it is a **room-sensor control path**, not the target Online/DCM `0x06` path.
-
-## Current room-sensor avenue
-
-The path is technically understood well enough to emulate, provided collision handling with a physical room sensor is deterministic. It remains useful as a reference implementation of how Thermia accessory writes are expressed through a polled slave response, but the main research target is native `0x06` Online/DCM write access.
+This is a real semantic write path, but it is a **room-sensor path**, not the target Online/DCM `0x06` path.
 
 ---
 
 # 4A. Independent iTec Eco 8 / DHP-AQ cross-check
 
-A second researcher has independently reproduced several mappings on a 2017-era **iTec Eco 8** using the Danfoss DHP-AQ board. This helps separate platform properties from XTR-M-specific observations.
+The Eco 8 comparison now provides substantially more than a simple register cross-check.
 
-Confirmed cross-model results include:
+## `0x1E FC04 0x0014` is a bitfield
 
-- `0x1E FC04 0x0014` operating-state sequence `29 → 28 → 24 → 16`;
-- state `20` is an autonomous sequence, **not defrost**;
-- `0x1E FC04 0x0015`: `0x0200` outdoor active, `0x0040` DHW context, `0x0020` heating context;
-- `0x1E FC16 0x0004`: `1` heating, `2` hot water (`3` cooling on the XTR M map, not yet observed on the Eco 8);
-- `0x02:A80C`: bit `0x01` = DHW request, bit `0x40` = compressor running;
-- `0x02:A80F` is **not** modulation/output/load percentage;
-- `0x1E FC04 0x001E..0x0033` is not a live mirror of `0x0000..0x0015`; it behaves like a delayed/latched copy;
-- `0x0A:B3B1` setpoint-request semantics are independently confirmed.
+Over roughly seven days / ~20,000 samples on the Eco 8, the following bits matched their associated signals in the supplied history:
 
-The Eco 8 address scan found only `0x02` and `0x1E` as normal readable slaves plus polled accessory slots `0x06` and `0x0A`; slave `0x14` appears installation/model-specific rather than universal.
+| Bit | Meaning | Status |
+|---|---|---|
+| `0x01` | compressor running | strongly supported cross-model |
+| `0x04` | outdoor fan turning | strongly supported cross-model |
+| `0x08` | water flow / circulation pump | strongly supported cross-model |
+| `0x10` | base/always-set state in observed normal operation | strongly supported cross-model |
+
+This explains observed values such as:
+
+- `16` = idle/base state;
+- `24` = circulation/water-flow bit added;
+- `28` = circulation + fan;
+- `29` = circulation + fan + compressor.
+
+A defrost value of `25` (`0x19`) is a plausible future expectation because the compressor and circulation path may remain active while the fan is stopped, but that value has **not yet been observed** and remains a hypothesis.
+
+## `A80C`
+
+The earlier interpretation of `A80C bit 0x40` as a compressor-running bit is withdrawn. On the Eco 8 it stayed set through multiple compressor stops, including a heating-stop event with compressor and fan both at zero. Treat `0x40` as a broader **normal/context** bit until better semantics are available.
+
+`A80C bit 0x01` remains associated with a hot-water request/context.
+
+## `A80E` / `AFDC` recurring activity
+
+The long Eco 8 history materially changes the interpretation of the familiar `0x20` pulse train.
+
+Piotr found that `AFDC 0 ↔ 32` activity correlates very strongly with the displayed outdoor temperature being below the configured heating-stop limit. The correlation persists even when space heating itself is disabled and only hot water is being produced. A controlled heating-stop A/B change caused the pulse train to start/stop with the threshold change.
+
+This makes the best current interpretation:
+
+- **not** DCM login/session state;
+- **not** a generic always-on heartbeat;
+- most likely a heating-availability / heating-season-conditioned periodic controller signal.
+
+On the XTR M, EXP122 independently showed that `A80E 0x20` precedes the corresponding `AFDC 0x20` edge by about **3.7 s**, with ~17 s high time and roughly 64–65 s recurrence while active. That suggests the same underlying controller state is propagated through two layers with a stable scheduling delay.
+
+The exact semantic label remains open.
+
+## `AFDC=0x10`
+
+Longer Eco 8 history shows `AFDC=16` is not simply “heating stop”. It appears in ~10-minute windows after several different events. It should currently be treated as a generic controller window/state, not a DCM NAK or a single heating-state code.
+
+## Longer periodic routine
+
+The Eco 8 history also shows a roughly **25 h 33 min** recurring routine:
+
+- `A80C` enters a state with bits `0x30` set for about one minute;
+- when that ends, `A80E` raises bit `0x08` (values such as 8/40) for roughly ten controller-minutes (~636–645 s).
+
+A possible explanation is the daily circulation-pump exercise described in older DHP documentation, but this is currently a **hypothesis only** and awaits direct physical confirmation.
 
 ---
 
-# 5. Slave `0x0F` – local settings block
+# 5. Slave `0x0F` – local settings/state blocks
 
 A recurring FC10 block at `0x03E8..0x03F5` contains controller settings.
 
@@ -240,15 +255,98 @@ Current mapping:
 | `03F4` | room setpoint mirror | PROVEN |
 | `03F5` | unknown | OPEN |
 
-The production parser only considers a genuine controller-originated FC10 update of this block authoritative for settings-cache updates.
+The production parser only considers a genuine controller-originated FC10 update authoritative for settings-cache updates.
+
+## Cooling block
+
+EXP108–109 identified another native FC10 block:
+
+```text
+start 0x0442
+count 13
+range 0x0442..0x044E
+```
+
+Confirmed/strongly mapped fields include:
+
+| Register | Meaning | Status |
+|---|---|---|
+| `0442` | Activate Cooling (`0=OFF`, `1=ON`) | PROVEN |
+| `0443` | desired cooling temperature | STRONGLY INDICATED |
+| `0445` | cooling-active threshold | STRONGLY INDICATED |
+
+This block is important because `0442` is also present in the public Thermia Online DCM dump, providing the first experimentally verified **Online registerIndex → native local register** mapping on this XTR M.
 
 ---
 
-# 6. Danfoss Link / HE firmware research
+# 6. Public Thermia Online DCM dump
 
-Old Danfoss Link CC firmware was unpacked and inspected.
+A public Thermia Online debug dump from a DHP-AQ/ATEC-family system with a DCM module has been extremely useful because it exposes both human-readable register semantics and a stable `registerIndex` value.
 
-This provided the **host-side DHP/HE parameter model**, but not the missing DCM03 → Thermia RS485 translation layer.
+The dump reports, among other metadata:
+
+- connection type: `Dcm`;
+- DCM version: `2.0.17`;
+- firmware/program: `3.1.1`;
+- `hasLinkUnit=false`;
+- `linkIntegrationStatus=false` in that captured system.
+
+The important distinction is:
+
+- `registerId` = cloud/profile-facing identifier;
+- `registerIndex` = stable numeric register index.
+
+For at least the confirmed XTR M cases, `registerIndex` matches the local Thermia register namespace numerically.
+
+## Writable non-computed indices in the dump
+
+| registerIndex | Hex | Meaning |
+|---:|---:|---|
+| 1000 | `03E8` | Heating Curve |
+| 1001 | `03E9` | Heating Minimum |
+| 1002 | `03EA` | Heating Maximum |
+| 1003 | `03EB` | Heat curve +5 |
+| 1004 | `03EC` | Heat curve 0 |
+| 1005 | `03ED` | Heat curve -5 |
+| 1006 | `03EE` | Heating Stop |
+| 1008 | `03F0` | Room Factor |
+| 1070 | `042E` | Integral A1 |
+| 1090 | `0442` | Activate Cooling |
+| 1363 | `0553` | Operation Mode |
+| 1369 | `0559` | Link Integration |
+
+Dump enums include:
+
+```text
+Operation Mode (0553):
+0 OFF
+1 AUTO
+2 COMPRESSOR
+3 AUX
+4 HOT_WATER
+
+Link Integration (0559):
+0 LIGHT
+1 SYSTEM
+
+Activate Cooling (0442):
+0 OFF
+1 ON
+```
+
+## Why the dump matters
+
+The `0442` mapping has been independently verified on the XTR M bus: toggling **Activate Cooling** on the Thermia UI changes the native `0x0F:0442` value exactly as the Online dump predicts.
+
+This strongly supports the idea that at least part of the Online `registerIndex` namespace is the native controller register namespace, while the DCM still performs a separate application/session translation before those values reach the local bus.
+
+EXP119 specifically watched for `0553` and `0559` during a complete cold boot and saw neither. Therefore they are not ordinary boot broadcasts on this XTR M.
+
+---
+
+# 7. Danfoss Link / HE firmware research
+
+Old Danfoss Link CC firmware was unpacked and inspected. This recovered the **host-side DHP/HE parameter model**, but not the final DCM03 → Thermia RS485 serializer.
 
 ## Recovered HE/DHP parameters
 
@@ -279,17 +377,7 @@ This provided the **host-side DHP/HE parameter model**, but not the missing DCM0
 | `0x4416` | EVU_SW |
 | `0x4417` | EVU_HW |
 
-Additional DHP parameters:
-
-| Parameter | Meaning |
-|---|---|
-| `0x030A` | OperationMode |
-| `0x0334` | OutdoorTemperature |
-| `0x03E0` | OperationTime |
-| `0x03F0` | ErrorCode |
-| `0x0400..0x0404` | Alarm fields |
-| `0x7001` | RoomSensorOperationMode |
-| `0x7003` | RoomSensorOperationOff |
+Additional DHP parameters include `0x030A OperationMode`, `0x0334 OutdoorTemperature`, operation-time/error/alarm fields and room-sensor operation parameters.
 
 ## HE Set/Get request format
 
@@ -303,15 +391,7 @@ WORD GET_ID[GET_count]
 SET values...
 ```
 
-`counts`:
-
-- high nibble = GET count
-- low nibble = SET count
-
-Maximum:
-
-- 15 SET parameters
-- 15 GET parameters
+`counts` uses the high nibble for GET count and low nibble for SET count.
 
 Recovered completion codes:
 
@@ -326,54 +406,44 @@ Recovered completion codes:
 7 = SET unknown format
 ```
 
-## Integration mode
+## Integration mode and initial sync
 
-`0x4414 IntegrationMode`:
+`0x4414 IntegrationMode` is especially important:
 
-- `0` = light/non-system integration
-- `1` = system integration
+- `0` = light/non-system integration;
+- non-zero = system integration.
 
-In system integration mode the Link code switches several parameters from GET to SET, including:
+The parameter is configured GET-on-sync and SET-on-sync. When IntegrationMode updates, the Link firmware raises an **internal** `SystemIntegrationInitRequest`; the next regulation pass performs `SystemIntegrationInit()` and a full sync before an internal `InitSyncDone` flag is set.
 
-- RoomValue
-- HeatCurve
-- HeatCurve +5 correction
-- HeatCurve 0 correction
-- HeatCurve -5 correction
+Important correction: `SystemIntegrationInitRequest` and `InitSyncDone` are internal booleans, **not wire ParameterIDs**.
 
-This is strong evidence that the official Link/DCM stack can write those values.
+Firmware also shows identity/binding concepts including physical address, `DivisionID`, `BrandID` and `ProductID` before a logical endpoint is allocated.
 
-## Important architecture conclusion
+## Architecture conclusion
 
-The Link firmware does **not** contain the Thermia RS485 translation.
+The Link firmware does **not** contain the final Thermia RS485 serialization.
 
-Likely architecture:
+Best current architecture:
 
 ```text
-Link / HPNode / DHP model
+Thermia Online / Danfoss Link host
         ↓
-HE parameter protocol
+HE/DHP parameter model
         ↓
-DCM03
+identity / binding / IntegrationMode / grouped sync
         ↓
-Thermia local RS485
+DCM03 / Connect serializer + state machine
+        ↓
+Thermia local 0x06 accessory bank
+        ↓
+controller
 ```
 
-The unresolved layer is therefore:
-
-```text
-HE Parameter ID/value
-        ↓
-DCM03 translation/state machine
-        ↓
-AFC8..AFD3 semantic fields
-```
-
-Raw HE parameter IDs must **not** be assumed to be local Thermia register addresses.
+Raw HE parameter IDs must therefore not be assumed to be directly present in `AFC8..AFD3`.
 
 ---
 
-# 7. Slave `0x06` – Online/DCM accessory slot
+# 8. Slave `0x06` – Online/DCM accessory slot
 
 The controller repeatedly sends:
 
@@ -387,80 +457,59 @@ CRC
 
 Therefore:
 
-- accessory → controller: `AFC8..AFD3` (12 registers)
-- controller → accessory: `AFDC..AFE0` (5 registers)
+- accessory → controller: `AFC8..AFD3` (12 registers);
+- controller → accessory: `AFDC..AFE0` (5 registers).
 
-The 12 read registers increasingly look like a **fixed semantic accessory register bank**, not a generic arbitrary register/value mailbox.
+The 12 response registers behave like a fixed accessory interface, not a generic arbitrary Modbus register/value mailbox.
 
 ---
 
-# 8. Controller → accessory registers `AFDC..AFE0`
+# 9. Controller → accessory registers `AFDC..AFE0`
 
 Current interpretation:
 
 | Register | Current meaning | Status |
 |---|---|---|
-| `AFDC` | delayed/derived accessory/controller state correlated with `A80E` bit `0x20` | PROVEN correlation |
+| `AFDC` | controller/accessory lifecycle/status word; `0x20` activity is heating-condition-related, not DCM login | STRONGLY INDICATED |
 | `AFDD` | unknown | OPEN |
 | `AFDE` | unknown | OPEN |
 | `AFDF` | unknown | OPEN |
 | `AFE0` | propagated outdoor temperature | STRONGLY INDICATED |
 
-## `AFE0`
+`AFE0` tracks displayed/controller outdoor temperature in whole °C on both investigated units.
 
-Observed examples:
+## `A80E` → `AFDC` propagation
 
-```text
-AFE0 = 0x0016 -> 22 °C
-AFE0 = 0x0015 -> 21 °C
-AFE0 = 0x0013 -> 19 °C
-```
-
-It tracks the controller/outdoor-temperature path.
-
-## `A80E` ↔ `AFDC`
-
-Historical captures repeatedly showed:
+EXP122 produced a long passive XTR M capture in which matching `0x20` edges repeatedly occurred as:
 
 ```text
 A80E 0 -> 32
+~3.7 s later
 AFDC 0 -> 32
 ```
 
-followed by:
+and the same ordering on the falling edge.
 
-```text
-A80E 32 -> 0
-AFDC 32 -> 0
-```
+Across the visible paired transitions the delay clustered tightly around ~3.7 s, while the high pulse was ~17 s and active recurrence ~64–65 s.
 
-AFDC follows A80E after the next relevant controller/accessory update.
-
-This is a real controller-originated state propagation and **not** the transaction ACK.
+The Eco 8 history adds the important semantic clue that this pulse train is strongly enabled/disabled by the heating-stop threshold. Therefore it should no longer be described as a generic DCM heartbeat; it is better treated as a **heating-condition-related periodic controller state propagated toward the accessory slot**.
 
 ---
 
-# 9. `03E8` request level and `0861` ACK
+# 10. `AFCA=03E8` request level and `0861` ACK
 
 One of the strongest findings is the level-based handshake between:
 
-- `0x06` response word 2 / `AFCA`
-- `0x0F:0861`
+- `0x06` response word 2 / `AFCA`;
+- `0x0F:0861`.
 
 ## Proven behaviour
 
-With the accessory in the correct phase:
+With the accessory in the correct fast-poll phase:
 
 ```text
-AFCA = 0000
-```
-
-is REQ low.
-
-Then:
-
-```text
-AFCA = 03E8
+AFCA = 0000     # REQ low
+AFCA = 03E8     # REQ asserted
 ```
 
 causes:
@@ -469,539 +518,477 @@ causes:
 0x0F:0861 = 16
 ```
 
-roughly 0.3–0.4 s later.
+When AFCA is returned to zero while the remaining payload is kept stable, `0861` returns to zero.
 
-If `03E8` is held:
-
-```text
-0861 remains 16
-```
-
-When AFCA is returned to `0000` while the remaining payload stays stable:
-
-```text
-0861 returns to 0
-```
-
-roughly 1 s later.
-
-## Canonical four-phase transaction
+Canonical four-phase transaction:
 
 ```text
 1. payload stable, REQ=0
-2. set AFCA / REQ = 03E8
-3. controller ACK 0861 rises to 16
-4. set AFCA / REQ back to 0, keep payload stable
-5. controller ACK 0861 falls back to 0
+2. AFCA 0000 -> 03E8
+3. controller ACK 0861 0 -> 16
+4. AFCA 03E8 -> 0000, payload otherwise stable
+5. controller ACK 0861 16 -> 0
 6. payload may then be cleared/changed
 ```
 
 **PROVEN:** this is a real transport-level REQ/ACK mechanism.
 
-**NOT PROVEN:** the semantic encoding of the other 11 accessory words.
+**NOT PROVEN:** semantic encoding of the other accessory words.
+
+## Cross-model reproduction
+
+The Eco 8 reproduces the same behaviour:
+
+- plain zero responses move the controller from ~4.26 s polling to alternating ~0.70 / 1.44 s;
+- `AFCA=03E8` makes every observed `0861` value become 16;
+- returning AFCA to zero makes every observed `0861` value return to zero;
+- the effect repeated in two full A/B cycles.
+
+This is strong evidence that the transport layer is a shared DHP-AQ/iTec platform mechanism rather than an XTR M peculiarity.
+
+## AFCA is a constant, not register 1000
+
+Because `03E8` also equals decimal 1000 / Heating Curve in the Online register namespace, it was important to test whether AFCA might actually be a register number.
+
+The Eco 8 test compared `03E8` against `03E9`, `03EA`, `03E7`/999 and 1234. Only `03E8` produced the `0861` ACK; none of the alternatives changed a parameter.
+
+This strongly confirms that AFCA's `03E8` is a **transport constant/strobe value**, not a parameter address. Its numeric equality with Heating Curve index 1000 is coincidence or deliberate protocol design, but not direct addressing.
+
+A further cross-model observation is that any non-zero AFCA value can alter the simultaneously reported AFDC pulse value (`32` appearing as `16`), even when it does not produce `0861=16`. This shows the controller notices AFCA at more than one level, but only the exact `03E8` value completes the known ACK transaction.
 
 ---
 
-# 10. `0x06` cadence behaviour
+# 11. `0x06` cadence and presence timeout
 
 Normal unserved `0x06` polling is approximately:
 
 ```text
-~4.3 s
+~4.25–4.3 s
 ```
 
-After the controller receives a syntactically valid `0x06` response, it enters a fast accessory cadence that alternates approximately:
+After any syntactically valid `0x06` response, the controller enters a fast cadence alternating roughly:
 
 ```text
-SHORT     ~0.65–0.78 s
-FAST-LONG ~1.35–1.46 s
+SHORT      ~0.65–0.78 s
+FAST-LONG  ~1.35–1.46 s
 ```
 
-This can be sustained with simple valid responses.
+This can be sustained with completely inert responses.
 
-**Important:** entering fast cadence does **not** mean a semantic command has been accepted.
+The Eco 8 independently shows that once established, the fast cadence persists for about **two minutes after the accessory stops answering** before the controller falls back to the ~4.25 s empty-slot cadence.
+
+Therefore the current model includes a controller-side **presence timeout/cache** of roughly two minutes.
+
+Entering fast cadence does **not** imply semantic/session acceptance.
 
 ---
 
-# 11. Major active hypotheses tested
+# 12. Major active hypotheses tested
 
 ## A. `03E8` as a local register pointer
 
-Early hypothesis:
+**NEGATIVE.**
 
-```text
-word2 = 03E8
-```
+Nearby values do not produce the ACK, and the behaviour is phase/level dependent. `03E8` is a transport REQ constant, not a local register address.
 
-might mean "local register 03E8 / Heating Curve".
+## B. `00FF` required for ACK or online state
 
-### Result
+**NEGATIVE.**
 
-NEGATIVE.
+Bare `03E8` can complete the ACK. Persistent `w0=00FF` does not establish semantic DCM state.
 
-Evidence showed that:
+## C. Simple `[register,value]` or `[03E8,count,value]` commands
 
-- `03E8` causes the transaction ACK;
-- nearby values such as `03E9`, `03EA`, `03F4`, `04A6`, `440C` do not;
-- its behaviour is phase/level dependent;
-- keeping it asserted keeps ACK high.
+**NEGATIVE.**
 
-**Conclusion:** `03E8` is a transport REQ/data-valid level, not a local register address.
+Many layouts completed transport but did not change settings.
 
----
+## D. Raw local settings image in `AFC8..AFD3`
 
-## B. `00FF` required for ACK
+**NEGATIVE.**
 
-Hypothesis:
+No semantic write.
 
-```text
-w0 = 00FF
-```
+## E. Raw HE Set/Get body directly in the mailbox
 
-might be required for a valid request.
+**NEGATIVE.**
 
-### Result
+Endpoints, byte order, shifts and grouped GET bodies were tested. No visible application response or setting mutation resulted.
 
-NEGATIVE.
+EXP118 additionally tested a complete firmware-derived group-0 GET request that exactly fit the available mailbox space. It still produced only the normal transport handshake with no semantic response.
 
-Bare `03E8` in the correct phase can trigger ACK without `00FF`.
+## F. Historical `00FF,1,REQ,1` envelope
 
-Later EXP90 also held `w0=00FF` for 90 s without generating any `A80E/AFDC` online-state cycle.
+**NEGATIVE as a standalone semantic format.**
 
-**Conclusion:** `00FF` is not required for ACK and is not sufficient as an online-state trigger.
+Long dwell, repeated transactions, scalar payloads and raw HE bodies all failed to create a semantic change.
 
----
+## G. Direct second-master writes to native slave `0x0F`
 
-## C. Simple local register/value command
+EXP110–112 tested direct/native-looking writes using the confirmed `0442` cooling block, including phase alignment to genuine native traffic.
 
-Multiple layouts were tried around the proven REQ field, for example:
+**NEGATIVE.**
 
-```text
-03E8, count, value
-```
+The authoritative controller block continued to publish the original value. Direct second-master `0x0F` writing is therefore parked as a control architecture.
 
-and placements involving:
+## H. Simple local target/value in the historical `0x06` mailbox header
 
-```text
-03F4, room setpoint
-03E8, heating curve
-```
+EXP113, EXP115 and EXP116 used the now-proven semantic target `0x0442` / value `0` in several structurally motivated placements/count interpretations.
 
-### Result
+All completed the `0861` transport transaction but all subsequent native cooling blocks remained `0442=1`.
 
-NEGATIVE.
+**NEGATIVE.**
 
-The transport handshake completed, but settings did not change.
+The simple historical-header + raw local `[registerIndex,value]` family is effectively exhausted.
 
 ---
 
-## D. Raw 12-word local settings image
+# 13. Presence, commissioning and UI-recognition experiments
 
-A full local settings block was placed directly into the 12-word `0x06` accessory response.
+## EXP117 – presence-only commissioning test
 
-### Result
-
-NEGATIVE.
-
-No semantic write occurred.
-
----
-
-## E. Raw HE parameter protocol directly inside `0x06`
-
-Canonical HE GET/SET-like bodies were attempted with:
-
-- endpoint `0`
-- endpoint `1`
-- alternative endpoints
-- byte-swapped forms
-- shifted/aligned variants
-- GET of known parameter `0x440C`
-- historical envelope around HE body
-
-### Result
-
-NEGATIVE.
-
-No returned semantic data or setting write was observed.
-
-**Conclusion:** the `0x06` registers do not expose the host HE packet directly in any simple byte/word layout tried so far.
-
----
-
-## F. Historical envelope
-
-Historical request image:
-
-```text
-w0 = 00FF
-w1 = 0001
-w2 = 03E8
-w3 = 0001
-...
-```
-
-was repeatedly able to complete the known transport handshake.
-
-Variants were tested with:
-
-- HE body
-- scalar curve value
-- length/count interpretations
-- endpoint interpretations
-- REQ-low persistent envelope
-
-### Result
-
-The envelope participates in a valid transaction context, but none of the tried semantic payload interpretations changed a setting.
-
-EXP91 held:
-
-```text
-00FF,0001,0000,0001,0...
-```
-
-for 90 s and received 84 valid responses with:
-
-- no `A80E` edge;
-- no `AFDC` promotion;
-- no `0861` ACK because REQ remained low;
-- no settings mutation;
-- no parser/RX errors.
-
-**Conclusion:** `w1=1` and `w3=1` plus `w0=00FF` are not sufficient on their own to activate the historical online-state cycle.
-
----
-
-# 12. Passive correlation experiments
-
-## Room setpoint vs `AFDC..AFE0`
-
-A manual room-setpoint round trip:
-
-```text
-22 -> 23 -> 22
-```
-
-changed:
-
-- room sensor path (`B3C5`)
-- controller room-setpoint mirror (`03F4`)
-
-but did **not** change:
-
-```text
-AFDC..AFE0
-```
-
-**Conclusion:** the five controller→DCM words do not directly carry the normal room setpoint.
-
----
-
-## Long passive DCM correlation
-
-A 300-second passive run observed:
-
-```text
-AFDC..AFE0 = stable
-A80E = stable
-A802 = stable
-```
-
-No useful natural edge occurred.
-
-A later 30-minute passive run also saw no `A80E`/`AFDC` edge.
-
-**Conclusion:** long passive waiting is not a reliable way to reproduce the old accessory-state cycle.
-
----
-
-# 13. Presence / online-state experiments
-
-These tests were designed to understand whether a particular accessory response causes the controller to enter the historical `A80E/AFDC` cycle.
-
-## EXP88 – all-zero presence
-
-Response:
-
-```text
-0000,0000,0000,0000,0000,0000,0000,0000,0000,0000,0000,0000
-```
-
-Result over 180 s:
-
-- 168 valid responses
-- fast cadence sustained
-- `A80E=0000`
-- `AFDC=0000`
-- `0861=0`
-- no settings changes
-- no parser/RX errors
-
-**NEGATIVE:** valid presence alone is not enough.
-
----
-
-## EXP89 – intended `00FF` presence
-
-This experiment contained an implementation mistake:
-
-- response 1 used `00FF`;
-- later responses accidentally fell back to all-zero.
-
-**INVALID AS A DISCRIMINATOR.**
-
-Do not use EXP89 as evidence against `00FF`.
-
----
-
-## EXP90 – persistent `00FF`
-
-Every response:
-
-```text
-00FF,0000,0000,0000,0000,0000,0000,0000,0000,0000,0000,0000
-```
+A valid REQ-low `0x06` accessory image was held for ~90 s.
 
 Result:
 
-- 84 identical responses
-- 90 s
-- observed response CRC `88E8`
-- fast cadence stable
-- `A80E=0000`
-- `AFDC=0000`
-- `0861=0`
-- no settings changes
-- no parser/RX errors
+- fast cadence established;
+- no new controller structural signature appeared;
+- no AFCA/0861 transaction was initiated by the controller;
+- no settings change.
 
-**NEGATIVE:** `w0=00FF` alone is not the missing online-state trigger.
+**NEGATIVE:** presence alone does not trigger a visible commissioning/identity/init exchange.
 
----
+## EXP123 – display detection test
 
-## EXP91 – historical envelope with REQ low
-
-Every response:
-
-```text
-00FF,0001,0000,0001,0000,0000,0000,0000,0000,0000,0000,0000
-```
-
-Observed response CRC:
-
-```text
-C9A9
-```
+The same proven presence concept was tested specifically against the Thermia UI.
 
 Result:
 
-- 84 identical responses
-- 90 s
-- fast cadence stable
-- `A80E=0000`
-- `AFDC=0000`
-- `0861=0`
-- no settings changes
-- `resync_delta=0`
-- `drop_delta=0`
+- runtime presence established fast cadence;
+- no DCM/Online/accessory indication appeared on the display;
+- the user then rebooted the heat pump while the responder was active;
+- the controller returned through a genuine cold-boot sequence and continued accepting the responder;
+- still no DCM/Online indication appeared.
 
-**NEGATIVE:** the historical envelope with REQ low is not sufficient to start the online-state cycle.
+**STRONG NEGATIVE:** syntactic presence / fast polling is not sufficient for UI-level DCM recognition, even when present during controller restart.
 
----
+## EXP124 – current test
 
-# 14. Natural `A80E/AFDC` lifecycle
+**Prepared, not yet completed at the time of this update.**
 
-Older and newer passive captures show a repeating natural controller lifecycle:
+Hypothesis: UI-level DCM/Online recognition may require not only presence, but completion of the proven four-phase `AFCA/0861` transaction.
+
+EXP124 changes only that one variable relative to EXP123:
 
 ```text
-A80E 0 -> 32
-AFDC 0 -> 32
-...
-A80E 32 -> 0
-AFDC 32 -> 0
+presence stable
+AFCA 0000 -> 03E8
+wait 0861 0 -> 16
+AFCA 03E8 -> 0000
+wait 0861 16 -> 0
+continue inert presence and inspect UI
 ```
 
-Later passive experiments proved that this lifecycle occurs **without any ESP transmission**. Therefore `A80E=0x20` and `AFDC=0x20` are not evidence of DCM login/session acceptance. EXP106 further showed the same cycle while `A80F` was at least `75`, `80` and `50`, so `A80F=50` is not a unique gate either.
+No HE body, parameter ID, setting value or direct controller write is introduced.
 
 ---
 
-# 15. Experiment chronology
+# 14. Cold-boot lifecycle and transient native blocks
+
+## EXP119 – Online writable-index cold-boot census
+
+The public Online dump gave specific passive targets including `042E`, `0442`, `0553` and `0559`.
+
+During a complete XTR M cold boot:
+
+- known lifecycle activity occurred;
+- `0442` was present in normal traffic outside the cold-boot target window;
+- no native `0553` OperationMode or `0559` LinkIntegration frame appeared.
+
+**NEGATIVE:** these Online indices are not generic cold-boot broadcasts on this unit.
+
+## EXP120 – high-resolution cold-boot capture
+
+Capturing from the first returned bus frame revealed a transient native block:
+
+```text
+0x0F FC10 start 0x04BA count 22
+range 0x04BA..0x04CF
+```
+
+It appears repeatedly during the first few seconds after bus return, then disappears as the normal `0x04A6..0x04B2` family takes over.
+
+A representative boot branch showed:
+
+```text
+A80F/A810 = 5
+A80E 0 -> 8 -> 40
+AFDC 0 -> 16
+A80F/A810 5 -> 10
+```
+
+No spontaneous `0861` transaction ACK appeared.
+
+## EXP121 – cooling ON/OFF/ON boot comparison
+
+To determine whether `04BA..04CF` contained ordinary configuration, the known reversible `0442 Activate Cooling` setting was used in an A/B/A cold-boot comparison.
+
+Result:
+
+- the first `04BA` payload was byte-identical in Cooling ON, OFF and ON runs;
+- therefore direct cooling-state encoding in this transient block is strongly disfavoured;
+- two different boot lifecycle branches were nevertheless observed:
+  - branch X: `A80E=8`, `A80F 5->50`, `AFDC` stayed 0 in the focus window;
+  - branch Y: `A80E 0->8->40`, `AFDC 0->16`, `A80F/A810 5->10`.
+
+Cooling was not a sufficient selector for the branch.
+
+The later EXP123 restart reproduced the `A80F 5->50` branch while a valid `0x06` presence responder was already active, which further argues against interpreting `A80F=50` as simply “no accessory present”.
+
+---
+
+# 15. EXP122 overnight passive lifecycle capture
+
+EXP122 ran for approximately 7.8 hours and remained completely passive.
+
+Final summary:
+
+```text
+stateEvents=831
+blockEvents=51795
+resync=1
+drops=0
+PASSIVE_ONLY
+```
+
+The `blockEvents` count is inflated by a logger bug that re-logged identical `0x1E` blocks as changes, but the state observations are valid.
+
+Key result:
+
+```text
+A80E 0x20 edge
+        ↓ ~3.7 s
+AFDC 0x20 matching edge
+```
+
+This relation repeated many times with stable timing. `A80F` remained at 10 during normal runtime even while compressor starts occurred, so `A80F=50` is not a generic compressor-start state.
+
+Combined with the Eco 8 heating-stop history, the best current interpretation is that the `A80E/AFDC 0x20` cycle is part of a heating-condition-related controller lifecycle, not DCM application/session approval.
+
+---
+
+# 16. Experiment chronology
 
 This is intentionally compact. Individual YAML/log files contain the full details.
 
 | Experiment(s) | Main question | Result |
 |---|---|---|
-| EXP10–18 | Which response word triggers controller ACK? | `word2=03E8` in correct phase is decisive |
+| EXP10–18 | Which response word triggers controller ACK? | `AFCA/word2=03E8` in correct phase is decisive |
 | EXP21–28 | trailing words/selectors/counts | no semantic write |
 | EXP29–50 | passive mapping / presence / controller-state work | transport and telemetry refined |
 | EXP51–75 | presence, selector, scalar, register/value and persistence hypotheses | ACK/cadence effects only; no semantic write |
 | EXP76B | canonical four-phase handshake | **PROVEN** |
 | EXP77–83 | direct/raw HE layouts and historical-envelope variants | all negative semantically |
-| EXP84–91 | passive correlations / presence variants | no semantic DCM state |
-| EXP92 | full canonical handshake + historical envelope | transport ACK only |
-| EXP93 | `A80F=50` discriminator | inconclusive then; superseded by EXP106 |
-| EXP94 | passive cold boot baseline | deterministic boot sequence mapped |
-| EXP95 | zero presence from cold boot | fast cadence only |
-| EXP96 | historical envelope from cold boot | ACK only; no session effect |
-| EXP97 | passive natural-state correlation | `A80E/AFDC` can cycle with no ESP TX |
-| EXP98 | AFC8 A/B/A influence | negative |
-| EXP99 | historical non-REQ field matrix | negative |
-| EXP100 | AFC8/AFC9/AFCB combination matrix | negative |
-| EXP101 | one-word matrix over `AFCC..AFD3` | negative |
-| EXP102 | AFC9/AFCB count/structure matrix | negative |
-| EXP103 | repeated identical canonical transaction chain | all ACKed; no semantic state |
-| EXP104 | AFC8 sequence toggle `00FF→00FE→00FF` | all ACKed; no semantic state |
-| EXP105 | canonical transaction gated on natural `A80E=AFDC=0x20` | ACKed; no semantic state |
-| EXP106 | passive `A80F=50` sync discriminator | partial triggered run; 50 not unique/required for A80E/AFDC lifecycle |
+| EXP84–92 | passive correlations / presence variants / completed historical-envelope handshake | no semantic DCM state |
+| EXP93–106 | lifecycle/state gating (`A80F`, `A80E`, `AFDC`) | state gates rejected as session criteria |
+| EXP107 | 60 s stable accessory image before AFCA pulse | ACK only; no semantic state |
+| EXP108 | Online dump index validation using `0442` | **POSITIVE: Online index 1090 = local 0x0442** |
+| EXP109 | cooling block mapper | `0442..044E` mapped; `0442` enable confirmed |
+| EXP110–112 | direct second-master native `0x0F` writes | negative |
+| EXP113 | historical mailbox + confirmed `0442,value` target | transport ACK only |
+| EXP114 | fail-closed transmission gate | **PROVEN** |
+| EXP115 | shifted `0442` target placement | negative |
+| EXP116 | declared length=2 + `[0442,0000]` | negative |
+| EXP117 | presence-only commissioning/init signature | negative; fast cadence only |
+| EXP118 | firmware-derived grouped HE GET | handshake only; no app response |
+| EXP119 | passive cold-boot Online writable-index census | no `0553`/`0559` |
+| EXP120 | exact cold-boot lifecycle capture | transient `04BA..04CF` discovered |
+| EXP121 | Cooling ON/OFF/ON vs transient `04BA` | `04BA` invariant; multiple boot branches discovered |
+| EXP122 | overnight passive lifecycle correlator | repeated A80E→AFDC ~3.7 s propagation |
+| EXP123 | display recognition from presence | **negative**, including reboot with responder active |
+| EXP124 | display recognition after canonical handshake | **PREPARED / current** |
 
 ---
 
-# 16. Things that are now effectively ruled out
+# 17. Things that are now effectively ruled out
 
 Do **not** repeat these without new evidence:
 
-- treating `03E8` as a local Thermia register pointer;
+- treating `03E8` in AFCA as local Heating Curve register 1000;
 - assuming `00FF` is required for ACK;
-- assuming `00FF` alone activates Online/DCM state;
+- assuming fast cadence means application/session acceptance;
+- assuming a complete `0861` transport ACK means semantic success;
 - simple `[register,value]` payloads;
 - `03E8/count/value` layouts;
-- arbitrary adjacent word placement;
-- trailing `03F4,setpoint` combinations;
-- full raw local-settings block in `AFC8..AFD3`;
-- raw HE parameter IDs as local Thermia addresses;
-- canonical HE GET endpoint 0 or 1 directly in the mailbox;
-- broad endpoint enumeration without a new clue;
-- byte-swapped HE layout;
-- one-byte shifted HE layout;
+- arbitrary adjacent-word placement;
+- raw local-settings blocks in `AFC8..AFD3`;
+- raw HE parameter IDs as local Thermia mailbox data;
+- endpoint/byte-swap/one-byte-shift HE variants already tested;
 - historical envelope + raw HE body;
 - historical envelope + scalar curve;
-- persistent all-zero presence as an online-state trigger;
-- persistent `w0=00FF` as an online-state trigger;
-- persistent `00FF,1,REQ-low,1` as an online-state trigger;
-- direct independent Modbus-master write to room-sensor `B3B1` expecting the controller to adopt it.
-- treating `A80E=0x20` or `AFDC=0x20` as proof of DCM login/session acceptance;
-- using `A80F=50` as a unique gate for the natural A80E/AFDC lifecycle;
-- simple AFC8 identity/sequence toggling (`00FF→00FE→00FF`);
-- repeating identical canonical transactions as a session-establishment mechanism;
+- persistent all-zero or `00FF` presence as an Online-state trigger;
+- repeated identical canonical transactions as session establishment;
+- simple AFC8 identity/sequence toggles;
 - simple AFC9/AFCB count/length interpretations;
 - isolated one-word activation hypotheses across `AFCC..AFD3`;
-- timing the known canonical transaction specifically inside the natural `A80E=AFDC=0x20` window.
+- timing the canonical transaction specifically inside `A80E/AFDC 0x20`;
+- using `A80F=50` as a unique sync/session gate;
+- assuming `A80C bit 0x40` means compressor running;
+- treating `AFDC 0x20` as DCM login/session success;
+- direct second-master writes to native `0x0F` as an equivalent substitute for controller-native writes;
+- expecting plain `0x06` presence to make the DCM/Online module appear on the display.
 
 ---
 
-# 17. Current protocol model
+# 18. Current protocol model
 
-The best current model has **three distinct layers**:
+The best current model has at least four logical layers:
 
 ```text
 1. Transport presence
-   valid 0x06 response -> fast ~0.7 / ~1.4 s cadence
+   valid 0x06 response
+   -> fast ~0.7 / ~1.4 s cadence
+   -> ~2 min controller-side presence timeout
 
 2. Transaction transport
    AFCA 0 -> 03E8 -> 0
    0861 0 -> 16 -> 0
 
-3. DCM application/session semantics
-   UNKNOWN -> actual parameter read/write
+3. Accessory identity / binding / integration / UI recognition
+   UNKNOWN
+   likely involves DCM/Connect application state
+
+4. Semantic parameter read/write
+   HE/DHP parameter model <-> native Thermia register/state
+   serializer still UNKNOWN
 ```
 
-Layers 1 and 2 are proven. Layer 3 remains unresolved. Fast cadence does not imply semantic acceptance; a complete `0861` handshake does not imply semantic acceptance; repeated transactions, AFC8 sequence toggling, and `A80E=AFDC=0x20` state gating have all been tested without semantic effect.
+Layers 1 and 2 are proven on two different iTec/DHP-AQ systems.
+
+EXP123 shows layer 1 is **not** sufficient for UI-level DCM recognition. EXP124 is explicitly testing whether completing layer 2 changes that.
+
+The semantic serializer behind layers 3–4 remains the central unresolved problem.
 
 ---
 
-# 18. Most likely architecture now
-
-The current working architecture is:
+# 19. Most likely architecture now
 
 ```text
-Danfoss Link / Thermia Online host
+Thermia Online cloud / Danfoss Link
         ↓
 HE/DHP parameter model
         ↓
-DCM03 internal serializer / state machine
+identity / binding / IntegrationMode / grouped sync
         ↓
-fixed 12-word Thermia accessory bank AFC8..AFD3
+DCM03 / Thermia Connect application state machine
         ↓
-controller
+serializer into AFC8..AFD3
+        ↓
+AFCA/0861 transport transaction
+        ↓
+Thermia controller native settings/state
 ```
 
-Proven inside the 12-word bank: `AFCA`/word2 is the REQ/data-valid level, and the controller returns the transport ACK through `0x0F:0861`. The remaining identity/integration/parameter-selector/value/session fields are still unknown. The inspected Link firmware does not expose this final serializer, so the missing translation is most likely inside DCM03 hardware/firmware.
+The exact ordering between application serialization and the AFCA transaction may be more interleaved than this diagram suggests, but it captures the currently evidenced layers.
+
+The public Online dump proves that the DCM stack knows native-looking register indices; EXP108 proves at least one of them (`0442`) is genuinely the same native local index on the XTR M. What remains unknown is **how the DCM represents identity/session/parameter operations inside its 12-word accessory interface**.
 
 ---
 
-# 19. Next high-value work
+# 20. Next high-value work
 
-## A. Obtain one real DCM03 / Thermia Online bus capture
+## A. Finish EXP124
 
-This is now the highest-value path. Capture from before power-up for 60–120 s, then make one safe official setting change (ideally `HeatCurve 36 → 37`), capture 10 s before through at least 30 s after, then restore `37 → 36`. The critical evidence is the **response from slave `0x06`**.
+The immediate controlled discriminator is whether a completed, already-proven AFCA/0861 transaction changes UI-level accessory recognition compared with EXP123's presence-only negative.
 
-## B. Recover DCM03 firmware / hardware details
+## B. Obtain one real Thermia Online / Connect / DCM bus capture
 
-Useful targets: MCU identification, PCB/debug pads, firmware dump, service/factory software, Z-Wave Manufacturer Specific / Version information, or old Danfoss Link HP-kit engineering material.
+This remains the highest-value external evidence. Ideally capture:
 
-## C. Cross-model validation on iTec Eco 8 / DHP-AQ
+1. before module/controller power-up;
+2. first 60–120 s of initialization;
+3. one safe official setting change;
+4. the corresponding restore.
 
-Directly test whether valid `0x06` responses cause fast cadence and whether `AFCA=03E8` produces the same `0861` ACK cycle. Reproduction would strongly support a platform-wide DHP-AQ/iTec transport layer.
+The most valuable bytes are the **slave `0x06` responses**.
 
-## D. Passive correlation only when tied to a new clue
+## C. Continue firmware-led identity/binding reconstruction
 
-EXP106 shows `A80F=50` is not a unique DCM-sync discriminator. More long waits or near-identical timing variants are low value without new external evidence.
+Prioritise:
 
-## E. Room-sensor path as reference
+- `ProductID`;
+- `BrandID`;
+- `DivisionID`;
+- endpoint allocation / service bind;
+- `IntegrationMode`;
+- initial full-sync ordering.
 
-`0x0A:B3B1` is a proven semantic accessory-write path and a useful reference, but the project target remains native `0x06` Online/DCM access.
+Do not search for internal booleans such as `SystemIntegrationInitRequest` or `InitSyncDone` as literal wire fields without independent evidence.
+
+## D. Exploit the Online dump as a semantic oracle
+
+The dump now provides known writable semantic targets (`03E8..03EE`, `03F0`, `042E`, `0442`, `0553`, `0559`). Future serializer hypotheses should be tested against one already-proven reversible target such as `0442`, not against arbitrary unknown registers.
+
+## E. Cross-model validation
+
+The Eco 8 has already reproduced the core transport layer. Further useful cross-checks include:
+
+- any UI/accessory recognition after a complete four-phase transaction;
+- cold-boot `04BA`-family behaviour;
+- native traffic around the long periodic `A80C/A80E` routine;
+- first real `0x1E:0014` defrost pattern.
 
 ---
 
-# 20. Safety approach
+# 21. Safety approach
 
-Active experiments are deliberately narrow.
+Active experiments remain deliberately narrow.
 
 Current rules:
 
 - one active experiment at a time;
 - exact expected `0x06` poll signature only;
 - fail closed;
-- compressor/outdoor-unit command guards where relevant;
+- compressor/outdoor-unit guards where relevant;
 - abort on parser/RX corruption;
 - no direct writes to unknown controller registers;
 - no broad Modbus register scanning while operating;
-- keep production control on the known SG Ready interface until a semantic write path is proven.
+- no uncontrolled register-write sweeps;
+- keep production control on the known SG Ready interface until a semantic native write path is proven.
 
 For normal operation, the preferred configuration remains **receive-only**.
 
 ---
 
-# 21. Current practical control fallback
+# 22. Current practical control fallback
 
 The heat pump supports **Smart Grid Ready** inputs.
 
-These are currently the safest known external control interface and can be driven using isolated relays/Shelly devices.
-
-Until native bus writing is understood, SG Ready remains the recommended production-control path.
+These remain the safest known external production-control interface and can be driven with isolated relay/Shelly hardware while native bus control remains under investigation.
 
 ---
 
-# 22. Contributions wanted
+# 23. Contributions wanted
 
-If you are researching the same Thermia/Danfoss platform, useful contributions include:
+If you are researching the same Thermia/Danfoss platform, especially useful contributions include:
 
-- bus captures containing a real DCM03;
-- register traces during Danfoss Link setpoint/curve changes;
-- DCM03 firmware dumps;
-- PCB photos and MCU markings;
-- official service manuals;
-- protocol documentation;
+- a real Thermia Online / DCM03 / Thermia Connect bus capture;
+- first boot/commissioning traffic from a genuine module;
+- register traces during official Online setting changes;
+- DCM03/Connect firmware dumps;
+- PCB photos and MCU/debug-pad markings;
+- service/factory software or protocol packages;
+- official installation/service material;
 - captures from another DHP-AQ/iTec generation;
-- confirmed meanings for `AFC8..AFD3`;
+- confirmed meanings for remaining `AFC8..AFD3` words;
 - confirmed meanings for `AFDD..AFDF`;
-- safe room-sensor emulation results.
+- further `0x1E:0014` state-bit correlations.
 
 Please include:
 
 - heat-pump model;
 - controller generation;
-- DCM/Online hardware model if present;
+- DCM/Online/Connect hardware model if present;
 - bus speed/parity;
 - exact frame bytes;
 - timing between frames;
@@ -1009,23 +996,42 @@ Please include:
 
 ---
 
-# 23. Short version
+# 24. Short version
 
 ```text
-RS485 = Modbus RTU 9600 8E1
+RS485 = Modbus RTU-like 9600 8E1
 
 0x0A = room sensor
-0x0F = local controller settings/state
-0x06 = DCM/Online accessory slot
+0x0F = native controller settings/state
+0x06 = Online/DCM accessory slot
 
-0x06:
-  controller reads  AFC8..AFD3 (12 words)
-  controller writes AFDC..AFE0 (5 words)
+0x06 controller poll:
+  reads  AFC8..AFD3 (12 words) from accessory
+  writes AFDC..AFE0 (5 words) to accessory
 
-valid 0x06 response -> fast ~0.7 / ~1.4 s cadence
+valid 0x06 response
+  -> fast ~0.7 / ~1.4 s cadence
+  -> cadence persists ~2 min after accessory disappears
+
 AFCA 0000 -> 03E8 -> 0000
 0861 0000 -> 0010 -> 0000
+  = proven transport transaction
 ```
+
+Cross-model Eco 8 testing reproduces both the cadence and the AFCA/0861 handshake.
+
+The public Thermia Online DCM dump exposes writable native-looking indices including:
+
+```text
+03E8..03EE heating family
+03F0        room factor
+042E        Integral A1
+0442        Activate Cooling
+0553        Operation Mode
+0559        Link Integration
+```
+
+`0442` has been independently verified on the XTR M as a genuine native local mapping.
 
 But:
 
@@ -1033,9 +1039,9 @@ But:
 valid response != semantic session
 fast cadence    != semantic session
 transport ACK   != semantic command success
-A80E/AFDC=0x20  != DCM login proof
+A80E/AFDC 0x20  != DCM login proof
 A80F=50         != unique DCM sync gate
+plain presence  != UI-level DCM recognition
 ```
 
-The remaining challenge is the **DCM03 application/session serializer** inside `AFC8..AFD3`. A real DCM03/Thermia Online cold-boot capture plus one safe official setting change is now far more valuable than further isolated-word guessing.
-
+The remaining challenge is the **DCM/Connect identity/binding/application serializer** inside the `0x06` accessory interface. A genuine Thermia Online/Connect cold-boot capture is still the single most valuable missing artifact.
