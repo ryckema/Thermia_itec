@@ -1,6 +1,6 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
-_Last updated: 2026-09-24_
+_Last updated: 2026-09-25_
 
 This document summarizes the reverse-engineering work performed so far on a **Thermia iTec XTR M + Total Compact** installation using an **ESP32-S3 / isolated RS485 interface** and Home Assistant.
 
@@ -90,11 +90,14 @@ The Waveshare 120 Ω termination jumper is normally left **OFF** while passively
 | Slave | Current interpretation | Status |
 |---|---|---|
 | `0x02` | main/controller-side state and command context | PROVEN |
-| `0x06` | Online/DCM/accessory slot | PROVEN |
+| `0x04` | internal Thermia component; seen in genuine Online topology | OBSERVED / OPEN |
+| `0x06` | expansion/accessory FC17 interface; transport presence path | PROVEN transport, physical DCM identity OPEN |
 | `0x0A` | room sensor | PROVEN |
-| `0x0F` | controller settings/state blocks | PROVEN |
+| `0x0F` | bidirectional Online/DCM-related settings/state mailbox | STRONGLY INDICATED / direction partly PROVEN |
 | `0x14` | auxiliary block, semantics largely unknown | OPEN |
 | `0x1E` | outdoor-unit telemetry/control context | PROVEN |
+| `0xA4` | fallback/discovery-like FC03 endpoint seen in genuine Online capture | OBSERVED / OPEN |
+| `0xA5` | responsive FC03 endpoint seen in genuine Online capture | OBSERVED / identity OPEN |
 
 ---
 
@@ -226,7 +229,29 @@ A possible explanation is the daily circulation-pump exercise described in older
 
 ---
 
-# 5. Slave `0x0F` – local settings/state blocks
+# 5. Slave `0x0F` – bidirectional settings/state mailbox
+
+The older description of `0x0F` as only a local settings/state sink is no longer sufficient.
+
+A genuine Thermia Online/DCM capture shows both:
+
+- FC16 writes **to** `0x0F`, carrying recurring controller/state/snapshot blocks;
+- FC03 reads **from** `0x0F`, with responses carrying smaller command/desired-state mailbox blocks.
+
+Independent work by fclauson on a related DHP-AQ/ATEC system identified the same model: the controller writes state into `0x0F`, while reading back command-side blocks from it.
+
+A particularly important anchor is:
+
+```text
+0x0F FC03 start 0x03E8 count 13
+range 0x03E8..0x03F4
+```
+
+This exact 13-register read block appears in the genuine Online capture and independently in fclauson's 0x0F map.
+
+The recurrent controller-originated FC10/FC16 block at `0x03E8..0x03F5` still contains local settings/state, but the **same numeric range can also be used in the opposite mailbox direction when the controller issues FC03 against slave 0x0F**.
+
+
 
 A recurring FC10 block at `0x03E8..0x03F5` contains controller settings.
 
@@ -806,7 +831,18 @@ This is intentionally compact. Individual YAML/log files contain the full detail
 | EXP121 | Cooling ON/OFF/ON vs transient `04BA` | `04BA` invariant; multiple boot branches discovered |
 | EXP122 | overnight passive lifecycle correlator | repeated A80E→AFDC ~3.7 s propagation |
 | EXP123 | display recognition from presence | **negative**, including reboot with responder active |
-| EXP124 | display recognition after canonical handshake | **PREPARED / current** |
+| EXP124–132 | display recognition / accessory metadata / header and tail-word tests | transport/accessory semantics refined; no DCM recognition |
+| EXP133–136 | passive native block census + DHW A/B tests | native block families refined; DHW tail assumptions rejected |
+| EXP137–145 | 0x0F ACK-gated init/snapshot sequence | controller has persistent ACK-gated write-state machine; not sufficient for Online topology |
+| EXP146–147 | genuine-shape 0x0F read probes | no response locally |
+| EXP148 | 300 s passive topology watch | no A5/A4/0F-FC03 locally |
+| EXP149 | one exact genuine A5 request | no response / no topology promotion |
+| EXP150 | active 0x0F ACK role | no A5/A4/0F-FC03 |
+| EXP151 | valid 0x06 transport presence | no A5/A4/0F-FC03 |
+| EXP152 | offline genuine scheduler reconstruction | A5/A4 + 0x0F FC03 identified as genuine Online scheduler extension |
+| EXP153 | cold boot with combined known 0x06 + 0x0F roles | **NEGATIVE:** transport presence at boot still insufficient |
+| EXP154 | offline IntegrationMode / Link Integration reconstruction | `0x4414 IntegrationMode` ↔ `0x0559 Link Integration` strong semantic match, ownership unresolved |
+| EXP155 | offline fclauson artifact + genuine-capture analysis | **POSITIVE architecture result:** 0x0F is bidirectional mailbox; FC03 03E8/count13 confirmed command-side anchor |
 
 ---
 
@@ -842,30 +878,39 @@ Do **not** repeat these without new evidence:
 
 # 18. Current protocol model
 
-The best current model has at least four logical layers:
+The model has materially changed after EXP147–155 and the genuine Online capture.
 
 ```text
-1. Transport presence
-   valid 0x06 response
+1. Expansion/accessory transport on 0x06
+   valid 0x06 FC17 response
    -> fast ~0.7 / ~1.4 s cadence
-   -> ~2 min controller-side presence timeout
+   -> transport presence only
 
-2. Transaction transport
+2. 0x06 transaction handshake
    AFCA 0 -> 03E8 -> 0
-   0861 0 -> 16 -> 0
+   0x0F:0861 0 -> 16 -> 0
+   -> transport transaction only
 
-3. Accessory identity / binding / integration / UI recognition
-   UNKNOWN
-   likely involves DCM/Connect application state
+3. Genuine Online/DCM topology extension
+   controller scheduler additionally uses:
+   - 0xA5 FC03
+   - 0xA4 FC03 fallback/discovery-like probes
+   - 0x0F FC03 reads
+   - normal 0x0F FC16 state/snapshot writes
 
-4. Semantic parameter read/write
-   HE/DHP parameter model <-> native Thermia register/state
-   serializer still UNKNOWN
+4. 0x0F bidirectional mailbox
+   FC16 to 0x0F = controller/state/snapshot direction
+   FC03 from 0x0F = command/desired-state direction
+
+5. DCM identity / approval / integration / grouped sync
+   still unresolved
 ```
 
-Layers 1 and 2 are proven on two different iTec/DHP-AQ systems. Later XTR experiments showed that neither transport presence nor a correctly completed AFCA/0861 transaction is sufficient to establish the missing semantic Online/DCM session.
+EXP147–153 showed that timing, 0x06 presence, 0x0F ACK behaviour and even cold-boot presence of both known transport roles are **not sufficient** to make the XTR controller add the genuine Online A5/A4/0F-FC03 scheduler.
 
-The semantic serializer behind layers 3–4 remains the central unresolved problem.
+The missing prerequisite is therefore now believed to be semantic/application-level recognition rather than simple transport presence.
+
+The most important new anchor is the genuine `0x0F FC03 0x03E8/count13` command-mailbox read, which matches an independently reconstructed DCM mailbox block exactly.
 
 ---
 
@@ -874,67 +919,162 @@ The semantic serializer behind layers 3–4 remains the central unresolved probl
 ```text
 Thermia Online cloud / Danfoss Link
         ↓
-HE/DHP parameter model
+DCM03 / Online application state
         ↓
-identity / binding / IntegrationMode / grouped sync
+identity / approval / IntegrationMode / grouped sync
         ↓
-DCM03 / Thermia Connect application state machine
+┌─────────────────────────────────────────────┐
+│ 0x06 expansion/accessory transport          │
+│   presence + AFCA/0861 transaction layer    │
+└─────────────────────────────────────────────┘
         ↓
-serializer into AFC8..AFD3
+controller scheduler recognizes Online topology
         ↓
-AFCA/0861 transport transaction
+┌─────────────────────────────────────────────┐
+│ 0x0F bidirectional mailbox                  │
+│   FC16 -> state/snapshot written to 0x0F    │
+│   FC03 <- command/desired-state read from   │
+│            0x0F                             │
+└─────────────────────────────────────────────┘
         ↓
-Thermia controller native settings/state
+native Thermia settings/state
 ```
 
-The exact ordering between application serialization and the AFCA transaction may be more interleaved than this diagram suggests, but it captures the currently evidenced layers.
+This model fits all current evidence better than the older assumption that the full semantic serializer lived directly inside `AFC8..AFD3`.
 
-The public Online dump proves that the DCM stack knows native-looking register indices; EXP108 proves at least one of them (`0442`) is genuinely the same native local index on the XTR M. What remains unknown is **how the DCM represents identity/session/parameter operations inside its 12-word accessory interface**.
+The public Online dump proves that the DCM stack knows native-looking register indices, and `0x0442 Activate Cooling` is independently verified on the XTR M.
+
+The genuine capture plus fclauson's mailbox map now add a second major bridge: `0x0F FC03 0x03E8/count13` is a real command-side mailbox block.
+
+`0x0559 Link Integration` remains semantically important, but current artifact evidence places register 1369 / `0x0559` inside an FC16 block written **to** slave `0x0F`. It must therefore not be treated as a proven DCM->controller activation write.
 
 ---
 
 # 20. Next high-value work
 
-## A. Obtain one real Thermia Online / Connect / DCM bus capture
+## A. Get a longer genuine Online/DCM capture with exact action timestamps
 
-A genuine module capture is now the highest-value next artifact. Presence, cadence and the transport REQ/ACK mechanism are already understood; what remains is the layer above them.
+The previous genuine Online capture was a major breakthrough, but it ended before the post-restore state could be observed cleanly.
 
-## B. Analyse initialization and one official setting change
+Highest-value follow-up:
 
-This remains the highest-value external evidence. Ideally capture:
+1. start with the genuine DCM connected;
+2. record a stable baseline;
+3. change exactly one Online setting, e.g. Heating Curve `20 -> 21`;
+4. record the exact action timestamp;
+5. restore `21 -> 20`;
+6. record the exact restore timestamp;
+7. continue capturing for at least 60–90 s after restore.
 
-1. before module/controller power-up;
-2. first 60–120 s of initialization;
-3. one safe official setting change;
-4. the corresponding restore.
+This should allow a causal diff of the `0x0F FC03 0x03E8/count13` mailbox and subsequent FC16 state propagation.
 
-The most valuable bytes are the **slave `0x06` responses**.
+## B. Reconstruct the 13-word command mailbox before more local TX
 
-## C. Continue firmware-led identity/binding reconstruction
+The confirmed command-side anchor is:
 
-Prioritise:
+```text
+0x0F FC03 0x03E8 count 13
+```
 
-- `ProductID`;
-- `BrandID`;
-- `DivisionID`;
-- endpoint allocation / service bind;
-- `IntegrationMode`;
-- initial full-sync ordering.
+The next analysis should compare every response word over time and correlate it with exact Online actions.
 
-Do not search for internal booleans such as `SystemIntegrationInitRequest` or `InitSyncDone` as literal wire fields without independent evidence.
+Do not perform a 13-word local mutation matrix. First identify the genuine command field and its baseline/changed/restored values from real DCM traffic.
 
-## D. Exploit the Online dump as a semantic oracle
+## C. Find the scheduler activation prerequisite
 
-The dump now provides known writable semantic targets (`03E8..03EE`, `03F0`, `042E`, `0442`, `0553`, `0559`). Future serializer hypotheses should be tested against one already-proven reversible target such as `0442`, not against arbitrary unknown registers.
+On the local XTR without a genuine DCM, EXP148–153 produced no A5/A4/0F-FC03 topology even when known 0x06 and 0x0F transport roles were present and exercised.
 
-## E. Cross-model validation
+The key question is therefore:
 
-The Eco 8 has already reproduced the core transport layer. Further useful cross-checks include:
+**what state or transaction appears immediately before the controller starts scheduling A5/A4 and 0x0F FC03 reads in a genuine Online topology?**
 
-- any UI/accessory recognition after a complete four-phase transaction;
-- cold-boot `04BA`-family behaviour;
-- native traffic around the long periodic `A80C/A80E` routine;
-- first real `0x1E:0014` defrost pattern.
+That prerequisite is likely more important than another guessed register write.
+
+## D. Continue firmware-led identity/binding reconstruction
+
+Prioritise ProductID, BrandID, DivisionID, endpoint allocation/service bind, IntegrationMode and grouped initial-sync ordering.
+
+Do not treat internal firmware booleans such as `SystemIntegrationInitRequest` or `InitSyncDone` as literal wire fields without independent evidence.
+
+## E. Keep `0x0559` as an observation target, not a write target
+
+The Online dump still makes `0x0559 Link Integration` semantically important, but the current mailbox evidence places it in an FC16 state/snapshot block written to `0x0F`.
+
+Do not issue a blind `0559=1` write unless new direction/ownership evidence appears.
+
+---
+
+# 20A. Genuine Thermia Online capture — major architecture update
+
+A ~46 s capture with a real Online/DCM installation added traffic that never appears on the local XTR without a genuine DCM.
+
+Observed counts included:
+
+- `0xA5 FC03` — frequent responsive polling;
+- `0x0F FC03` — command/mailbox reads with valid responses;
+- `0x0F FC16` — recurring state/snapshot writes with ACKs;
+- `0x06 FC17` — present but with no responses in this particular genuine capture;
+- `0xA4 FC03` — a few tail probes, apparently fallback/discovery-like.
+
+The recurring A5 read shapes were:
+
+```text
+A5 03 0000 count 18
+A5 03 0023 count 1
+A5 03 002E count 10
+```
+
+A key 0x0F command-mailbox read was:
+
+```text
+0F 03 03E8 000D
+```
+
+with a 13-word response covering `03E8..03F4`.
+
+Two observed response images were:
+
+```text
+23,20,40,0,1,1,18,18,2,40,30,60,20
+22,20,40,0,1,1,18,18,2,40,30,60,20
+```
+
+Only the first word changed between those two samples. Because the exact UI-action timestamps were not captured, this is not yet enough to identify the command field causally.
+
+The same capture also contained the decimal-2000 FC16 family:
+
+```text
+07D0, 07E4, 07F8, 080C, 0820, 0834, 0848, 0864, 0870, 0884
+```
+
+A change from `0x0000` to `0x0015` (=21 decimal) appeared at register `0x0858` in one later `0x0848` snapshot, while `0x085A` remained `0x0014` (=20). The capture ended before another `0x0848` snapshot after restore, so a complete `20 -> 21 -> 20` causal sequence cannot yet be claimed.
+
+---
+
+# 20B. fclauson 0x0F artifact analysis
+
+The externally supplied `0F_register_value_map.xlsx` and `modbus_slave.py` materially strengthen the mailbox model.
+
+The Python tool is a forensic logger, not a semantic slave implementation. It explicitly tracks two Unit-15 FC03 read blocks:
+
+- 13 registers, with target position 12;
+- 21 registers, with target position 13.
+
+The spreadsheet resolves these as:
+
+```text
+1000..1012  (0x03E8..0x03F4)
+1040..1060  (0x0410..0x0424)
+```
+
+The first block matches the genuine Online `03E8/count13` capture exactly.
+
+The same spreadsheet contains an FC16 block covering decimal `1350..1369`, including:
+
+- 1363 / `0x0553` = Operation Mode;
+- 1369 / `0x0559` = Link Integration.
+
+This places those fields in controller/state -> `0x0F` snapshot traffic in that evidence set. It is therefore unsafe to reinterpret `0x0559` as a proven external command input.
 
 ---
 
@@ -1000,8 +1140,8 @@ Please include:
 RS485 = Modbus RTU-like 9600 8E1
 
 0x0A = room sensor
-0x0F = native controller settings/state
-0x06 = Online/DCM-facing accessory transport slot
+0x0F = bidirectional Online/DCM-related settings/state mailbox
+0x06 = expansion/accessory transport interface
 
 0x06 controller poll:
   reads  AFC8..AFD3 (12 words) from accessory
@@ -1042,7 +1182,9 @@ A80F=50         != unique DCM sync gate
 plain presence  != UI-level DCM recognition
 ```
 
-The remaining challenge is the **DCM/Connect identity/binding/integration/initial-sync and semantic serializer** inside the `0x06` accessory interface. A genuine Thermia Online/Connect cold-boot capture with one safe official setting change is still the single most valuable missing artifact.
+The remaining challenge is the **DCM/Connect recognition / approval / integration prerequisite that activates the genuine Online scheduler**, followed by exact command-mailbox semantics.
+
+The most valuable next artifact is a **longer genuine Online capture with exact timestamps for one setting change and restore**, continued for 60–90 s after restore.
 
 ---
 
@@ -1115,3 +1257,36 @@ v27 does **not** add active write experiments. It updates the protocol model to 
 2. AFCA/0861 transaction transport;
 3. unresolved identity/binding/integration/initial-sync state;
 4. unresolved semantic parameter serializer.
+
+
+---
+
+# 27. EXP137–155 update
+
+## Observed facts
+
+- ACK-gated 0x0F FC16 state persists across ESP restarts and resumes from the expected next block.
+- Genuine Online topology adds A5/A4 FC03 traffic and 0x0F FC03 reads.
+- Local XTR transport presence, including cold-boot presence of known 0x06 and 0x0F roles, does not reproduce that topology.
+- A genuine Online FC03 read of 0x0F:03E8/count13 matches an independently reconstructed DCM mailbox block.
+- External artifact analysis places 0x0559 Link Integration inside an FC16 write block to 0x0F.
+
+## Strong conclusions
+
+- Transport presence is not the missing DCM-recognition criterion.
+- 0x0F is bidirectional in Online topology.
+- FC16-to-0x0F and FC03-from-0x0F should be treated as different semantic directions.
+- Blind direct writes to 0x0559 are not justified by current evidence.
+
+## Hypotheses
+
+- A semantic approval/binding/integration state enables the expanded A5/A4/0x0F-FC03 scheduler.
+- The 03E8/count13 FC03 response is a desired-state/command image, at least partly mirroring known controller settings.
+
+## Unknowns
+
+- exact physical owner of A5/A4;
+- exact serializer that populates the 0x0F FC03 mailbox;
+- which 03E8/count13 word carries each Online command;
+- exact prerequisite that activates the scheduler;
+- whether IntegrationMode is mirrored, derived, or actively controlled through another path.
