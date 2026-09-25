@@ -6,21 +6,22 @@ This project is based on reverse engineering of a real Thermia iTec XTR M with t
 
 > **Current status:** read-only monitoring is working reliably on the tested system. Writing/control is intentionally disabled. Direct writes to several known mirror/broadcast registers did not change the controller's master state, and the Online/DCM command protocol is not yet understood well enough for safe control.
 
-## Current reverse-engineering status (EXP162)
+## Current reverse-engineering status (EXP182)
 
-The active write-path research is deliberately kept separate from the shared RX-only YAML builds. The latest completed controlled test is **EXP162**.
+The active write-path research is deliberately kept separate from the shared RX-only YAML builds. The latest completed analysis is **EXP182**, an offline reconstruction of the genuine Online/DCM mailbox and scheduler behaviour.
 
 Recent findings:
 
-- Genuine Online/DCM captures show a broader service topology involving recurring `0xA5 FC03` polling, `0x06 FC17`, bidirectional `0x0F` traffic and occasional `0xA4` / `0x05` activity.
-- The recurring A5 read shapes are `0000/count18`, `0023/count1`, and `002E/count10`.
-- `C8 FC03 2328/count2` also occurs on a cold boot **without** a DCM and continues while a genuine DCM is already functional. It is therefore not treated as a proven DCM-login gate.
-- **EXP160:** an exact A5 responder alone was never invoked; the controller did not start polling A5.
-- **EXP162:** combining a strict known-shape `0x0F FC16` ACK responder with the A5 responder successfully ACKed all six observed startup FC16 requests, but still produced **no A5 polling and no `0x0F FC03` traffic** during 180 s.
-- ACKing those no-DCM startup FC16 frames suppresses/advances their retry state, but does **not** reproduce the genuine DCM initial-sync/scheduler state.
-- The remaining problem is therefore an earlier **presence / binding / service-state prerequisite** that makes the controller enter the genuine Online/DCM topology.
+- Genuine Online/DCM captures show an **extended controller-side service topology** with recurring `0xA5` / `0xA4` / `0x05` activity, periodic `0x0F FC03 0x0708/count6` mailbox polls, and cyclic `0x0F FC16` runtime uploads in the `0x07D0..0x0884` family.
+- In a DCM-rejoin capture, the controller keeps issuing `0x0708/count6` polls while the DCM is still silent. This proves that the scheduler itself is controller-side; DCM availability is not required for each poll to be scheduled.
+- The first DCM response after rejoin is `0000,0000,7FFF,FFFF,0080,0007`, after which the controller starts a broad FC16 state/configuration resynchronisation beginning at `0x03E8`.
+- In a command-event capture, `0x0708` response word1=`0001` is followed about 40 ms later by `0x0F FC03 0x03E8/count13`. This is the strongest source-proven desired-state dispatch relation found so far.
+- The normal/steady `0x0708` response is commonly `0000,0000,0000,0000,077F,0006`. Other startup variants exist, so the six-word header is treated as mailbox/session state rather than a fixed heartbeat.
+- The tested XTR M does **not** show the reference system's extended runtime family (`0708` polling plus `07D0..0884` cyclic FC16 uploads), even though it does have native `0x0F` settings/state traffic such as `03E8`, `04A6` and `085F`.
+- This shifts the main unresolved question away from a single writable register: the missing piece now appears to be a **controller-side scheduler/topology/integration mode** that is active on the reference system but not on the tested XTR M.
+- A genuine DCM being physically present may still be part of how that controller mode is selected or recognised at boot. The available captures do not yet separate physical DCM-presence from model/firmware/configuration differences.
 
-The next controlled experiment, **EXP163**, is intentionally narrow and remains experimental: after the known `0x0F` ACK phase it will issue only the three exact, previously observed A5 **FC03 read** shapes to test A5 direction/ownership. It performs no A5 register writes and no broad scan. Results should not be treated as established protocol behaviour until the experiment has completed.
+The current highest-value external evidence would be a **true controller cold boot with DCM connected**, ideally paired with a second cold boot of the same controller without the DCM. That A/B capture could reveal the first bus-level discriminator that enables the extended topology.
 
 The normal/public integration remains **strictly receive-only**.
 
@@ -367,10 +368,32 @@ Setpoint direction is important: a genuine room-sensor adjustment appears in the
 | `0x04A6..0x04B2` | `1190..1202` | Native runtime FC10 block; `0x04B0=0x4020` seen in first EXP133 sample | **Observed locally / semantics Unknown** |
 | `0x085F..0x0863` | `2143..2147` | Native five-word FC10 block containing transaction field `0x0861` | **Observed locally** |
 | `0x0861` | `2145` | Transport ACK field: `0 → 16 → 0` follows the proven AFCA REQ cycle | **Confirmed transport semantics** |
+| `0x0708..0x070D` | `1800..1805` | Online/DCM mailbox/session header read by controller with FC03/count6 on the reference system | **External genuine-capture / direction proven** |
+| `0x07D0..0x0884` families | — | Cyclic controller→0x0F runtime-state uploads seen on the reference Online/DCM topology | **External genuine-capture** |
 
 A related ATEC/DHP-AQ map reports a DHW settings family around decimal `1053–1059` (`0x041D–0x0423`). On the XTR M, `0x041D` is currently only a candidate for `SERVICE → WARMWATER → START` and is being treated as a passive-correlation target rather than as an assumed mapping.
 
 The low Online indices appear substantially more portable across this Thermia/Danfoss platform than the higher telemetry ranges: `0x0442 Activate Cooling` has already been independently verified on the XTR M, while some 2xxx Online indices differ between ATEC and iTec models.
+
+### Genuine Online/DCM mailbox and scheduler
+
+The current reference model is bidirectional:
+
+- controller-originated **FC16** writes populate controller/state data on slave `0x0F`;
+- controller-originated **FC03** reads consume Online/DCM-side mailbox or desired-state data.
+
+The strongest command-path observation is:
+
+```text
+0F 03 0708 0006
+DCM response: 0000 0001 0000 0000 077F 0006
+~40 ms later:
+0F 03 03E8 000D
+```
+
+This occurred twice during a deliberate Heat Curve change sequence in the genuine capture. When `0708` word1 was `0000`, the immediate `03E8/count13` desired-state read did not occur.
+
+The reference controller also cycles FC16 runtime blocks through `07D0, 07E4, 07F8, 080C, 0820, 0834, 0848, 0864, 0870, 0884`. The tested XTR M has not shown this extended runtime family locally. Therefore these addresses should **not** be treated as locally writable XTR controls; they currently serve as topology/scheduler evidence only.
 
 ---
 
@@ -604,7 +627,11 @@ Not yet in this shared version.
 
 Some frames contain fields that look writable, but direct writes to the known room-setpoint and settings mirrors have **not** changed the controller's master state. The room sensor uses an FC17 response field (`B3B1`) to report a pending local setpoint change back to the controller, so simply writing `B3C5` or `03F4` is the wrong direction.
 
-The controller additionally polls an Online/DCM-facing accessory slot (`0x06`) with FC23/0x17. The controller reads `AFC8..AFD3` (12 words) from the accessory while writing `AFDC..AFE0` (5 words) toward it. A valid response proves accessory presence and changes the poll cadence, but does not establish a semantic session. The `AFCA 0 -> 03E8 -> 0` / `0x0F:0861 0 -> 16 -> 0` exchange is a proven transport transaction. The still-missing layer is the genuine DCM/Connect identity, binding, integration/initial-sync and semantic serializer. TX is therefore intentionally disabled in both shared v27 versions.
+The controller additionally polls an accessory/expansion slot (`0x06`) with FC23/0x17. The controller reads `AFC8..AFD3` (12 words) from the accessory while writing `AFDC..AFE0` (5 words) toward it. A valid response proves accessory presence and changes the poll cadence, but does not establish the genuine Online/DCM topology. The `AFCA 0 -> 03E8 -> 0` / `0x0F:0861 0 -> 16 -> 0` exchange is a proven transport transaction.
+
+Genuine DCM captures now show that semantic command ingress uses a different mechanism: the controller periodically FC03-reads `0x0708/count6` from slave `0x0F`, and a mailbox indication can cause an immediate follow-up FC03 desired-state read such as `0x03E8/count13`. The tested XTR M does not currently schedule that `0708` read family or the accompanying `07D0..0884` cyclic runtime uploads.
+
+The unresolved layer is therefore broader than one serializer/register: it is the controller-side topology/integration state that enables the extended Online/DCM scheduler. TX remains intentionally disabled in both shared v27 versions.
 
 ## Safety / compatibility
 
@@ -618,4 +645,8 @@ Start with read-only operation and verify the RJ45 pinout on your own hardware b
 
 Read-only monitoring is stable on the tested installation and the register map is still being expanded. Several controller and outdoor-unit sequence states have now been decoded, including normal heating/cooling startup and shutdown paths, SG Ready state, run-enable signalling and a special autonomous recovery sequence.
 
-Write support is intentionally not included. Presence on `0x06` and the AFCA/0861 transport transaction are now understood, but neither is sufficient for semantic control. Later experiments also showed that manual DHW START and COMFORT/ECO changes do not alter the recurrent `03E8..03F5` block, so earlier DHW labels in that block are not retained. The central unresolved problem is the DCM/Connect identity/binding/IntegrationMode/initial-sync serializer inside the 12-word accessory interface. A genuine Thermia Online/Connect cold-boot capture with one safe official setting change is the highest-value next artifact. The shared integrations remain passive/read-only.
+Write support is intentionally not included. Presence on `0x06` and the AFCA/0861 transport transaction are understood, but neither is sufficient for semantic control. Genuine Online/DCM captures now expose a separate `0x0F` mailbox path: `0708/count6` carries session/command state, and `word1=1` is source-proven to gate an immediate `03E8/count13` desired-state read.
+
+The larger unresolved problem is now the **controller-side extended service scheduler/topology**. The reference system runs `A5/A4/05`, `0708` polling and cyclic `07D0..0884` state uploads; the tested XTR M does not currently expose that same runtime service family. This may be model/firmware/configuration dependent, or it may be enabled by physical DCM recognition during boot.
+
+The highest-value next artifact is therefore an A/B cold-boot capture from the **same** compatible controller: one boot with a genuine DCM connected and one without it, with the bus captured from the earliest possible moment. The shared integrations remain passive/read-only.
