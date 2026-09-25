@@ -1858,3 +1858,10 @@ IntegrationMode itself is no longer the leading scheduler-enable candidate. In r
 **Current unresolved gate:** what makes the controller instantiate/enable the extended A5/A4/05 + `0708` + `07D0..0884` export topology.
 
 **Highest-value next evidence remains:** same-controller cold boot with genuine DCM connected versus physically absent. No new active local write experiment is currently justified.
+
+
+## Status through EXP193
+
+Offline reconstruction now shows the DCM runtime range as a semantic export database rather than a raw mirror of internal Modbus slaves. Confirmed/strong mappings include: 07D0 from controller 0x02 state, 07E4 from reference outside-unit 0x04 state, 07F8 from the controller/room-environment path, 080C containing 0x06 accessory lifecycle state (word14 tracks AFDC), 0820 from A5 data, 0848 current RTC/date, and 0884 the ten-entry alarm-history table. 0834, 0864 and 0870 remain semantically unresolved.
+
+The raw-slave-ID interpretation of `080C word0=00C8` and `0834 word0=001E` is rejected: those blocks exist when corresponding C8/0x1E source traffic is absent. No active local write follows from these findings. The highest-value scheduler-gate evidence remains a same-reference-controller cold-boot A/B with genuine DCM physically present versus absent.
