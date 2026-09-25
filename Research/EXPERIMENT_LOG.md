@@ -1169,3 +1169,20 @@ Observed:
 - `080C` and `0834` remain unresolved; first words 0x00C8 and 0x001E are not enough to claim slave-source identity.
 
 Conclusion: the DCM runtime serializer contains live state, clock/calendar, persistent/identity and history datasets in separate blocks. It is a semantic export database rather than a simple bus mirror.
+
+
+## EXP193 — semantic dataset classification — COMPLETE / MIXED POSITIVE-NEGATIVE
+
+Hypothesis: leading values `00C8` in `080C` and `001E` in `0834` may identify direct C8/0x1E source slaves.
+
+Observed:
+- `080C` is present in steady captures with no C8 traffic, rejecting a raw-C8 interpretation.
+- `0834` is present in the reference topology even though no 0x1E frames occur, rejecting a raw-0x1E interpretation.
+- `080C word14` tracks controller 0x06 write field AFDC across independent captures: 0/0 in steady captures and 16/16 in 090209 boot.
+- `0834 word12=70` in steady captures but 0 in controller boot even while A5 still exposes the apparent 30/70 values; direct A5 mirror rejected.
+- `0848` current RTC/date mapping remains proven.
+- `0884/count60` is ten 6-word reverse-chronological records and matches Thermia's documented ten-entry alarm-history model (type/time/date).
+
+Conclusion: the runtime layer is a semantic export database; first-word numeric resemblance is not source-slave identity. `080C` includes 0x06 lifecycle/accessory state; `0834` remains unresolved; `0884` is strongly identified as alarm history.
+
+Safety: offline only, no TX/YAML change.
