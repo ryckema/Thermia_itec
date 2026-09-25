@@ -1217,3 +1217,22 @@ Evidence:
 Protocol implication: extended topology **activation** and DCM **session attachment** are not the same transition. The controller can maintain the topology without a currently responding DCM. This favors a very-early/latched topology-selection mechanism over a mailbox-triggered one.
 
 The local XTR no-DCM baseline proves that C8, 0x06, AFDC/A80E lifecycle state and ordinary 0x0F FC16 traffic are not sufficient to select that topology.
+
+
+## EXP190 — 0x02 A80C..A812 field classification
+
+Current classification from local/reference boot + steady comparisons:
+
+| Register | Current interpretation |
+|---|---|
+| A80C | shared controller/context field; 0040 in compared normal states |
+| A80D | shared zero in compared states |
+| A80E | dynamic lifecycle field; not DCM/session-specific |
+| A80F | dynamic lifecycle field; boot/runtime value changes |
+| A810 | dynamic lifecycle field; tracks A80F in observed boots |
+| A811 | static structural discriminator: local FFFF, reference 000C |
+| A812 | static structural discriminator: local 0000, reference 0500 |
+
+Local A7F8 read-count is 15; reference is 13. In the observed local response, the two extra words at the end of the larger read span are unavailable/sentinel values, so the span difference is best treated as controller-layout/generation evidence rather than a demonstrated Online-state bit.
+
+A811/A812 are not yet semantic controls. Their values could reflect product family, firmware layout, commissioned capability or topology state. No write is justified.
