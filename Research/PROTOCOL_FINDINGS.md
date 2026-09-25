@@ -1201,3 +1201,19 @@ Link/HE side: device identity -> bind -> HPNode -> SystemIntegration choice -> g
 Thermia RS485 side: controller/accessory topology recognition -> unresolved gate -> A5/A4/05 + 0708 + 07D0..0884.
 
 Do not collapse these two layers. The Link firmware does not demonstrate that IntegrationMode is the local Thermia scheduler gate. It demonstrates a higher-level semantic ownership mode after a heat-pump endpoint already exists.
+
+
+## EXP189 — activation versus maintenance of the extended topology
+
+The two genuine power-event captures now separate two states:
+
+1. **Topology active** — controller emits the reference 0x02 fingerprint, services 0x04/A5 and runs the extended 0x0F scheduler.
+2. **DCM session attached** — DCM actually answers 0x0F mailbox/state traffic.
+
+Evidence:
+- During controller boot with a powered DCM, 0x04 is already operational before the first visible 0x0F FC16 ACK, and A5 follows shortly after. The first 0708 poll occurs much later.
+- During DCM power-up/rejoin with the controller left running, the extended scheduler continues for about 66 s while the DCM remains silent.
+
+Protocol implication: extended topology **activation** and DCM **session attachment** are not the same transition. The controller can maintain the topology without a currently responding DCM. This favors a very-early/latched topology-selection mechanism over a mailbox-triggered one.
+
+The local XTR no-DCM baseline proves that C8, 0x06, AFDC/A80E lifecycle state and ordinary 0x0F FC16 traffic are not sufficient to select that topology.
