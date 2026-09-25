@@ -1160,3 +1160,29 @@ This remains **hypothesis**, not proof:
 ### Scheduler-gate implication
 
 The raw firmware weakens the simple idea that `IntegrationMode` itself is the missing local scheduler gate. It is best treated as an application ownership/synchronization mode that operates after a valid integration path exists. The controller-side condition that creates/enables A5/A4/05 + `0708` + `07D0..0884` remains unresolved.
+
+
+
+## EXP186–187 — mailbox selector scope
+
+The genuine command pattern is:
+
+```text
+0708 response: 0000 0001 0000 0000 077F 0006
+                         ^
+                         w1
+~40 ms later
+FC03 03E8/count13
+```
+
+This occurred twice during Heat Curve changes.
+
+The `03E8/count13` response is a contiguous native image covering `03E8..03F4`. Confirmed or strongly mapped fields in this range include the heating-curve family, Heating Stop, Room Factor and room-setpoint-related state. The public Online dump independently confirms writable native indices through the same heating range.
+
+Danfoss Link HPNode partial group 1 overlaps semantically with this family, but it contains eleven semantic parameters and is not directly identical to the thirteen native wire words.
+
+Protocol implication:
+- `w1=1` = strongly supported heating/settings-family pending selector;
+- `w1 == firmware PartialUpdateIndex 1` = plausible architectural correlation, not yet proven identity;
+- `w0 -> group0` and `w2 -> group2` remain hypotheses only;
+- rejoin `w2=7FFF,w3=FFFF,...` is session/resync state, not evidence for a normal group-2 command.
