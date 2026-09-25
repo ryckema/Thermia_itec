@@ -1285,3 +1285,13 @@ This is strong evidence for a ten-entry event/history table. Codes 2, 41, 42 and
 
 ### 080C / 0834 caution
 The first words are 0x00C8 and 0x001E respectively, but this alone does not prove linkage to slave C8 or 0x1E. Treat those as unresolved until a value transition or independent source mapping exists.
+
+
+## EXP193 — special runtime blocks are semantic datasets, not slave-ID mirrors
+
+- `080C word0=00C8` does **not** identify a raw C8 mirror: steady captures contain `080C` while C8 traffic is absent.
+- `0834 word0=001E` does **not** identify a raw 0x1E mirror: the reference captures contain no slave-0x1E traffic.
+- `080C word14` strongly correlates with controller 0x06 write field AFDC: AFDC=0 -> word14=0; AFDC=16 -> word14=16 across the checked genuine captures. Classify `080C` as an accessory/lifecycle semantic dataset.
+- `0834` is not a direct A5 copy; its word12 changes 70->0 across steady vs boot while the apparent A5 30/70 source values remain present.
+- `0848` exports current RTC/date.
+- `0884/count60` is strongly identified as Thermia ALARM HISTORY: exactly ten 6-word entries with alarm type/code + minute/hour/day/month/year, matching official iTec documentation that the menu stores up to ten alarms with type, time and date. Numeric alarm codes 2/41/42/44 remain unresolved.
