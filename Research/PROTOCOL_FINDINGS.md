@@ -1,6 +1,6 @@
 # THERMIA PROTOCOL FINDINGS
 
-Last updated: 2026-09-23 after completed EXP96 + EXP97 design
+Last updated: 2026-09-26 after EXP182
 
 ## Bus
 
@@ -1010,3 +1010,104 @@ Observed: 155 valid `0x06` responses; 1 exact `0x0F FC16 03E8/count14` request; 
 The combined transport-role hypothesis is now negative: a syntactically and behaviorally valid `0x06` responder plus a working ACK-side `0x0F` role does **not** reproduce the genuine DCM/Online service state.
 
 This materially strengthens the architectural model that the real DCM topology contains an additional discovery/binding/service-availability/ownership layer not represented by simple Modbus request/response participation.
+
+
+## EXP169–182 — extended scheduler / Online-DCM architecture refinement
+
+### Genuine `0x0F` mailbox read side
+
+The strongest source-proven command-ingress sequence is now:
+
+```text
+controller -> 0x0F: FC03 0708/count6
+DCM        -> controller: 0000 0001 0000 0000 077F 0006
+~40 ms later
+controller -> 0x0F: FC03 03E8/count13
+DCM        -> controller: desired heating-state image
+```
+
+This exact `word1=1 -> 03E8/count13` sequence occurred twice in the genuine command-event capture.
+
+When the `0708` response is the normal steady form:
+
+```text
+0000 0000 0000 0000 077F 0006
+```
+
+the immediate `03E8/count13` desired-state read does not occur.
+
+### `0708/count6` is mailbox/session state, not heartbeat
+
+Across the genuine captures, currently observed variants are:
+
+| w0 | w1 | w2 | w3 | w4 | w5 | Observed context |
+|---:|---:|---:|---:|---:|---:|---|
+| 0000 | 0000 | 0000 | 0000 | 077F | 0006 | steady runtime |
+| 0000 | 0001 | 0000 | 0000 | 077F | 0006 | heating desired-state pending |
+| 0000 | 0000 | 0000 | 0000 | 0080 | 0006 | controller-boot transient |
+| 0000 | 0000 | 0000 | 0000 | 0000 | 0006 | later controller-boot transient |
+| 0000 | 0000 | 7FFF | FFFF | 0080 | 0007 | DCM rejoin / synchronization transition |
+
+Exact semantic names for w2..w5 remain open.
+
+### DCM rejoin is a different direction
+
+The rejoin header:
+
+`0000 0000 7FFF FFFF 0080 0007`
+
+is followed by controller-originated **FC16** state/configuration resynchronisation beginning at `03E8`.
+
+Do not conflate this with the command-pending path, where `word1=1` causes a controller-originated **FC03** desired-state read.
+
+### Extended runtime service scheduler
+
+The reference Online/DCM controller runs a coherent cyclic family:
+
+- `FC03 0708/count6`;
+- FC16 runtime uploads at `07D0, 07E4, 07F8, 080C, 0820, 0834, 0848, 0864, 0870, 0884`;
+- A5 plus related A4/05 service/discovery traffic.
+
+During DCM rejoin, `0708` polling and repeated pending `0870/count17` uploads are already generated while the DCM is still silent. This proves that the scheduler is owned by the controller, even though physical DCM presence may still have been involved in enabling that topology earlier.
+
+### Local XTR discriminator
+
+The tested XTR M has genuine native `0x0F` state/settings traffic, including `03E8`, `04A6`, `085F` and the `0861` ACK field.
+
+The indexed local corpus does not show the reference system's full extended runtime service family:
+
+- no spontaneous `0F 03 0708 0006`;
+- no confirmed cyclic `07D0..0884` family;
+- no normal A5/A4/05 service topology.
+
+Protocol implication:
+
+**The missing prerequisite is upstream of the mailbox payload.** It is most likely a controller topology/integration/scheduler state rather than a single register encoding.
+
+### Controller fingerprint correlation
+
+Reference and local controllers also differ in the `0x02 FC17 A7F8` transaction/fingerprint:
+
+- local: readCount 15, `A811/A812 = FFFF/0000`;
+- reference: readCount 13, `A811/A812 = 000C/0500`.
+
+Active `0x06` presence and a Heat Curve A/B/A change do not alter the local fingerprint. This is a useful structural marker but not yet proven causal.
+
+### Stop rules after EXP181/182
+
+Do not repeat:
+
+- AFCA response-delay/timing variants;
+- direct master-originated `0x0F FC16 03E8` semantic writes;
+- passive topology census already covered by EXP175;
+- standalone local `0708` reads already covered by EXP147/150;
+- local `0708` response spoofing when the controller did not request it.
+
+### Highest-value next evidence
+
+A same-controller cold-boot A/B capture:
+
+1. genuine DCM connected;
+2. DCM physically absent.
+
+This can distinguish physical accessory recognition from fixed model/firmware/configuration differences and may expose the first event that enables the extended scheduler.
