@@ -1295,3 +1295,42 @@ The first words are 0x00C8 and 0x001E respectively, but this alone does not prov
 - `0834` is not a direct A5 copy; its word12 changes 70->0 across steady vs boot while the apparent A5 30/70 source values remain present.
 - `0848` exports current RTC/date.
 - `0884/count60` is strongly identified as Thermia ALARM HISTORY: exactly ten 6-word entries with alarm type/code + minute/hour/day/month/year, matching official iTec documentation that the menu stores up to ten alarms with type, time and date. Numeric alarm codes 2/41/42/44 remain unresolved.
+
+
+## EXP194 — 0870 operating-time/defrost block; 0864 hidden service extension
+
+### 0870/count17 = indices 2160..2176
+
+The native hex start `0x0870` is decimal 2160, exactly matching Thermia Online registerIndex numbering.
+
+Confirmed public Online labels within the block:
+
+| Index | Online name | Genuine reference raw |
+|---:|---|---:|
+| 2160 | REG_OPER_TIME_COMPRESSOR | 21966 |
+| 2162 | REG_OPER_TIME_HEATING | 9763 |
+| 2163 | REG_OPER_TIME_COOLING | 10 |
+| 2166 | REG_OPER_TIME_HOT_WATER | 12091 |
+| 2167 | REG_OPER_TIME_IMM1 | 124 |
+| 2168 | REG_OPER_TIME_IMM2 | 170 |
+| 2169 | REG_OPER_TIME_IMM3 | 0 |
+| 2171 | REG_DEFROSTS_MA_SA | 3122 |
+| 2172 | REG_DEFROSTS_BETW2DEFR_MA_SA | 422 |
+| 2173 | REG_DEFROST_TIME_LAST_DEFROST_MA_SA | 15462 |
+
+Unexposed indices 2161,2164,2165,2170,2174..2176 remain unknown.
+
+The data are self-consistent:
+- compressor 21966 h versus heating+cooling+hot-water 21864 h;
+- compressor-hours-to-defrost-count gives `21966*60/3122 = 422.15 min`, essentially identical to index2172=422.
+
+Therefore 0870 is **operational lifetime / defrost statistics**, not identity or scheduler state.
+
+### 0864/count4 = indices 2148..2151
+
+Observed payload: `0,0,0,22`, invariant in checked genuine captures.
+
+No public Online profile checked exposes indices 2148..2151. The range is structurally adjacent to the local/native `085F/count5` block at 2143..2147, which includes the proven 0861 transaction ACK field. This makes 0864 a plausible hidden service/capability/status continuation, but no field semantics are proven.
+
+Do not infer the value 22 as a software version and do not write any field in 2148..2151.
+
