@@ -1301,9 +1301,9 @@ A80F=50         != unique DCM sync gate
 plain presence  != UI-level DCM recognition
 ```
 
-The remaining challenge is the **DCM/Connect recognition / approval / integration prerequisite that activates the genuine Online scheduler**, followed by exact command-mailbox semantics.
+The remaining challenge is the **DCM/Connect discovery / binding / service-availability prerequisite that makes the genuine `0x0F` mailbox and A5 service operational**. EXP166–167 show that valid `0x06` accessory/version presence — even sustained for 600 s — is not sufficient.
 
-The most valuable next artifacts are: **(1)** a longer genuine Online capture with exact timestamps for one setting change and restore, continued for 60–90 s after restore, and **(2)** a startup/reconnect capture beginning before the Online/DCM session is established, to catch the recognition event before the first A5/A4/0x0F-FC03 scheduler activity.
+The most valuable next work is **offline transmitter/ownership analysis of the existing genuine DCM power-up/reconnect captures**, especially the first second before the earliest successful `0x0F` ACK and first A5 request. Additional reboot captures should only be requested if a specific later hypothesis cannot be resolved from the existing data.
 
 ---
 
@@ -1586,3 +1586,140 @@ genuine DCM service state
 ```
 
 The unresolved step is the recognition/binding/service-state transition between these two states.
+
+
+---
+
+# 30. EXP164–167 — runtime DCM activation / service-ownership update
+
+## EXP164 — passive no-DCM cold-boot baseline — COMPLETE
+
+### Observed facts
+
+A clean 180 s passive no-DCM run reproduced:
+
+- generic `C8 FC03 0x2328/count2` discovery;
+- native `0x06 FC17` polling;
+- controller startup transitions including `A80E 0 -> 8 -> 0x28`;
+- `AFDC=0x0010`;
+- sustained unACKed controller-originated `0x0F FC16` traffic;
+- no A5, A4, `0x05`, or `0x0F FC03`.
+
+### Strong conclusion
+
+C8, `0x06` polling, A80E/AFDC startup state and unACKed `0x0F FC16` retries are all possible without a DCM. None is a sufficient DCM-recognition discriminator.
+
+## Genuine DCM runtime power-up comparison
+
+The genuine capture `thermia_capture_20260925_090209.log` is a DCM power-up while the heat-pump/controller is already running.
+
+Visible chronology:
+
+- `0x0F` is already operational and successfully ACKed at about +0.389 s;
+- first A5 transaction appears at about +1.179 s;
+- C8 probing continues in parallel;
+- `0x06` appears later in the visible sequence.
+
+This proves that DCM service activation does not intrinsically require a controller reboot and that the missing transition is earlier than simple `0x06` metadata presence.
+
+## EXP165 — runtime 0x0F ACK role — COMPLETE / NEGATIVE FOR ACK-ONLY ACTIVATION
+
+Five known controller-originated `0x0F FC16` requests were ACKed during a 180 s runtime test.
+
+Observed:
+
+- no A5;
+- no A4 / `0x05`;
+- no `0x0F FC03`.
+
+Strong conclusion: runtime `0x0F FC16` ACK service alone is insufficient to activate the genuine DCM/Online service state.
+
+The intended simultaneous `0x06 + 0x0F` condition was not validly tested in EXP165 because the experimental `0x06` matcher incorrectly required a 27-byte request. The native FC17 request is 23 bytes.
+
+## EXP166 — corrected runtime 0x06 responder — COMPLETE
+
+The request-length gate was corrected from 27 to 23 bytes.
+
+Observed:
+
+- 169 valid `0x06` responses in 180 s;
+- `AFD1=0` caused `EXP 0.0` to appear on the VERSION page immediately at runtime;
+- no controller/heat-pump reboot was required;
+- no A5, A4/`0x05`, or `0x0F FC03`;
+- no `0x0F FC16` occurred during the armed window.
+
+### Strong conclusion
+
+The `EXP / UITBR.KAART` UI entry is directly driven by the `0x06` accessory/version metadata path. A valid `0x06` response can expose this metadata dynamically at runtime, but this does not establish a DCM/Online application session.
+
+## EXP167 — sustained runtime 0x06 presence — COMPLETE / INCONCLUSIVE COMBINED TEST; STRONG NEGATIVE FOR 0x06-DRIVEN ACTIVATION
+
+### Hypothesis
+
+After proven `0x06` presence, a naturally occurring known controller-originated `0x0F FC16` request would be ACKed. The combination might trigger spontaneous A5 and/or `0x0F FC03`.
+
+### Observed facts
+
+Final summary:
+
+```text
+EXP167 SUMMARY reason=NO_NATIVE_0F_WITHIN_600S
+duration_ms=600009
+frames=4715
+s05=0
+s06=559
+s0F=0
+A4=0
+A5=0
+06tx=559
+0FtxACK=0
+A5tx=0
+0F03req=0
+0F03rsp=0
+0F16req=0
+resyncDelta=0
+dropDelta=0
+INCONCLUSIVE_COMBINED_ROLE_NOT_EXERCISED_DE_LOW_IDLE
+```
+
+The `0x06` responder was therefore proven active for ten minutes and transmitted 559 valid replies, but the controller emitted zero `0x0F` frames of any kind.
+
+### Strong conclusions
+
+- Sustained valid `0x06` accessory/version presence does **not** cause the controller to start native `0x0F` service during runtime.
+- It also does not cause A5, A4 or `0x05` scheduling.
+- The exact combined condition `active 0x06 + actually exercised 0x0F ACK` remains technically untested because no controller-originated `0x0F FC16` appeared.
+- Repeating longer `0x06` dwell tests is now low-value.
+- Together, EXP165–167 show that runtime `0x0F` ACK alone and runtime `0x06` presence alone each fail to reproduce the genuine DCM service topology.
+
+## Refined architecture after EXP167
+
+```text
+0x06 accessory/version metadata path
+    -> independently serviceable
+    -> can expose EXP / UITBR.KAART
+    -> not sufficient for DCM recognition
+
+0x0F bidirectional mailbox/service
+    -> controller FC16 attempts can exist without DCM
+    -> genuine DCM topology provides an operational ACK/read service
+    -> physical/logical owner remains OPEN
+
+A5 service
+    -> operational in genuine DCM topology
+    -> exact owner and activation mechanism remain OPEN
+
+A4 <-> 0x05
+    -> sibling / alternate discovery-like path
+    -> not a simple mandatory A5 precursor
+
+C8
+    -> generic native startup discovery
+    -> not the missing DCM gate
+```
+
+## Current research direction
+
+Do not continue using `EXP 0.0`, A80E/AFDC state, C8 probing, or longer `0x06` presence as DCM-recognition criteria.
+
+The highest-value next step is offline analysis of the earliest genuine DCM power-up interval, especially transmitter ownership and the event/property that makes `0x0F` service available before the first A5 transaction. A new controller reboot should only be used if a later hypothesis uniquely requires one.
