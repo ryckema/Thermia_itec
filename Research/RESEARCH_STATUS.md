@@ -1865,3 +1865,13 @@ IntegrationMode itself is no longer the leading scheduler-enable candidate. In r
 Offline reconstruction now shows the DCM runtime range as a semantic export database rather than a raw mirror of internal Modbus slaves. Confirmed/strong mappings include: 07D0 from controller 0x02 state, 07E4 from reference outside-unit 0x04 state, 07F8 from the controller/room-environment path, 080C containing 0x06 accessory lifecycle state (word14 tracks AFDC), 0820 from A5 data, 0848 current RTC/date, and 0884 the ten-entry alarm-history table. 0834, 0864 and 0870 remain semantically unresolved.
 
 The raw-slave-ID interpretation of `080C word0=00C8` and `0834 word0=001E` is rejected: those blocks exist when corresponding C8/0x1E source traffic is absent. No active local write follows from these findings. The highest-value scheduler-gate evidence remains a same-reference-controller cold-boot A/B with genuine DCM physically present versus absent.
+
+
+## Status through EXP194
+
+The runtime database mapping has improved materially. `0870/count17` is now strongly identified as Thermia Online registerIndex 2160..2176: compressor/heating/cooling/hot-water/auxiliary operating times plus defrost statistics. It is therefore removed from the scheduler-gate/identity candidate set.
+
+`0864/count4` remains unresolved. It maps to native indices 2148..2151, is invariant as `[0,0,0,22]`, and begins immediately after the local/native `085F..0863` service block containing 0861. Public Online profiles checked do not expose 2148..2151. This makes 0864 a passive topology/capability candidate worth comparing in future same-controller DCM-present/absent data, but not a justified write target.
+
+No YAML or production functionality changed.
+
