@@ -1111,3 +1111,52 @@ A same-controller cold-boot A/B capture:
 2. DCM physically absent.
 
 This can distinguish physical accessory recognition from fixed model/firmware/configuration differences and may expose the first event that enables the extended scheduler.
+
+
+## EXP184–185 — semantic export layer and raw firmware integration model
+
+### Exact Danfoss Link 2.7.42 HPNode sync groups
+
+Recovered directly from `RegulationEngine.dll` constructor IL:
+
+| PartialUpdateIndex | Semantic parameters |
+|---:|---|
+| 0 | HeatPumpType, OperationMode, IntegrationMode, RoomValue, ExternalControl1, ExternalControl2, ExternalControl3, DefrostDemand, AlarmField1..5, ErrorCode |
+| 1 | HeatCurve, HeatCurveMin, HeatCurveMax, HeatCurvePlus5, HeatCurveZero, HeatCurveMinus5, HeatStop, RoomFactor, HotWaterStart, ControllerDemand, OperationStatus |
+| 2 | OutdoorTemperature, AuxiliaryHeaterPowerStage, HotWaterTemperature, SupplyLineTemperature, ReturnLineTemperature, EVU_SW, EVU_HW |
+
+All three groups are used by the full synchronization routine. The grouping is semantic; it does not map one-to-one onto three contiguous `0x0F` Modbus address regions.
+
+### IntegrationMode lifecycle
+
+`IntegrationMode` is constructed as an internal byte parameter with:
+- GetOnSync = true
+- SetOnSync = true
+- ClearSetOnSync = true
+- UseLateCommit = true
+- PartialUpdateIndex = 0
+
+A parameter update invokes `OnIntegrationModeParameterUpdated()`, which raises a system-integration init request and regulation request. The regulation path performs `SystemIntegrationInit()` and a full grouped sync.
+
+Internal configuration of system integration is also persistent/default-driven: `HPNode::Load` reads XML attribute `SystemIntegration`, while `SetDefaultSettings` uses a factory setting loaded from `HPNodeDefault/SystemIntegration[@Value]`. No direct bind-handler-to-`set_IsSystemIntegration` call was found in the recovered RegulationEngine call graph.
+
+### Mailbox bridge hypothesis
+
+The genuine command path:
+
+```text
+0708 response word1 = 1
+        -> FC03 03E8/count13
+        -> heating desired-state image
+```
+
+now has a strong semantic parallel in firmware **partial update group 1**, which starts with HeatCurve and contains the principal heating settings. This suggests that the six-word `0708` header may include per-group dirty/command selectors.
+
+This remains **hypothesis**, not proof:
+- only selector value `word1=1` has been observed for a command event;
+- firmware group 1 contains 11 semantic parameters whereas the DCM response at `03E8` carries 13 contiguous Modbus words;
+- the DCM03 serializer is still missing from the Link CC firmware.
+
+### Scheduler-gate implication
+
+The raw firmware weakens the simple idea that `IntegrationMode` itself is the missing local scheduler gate. It is best treated as an application ownership/synchronization mode that operates after a valid integration path exists. The controller-side condition that creates/enables A5/A4/05 + `0708` + `07D0..0884` remains unresolved.
