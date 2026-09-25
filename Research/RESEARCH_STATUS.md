@@ -1839,3 +1839,22 @@ Payload reconstruction shows that the runtime family is a **state-export seriali
 This materially strengthens the current architecture: A5 is upstream data consumed by the DCM-facing export image, and the local XTR is missing activation of an entire export topology/task rather than one command register.
 
 No active EXP184 is defined yet. The same-controller cold-boot A/B capture with and without a genuine DCM remains the highest-value next discriminator.
+
+
+## EXP184–185 — current offline result
+
+Raw Danfoss Link CC 2.7.42 firmware is now available in the project corpus and has been inspected directly rather than relying only on prior summaries.
+
+The exact HPNode partial-update groups are now reconstructed:
+
+- group 0: identity/mode/integration/room/external-control/alarm state;
+- group 1: HeatCurve family plus HeatStop, RoomFactor, HotWaterStart, ControllerDemand and OperationStatus;
+- group 2: temperatures, auxiliary-heater stage and EVU state.
+
+The most important new correlation is that genuine DCM mailbox `0708 word1=1` triggers an immediate `03E8/count13` fetch, while firmware partial-update group **1** starts with HeatCurve. This makes a group-dirty/group-selector interpretation of the mailbox substantially more plausible, but only word1 has been observed in a command state so far.
+
+IntegrationMode itself is no longer the leading scheduler-enable candidate. In recovered RegulationEngine code it is an application synchronization/ownership mode, persisted via the HPNode `SystemIntegration` setting and factory defaults. A change causes a full grouped resync, but no direct service-bind-to-IntegrationMode enable path was found.
+
+**Current unresolved gate:** what makes the controller instantiate/enable the extended A5/A4/05 + `0708` + `07D0..0884` export topology.
+
+**Highest-value next evidence remains:** same-controller cold boot with genuine DCM connected versus physically absent. No new active local write experiment is currently justified.
