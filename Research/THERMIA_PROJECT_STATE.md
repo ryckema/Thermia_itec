@@ -1318,3 +1318,68 @@ Next: offline correlation of 080C/0834/0864/0870 against known controller/UI sta
 - `0864` and `0870` field semantics.
 
 **Safety/decision:** offline only; no local TX, no YAML changes, and no write target follows from these mappings.
+
+
+## 2026-09-26 — EXP194 COMPLETE / 0870 STRONGLY IDENTIFIED, 0864 NARROWED
+
+**Hypothesis:** runtime export blocks `0870/count17` and `0864/count4` may contain product/commissioning identity or runtime state relevant to the extended Online/DCM scheduler gate.
+
+### 0870 — operating-time / defrost statistics, not identity
+
+`0x0870 = 2160 decimal`; count17 therefore spans native Online indices 2160..2176.
+
+Public Thermia Online API debug data for ATEC/DHP-AQ and iTec systems independently names the same indices:
+- 2160 `REG_OPER_TIME_COMPRESSOR`
+- 2162 `REG_OPER_TIME_HEATING`
+- 2163 `REG_OPER_TIME_COOLING`
+- 2166 `REG_OPER_TIME_HOT_WATER`
+- 2167 `REG_OPER_TIME_IMM1`
+- 2168 `REG_OPER_TIME_IMM2`
+- 2169 `REG_OPER_TIME_IMM3`
+- 2171 `REG_DEFROSTS_MA_SA`
+- 2172 `REG_DEFROSTS_BETW2DEFR_MA_SA`
+- 2173 `REG_DEFROST_TIME_LAST_DEFROST_MA_SA`
+
+The genuine reference payload is:
+`55CE,0000,2623,000A,000A,000A,2F3B,007C,00AA,0000,0000,0C32,01A6,3C66,0000,0000,0000`
+
+Mapped by index:
+- 2160 = 21966 compressor operating time
+- 2161 = 0, unexposed/unknown
+- 2162 = 9763 heating operating time
+- 2163 = 10 cooling operating time
+- 2164 = 10, unexposed/unknown
+- 2165 = 10, unexposed/unknown
+- 2166 = 12091 hot-water operating time
+- 2167 = 124 aux/immersion stage 1 operating time
+- 2168 = 170 aux/immersion stage 2 operating time
+- 2169 = 0 aux/immersion stage 3 operating time
+- 2170 = 0, unexposed/unknown
+- 2171 = 3122 defrost count
+- 2172 = 422 time-between-defrost statistic
+- 2173 = 15462 last-defrost-duration raw value
+- 2174..2176 = 0, unexposed/unknown
+
+Two internal numerical checks strongly validate the mapping:
+1. heating + cooling + hot-water hours = 9763 + 10 + 12091 = 21864, only 102 h below total compressor time 21966;
+2. 21966 compressor hours * 60 / 3122 defrosts = 422.15 minutes, matching raw index 2172 = 422 almost exactly.
+
+**Strong conclusion:** `0870` is an operational lifetime/defrost-statistics dataset, not product identity, commissioning state, or the scheduler-enable token. Its invariance over the short captures is expected because these counters change slowly.
+
+The exact scaling of 2173 remains unresolved. Public Online metadata marks the corresponding last-defrost field differently from the plain integer defrost count/interval fields, so do not assume raw 15462 is directly seconds/minutes without another source.
+
+### 0864 — unresolved 2148..2151 extension
+
+`0x0864 = 2148 decimal`; count4 covers 2148..2151. The genuine payload is invariant in all checked occurrences:
+`0000,0000,0000,0016` = `[0,0,0,22]`.
+
+Public Online debug profiles checked (ATEC/DHP-AQ, iTec IQ, NCP) expose no registerIndex 2148..2151, so there is currently no public semantic label for these four native words.
+
+Structurally, 0864 is notable because local/native `085F/count5` covers 2143..2147 and contains the proven transaction ACK field 0861. Thus 0864 starts exactly at the next native index after that local block. Reference captures additionally carry 0864 as a slot in the extended runtime scheduler, while no confirmed local XTR `0864/count4` runtime family has been observed.
+
+**Strong conclusion:** 0864 is a much better topology/capability candidate than 0870, but only as a passive structural correlate. It may be a hidden continuation of the 085F service/status namespace, a capability/configuration block, or another private diagnostic dataset.
+
+**Negative / caution:** do not interpret the terminal value 22 as software version 2.2. The numerical resemblance is insufficient and the capture system's exact program-version provenance is not independently established.
+
+**Decision:** no write to 0864/2148..2151. Continue only by passive cross-system/cold-boot discrimination.
+
