@@ -1186,3 +1186,25 @@ Observed:
 Conclusion: the runtime layer is a semantic export database; first-word numeric resemblance is not source-slave identity. `080C` includes 0x06 lifecycle/accessory state; `0834` remains unresolved; `0884` is strongly identified as alarm history.
 
 Safety: offline only, no TX/YAML change.
+
+
+## EXP194 — 0864/0870 configuration-vs-runtime analysis — COMPLETE / MIXED
+
+**Hypothesis:** `0870` and/or `0864` may encode product/commissioning identity relevant to the Online/DCM scheduler gate.
+
+### Observed
+- `0870 = decimal 2160`, count17 = 2160..2176.
+- Public Thermia Online debug profiles map 2160/2162/2163/2166..2169 to operating-time counters and 2171..2173 to defrost statistics.
+- Genuine 0870 payload maps coherently: compressor 21966 h; heating 9763 h; cooling 10 h; hot water 12091 h; aux1 124 h; aux2 170 h; aux3 0 h; defrost count 3122; between-defrost value 422.
+- Independent numerical validation: `9763+10+12091=21864` versus compressor `21966`; and `21966*60/3122=422.15`, matching index2172=422.
+- `0864 = decimal 2148`, count4 = 2148..2151; payload always `[0,0,0,22]` in checked genuine occurrences.
+- Public ATEC/iTec/NCP Online profiles expose no 2148..2151 labels.
+- 0864 begins exactly after the native/local `085F/count5` range 2143..2147, which contains 0861.
+
+### Result
+- **0870: strongly identified as operational lifetime + defrost statistics. Negative as scheduler/identity candidate.**
+- **0864: unresolved but structurally interesting as a hidden continuation adjacent to 085F/0861.**
+
+### Safety
+No active local write. Do not infer 22 = firmware 2.2 and do not write 2148..2151.
+
