@@ -1185,3 +1185,32 @@ The genuine mailbox event `0708 word1=1 -> immediate FC03 03E8/count13` now line
 **Stop rule:** do not write guessed `IntegrationMode` values to local Modbus. Treat it as a higher-level semantic parameter until an exact serializer mapping is proven.
 
 **Next:** await same-controller DCM-connected / DCM-absent cold-boot A/B for scheduler activation; offline work may continue on mapping `0708` selector words to semantic partial-update groups.
+
+
+
+## 2026-09-26 — EXP186–187 offline mailbox refinement
+
+### EXP186 — COMPLETE / PARTIAL POSITIVE
+- In the genuine DCM corpus, the only normal command-state selector observed is `0708.w1=1`.
+- Both occurrences are followed immediately by `0x0F FC03 03E8/count13` during deliberate Heat Curve changes.
+- No independent normal command-state with `w0!=0` or `w2!=0` is present.
+- The rejoin header with `w2=7FFF,w3=FFFF,w4=0080,w5=0007` is a compound session/resync state and must not be treated as a simple group-2 selector.
+
+### EXP187 — COMPLETE / NEGATIVE FOR ONE-TO-ONE PARTIAL-GROUP MAPPING
+Hypothesis: the `03E8/count13` desired-state fetch is a direct wire serialization of Danfoss Link HPNode partial-update group 1.
+
+Observed:
+- `03E8/count13` spans native addresses `03E8..03F4`.
+- Proven/native mappings inside that span include Heating Curve, Heating Min/Max, curve +5/0/-5, Heating Stop, Room Factor and room-setpoint mirror.
+- The public Online dump confirms writable native indices `03E8..03EE` and `03F0`.
+- Danfoss Link group 1 contains HeatCurve, HeatCurveMin, HeatCurveMax, HeatCurvePlus5, HeatCurveZero, HeatCurveMinus5, HeatStop, RoomFactor, HotWaterStart, ControllerDemand and OperationStatus.
+- The native contiguous `03E8..03F4` image therefore overlaps strongly with group-1 semantics but is not a one-to-one serialization of the eleven group-1 parameters.
+
+Strong conclusion:
+`0708.w1=1` should be described as a heating/settings-family pending selector. The exact claim `w1 == PartialUpdateIndex 1` is plausible but not proven, because the DCM serializer adds/reorders/omits semantic fields.
+
+Current state:
+- no active EXP188;
+- no YAML change;
+- no new local write justified;
+- highest-value next evidence remains same-controller cold boot with DCM physically present versus absent, or a genuine Online command affecting a non-heating family.
