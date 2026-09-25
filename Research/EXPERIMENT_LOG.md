@@ -350,7 +350,7 @@ Plan: strictly passive. Arm after >=15 s uptime, observe up to 30 min, trigger o
 
 ## Cross-model evidence update — Piotr Romanowski / thermia-bus-sniffer — 2026-09-23
 
-This is not a new local experiment; it is independent corroborating evidence from an iTec Eco 8 / DHP-AQ unit.
+This is not a new Marten experiment; it is independent corroborating evidence from an iTec Eco 8 / DHP-AQ unit.
 
 Observed by Piotr:
 - corrected prior claim: `0x1E 0x001E..0x0033` is not frozen; it changes rarely and out of step with the live block;
@@ -997,3 +997,26 @@ Combined with EXP148, A5 is strongly indicated to belong to or depend on the mis
 
 
 ### EXP150 — staged Online/DCM bootstrap role-emulation harness — PREPARED
+
+
+## EXP168 — Runtime 0x06 presence + manually triggered 03E8/count14 ACK — COMPLETE / VALID NEGATIVE
+
+**Hypothesis:** a proven active `0x06` accessory-presence role plus an actually exercised runtime `0x0F FC16 0x03E8/count14` ACK may activate native A5 and/or `0x0F FC03`.
+
+**Observed facts:**
+- READY after 10 valid `0x06` responses.
+- Manual Heat Curve +1 caused exact `0x0F FC16 03E8/count14`.
+- First payload word: `36 (0x0024)`.
+- One exact FC16 ACK was transmitted and defined T0.
+- 120 s post-T0 observation completed.
+- Final summary: `duration_ms=163187 frames=1308 s05=0 s06=155 s0F=1 A4=0 A5=0 06tx=155 0FtxACK=1 A5tx=0 0F03req=0 0F03rsp=0 0F16req=1 firstAckRelMs=43163 resyncDelta=0 dropDelta=0 COMBINED_06_PLUS_03E8_ACK_EXERCISED_DE_LOW_IDLE`.
+
+**Result:** VALID NEGATIVE.
+
+**Strong conclusion:** simultaneous proven runtime `0x06` presence and a deliberately exercised known controller-originated `0x0F FC16` ACK do not activate A5, A4/0x05, or `0x0F FC03`. This closes the exact combined-role gap left open by EXP167.
+
+**Comparison:** EXP165 = 0x0F ACK alone negative; EXP166/167 = valid runtime 0x06 presence negative; EXP168 = valid 0x06 + exercised 0x0F 03E8/14 ACK negative.
+
+**Negative result retained:** stop repeating simple `0x06` + `0x0F` transport-role combinations.
+
+**Next:** offline analysis of genuine DCM transmitter ownership / service activation before EXP169. No controller reboot required.
