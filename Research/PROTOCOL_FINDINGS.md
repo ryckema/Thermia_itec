@@ -1236,3 +1236,26 @@ Current classification from local/reference boot + steady comparisons:
 Local A7F8 read-count is 15; reference is 13. In the observed local response, the two extra words at the end of the larger read span are unavailable/sentinel values, so the span difference is best treated as controller-layout/generation evidence rather than a demonstrated Online-state bit.
 
 A811/A812 are not yet semantic controls. Their values could reflect product family, firmware layout, commissioned capability or topology state. No write is justified.
+
+
+## EXP191 — model-specific outdoor nodes behind a semantic export layer
+
+Reference topology uses slave 0x04 FC17 (ABE0/count12 + ABF4/count4) as a continuously active source. Local XTR/iTec topology instead uses slave 0x1E as the outdoor-unit/COMM-KIT source and has no normal slave-0x04 traffic.
+
+The reference 07E4/count17 runtime export is derived from the immediately preceding 0x04 transaction rather than copied byte-for-byte. Most source response words are preserved, unavailable FC18 values are normalized to FF9C, and extra/request-derived values are inserted.
+
+Implication:
+
+```text
+model-specific internal node
+  reference: 0x04
+  XTR/iTec:   0x1E
+        ↓
+controller semantic adapter / serializer
+        ↓
+DCM-facing runtime export group
+```
+
+Therefore exported runtime groups should be interpreted by semantic role, not by fixed internal slave address.
+
+A811/A812 remain structural correlates only. In particular, A812=0500 must not be interpreted as a 0x05-node presence map from numeric coincidence alone.
