@@ -1154,3 +1154,18 @@ Observed:
 Conclusion: the DCM runtime exporter is semantic, not a fixed raw-slave mirror. 0x04 and 0x1E are likely architecture-specific implementations of the same broad subsystem role, but their register maps are not interchangeable.
 
 Negative result: no evidence supports interpreting A812=0500 as a slave/node map or direct 0x05 presence encoding. Do not write or decode it that way without independent evidence.
+
+
+## EXP192 — remaining runtime-export semantic mapping — COMPLETE / POSITIVE
+
+Hypothesis: additional `07F8..0884` blocks are semantic datasets, not raw fixed-slave mirrors.
+
+Observed:
+- `07F8` penultimate word tracks the first 0x0A B3C4..B3C6 controller-write value across independent captures: 17 on 2026-09-24 and 14 on 2026-09-25.
+- `0848` words16..22 are proven `[second,minute,hour,day,month,year,weekday]` from real-time progression and date/day-of-week consistency.
+- `0884/count60` = ten 6-word reverse-chronological timestamped records; best interpretation is event/history table, codes unresolved.
+- `0870` is invariant across all genuine captures and DCM silence; static/persistent dataset in observed corpus.
+- `0864` is invariant `[0,0,0,22]`; meaning unknown.
+- `080C` and `0834` remain unresolved; first words 0x00C8 and 0x001E are not enough to claim slave-source identity.
+
+Conclusion: the DCM runtime serializer contains live state, clock/calendar, persistent/identity and history datasets in separate blocks. It is a semantic export database rather than a simple bus mirror.
