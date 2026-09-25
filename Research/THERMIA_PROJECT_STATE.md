@@ -1242,3 +1242,26 @@ Unknowns:
 - whether the same reference controller retains the latch across a full controller power cycle when DCM is physically absent.
 
 Next: same-controller cold-boot A/B with DCM connected versus physically absent remains the decisive discriminator. No local write experiment is justified.
+
+
+## 2026-09-26 — EXP190 COMPLETE / POSITIVE CONTROLLER-FINGERPRINT DECOMPOSITION
+
+Hypothesis: decomposing the 0x02 FC17 A7F8/A80C fingerprint across local cold boot, local steady state, reference cold boot and reference steady state can separate ordinary lifecycle words from the structural topology discriminator.
+
+Observed facts:
+- Local XTR cold boot (EXP94): A80C..A812 starts 0040,0000,0000,0005,0005,FFFF,0000; A80E then changes 0->0008->0028; A80F/A810 later change 0005->000A. A811/A812 remain FFFF/0000.
+- Local XTR steady state (EXP172): 0040,0000,0000,000A,000A,FFFF,0000; read A7F8 count 15.
+- Reference controller cold boot with DCM already present (090209), first visible frame at ~0.031 s: 0040,0000,0028,0005,0005,000C,0500; read A7F8 count 13.
+- Reference steady/scheduler-active captures: 0040,0000,0000,000A,000A,000C,0500; read A7F8 count 13.
+- Thus A80C/A80D are shared constants in the compared states; A80E and A80F/A810 are ordinary lifecycle fields that vary on both architectures; A811/A812 remain architecture/topology-correlated constants within each corpus.
+- The two extra local A7F8 response words caused by read-count 15 are unavailable/sentinel values in the observed local fingerprint, weakening the idea that the read-span difference itself carries useful Online state.
+
+Strong conclusions:
+1. A811/A812 are the cleanest current passive structural discriminator: local FFFF/0000 versus reference 000C/0500.
+2. A80E and A80F/A810 should not be used as Online/DCM topology indicators; their boot/runtime transitions are normal controller lifecycle behavior.
+3. The read-count 15 vs 13 difference is more likely a controller-generation/layout fingerprint than a dynamic scheduler flag, because the extra local words are unavailable in the observed response.
+4. A811/A812 remain correlation markers only. They may encode model/platform/configuration/capability rather than cause scheduler activation. Do not write them.
+
+Negative result: no independent source presently assigns semantics to A811/A812, and Piotr's public repo/discussion corpus does not provide a second no-DCM A7F8/A80C fingerprint to break the model-vs-topology ambiguity.
+
+Next: no active EXP191. The best discriminator remains same-reference-controller cold boot with DCM connected vs physically absent. If A811/A812 stay 000C/0500 in both cases while scheduler disappears, they are platform identity only; if they change with DCM presence, they become direct topology-state candidates.
