@@ -1265,3 +1265,29 @@ Strong conclusions:
 Negative result: no independent source presently assigns semantics to A811/A812, and Piotr's public repo/discussion corpus does not provide a second no-DCM A7F8/A80C fingerprint to break the model-vs-topology ambiguity.
 
 Next: no active EXP191. The best discriminator remains same-reference-controller cold boot with DCM connected vs physically absent. If A811/A812 stay 000C/0500 in both cases while scheduler disappears, they are platform identity only; if they change with DCM presence, they become direct topology-state candidates.
+
+
+## 2026-09-26 — EXP192 COMPLETE / POSITIVE RUNTIME-EXPORT SEMANTIC MAPPING
+
+Hypothesis: additional 0x0F runtime export blocks can be identified as semantic controller datasets rather than raw mirrors of immediately preceding slave traffic.
+
+Observed facts:
+- `07F8/count17` has only its penultimate data word active in the checked captures. That word is 17 in the 2026-09-24 capture and 14 in the 2026-09-25 captures. The controller's 0x0A FC17 write image at B3C4..B3C6 is respectively `[17,20,0]`, `[14,21,0]`, and `[14,20,0]`. This gives a strong cross-capture correlation between `07F8` word15 and the first 0x0A controller-to-room-sensor value (B3C4).
+- `0848/count23` contains an exact clock/date tail. In the 2026-09-25 capture, words16..22 progress `[6,19,6,25,9,26,4] -> [27,19,6,25,9,26,4] -> [48,19,6,25,9,26,4] -> [9,20,6,25,9,26,4]` at ~21 s intervals. This proves the layout `[second, minute, hour, day, month, year(2-digit), weekday(Monday=0)]` for those seven words. The 2026-09-24 capture independently carries day=24, month=9, year=26, weekday=3 and second progression 0->21.
+- `0884/count60` is invariant across the checked captures and decomposes exactly into ten six-word records. Interpreting each record as `[code, minute, hour, day, month, year]` produces a strictly reverse-chronological sequence on 2026-08-27: 10:47, 10:28, 10:28, 10:05, 10:05, 10:05, 10:04, 09:43, 09:43, 09:41. This strongly identifies 0884 as a ten-entry timestamped history/event table. The exact meaning of codes 2/41/42/44 is unknown.
+- `0870/count17` is byte-identical across all four genuine captures, including long DCM-silent periods, so it behaves as static/persistent configuration or identity data rather than live telemetry in the observed corpus.
+- `0864/count4` is also invariant as `[0,0,0,22]` in all checked occurrences; semantics remain unknown.
+- `080C/count18` and `0834/count18` remain only partially characterized. `080C` starts with decimal 200 (0x00C8) in every occurrence, and `0834` starts with decimal 30 (0x001E), but numeric resemblance to slave IDs C8/1E is not sufficient evidence of source identity.
+
+Strong conclusions:
+1. The runtime export image mixes multiple semantic dataset types: live source-derived state (`07D0`,`07E4`,`07F8`,`0820`), controller clock/calendar (`0848`), persistent/history data (`0870`,`0884`), and still-unmapped blocks.
+2. `07F8` is now strongly linked to the 0x0A/controller room-sensor exchange, specifically the B3C4 controller-write value, but it is not a raw copy of the three-word 0x0A write image.
+3. `0848` is proven to contain current RTC/date information.
+4. `0884` is strongly identified as a ten-entry timestamped event/history table; do not assign event-code meanings without independent evidence.
+
+Negative/unknown:
+- no source-backed meaning for 080C, 0834 or 0864 yet;
+- do not infer 080C=C8 or 0834=0x1E from the first word alone;
+- no active bus test is justified by these mappings.
+
+Next: offline correlation of 080C/0834/0864/0870 against known controller/UI state can continue, but the scheduler-enable question still depends primarily on the same-controller DCM-present/absent cold-boot A/B.
