@@ -1214,3 +1214,31 @@ Current state:
 - no YAML change;
 - no new local write justified;
 - highest-value next evidence remains same-controller cold boot with DCM physically present versus absent, or a genuine Online command affecting a non-heating family.
+
+
+## 2026-09-26 — EXP189 COMPLETE / POSITIVE PHYSICAL-TOPOLOGY LATCH REFINEMENT
+
+Hypothesis: existing genuine captures can reveal whether the extended Online/DCM topology is activated before, during, or only after normal DCM mailbox/application responses.
+
+Observed facts:
+- 090209 is controller/heat-pump cold boot while the DCM is already powered/present.
+- The first visible controller frame at ~0.031 s is already the reference 0x02 FC17 A7F8/A80C topology fingerprint.
+- C8 appears at ~0.130 s.
+- Reference slave 0x04 is already queried and answered at ~0.251/0.290 s.
+- The first visible 0x0F FC16 transfer/ACK occurs at ~0.389 s.
+- A5 traffic is operational from ~1.179 s.
+- 0x06 appears later in the visible sequence, and the first 0708 mailbox poll is only around ~33.18 s.
+- In 090550, where the controller is already running and the DCM is powered/rejoined later, the extended 0x02/0x04/A5/0x0F runtime topology and repeated 0708 polls continue while the DCM service remains silent for about 66 s.
+- Local EXP164 no-DCM cold boot still shows C8, 0x06 and ordinary 0x0F FC16 traffic but no A4/A5/0x05/0x0F-FC03 topology.
+
+Strong conclusions:
+1. Extended topology selection is upstream of the 0708 mailbox contents and upstream of normal DCM desired-state exchange.
+2. A reference-only source endpoint (0x04) is active before the first visible 0x0F ACK in the controller-boot capture, so a simple first-ACK trigger cannot explain topology creation.
+3. Once the reference controller has the extended topology active, temporary DCM silence/power loss does not immediately tear it down; the scheduler continues. Activation and maintenance are therefore distinct states.
+4. The best current model is a latched/persistent controller topology mode selected very early (boot/commissioning/physical accessory recognition), followed by a separately attachable DCM mailbox/session.
+
+Unknowns:
+- whether the latch is set only at boot, at commissioning, or by an earlier physical/electrical discovery exchange not captured in the visible first frame;
+- whether the same reference controller retains the latch across a full controller power cycle when DCM is physically absent.
+
+Next: same-controller cold-boot A/B with DCM connected versus physically absent remains the decisive discriminator. No local write experiment is justified.
