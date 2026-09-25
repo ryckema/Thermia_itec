@@ -1105,3 +1105,83 @@ EXP140 should add only `04BA/count22` to the exact ACK whitelist. Everything els
 - whether physical DCM recognition, firmware/model capability or commissioning state is the decisive gate.
 
 **Next direction:** stay passive/offline until a concrete scheduler-enable candidate is identified. A same-controller cold-boot A/B capture with versus without genuine DCM is the highest-value external discriminator.
+
+
+## 2026-09-26 — EXP184 COMPLETE / OFFLINE CROSS-MODEL EXPORT-MAPPING REFINEMENT
+
+**Hypothesis:** the reference `07D0..0884` family is a semantic export layer above model-specific internal slave layouts.
+
+**Observed facts:**
+- `07D0/19` repacks the normal `0x02 FC17 A7F8/A80C` controller transaction.
+- `07E4/17` strongly tracks the reference `0x04 FC17` exchange, including `FC18 -> FF9C` unavailable-value normalization.
+- `0820/18` strongly repacks A5 state.
+- Piotr's iTec Eco / DHP-AQ uses `0x1E` for outdoor-unit/COMM-KIT state and does not spontaneously run the extended A5/A4/0x0F-FC03 scheduler in normal no-Online operation.
+
+**Strong conclusion:** the Online/DCM runtime image is best modeled as a semantic serializer/export layer fed by model-specific source endpoints, rather than as a direct mirror of fixed slave addresses.
+
+
+## 2026-09-26 — EXP185 COMPLETE / POSITIVE FIRMWARE CALL-CHAIN + PARTIAL-GROUP RECONSTRUCTION
+
+**Hypothesis:** the Danfoss Link 2.7.42 firmware can reveal the system-integration lifecycle and the exact semantic grouping behind the higher-level DHP sync protocol.
+
+The original `dlcc_2.7.42` firmware archive was recovered from the project Library. `ccimage.bin` was extracted, the embedded .NET assemblies were carved, and `RegulationEngine.dll` / `ParameterCache.dll` were inspected directly.
+
+### Exact HPNode partial-update groups recovered from constructor IL
+
+**Group 0**
+- HeatPumpType
+- OperationMode
+- IntegrationMode
+- RoomValue
+- ExternalControl1
+- ExternalControl2
+- ExternalControl3
+- DefrostDemand
+- AlarmField1..5
+- ErrorCode
+
+**Group 1**
+- HeatCurve
+- HeatCurveMin
+- HeatCurveMax
+- HeatCurvePlus5
+- HeatCurveZero
+- HeatCurveMinus5
+- HeatStop
+- RoomFactor
+- HotWaterStart
+- ControllerDemand
+- OperationStatus
+
+**Group 2**
+- OutdoorTemperature
+- AuxiliaryHeaterPowerStage
+- HotWaterTemperature
+- SupplyLineTemperature
+- ReturnLineTemperature
+- EVU_SW
+- EVU_HW
+
+`IntegrationMode` is group 0. `HeatCurve` is group 1.
+
+### IntegrationMode lifecycle from raw IL
+- `OnIntegrationModeParameterUpdated()` sets `m_SystemIntegrationInitRequest=true`, sets `RegulationRequired=true`, signals model change and node change.
+- `RegulateSelf()` consumes that request, runs `SystemIntegrationInit()`, clears `m_InitSyncDone`, then runs `Sync(fullUpdate=true)`; successful full sync sets `m_InitSyncDone=true`.
+- `UpdateParameterFlow(isSystemIntegration)` flips RoomValue, HeatCurve, HeatCurvePlus5, HeatCurveZero and HeatCurveMinus5 between GET-on-sync and SET-on-sync ownership.
+
+### Important origin finding
+Direct callers of `HPNode::set_IsSystemIntegration` in `RegulationEngine.dll` are:
+- `HPNode::Load` — reads persisted XML attribute `SystemIntegration`;
+- `HPNode::CopySettings`;
+- `HPNode::SetDefaultSettings` — uses `FactorySettings::get_HPNodeSystemIntegrationEnabled`.
+
+The factory-settings assembly loads an `HPNodeDefault/SystemIntegration` element and parses its `Value` attribute. No direct `OnHEServiceBind() -> set_IsSystemIntegration` caller was found.
+
+**Strong conclusion:** `IntegrationMode` is an application/synchronization ownership mode with persistent/default configuration support. It is not presently supported as the controller-side scheduler-enable gate itself.
+
+### New mailbox correlation hypothesis
+The genuine mailbox event `0708 word1=1 -> immediate FC03 03E8/count13` now lines up strikingly with firmware **partial update group 1**, whose first semantic parameter is HeatCurve. This is the strongest current bridge between the Link semantic protocol and the DCM RS485 mailbox. It remains a hypothesis because group 1 has 11 semantic parameters while the RS485 fetch contains 13 contiguous registers.
+
+**Stop rule:** do not write guessed `IntegrationMode` values to local Modbus. Treat it as a higher-level semantic parameter until an exact serializer mapping is proven.
+
+**Next:** await same-controller DCM-connected / DCM-absent cold-boot A/B for scheduler activation; offline work may continue on mapping `0708` selector words to semantic partial-update groups.
