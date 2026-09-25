@@ -1,6 +1,6 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
-_Last updated: 2026-09-25_
+_Last updated: 2026-09-26_
 
 This document summarizes the reverse-engineering work performed so far on a **Thermia iTec XTR M + Total Compact** installation using an **ESP32-S3 / isolated RS485 interface** and Home Assistant.
 
@@ -13,6 +13,67 @@ The main goals are:
 5. document failed hypotheses so other researchers do not have to repeat the same dead ends.
 
 > This work applies to the tested older/non-Genesis iTec platform. Register meanings and protocol behaviour should not automatically be assumed to apply to other Thermia generations.
+
+---
+
+## Current status after EXP182
+
+The write-path investigation has moved beyond the earlier assumption that one missing DCM register or one additional ACK would unlock control.
+
+The strongest current model is that the genuine Online/DCM installation runs an **extended controller-side service scheduler / topology mode** that is not currently active on the tested XTR M.
+
+### Observed reference behaviour
+
+Genuine Online/DCM captures show a coherent service family:
+
+- recurring `0xA5` polling plus related `0xA4 / 0x05` discovery/service activity;
+- periodic controller-originated `0x0F FC03 0x0708/count6` mailbox polls;
+- cyclic controller-originated `0x0F FC16` runtime uploads through `07D0, 07E4, 07F8, 080C, 0820, 0834, 0848, 0864, 0870, 0884`;
+- full `0x03E8..` state resynchronisation when the DCM service joins/rejoins;
+- immediate desired-state reads when the `0708` mailbox signals pending command data.
+
+The `0708/count6` scheduler is demonstrably controller-side: in the DCM-rejoin capture it is already running while the DCM is still silent.
+
+### EXP182 mailbox census
+
+Across the four genuine DCM captures currently available, five distinct six-word `0708` response patterns were found:
+
+- steady state: `0000 0000 0000 0000 077F 0006`;
+- command pending: `0000 0001 0000 0000 077F 0006`;
+- controller-boot transient: `0000 0000 0000 0000 0080 0006`;
+- later controller-boot transient: `0000 0000 0000 0000 0000 0006`;
+- DCM rejoin transition: `0000 0000 7FFF FFFF 0080 0007`.
+
+The command-pending form occurred twice in the deliberate Heat Curve capture. In both cases, `word1=0001` was followed about 40 ms later by controller `FC03 03E8/count13`.
+
+The rejoin form causes the opposite direction: the controller immediately begins an FC16 state/configuration resynchronisation beginning at `03E8`.
+
+### Local XTR discriminator
+
+The tested XTR M does have native `0x0F` traffic and settings/state blocks, including `03E8`, `04A6`, `085F` and the proven `0861` transport-ACK field.
+
+However, the indexed local corpus does **not** show the reference system's complete extended runtime family:
+
+- no native `0708/count6` scheduler;
+- no confirmed native cyclic `07D0..0884` runtime upload family;
+- no normal A5/A4/05 service topology.
+
+This means the missing prerequisite is now best treated as a **controller-side topology / integration / scheduler state**, not as one unknown write register.
+
+### Physical DCM-presence remains an open activation hypothesis
+
+The available genuine captures prove that the scheduler can continue while the DCM service itself is temporarily unavailable, but they do **not** prove that physical DCM presence was irrelevant when the controller selected that topology.
+
+A genuine DCM also becomes visible on the Thermia display when connected, implying an explicit controller-side recognition state.
+
+The highest-value external capture is therefore an A/B cold boot of the **same controller**:
+
+1. cold boot with genuine DCM physically connected;
+2. cold boot without the DCM.
+
+The first bus-level difference between those two runs may expose the actual topology-enablement mechanism.
+
+No active local `0708` response experiment should be attempted unless the local controller first emits a genuine `0F 03 0708 0006`, or a separately justified scheduler-enablement mechanism is identified.
 
 ---
 
