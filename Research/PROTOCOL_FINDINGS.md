@@ -411,7 +411,7 @@ An isolated `AFDC=0x10` event coincided once with outdoor-unit-active status ris
 
 ### 0861 discriminator strengthened
 
-On Piotr's Eco 8, `0x0F:0861` remained at `0` throughout multi-day passive observation. This independently strengthens the interpretation that `0861` movement during the local researcher's active tests is specifically coupled to the `AFCA=0x03E8` transaction mechanism, rather than being a common spontaneous controller state.
+On Piotr's Eco 8, `0x0F:0861` remained at `0` throughout multi-day passive observation. This independently strengthens the interpretation that `0861` movement during Marten's active tests is specifically coupled to the `AFCA=0x03E8` transaction mechanism, rather than being a common spontaneous controller state.
 
 ### Search-model refinement for 0x06
 
@@ -998,3 +998,15 @@ still received no response during a clean 2.015 s window.
 
 Protocol implication:
 The read-side service is not unlocked merely by acknowledging controller-to-0x0F transfers. A stronger architectural possibility is that the real Online/DCM module simultaneously occupies both the `0x06` accessory role and the `0x0F` mailbox/service role, with A5/A4 as an additional discovery endpoint.
+
+## EXP168 key finding — combined 0x06 presence + 0x0F ACK is insufficient
+
+EXP168 deliberately exercised the exact runtime combination that EXP167 could not reach naturally: proven `0x06` presence plus one deliberately triggered and ACKed controller-originated `0x0F FC16 0x03E8/count14` event.
+
+Observed: 155 valid `0x06` responses; 1 exact `0x0F FC16 03E8/count14` request; 1 exact ACK; first FC16 payload word `36 / 0x0024`; no A5; no A4; no `0x05`; no `0x0F FC03`; `resyncDelta=0`, `dropDelta=0`.
+
+### Protocol implication
+
+The combined transport-role hypothesis is now negative: a syntactically and behaviorally valid `0x06` responder plus a working ACK-side `0x0F` role does **not** reproduce the genuine DCM/Online service state.
+
+This materially strengthens the architectural model that the real DCM topology contains an additional discovery/binding/service-availability/ownership layer not represented by simple Modbus request/response participation.
