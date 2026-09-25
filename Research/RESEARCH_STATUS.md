@@ -1816,3 +1816,26 @@ dropDelta=0
 Together with EXP165–167, this exhausts the simple known transport-role combinations as the missing DCM-recognition mechanism.
 
 **Current direction:** focus on offline transmitter ownership / discovery / binding / service-availability analysis of the earliest genuine DCM power-up interval before defining EXP169. No controller reboot is currently justified.
+
+
+## EXP183 — offline scheduler reconstruction
+
+EXP183 reconstructs the genuine Online/DCM runtime task without any local TX.
+
+The runtime FC16 family is ordered and cyclic:
+
+`07D0/19 -> 07E4/17 -> 07F8/17 -> 080C/18 -> 0820/18 -> 0834/18 -> 0848/23 -> 0864/4 -> 0870/17 -> 0884/60 -> repeat`.
+
+Typical slot spacing is about 2.1 s. The `0708/count6` mailbox poll runs at about 4.2 s and is interleaved with this stream.
+
+A key state-machine result comes from the DCM-rejoin capture: while the DCM is silent, the controller repeatedly retransmits the same pending `0870/count17` block instead of advancing through the cycle, while `0708` polling continues. This demonstrates ACK-gated runtime export with a partially independent mailbox cadence.
+
+Payload reconstruction shows that the runtime family is a **state-export serializer** rather than a set of independent control registers:
+
+- `07D0/19` repacks the normal `0x02 FC17 A7F8/A80C` controller transaction. The 13 FC17 response words are exported with unavailable `FC18` values normalized to `FF9C`, followed by the first six controller write-image words.
+- `0820/18` strongly repacks A5 data: the leading fields follow `A5 0000/count18`, while its final six words match words 4..9 of `A5 002E/count10` in the checked captures.
+- `07E4/17` strongly tracks the reference slave `0x04 FC17` exchange, including the same unavailable-value normalization, though some fields are transformed and remain unmapped.
+
+This materially strengthens the current architecture: A5 is upstream data consumed by the DCM-facing export image, and the local XTR is missing activation of an entire export topology/task rather than one command register.
+
+No active EXP184 is defined yet. The same-controller cold-boot A/B capture with and without a genuine DCM remains the highest-value next discriminator.
