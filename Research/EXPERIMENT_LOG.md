@@ -1058,3 +1058,28 @@ The DCM-rejoin variant instead causes controller FC16 resynchronisation beginnin
 **Negative result retained:** decoding or spoofing `0708` is not itself a local control solution because the local XTR does not currently emit the `0708` scheduler.
 
 **Current stop rule:** no EXP183 active write/probe until a specific evidence-backed scheduler/topology activation candidate is identified.
+
+
+## EXP183–185 — offline architecture / firmware branch
+
+| Experiment | Purpose | Result |
+|---|---|---|
+| EXP183 | Reconstruct cyclic `07D0..0884` scheduler and payload sources | **Positive** — ordered ACK-gated state-export serializer reconstructed |
+| EXP184 | Cross-model source/export mapping | **Positive offline refinement** — semantic export layer above model-specific source slaves |
+| EXP185 | Raw 2.7.42 firmware call-chain and partial-update group reconstruction | **Positive** — exact groups 0/1/2 and IntegrationMode lifecycle recovered |
+
+### EXP185 key result
+
+Raw `dlcc_2.7.42` firmware was recovered and inspected directly. Exact HPNode partial-update membership:
+
+- group 0: HeatPumpType, OperationMode, IntegrationMode, RoomValue, ExternalControl1/2/3, DefrostDemand, AlarmField1..5, ErrorCode;
+- group 1: HeatCurve, HeatCurveMin, HeatCurveMax, HeatCurvePlus5, HeatCurveZero, HeatCurveMinus5, HeatStop, RoomFactor, HotWaterStart, ControllerDemand, OperationStatus;
+- group 2: OutdoorTemperature, AuxiliaryHeaterPowerStage, HotWaterTemperature, SupplyLineTemperature, ReturnLineTemperature, EVU_SW, EVU_HW.
+
+`set_IsSystemIntegration` is called from persisted/default-setting paths (`Load`, `CopySettings`, `SetDefaultSettings`), not directly from `OnHEServiceBind` in the recovered RegulationEngine call graph.
+
+**Strong conclusion:** IntegrationMode governs higher-level synchronization ownership and full grouped resync; it is not proven to activate the controller's extended Modbus scheduler.
+
+**New hypothesis:** `0708 word1=1` may be a partial-group-1 dirty/command selector because firmware group 1 starts with HeatCurve and the genuine controller immediately fetches `03E8/count13`. Do not promote this to proven until another selector value/group is observed.
+
+**Stop rule:** no guessed local IntegrationMode write. Continue passive/offline until cold-boot A/B or another genuine selector event provides a scheduler/group discriminator.
