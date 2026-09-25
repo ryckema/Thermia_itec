@@ -6,6 +6,24 @@ This project is based on reverse engineering of a real Thermia iTec XTR M with t
 
 > **Current status:** read-only monitoring is working reliably on the tested system. Writing/control is intentionally disabled. Direct writes to several known mirror/broadcast registers did not change the controller's master state, and the Online/DCM command protocol is not yet understood well enough for safe control.
 
+## Current reverse-engineering status (EXP162)
+
+The active write-path research is deliberately kept separate from the shared RX-only YAML builds. The latest completed controlled test is **EXP162**.
+
+Recent findings:
+
+- Genuine Online/DCM captures show a broader service topology involving recurring `0xA5 FC03` polling, `0x06 FC17`, bidirectional `0x0F` traffic and occasional `0xA4` / `0x05` activity.
+- The recurring A5 read shapes are `0000/count18`, `0023/count1`, and `002E/count10`.
+- `C8 FC03 2328/count2` also occurs on a cold boot **without** a DCM and continues while a genuine DCM is already functional. It is therefore not treated as a proven DCM-login gate.
+- **EXP160:** an exact A5 responder alone was never invoked; the controller did not start polling A5.
+- **EXP162:** combining a strict known-shape `0x0F FC16` ACK responder with the A5 responder successfully ACKed all six observed startup FC16 requests, but still produced **no A5 polling and no `0x0F FC03` traffic** during 180 s.
+- ACKing those no-DCM startup FC16 frames suppresses/advances their retry state, but does **not** reproduce the genuine DCM initial-sync/scheduler state.
+- The remaining problem is therefore an earlier **presence / binding / service-state prerequisite** that makes the controller enter the genuine Online/DCM topology.
+
+The next controlled experiment, **EXP163**, is intentionally narrow and remains experimental: after the known `0x0F` ACK phase it will issue only the three exact, previously observed A5 **FC03 read** shapes to test A5 direction/ownership. It performs no A5 register writes and no broad scan. Results should not be treated as established protocol behaviour until the experiment has completed.
+
+The normal/public integration remains **strictly receive-only**.
+
 ## What you need
 
 - Thermia iTec (XTR)  with the compatible older/non-Genesis controller
