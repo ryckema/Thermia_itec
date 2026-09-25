@@ -91,12 +91,13 @@ The Waveshare 120 Ω termination jumper is normally left **OFF** while passively
 |---|---|---|
 | `0x02` | main/controller-side state and command context | PROVEN |
 | `0x04` | internal Thermia component; seen in genuine Online topology | OBSERVED / OPEN |
+| `0x05` | rare FC17 probe seen immediately after an A4 probe sequence in genuine Online topology | OBSERVED ONCE / OPEN |
 | `0x06` | expansion/accessory FC17 interface; transport presence path | PROVEN transport, physical DCM identity OPEN |
 | `0x0A` | room sensor | PROVEN |
 | `0x0F` | bidirectional Online/DCM-related settings/state mailbox | STRONGLY INDICATED / direction partly PROVEN |
 | `0x14` | auxiliary block, semantics largely unknown | OPEN |
 | `0x1E` | outdoor-unit telemetry/control context | PROVEN |
-| `0xA4` | fallback/discovery-like FC03 endpoint seen in genuine Online capture | OBSERVED / OPEN |
+| `0xA4` | alternate/discovery-like FC03 endpoint; briefly probed even while A5 later resumes normally | OBSERVED / OPEN |
 | `0xA5` | responsive FC03 endpoint seen in genuine Online capture | OBSERVED / identity OPEN |
 
 ---
@@ -843,6 +844,7 @@ This is intentionally compact. Individual YAML/log files contain the full detail
 | EXP153 | cold boot with combined known 0x06 + 0x0F roles | **NEGATIVE:** transport presence at boot still insufficient |
 | EXP154 | offline IntegrationMode / Link Integration reconstruction | `0x4414 IntegrationMode` ↔ `0x0559 Link Integration` strong semantic match, ownership unresolved |
 | EXP155 | offline fclauson artifact + genuine-capture analysis | **POSITIVE architecture result:** 0x0F is bidirectional mailbox; FC03 03E8/count13 confirmed command-side anchor |
+| EXP156 | local display Heating Curve change with genuine Online connected | **POSITIVE directional differential:** local 03E8 change produced event-driven FC16 03E8/count13 state push, with no FC03 03E8/count13 read |
 
 ---
 
@@ -893,14 +895,17 @@ The model has materially changed after EXP147–155 and the genuine Online captu
 
 3. Genuine Online/DCM topology extension
    controller scheduler additionally uses:
-   - 0xA5 FC03
-   - 0xA4 FC03 fallback/discovery-like probes
+   - 0xA5 FC03 primary responsive polling
+   - 0xA4 FC03 alternate/discovery-like probes
+   - rare 0x05 FC17 probe(s)
    - 0x0F FC03 reads
    - normal 0x0F FC16 state/snapshot writes
 
 4. 0x0F bidirectional mailbox
    FC16 to 0x0F = controller/state/snapshot direction
    FC03 from 0x0F = command/desired-state direction
+   local display setting changes can trigger asynchronous FC16 settings pushes
+   using the same numeric register range as the command-side FC03 mailbox
 
 5. DCM identity / approval / integration / grouped sync
    still unresolved
@@ -954,7 +959,7 @@ The genuine capture plus fclauson's mailbox map now add a second major bridge: `
 
 ## A. Get a longer genuine Online/DCM capture with exact action timestamps
 
-The previous genuine Online capture was a major breakthrough, but it ended before the post-restore state could be observed cleanly.
+The previous genuine Online capture was a major breakthrough. EXP156 has now added the complementary local-display direction, so the highest-value missing comparison is a timestamped Online-originated change using the same setting.
 
 Highest-value follow-up:
 
@@ -966,7 +971,7 @@ Highest-value follow-up:
 6. record the exact restore timestamp;
 7. continue capturing for at least 60–90 s after restore.
 
-This should allow a causal diff of the `0x0F FC03 0x03E8/count13` mailbox and subsequent FC16 state propagation.
+This should allow a causal diff of the `0x0F FC03 0x03E8/count13` mailbox and subsequent FC16 state propagation. If an Online change produces FC03 `03E8/count13` first and a matching FC16 `03E8/count13` state push afterwards, the desired-state -> controller-state flow will be close to causally demonstrated.
 
 ## B. Reconstruct the 13-word command mailbox before more local TX
 
@@ -1047,7 +1052,7 @@ The same capture also contained the decimal-2000 FC16 family:
 07D0, 07E4, 07F8, 080C, 0820, 0834, 0848, 0864, 0870, 0884
 ```
 
-A change from `0x0000` to `0x0015` (=21 decimal) appeared at register `0x0858` in one later `0x0848` snapshot, while `0x085A` remained `0x0014` (=20). The capture ended before another `0x0848` snapshot after restore, so a complete `20 -> 21 -> 20` causal sequence cannot yet be claimed.
+A later controlled local-display capture (EXP156) resolved an earlier misleading `0x0858 = 21` observation: the tail of the `0x0848` block is strongly identified as RTC/date-time data. Across four samples, `0x0858` advanced as seconds (`6 -> 27 -> 48 -> 9`), `0x0859` advanced as minutes (`19 -> 20`), and `0x085A..0x085E` matched hour/day/month/year/weekday for 2026-09-25. Therefore `0x0858` should not be treated as a Heating Curve command field.
 
 ---
 
@@ -1075,6 +1080,120 @@ The same spreadsheet contains an FC16 block covering decimal `1350..1369`, inclu
 - 1369 / `0x0559` = Link Integration.
 
 This places those fields in controller/state -> `0x0F` snapshot traffic in that evidence set. It is therefore unsafe to reinterpret `0x0559` as a proven external command input.
+
+---
+
+# 20C. EXP156 — local display setting change with genuine Online connected
+
+EXP156 used a genuine Thermia Online/DCM-connected installation while changing Heating Curve locally on the heat-pump display.
+
+## Hypothesis
+
+A local display change should update controller-owned state and be pushed toward the Online/DCM mailbox with FC16, while an Online-originated desired-state command should be retrieved by the controller through FC03.
+
+## Observed facts
+
+Two event-driven writes to the same 13-word settings range were captured:
+
+```text
+0x0F FC16 start 0x03E8 count 13
+```
+
+The first image contained:
+
+```text
+03E8..03F4 =
+23,25,40,0,1,1,18,18,2,40,30,60,21
+```
+
+The later image contained:
+
+```text
+22,25,40,0,1,1,18,18,2,40,30,60,21
+```
+
+Only `0x03E8` changed, matching the local Heating Curve change `23 -> 22`.
+
+During this capture there was **no** `0x0F FC03 0x03E8/count13` read. The recurring `0x0F FC03` traffic remained the separate `0x0708/count6` block.
+
+The `03E8/count13` FC16 write is not part of the ordinary ~21 s recurring snapshot carousel. It appears asynchronously and interrupts the normal sequence without resetting it. This strongly indicates a change/synchronisation push rather than periodic telemetry.
+
+The normal FC16 carousel observed in the same capture follows the repeating family:
+
+```text
+0834 -> 0848 -> 0864 -> 0870 -> 0884 ->
+07D0 -> 07E4 -> 07F8 -> 080C -> 0820 -> repeat
+```
+
+A local settings-sync event can pre-empt a normally expected `0x0F FC03 0708/count6` read, suggesting higher scheduler priority for change propagation.
+
+## RTC/date-time identification in 0x0848
+
+Four `0x0848` snapshots resolve the tail fields:
+
+```text
+0x0858 = seconds
+0x0859 = minutes
+0x085A = hour
+0x085B = day
+0x085C = month
+0x085D = two-digit year
+0x085E = weekday (Monday=0 fits 2026-09-25 -> Friday=4)
+```
+
+The seconds sequence `6 -> 27 -> 48 -> 9` with the minute rollover `19 -> 20` matches the ~21 s snapshot cadence. This rules out the earlier interpretation of `0x0858 = 21` as Heating Curve data.
+
+## A5/A4/0x05 observations
+
+The three recurring A5 FC03 response families remained byte-identical across the local Heating Curve change:
+
+```text
+A5 FC03 0000/count18
+A5 FC03 0023/count1
+A5 FC03 002E/count10
+```
+
+A4 was briefly probed with the same three shapes, after which A5 resumed normal responses. A4 should therefore be described as alternate/discovery-like rather than a terminal fallback after A5 failure.
+
+A single `0x05 FC17` probe appeared immediately after that A4 probe sequence. Its role is unknown, but it may belong to a wider accessory/discovery sweep.
+
+## Strong conclusions
+
+- A local Heating Curve change is propagated as an event-driven `0x0F FC16 0x03E8/count13` state/settings push.
+- The local display change does not itself cause a `0x0F FC03 0x03E8/count13` read.
+- FC16 and FC03 can use the same numeric `03E8..03F4` settings structure in opposite semantic directions.
+- The `0x0848` tail is RTC/date-time data, not Heating Curve command data.
+- A5 does not visibly carry the changed Heating Curve value in its recurring payloads.
+
+## Current hypothesis
+
+The best current command-flow model is:
+
+```text
+LOCAL DISPLAY CHANGE
+controller state changes
+        |
+        +--> FC16 03E8/count13 --> 0x0F state image
+
+ONLINE / DCM CHANGE
+0x0F desired image
+        |
+controller FC03 03E8/count13
+        |
+controller adopts value
+        |
+        +--> FC16 03E8/count13 --> resulting state image
+```
+
+The lower Online-command chain is still a hypothesis until a timestamped Online-originated change shows the FC03 read followed by the resulting FC16 state push.
+
+## Remaining unknowns
+
+- exact event that causes the controller to issue `0x0F FC03 03E8/count13`;
+- exact physical owner/role of A5 and A4;
+- meaning of the rare `0x05` probe;
+- application-level recognition step that activates the genuine Online scheduler;
+- exact command/state arbitration if Online and local display changes occur close together.
 
 ---
 
@@ -1184,7 +1303,7 @@ plain presence  != UI-level DCM recognition
 
 The remaining challenge is the **DCM/Connect recognition / approval / integration prerequisite that activates the genuine Online scheduler**, followed by exact command-mailbox semantics.
 
-The most valuable next artifact is a **longer genuine Online capture with exact timestamps for one setting change and restore**, continued for 60–90 s after restore.
+The most valuable next artifacts are: **(1)** a longer genuine Online capture with exact timestamps for one setting change and restore, continued for 60–90 s after restore, and **(2)** a startup/reconnect capture beginning before the Online/DCM session is established, to catch the recognition event before the first A5/A4/0x0F-FC03 scheduler activity.
 
 ---
 
@@ -1290,3 +1409,38 @@ v27 does **not** add active write experiments. It updates the protocol model to 
 - which 03E8/count13 word carries each Online command;
 - exact prerequisite that activates the scheduler;
 - whether IntegrationMode is mirrored, derived, or actively controlled through another path.
+
+
+---
+
+# 28. EXP156 update
+
+## Observed facts
+
+- With genuine Thermia Online connected, changing Heating Curve locally on the heat-pump display produced an asynchronous `0x0F FC16 0x03E8/count13` settings push.
+- Two captured images differed only at `0x03E8`: `23 -> 22`; all other 12 words remained identical.
+- No `0x0F FC03 0x03E8/count13` read occurred during the local display change.
+- The recurrent FC03 traffic remained `0x0708/count6`.
+- The recurring `0x0848` tail resolves as RTC/date-time data: seconds, minutes, hour, day, month, two-digit year, weekday.
+- A5 recurring payloads remained byte-identical through the setting change.
+- A4 was briefly probed and A5 subsequently resumed, so A4 is not simply a terminal fallback.
+- One `0x05 FC17` probe appeared directly after the A4 sequence.
+
+## Strong conclusions
+
+- Local settings changes propagate controller -> `0x0F` through FC16.
+- `03E8/count13` FC16 is event-driven settings synchronisation, not part of the ordinary periodic snapshot carousel.
+- The earlier `0x0858 = 21` Heating Curve interpretation is withdrawn; `0x0858` is strongly identified as seconds.
+- The same `03E8..03F4` structure is now directly observed as a controller-originated FC16 state image and independently observed as a genuine Online FC03 read block.
+
+## Hypotheses
+
+- Online-originated commands populate the `0x0F` desired-state image and are retrieved through FC03 `03E8/count13`.
+- After adoption, the controller publishes the resulting state back through FC16 `03E8/count13`.
+- A4/0x05 may participate in periodic discovery/enumeration rather than failure recovery.
+
+## Unknowns
+
+- causal Online FC03 -> controller adoption -> FC16 state sequence still needs one timestamped Online A/B/A capture;
+- DCM recognition / scheduler-activation prerequisite remains unresolved;
+- exact A5/A4/0x05 ownership and semantics remain open.
