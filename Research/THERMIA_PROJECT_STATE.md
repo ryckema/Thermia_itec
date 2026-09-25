@@ -998,3 +998,30 @@ EXP140 should add only `04BA/count22` to the exact ACK whitelist. Everything els
 ---
 
 ## 2026-09-24 — EXP140 PREPARED — sequential 0x0F FC16 ACK probe, stage 0x04BA
+
+## 2026-09-25 — EXP168 COMPLETE / VALID NEGATIVE
+
+**Hypothesis:** with the proven runtime `0x06` responder already active, ACKing one deliberately triggered controller-originated `0x0F FC16 0x03E8/count14` Heat Curve event may reproduce the missing DCM service transition and cause native A5 and/or `0x0F FC03` activity.
+
+**Observed facts:**
+- EXP168 armed without controller/heat-pump reboot.
+- After 10 valid `0x06` replies the experiment reached READY.
+- The operator changed Heat Curve by +1 on the Thermia display.
+- The expected exact controller-originated `0x0F FC16 0x03E8/count14` appeared at +43.148 s.
+- First payload word was `36 / 0x0024`, matching the changed Heat Curve.
+- ESP ACKed that exact request once; this ACK defined T0.
+- `0x06` remained continuously active throughout the post-T0 window.
+- The full 120 s post-ACK observation completed.
+- Final summary: `duration_ms=163187 frames=1308 s05=0 s06=155 s0F=1 A4=0 A5=0 06tx=155 0FtxACK=1 A5tx=0 0F03req=0 0F03rsp=0 0F16req=1 firstAckRelMs=43163 resyncDelta=0 dropDelta=0`.
+
+**Strong conclusions:**
+1. EXP168 is a valid negative test of the combined runtime condition left unresolved by EXP167: active proven `0x06` presence plus an actually exercised known `0x0F FC16` ACK is **not sufficient** to activate native A5, A4/0x05, or `0x0F FC03`.
+2. The simple transport-role branch is now strongly exhausted: `0x0F` ACK alone (EXP165), `0x06` presence alone (EXP166/167), and their deliberate runtime combination (EXP168) all fail to reproduce the genuine DCM service topology.
+3. The missing prerequisite lies outside the currently emulated transport roles, most plausibly in a discovery/binding/service-availability/ownership layer already present very early in the genuine DCM topology.
+4. The runtime Heat Curve event remains a clean controller-originated trigger: `03E8/count14`, first word `36`, then one ACK.
+
+**Unknowns:** exact owner of slave `0x0F`; exact owner of A5; whether an unseen discovery/binding exchange occurs before the first visible successful genuine `0x0F` ACK; whether the missing prerequisite is protocol-only, electrical/topological, or both.
+
+**Current experiment state:** EXP168 COMPLETE / VALID NEGATIVE.
+
+**Next direction:** do not iterate further combinations of known `0x06` presence and known `0x0F` ACK behaviour. Before defining EXP169, perform offline transmitter/ownership analysis of the earliest genuine DCM power-up/reconnect capture. No controller reboot is justified at this point.
