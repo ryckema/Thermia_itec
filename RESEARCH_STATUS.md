@@ -1444,3 +1444,145 @@ v27 does **not** add active write experiments. It updates the protocol model to 
 - causal Online FC03 -> controller adoption -> FC16 state sequence still needs one timestamped Online A/B/A capture;
 - DCM recognition / scheduler-activation prerequisite remains unresolved;
 - exact A5/A4/0x05 ownership and semantics remain open.
+
+
+---
+
+# 29. EXP157–163 update
+
+## EXP158 — cross-capture topology analysis
+
+### Observed facts
+
+- `A4` and `A5` use the same three FC03 register shapes: `0000/count18`, `0023/count1`, and `002E/count10`.
+- Genuine captures structurally pair `A4 <-> 0x05` and `A5 <-> 0x06`.
+- A4 can appear after A5 is already operational; it is therefore not a simple one-time precursor to A5.
+- Genuine boot captures show a highly repeatable ACKed `0x0F FC16` initial-sync family, while periodic/status blocks such as `085F/count5` can interleave.
+
+### Strong conclusions
+
+- A5 service availability and `0x0F` mailbox readiness are related parts of the Online/DCM topology but should not be treated as the same state.
+- A4 is better described as a sibling/alternate service path than as a terminal A5 fallback.
+
+## EXP159 — no-DCM cold-boot baseline — COMPLETE
+
+### Hypothesis
+
+A clean no-DCM cold boot should identify which apparent discovery and `0x0F` startup behaviours are generic controller behaviour rather than DCM-specific activation.
+
+### Observed facts
+
+- `C8 FC03 2328/count2` occurred 20 times without any DCM attached and received no response.
+- The controller emitted unACKed `0x0F FC16` startup traffic, including `04BA/count22`, repeated `04A6/count13`, and periodic `085F/count5`.
+- No A4, A5, `0x05`, or `0x0F FC03` traffic appeared during the 180 s run.
+- The normal controller startup transitions, including the observed `A80E` and `AFDC` changes, still occurred.
+
+### Strong conclusions
+
+- C8 discovery and unACKed `0x0F FC16` retries are generic no-DCM startup behaviour and are not sufficient DCM/session indicators.
+
+## EXP160 — isolated genuine A5 responder — COMPLETE / NEGATIVE
+
+### Hypothesis
+
+If A5 service availability alone is the missing prerequisite, answering the three exact A5 FC03 shapes with payloads copied from a genuine capture should allow the controller to enter the Online/DCM service state.
+
+### Observed facts
+
+Final 180 s summary:
+
+```text
+A4=0 A5=0 A5tx=0 C8=20
+0F03req=0 0F03rsp=0
+0F16req=248 0F16ack=0
+```
+
+The A5 responder was never invoked because the controller never issued an A5 request.
+
+### Strong conclusion
+
+An available A5 responder by itself does not cause the no-DCM controller to begin A5 polling.
+
+## EXP161 — genuine-capture chronology review — OFFLINE ANALYSIS
+
+### Observed facts
+
+In the genuine DCM power-up capture, a successful `0x0F FC16` transaction is already visible before the first A5 triplet. A5 becomes active while unanswered C8 probes are still continuing. The genuine topology then develops recurring A5 activity, `0x06`, and `0x0F FC03` reads.
+
+### Strong conclusions
+
+- C8 does not need to complete or receive a visible response before genuine A5/0x0F service becomes operational.
+- A4 is not a simple prerequisite that must occur before A5.
+- A working `0x0F` service exists very early in genuine DCM startup, but prior experiments show that a single ACK role alone is not sufficient to cause A5 activation.
+
+### Unknown
+
+The exact event that makes the controller start scheduling A5 remains unidentified.
+
+## EXP162 — combined 0x0F FC16 ACK + A5 responder — COMPLETE / NEGATIVE
+
+### Hypothesis
+
+The missing state may require the combination of a responsive `0x0F` mailbox and an available A5 service. EXP162 therefore ACKed only known `0x0F FC16` start/count shapes while retaining the exact A5 responder from EXP160.
+
+### Observed facts
+
+Final summary:
+
+```text
+EXP162 SUMMARY reason=AUTO_STOP_180S phase=3 duration_ms=180008
+frames=1388 s02=344 s05=0 s06=43 s0F=49
+A4=0 A5=0 A5tx=0 0FtxACK=6 C8=20
+unexpectedSlaves=0
+0F03req=0 0F03rsp=0
+0F16req=6 0F16ack=0
+resyncDelta=1 dropDelta=0
+0F_ACK_PLUS_A5_ACTIVE_DE_LOW_IDLE
+```
+
+All six observed whitelisted `0x0F FC16` requests were answered by the ESP. After the ACKs, the heavy no-DCM retry behaviour stopped, but no A5 request, A4 request, `0x05` activity, or `0x0F FC03` request appeared during the complete 180 s capture. C8 again produced its 20-request discovery burst.
+
+### Strong conclusions
+
+- The strict `0x0F FC16` ACK implementation is operational enough to advance/suppress the controller's individual FC16 retry state.
+- `0x0F FC16` ACK plus an available A5 responder is still insufficient to activate A5 polling or the genuine `0x0F FC03` scheduler.
+- The no-DCM FC16 sequence being ACKed is not equivalent to the ordered full initial-sync state seen with a genuine DCM.
+- The missing prerequisite occurs earlier or elsewhere in the DCM presence/binding/service-state path.
+
+### Negative results retained
+
+Do not repeat A5-responder-only, simple 0x0F-ACK-only, or combined ACK+A5-responder tests as though they were untested hypotheses. Do not invent a C8 response merely to force progress: genuine DCM service is already active while C8 probes continue unanswered.
+
+## EXP163 — 0x0F ACK then exact A5 master-side FC03 probe — PROPOSED / NOT YET RUN
+
+### Hypothesis
+
+The A5 direction/ownership model may still be incomplete. After the known `0x0F` ACK phase, issuing the three exact A5 FC03 reads observed in genuine traffic may reveal whether A5 is an endpoint that the DCM side actively queries rather than a slave endpoint that the replacement must emulate.
+
+### Safety / scope
+
+- exactly the three observed FC03 read shapes only: `0000/count18`, `0023/count1`, `002E/count10`;
+- no A5 writes;
+- no register scan;
+- existing strict known-shape `0x0F FC16` ACK behaviour only;
+- C8, `0x06`, A4 and `0x05` otherwise remain passive;
+- one cold-boot run, then passive observation to the 180 s summary.
+
+This is a direction/ownership test, not evidence that A5 is already understood.
+
+## Current model after EXP162
+
+```text
+generic controller startup
+    +-- C8 discovery (parallel; not a proven gate)
+    +-- no-DCM 0x0F FC16 retry path
+
+genuine DCM service state
+    +-- responsive/ACKed 0x0F mailbox
+    +-- recurring A5 service
+    +-- 0x06 accessory/service traffic
+    +-- controller 0x0F FC03 desired-state reads
+    +-- occasional A4 <-> 0x05 sibling path
+```
+
+The unresolved step is the recognition/binding/service-state transition between these two states.
