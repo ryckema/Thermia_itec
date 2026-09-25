@@ -1291,3 +1291,30 @@ Negative/unknown:
 - no active bus test is justified by these mappings.
 
 Next: offline correlation of 080C/0834/0864/0870 against known controller/UI state can continue, but the scheduler-enable question still depends primarily on the same-controller DCM-present/absent cold-boot A/B.
+
+
+## 2026-09-26 — EXP193 COMPLETE / POSITIVE SEMANTIC-DATASET CLASSIFICATION; NEGATIVE RAW-SLAVE-ID HYPOTHESIS
+
+**Hypothesis:** the remaining runtime blocks whose first words resemble slave addresses (notably `080C word0=00C8` and `0834 word0=001E`) may be direct mirrors of slaves C8 and 0x1E; alternatively they are semantic dataset records whose fields can be correlated independently.
+
+**Observed facts:**
+- `080C/count18` exists repeatedly in steady 210001 and 071517 captures where no C8 bus traffic is present. Therefore its leading `00C8` is not sufficient evidence that the block is a raw C8 mirror.
+- `0834/count18` exists in the genuine reference topology even though no slave-0x1E frames occur in the checked reference captures. Therefore leading `001E` is not a raw source-slave identifier.
+- A stronger source correlation exists for `080C`: in 210001 and 071517, controller 0x06 FC17 writes have `AFDC=0` and `080C` word14=0; in 090209 controller boot, all checked 0x06 requests have `AFDC=16` and `080C` word14=16. This strongly indicates that `080C` serializes at least one 0x06 accessory/lifecycle state field.
+- `0834` word12 is 70 in 210001/071517 but 0 in 090209. A5 simultaneously exposes the apparent 30/70 candidate values in both steady and boot captures, so `0834` is not a direct A5 copy either.
+- `0848/count23` contains a proven current RTC/date tail.
+- `0884/count60` splits exactly into ten six-word records `[type/code, minute, hour, day, month, year]` in strict reverse chronological order. Official iTec/iTec XTR user documentation states that ALARM HISTORY stores up to ten alarms with alarm type, time and date. Combined with the wire structure, `0884` is now strongly identified as the controller alarm-history table. Exact numeric alarm-type codes remain unmapped.
+
+**Strong conclusions:**
+1. Numeric resemblance between an export value and a Modbus slave address must not be used as source attribution.
+2. `080C` is a semantic accessory/lifecycle dataset and includes a field strongly correlated with `0x06:AFDC`.
+3. `0834` remains a semantic but unresolved dataset; direct C8/0x1E/A5 mirror interpretations are rejected by the present corpus.
+4. `0884` is strongly identified as the ten-entry alarm-history export.
+
+**Unknowns:**
+- exact meaning of `080C word0=200` and all other `080C` words;
+- exact meaning of `0834 word0=30` and word12=70;
+- alarm type/code mapping for 2, 41, 42 and 44;
+- `0864` and `0870` field semantics.
+
+**Safety/decision:** offline only; no local TX, no YAML changes, and no write target follows from these mappings.
