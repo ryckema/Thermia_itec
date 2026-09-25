@@ -1,16 +1,67 @@
 # THERMIA PROJECT STATE
 
-Last updated: 2026-09-25
+Last updated: 2026-09-26
 
 ## Authoritative experiment state
 
-## Authoritative current state — 2026-09-25 (supersedes older current-experiment bullets below)
+## Authoritative current state — 2026-09-26 (supersedes older current-experiment bullets below)
 
-- Last completed experiment: **EXP167 — COMPLETE / INCONCLUSIVE for the intended combined 0x06 + exercised 0x0F-ACK hypothesis; STRONG NEGATIVE for 0x06-driven service activation**.
-- Current experiment: **none armed**. Do not repeat EXP167 or reboot the heat-pump/controller merely to obtain another copy of this result.
-- Next research step: **offline transmitter/ownership and earliest-service analysis of the genuine DCM power-up capture `thermia_capture_20260925_090209.log` before defining EXP168**.
-- Runtime/no-reboot remains the default experimental strategy. Genuine DCM service can become operational while the controller is already running, so a controller reboot is not intrinsically required.
+- Last completed experiment: **EXP182 — COMPLETE / POSITIVE OFFLINE MAILBOX-STATE MAPPING**.
+- Current experiment: **none armed**.
 - Production functionality remains unchanged.
+- Do **not** repeat AFCA timing variants, direct `0x0F` FC16 semantic writes, passive topology censuses, or standalone `0708` probes already covered by EXP147/150 and EXP175–181.
+- Do **not** attempt to answer `0708/count6` locally unless the XTR controller first emits a genuine `0F 03 0708 0006`.
+- Current highest-value direction: identify the **controller-side topology / integration / scheduler enable condition** that distinguishes the genuine DCM reference system from the local XTR M.
+
+### EXP169–182 consolidated finding
+
+- EXP169: intended `042E/count15` ACK activation condition was not exercised; inconclusive.
+- EXP170: intended `03E8 -> 0410 -> 042E` ACK-chain test was confounded by a pre-existing `04A6` retry state; inconclusive, do not repeat unchanged.
+- EXP171: corrected capture-role interpretation showed that the reference controller already schedules A5/A4/05 and `0x0F FC03` while the DCM service itself can still be silent.
+- EXP172: reference/local controller fingerprints differ structurally; local `A7F8` readCount=15 with `A811/A812=FFFF/0000`, reference readCount=13 with `A811/A812=000C/0500`. Correlation only, not causal proof.
+- EXP173: live `0x06` presence does not change that fingerprint or activate the scheduler.
+- EXP174: Heat Curve A/B/A does not change the fingerprint or scheduler.
+- EXP175: passive topology comparison confirms a structural split: reference has A5/A4/05 + `0x0F FC03`; local XTR does not.
+- EXP176: offline analysis does not support `0x0559 Link Integration` as the missing scheduler gate.
+- EXP177: guarded direct ESP-originated `0x0F FC16 03E8/count14` Heat Curve write produced no controller semantic change; direct master-originated FC16 is not demonstrated as command ingress.
+- EXP178–181: attempts to reproduce the historical AFCA/0861 path in the newer context remained negative even after correcting phase and response delay; stop timing variants.
+- EXP182: complete genuine-DCM `0708/count6` census establishes mailbox/session-state variants and confirms `word1=1` as the strongest source-proven heating desired-state dispatch signal.
+
+### Current architecture
+
+```text
+reference controller:
+extended service/topology scheduler
+    -> A5 + A4/05 service family
+    -> periodic 0x0F FC03 0708/count6
+    -> cyclic 0x0F FC16 07D0..0884 runtime uploads
+    -> DCM can join/rejoin
+    -> full 03E8.. state resync
+    -> mailbox word1=1 can trigger FC03 03E8/count13 desired-state fetch
+
+local XTR:
+native 0x0F settings/state traffic exists
+    -> 03E8 / 04A6 / 085F etc.
+but:
+    -> no normal A5 family
+    -> no demonstrated A4/05 service
+    -> no spontaneous 0708 FC03 scheduler
+    -> no confirmed cyclic 07D0..0884 runtime family
+```
+
+### Key open question
+
+The unresolved problem is now:
+
+**What enables the extended scheduler/topology in the controller?**
+
+Remaining plausible categories:
+1. controller model / firmware capability;
+2. commissioning or persistent configuration;
+3. physical accessory/DCM topology recognition during boot;
+4. another controller-side feature flag or binding state.
+
+Physical DCM presence remains viable because the available captures do not include a clean same-controller A/B cold boot with and without DCM attached.
 
 ### EXP164–167 consolidated finding
 
@@ -1025,3 +1076,32 @@ EXP140 should add only `04BA/count22` to the exact ACK whitelist. Everything els
 **Current experiment state:** EXP168 COMPLETE / VALID NEGATIVE.
 
 **Next direction:** do not iterate further combinations of known `0x06` presence and known `0x0F` ACK behaviour. Before defining EXP169, perform offline transmitter/ownership analysis of the earliest genuine DCM power-up/reconnect capture. No controller reboot is justified at this point.
+
+
+## 2026-09-26 — EXP182 COMPLETE / POSITIVE OFFLINE MAILBOX-STATE MAPPING
+
+**Hypothesis:** different six-word values returned to `0x0F FC03 0708/count6` act as mailbox/session/dirty selectors and correlate with deterministic controller follow-up behaviour.
+
+**Observed facts:**
+- all four available genuine DCM captures were censused;
+- the stable runtime response is commonly `0000,0000,0000,0000,077F,0006`;
+- exactly two command-event responses had `word1=0001`;
+- both were followed about 40 ms later by `0x0F FC03 03E8/count13`;
+- controller-boot variants include `...0080,0006` and `...0000,0006`;
+- DCM-rejoin first response is `0000,0000,7FFF,FFFF,0080,0007`;
+- that rejoin header is followed by controller-originated FC16 state/configuration resynchronisation rather than a desired-state FC03 read;
+- in the rejoin capture, the controller schedules `0708` repeatedly before the DCM begins answering, proving scheduler ownership is controller-side.
+
+**Strong conclusions:**
+1. `0708/count6` is a mailbox/session header, not a heartbeat.
+2. `word1=1` is strongly evidenced as a heating-group pending/dirty indication that gates an immediate `03E8/count13` desired-state fetch.
+3. the DCM-rejoin header encodes a distinct synchronization transition.
+4. the reference system's `0708` polls and `07D0..0884` FC16 runtime uploads belong to one broader extended controller service scheduler.
+5. the tested local XTR lacks that complete observed runtime service family, so the problem is upstream of mailbox contents.
+
+**Unknowns:**
+- exact semantics of all six `0708` words;
+- exact activation condition for the extended scheduler;
+- whether physical DCM recognition, firmware/model capability or commissioning state is the decisive gate.
+
+**Next direction:** stay passive/offline until a concrete scheduler-enable candidate is identified. A same-controller cold-boot A/B capture with versus without genuine DCM is the highest-value external discriminator.
