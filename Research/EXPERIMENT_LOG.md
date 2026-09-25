@@ -1126,3 +1126,17 @@ Strong conclusion: SystemIntegration is a Link-side application/ownership settin
 Negative result retained: do not design a local Modbus experiment around guessed IntegrationMode activation.
 
 Next: scheduler/topology activation remains an independent controller-side problem; await/prepare the genuine DCM-connected versus absent cold-boot discriminator.
+
+
+## EXP189 — physical-topology latch analysis — COMPLETE / POSITIVE
+
+Hypothesis: genuine boot/rejoin captures can show whether the extended scheduler is created by the first DCM mailbox/ACK exchange or exists earlier.
+
+Observed:
+- 090209 controller boot with DCM already powered: reference 0x02 topology fingerprint from the first visible frame (~0.031 s), C8 ~0.130 s, slave 0x04 request/response ~0.251/0.290 s, first 0x0F FC16 ACK ~0.389 s, A5 operational ~1.179 s, first 0708 only ~33.18 s.
+- 090550 DCM rejoin: extended 0x02/0x04/A5/0x0F scheduler and unanswered 0708 polls persist while DCM service is silent for ~66 s.
+- local EXP164 no-DCM boot: C8, 0x06 and ordinary 0x0F FC16 exist, but A4/A5/05 and 0x0F-FC03 remain absent.
+
+Strong conclusion: topology creation precedes normal mailbox operation and is not explained by the first 0x0F ACK. Once active, the extended topology remains latched across temporary DCM silence.
+
+Next: no active EXP190. Highest-value evidence is same-controller cold boot with DCM connected versus absent.
