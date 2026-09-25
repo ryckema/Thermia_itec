@@ -1723,3 +1723,35 @@ C8
 Do not continue using `EXP 0.0`, A80E/AFDC state, C8 probing, or longer `0x06` presence as DCM-recognition criteria.
 
 The highest-value next step is offline analysis of the earliest genuine DCM power-up interval, especially transmitter ownership and the event/property that makes `0x0F` service available before the first A5 transaction. A new controller reboot should only be used if a later hypothesis uniquely requires one.
+
+
+---
+
+# 31. EXP168 — valid combined-role negative
+
+EXP168 closed the exact gap left by EXP167.
+
+With the proven runtime `0x06` responder already active, Heat Curve was changed by +1 on the Thermia display. The controller emitted the expected exact `0x0F FC16 0x03E8/count14` event, first word `36 / 0x0024`. The ESP ACKed that request once and then observed 120 s.
+
+Final result:
+
+```text
+s06=155
+06tx=155
+s0F=1
+0F16req=1
+0FtxACK=1
+A5=0
+A4=0
+s05=0
+0F03req=0
+0F03rsp=0
+resyncDelta=0
+dropDelta=0
+```
+
+**Strong conclusion:** active `0x06` accessory/version presence plus a working runtime `0x0F` ACK-side role is not sufficient to activate the genuine Online/DCM A5 or FC03 scheduler.
+
+Together with EXP165–167, this exhausts the simple known transport-role combinations as the missing DCM-recognition mechanism.
+
+**Current direction:** focus on offline transmitter ownership / discovery / binding / service-availability analysis of the earliest genuine DCM power-up interval before defining EXP169. No controller reboot is currently justified.
