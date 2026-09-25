@@ -1259,3 +1259,29 @@ DCM-facing runtime export group
 Therefore exported runtime groups should be interpreted by semantic role, not by fixed internal slave address.
 
 A811/A812 remain structural correlates only. In particular, A812=0500 must not be interpreted as a 0x05-node presence map from numeric coincidence alone.
+
+
+## EXP192 — additional DCM runtime-export semantics
+
+### 07F8
+Strong cross-capture correlation with the controller's 0x0A write image:
+- controller 0x0A B3C4..B3C6 = `[17,20,0]` -> `07F8` word15 = 17;
+- `[14,21,0]` -> word15 = 14;
+- `[14,20,0]` -> word15 = 14.
+
+Therefore `07F8` is source-derived from the room-sensor/controller environment path, but is not a raw 3-word mirror.
+
+### 0848
+`0848/count23` words16..22 are proven:
+`second, minute, hour, day, month, two-digit year, weekday(Monday=0)`.
+
+### 0884
+`0884/count60` decomposes into ten records of six words. The observed records are strictly reverse chronological when decoded as:
+`code, minute, hour, day, month, year`.
+This is strong evidence for a ten-entry event/history table. Codes 2, 41, 42 and 44 remain unmapped.
+
+### 0870 / 0864
+`0870/count17` is invariant across all checked captures, including DCM-silent operation, and is currently classified as persistent/static configuration or identity data. `0864/count4` is invariant `[0,0,0,22]`; semantics unknown.
+
+### 080C / 0834 caution
+The first words are 0x00C8 and 0x001E respectively, but this alone does not prove linkage to slave C8 or 0x1E. Treat those as unresolved until a value transition or independent source mapping exists.
