@@ -1186,3 +1186,18 @@ Protocol implication:
 - `w1 == firmware PartialUpdateIndex 1` = plausible architectural correlation, not yet proven identity;
 - `w0 -> group0` and `w2 -> group2` remain hypotheses only;
 - rejoin `w2=7FFF,w3=FFFF,...` is session/resync state, not evidence for a normal group-2 command.
+
+
+## EXP188 — Link-side binding is distinct from Thermia-bus scheduler activation
+
+Raw Danfoss Link 2.7.42 IL shows the HeatPump endpoint identity and creation path:
+- HEATPUMP maps to DivisionID 6, BrandID 0, ProductID 0x0203.
+- OnHEServiceBind checks the incoming physical address and allowed DivisionID/BrandID/ProductID tuple before endpoint creation.
+- NodeManager.CreateNode creates an HPNode for NodeType HEATPUMP.
+- Link's service UI writes IHPNode.IsSystemIntegration directly from the user's System Integration selection.
+
+Protocol implication:
+Link/HE side: device identity -> bind -> HPNode -> SystemIntegration choice -> grouped sync.
+Thermia RS485 side: controller/accessory topology recognition -> unresolved gate -> A5/A4/05 + 0708 + 07D0..0884.
+
+Do not collapse these two layers. The Link firmware does not demonstrate that IntegrationMode is the local Thermia scheduler gate. It demonstrates a higher-level semantic ownership mode after a heat-pump endpoint already exists.
