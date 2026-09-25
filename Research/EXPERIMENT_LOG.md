@@ -1140,3 +1140,17 @@ Observed:
 Strong conclusion: topology creation precedes normal mailbox operation and is not explained by the first 0x0F ACK. Once active, the extended topology remains latched across temporary DCM silence.
 
 Next: no active EXP190. Highest-value evidence is same-controller cold boot with DCM connected versus absent.
+
+
+## EXP191 — cross-model outdoor-node mapping — COMPLETE / POSITIVE
+
+Hypothesis: reference 0x04 and local 0x1E are model-specific source nodes feeding the same higher-level outdoor/COMM-KIT semantics.
+
+Observed:
+- reference genuine captures: continuous 0x04 FC17 traffic, zero 0x1E frames in the checked corpus;
+- local XTR EXP175: 0x04 absent, 0x1E strongly active;
+- 07E4/count17 follows and repacks the 0x04 exchange, including FC18->FF9C normalization and inserted/derived values.
+
+Conclusion: the DCM runtime exporter is semantic, not a fixed raw-slave mirror. 0x04 and 0x1E are likely architecture-specific implementations of the same broad subsystem role, but their register maps are not interchangeable.
+
+Negative result: no evidence supports interpreting A812=0500 as a slave/node map or direct 0x05 presence encoding. Do not write or decode it that way without independent evidence.
