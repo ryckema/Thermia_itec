@@ -1,6 +1,6 @@
 # THERMIA EXPERIMENT LOG
 
-Last updated: 2026-09-23
+Last updated: 2026-09-26
 
 This file is the compact canonical experiment record. Detailed YAML and raw logs remain the primary evidence.
 
@@ -1020,3 +1020,41 @@ Combined with EXP148, A5 is strongly indicated to belong to or depend on the mis
 **Negative result retained:** stop repeating simple `0x06` + `0x0F` transport-role combinations.
 
 **Next:** offline analysis of genuine DCM transmitter ownership / service activation before EXP169. No controller reboot required.
+
+
+## EXP169–182 — scheduler/topology branch
+
+| Experiment | Purpose | Result |
+|---|---|---|
+| EXP169 | Exercise native `042E/count15` ACK activation candidate | **Inconclusive** — target condition not exercised |
+| EXP170 | Exercise `03E8 -> 0410 -> 042E` ACK chain | **Inconclusive** — pre-existing `04A6` retry state confounded sequence |
+| EXP171 | Correct genuine boot/rejoin capture roles and ordering | **Positive offline correction** — extended scheduler exists controller-side while DCM service can still be silent |
+| EXP172 | Compare controller `A7F8/A80C..A812` fingerprints | **Structural difference found** — correlation only |
+| EXP173 | Test whether live `0x06` presence changes fingerprint/scheduler | **Negative** |
+| EXP174 | Heat Curve A/B/A fingerprint/scheduler census | **Negative** |
+| EXP175 | Passive reference-vs-local topology census | **Positive structural split** — reference A5/A4/05 + FC03 scheduler absent locally |
+| EXP176 | Evaluate `0x0559 Link Integration` as scheduler gate | **Offline negative** |
+| EXP177 | Guarded direct `0x0F FC16 03E8/count14` semantic write | **Negative** — no controller semantic change |
+| EXP178 | AFCA + FC16-ACK-context mailbox trigger reproduction | **Negative** — historical 0861 ACK not reproduced |
+| EXP179 | AFCA without FC16 ACK context | **Inconclusive** |
+| EXP180 | Exact LONG→zero→SHORT AFCA phase reproduction | **Valid negative** |
+| EXP181 | Same phase with historical 5 ms response delay | **Valid negative** — stop timing variants |
+| EXP182 | Complete genuine-DCM `0708/count6` mailbox census | **Complete / positive offline mapping** |
+
+### EXP182 key result
+
+Five genuine `0708/count6` response classes are currently observed:
+
+- steady: `0000 0000 0000 0000 077F 0006`;
+- command pending: `0000 0001 0000 0000 077F 0006`;
+- controller-boot transient: `0000 0000 0000 0000 0080 0006`;
+- later controller-boot transient: `0000 0000 0000 0000 0000 0006`;
+- DCM rejoin: `0000 0000 7FFF FFFF 0080 0007`.
+
+The two observed `word1=1` events are each followed ~40 ms later by controller `FC03 03E8/count13`.
+
+The DCM-rejoin variant instead causes controller FC16 resynchronisation beginning at `03E8`.
+
+**Negative result retained:** decoding or spoofing `0708` is not itself a local control solution because the local XTR does not currently emit the `0708` scheduler.
+
+**Current stop rule:** no EXP183 active write/probe until a specific evidence-backed scheduler/topology activation candidate is identified.
