@@ -1083,3 +1083,27 @@ Raw `dlcc_2.7.42` firmware was recovered and inspected directly. Exact HPNode pa
 **New hypothesis:** `0708 word1=1` may be a partial-group-1 dirty/command selector because firmware group 1 starts with HeatCurve and the genuine controller immediately fetches `03E8/count13`. Do not promote this to proven until another selector value/group is observed.
 
 **Stop rule:** no guessed local IntegrationMode write. Continue passive/offline until cold-boot A/B or another genuine selector event provides a scheduler/group discriminator.
+
+
+
+## EXP186 — 0708 selector reconstruction — COMPLETE / PARTIAL POSITIVE
+Hypothesis: w0/w1/w2 are direct selectors for semantic sync groups 0/1/2.
+
+Result:
+- `w1=1` occurred exactly twice in the genuine command capture;
+- both were followed by `FC03 03E8/count13`;
+- no independent command-state `w0!=0` or `w2!=0` was observed;
+- the rejoin `w2=7FFF` state is compound and triggers full resync.
+
+Conclusion: w1 is strongly associated with the heating/settings desired-state family; full three-way selector mapping remains unproven.
+
+## EXP187 — 03E8/count13 versus firmware group 1 — COMPLETE / NEGATIVE FOR EXACT 1:1 MAPPING
+Hypothesis: `03E8/count13` directly serializes the eleven Danfoss Link group-1 parameters.
+
+Result:
+- native block spans `03E8..03F4` = 13 contiguous wire registers;
+- confirmed/native semantics overlap heavily with Link group 1, especially HeatCurve through HeatStop and RoomFactor;
+- however the wire image also contains room-setpoint-related/native fields and cannot be matched one-to-one to the eleven semantic group-1 parameters.
+
+Conclusion:
+retain the broader interpretation `0708.w1 -> heating/settings family pending`; do not claim exact `w1 -> PartialUpdateIndex 1` identity without another genuine group event.
