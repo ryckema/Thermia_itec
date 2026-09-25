@@ -1107,3 +1107,22 @@ Result:
 
 Conclusion:
 retain the broader interpretation `0708.w1 -> heating/settings family pending`; do not claim exact `w1 -> PartialUpdateIndex 1` identity without another genuine group event.
+
+
+## EXP188 — Raw firmware binding/topology reconstruction — COMPLETE / POSITIVE
+
+Hypothesis: the Link firmware can show whether SystemIntegration is a discovery/binding gate or a later application setting.
+
+Observed:
+- HEATPUMP identity maps to DivisionID 6 / BrandID 0 / ProductID 0x0203.
+- DHP binding validates physical address plus allowed DivisionID/BrandID/ProductID before creating an endpoint.
+- HEATPUMP endpoint creation leads to HPNode.
+- The service UI directly sets HPNode.IsSystemIntegration from a user-selectable radio button.
+
+Result: positive.
+
+Strong conclusion: SystemIntegration is a Link-side application/ownership setting applied after endpoint binding, not the discovered scheduler-enable mechanism for the local Thermia controller.
+
+Negative result retained: do not design a local Modbus experiment around guessed IntegrationMode activation.
+
+Next: scheduler/topology activation remains an independent controller-side problem; await/prepare the genuine DCM-connected versus absent cold-boot discriminator.
