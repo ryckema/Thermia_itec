@@ -6,12 +6,24 @@ Last updated: 2026-09-26
 
 ## Authoritative current state — 2026-09-26 (supersedes older current-experiment bullets below)
 
-- Last completed experiment: **EXP182 — COMPLETE / POSITIVE OFFLINE MAILBOX-STATE MAPPING**.
+- Last completed experiment: **EXP206 — COMPLETE / MAJOR POSITIVE DCM MODBUS REJOIN CAPTURE**.
 - Current experiment: **none armed**.
 - Production functionality remains unchanged.
 - Do **not** repeat AFCA timing variants, direct `0x0F` FC16 semantic writes, passive topology censuses, or standalone `0708` probes already covered by EXP147/150 and EXP175–181.
 - Do **not** attempt to answer `0708/count6` locally unless the XTR controller first emits a genuine `0F 03 0708 0006`.
 - Current highest-value direction: identify the **controller-side topology / integration / scheduler enable condition** that distinguishes the genuine DCM reference system from the local XTR M.
+
+### EXP206 consolidated finding
+
+- Genuine DCM capture sequence: the DCM was physically removed from the Thermia Modbus bus, power-cycled while disconnected, and then reconnected while the heat-pump controller remained running.
+- During DCM absence, the already-selected extended topology remained active: the reference 0x02 fingerprint, slave 0x04 and A5 traffic continued; controller 0x0F FC03 0708/count6 polls continued unanswered; and the pending FC16 0864/count4 export page was retried at about 2.1 s cadence.
+- First successful reattachment evidence was the ACK of pending 0864/count4 at 27.051 s. The next 0708 poll returned [0000,0000,7FFF,FFFF,0080,0006], and full FC16 resynchronisation began from 03E8/count13 about 68 ms later.
+- The controller continued polling slave 0x06 throughout the capture and no 0x06 response was present, yet the genuine DCM service rejoined and normal Online runtime resumed. Therefore the 0x06 accessory/version path is not required for DCM session reattachment or normal DCM service in this captured topology.
+- Given the capture owner's physical-disconnect sequence, continued A5 request/response traffic while the DCM was off-bus excludes the removed DCM itself as the physical A5 responder on this bus. A5 remains a topology-associated native/upstream service; exact hardware ownership is still open.
+- After resync, steady 0708 responses were [0000,0000,0000,0000,0000,0006]. This proves that 0708 word4=077F is not required for an operational post-rejoin session.
+- At 104.130 s, 0708=[0001,0000,0000,0000,0000,0006] caused an immediate controller FC03 0546/count20 desired-state fetch. Together with the earlier source-proven word1=1 -> 03E8/count13 relation, word0 and word1 are now two distinct desired-state selectors.
+- Prior rejoin data used [0000,0000,7FFF,FFFF,0080,0007]; this capture resynchronised with word5=0006. Therefore word5=0007 is not required for join/resync.
+- Initial controller cold-boot topology activation remains unresolved. EXP206 explains maintenance and reattachment of an already-active topology, not its creation.
 
 ### EXP169–182 consolidated finding
 
@@ -1911,13 +1923,13 @@ Do not add resistors, straps or experimental loading to the live bus based on th
 3. continue semantic mapping only where it directly supports a future emulator.
 
 
-## 2026-09-26 — EXP203 COMPLETE / DCM MODBUS DISCONNECT-POWER-CYCLE-RECONNECT
+## 2026-09-26 — EXP206 COMPLETE / DCM MODBUS DISCONNECT-POWER-CYCLE-RECONNECT
 
 Hypothesis: removing a genuine DCM from the Thermia Modbus bus, power-cycling it while disconnected, and reconnecting it can distinguish controller topology maintenance from DCM session attachment and reveal the minimal rejoin protocol.
 
 Physical sequence supplied by capture owner: DCM removed from Modbus; DCM powered down/up while removed; DCM Modbus reconnected. Controller remained running.
 
-Observed: while disconnected, the controller kept the reference 0x02 fingerprint (A811/A812 000C/0500), A5, slave 0x04, 0x06 polling and unanswered 0708 polls. Pending 0864/count4 was retried about every 2.1 s. First successful reattachment evidence was ACK of pending 0864 at 27.051 s. The next 0708 poll at 28.444 s was answered at 28.470 s with [0000,0000,7FFF,FFFF,0080,0006], immediately followed by full resync from 03E8/count13.
+Observed: while disconnected, the controller kept the reference 0x02 fingerprint (A811/A812 000C/0500), A5, slave 0x04, 0x06 polling and unanswered 0708 polls. Pending 0864/count4 was retried about every 2.1 s. A5 request/response traffic continued despite the genuine DCM being physically off-bus, and the entire capture contains controller 0x06 polls but no 0x06 accessory responses. First successful reattachment evidence was ACK of pending 0864 at 27.051 s. The next 0708 poll at 28.444 s was answered at 28.470 s with [0000,0000,7FFF,FFFF,0080,0006], immediately followed by full resync from 03E8/count13.
 
 Join-state correction: prior 090550 used [0000,0000,7FFF,FFFF,0080,0007]. EXP203 proves w5=7 is not required for join/resync. The compound w2/w3/w4 state is the stronger signature.
 
@@ -1925,6 +1937,6 @@ After full resync, steady 0708 had resumed by 62.119 s and runtime export restar
 
 Major selector breakthrough: at 104.130 s, normal mailbox state [0001,0000,0000,0000,0000,0006] caused immediate FC03 0546/count20. The returned image includes 0553=4 OperationMode and 0559=0 Link Integration LIGHT. Together with earlier w1=1 -> 03E8/count13, this gives two independently observed selector families. w0 strongly aligns with firmware partial-group-0-like system/status semantics; w1 strongly aligns with group-1-like heating/settings semantics. Exact one-to-one serialization remains unproven.
 
-Strong conclusions: already-active extended topology survives complete DCM Modbus removal and DCM power cycle while controller stays powered; reattachment needs no visible special discovery exchange before normal service; initial controller cold-boot topology activation remains unsolved.
+Strong conclusions: already-active extended topology survives complete DCM Modbus removal and DCM power cycle while controller stays powered; reattachment needs no visible special discovery exchange before normal service; 0x06 is not required for genuine DCM reattachment in this topology; the removed DCM is not the physical A5 responder if the supplied disconnect sequence is taken as ground truth; and initial controller cold-boot topology activation remains unsolved.
 
 Safety: passive external capture analysis only; no local TX and no YAML change.
