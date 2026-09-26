@@ -63,3 +63,24 @@ python3 test_offline_tools.py
 ## Safety rule
 
 These tools are research aids only. Do not add a serial transport or connect the reference model to the local XTR until the controller itself has been shown to instantiate the genuine Online/DCM scheduler or a separately proven bootstrap mechanism exists.
+
+
+## compare_0546_page.py
+
+Offline helper for EXP219. It parses the full 20-word `0546/count20` lines emitted by the EXP219 YAML, checks local frame stability, and compares the local page word-for-word with the stable genuine reference image observed in three independent captures.
+
+Reference page:
+
+```text
+0546..0559 = [2,0,2,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0]
+```
+
+Known fields are `0553 = Operation Mode` and `0559 = Link Integration`. The tool explicitly reports whether any differences remain outside `0553`.
+
+Example:
+
+```bash
+python3 Research/tools/compare_0546_page.py exp219.log
+```
+
+This tool is offline-only and has no transport code.
