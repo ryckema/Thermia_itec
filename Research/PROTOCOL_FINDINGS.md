@@ -1668,3 +1668,17 @@ Official DHP-AQ Link documentation gives an important cross-model clue:
 Therefore DCM/Link support is at least generation/software-capability dependent on DHP-AQ. This does not prove how iTec XTR selects the topology, but it makes a pre-bus controller capability/configuration gate plausible.
 
 The recovered Danfoss Link CC firmware remains valuable for HE/HPNode semantics, but it should not be expected to contain the lower Thermia-controller RS485 topology bootstrap.
+
+
+## EXP205 — no documented spare DCM-detect line on the direct path
+
+Observed XTR RJ45 wiring accounts for all eight contacts as two duplicated conductors for one bus line, two duplicated conductors for the other bus line, two grounds and two +12 V supply conductors.
+
+Official DHP-AQ DCM03 installation uses a separate DCM03 power supply and a communication cable from the spare relay-board RJ45 to the DCM03 port explicitly labelled RS 485. No separate detect/ID conductor, strap or jumper is documented for that direct-connection path.
+
+Protocol implication:
+- a dedicated spare-wire presence signal is currently unsupported;
+- if physical recognition exists before framed traffic, it would more likely have to use the RS485 pair's electrical state/load or a controller-side persisted/capability state;
+- byte-level captures cannot prove or exclude such analog detection.
+
+Do not alter termination/bias/loading as an experimental bootstrap target without reference electrical evidence.
