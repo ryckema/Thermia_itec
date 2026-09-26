@@ -7,11 +7,34 @@ Last updated: 2026-09-26
 ## Authoritative current state — 2026-09-26 (supersedes older current-experiment bullets below)
 
 - Last completed experiment: **EXP218 — COMPLETE / MAJOR POSITIVE LOCAL 0546/0553 OPERATION-MODE VALIDATION**.
-- Current experiment: **none armed locally**. EXP208 remains separately awaiting the external same-controller cold-boot capture.
+- Current experiment: **EXP219 — READY / PASSIVE FULL 0546 SYSTEM-PAGE CAPTURE; YAML GENERATED, NOT YET RUN**. EXP208 remains separately awaiting the external same-controller cold-boot capture.
 - Production functionality remains unchanged.
 - Do **not** repeat AFCA timing variants, direct `0x0F` FC16 semantic writes, passive topology censuses, or standalone `0708` probes already covered by EXP147/150 and EXP175–181.
 - Do **not** attempt to answer `0708/count6` locally unless the XTR controller first emits a genuine `0F 03 0708 0006`.
 - Current highest-value direction: identify the **controller-side topology / integration / scheduler enable condition** that distinguishes the genuine DCM reference system from the local XTR M.
+
+### EXP219 — READY / passive full 0546 system-page capture
+
+**Hypothesis:** the still-pending local controller-originated `0x0F FC16 0546/count20` transfer can be captured word-for-word and directly compared with the genuine DCM reference page. Stable differences outside the already-proven `0553` Operation Mode and `0559` Link Integration fields may expose controller/topology state relevant to the missing scheduler gate.
+
+**Only experimental variable:** logging is armed. No heat-pump setting is changed and no RS485 transmit is permitted.
+
+**Experiment YAML:** `Research/experiments/EXP219/thermia_itec_xtr_m_waveshare_exp219.yaml`.
+
+**Procedure:**
+1. flash EXP219 while leaving the heat pump in AUTO;
+2. do not change any Thermia setting;
+3. press `EXP219 Start Full 0546 Capture` under Configuration;
+4. wait for automatic stop after 12 exact `0546/count20` frames (normally only several seconds if the pending transfer persists);
+5. return the complete log from ARM through AUTO STOP.
+
+**Positive criterion:** at least one exact local `0x0F FC16 0546/count20` full 20-word page is captured. Twelve identical or near-identical pages provide stability evidence.
+
+**Secondary discriminator:** compare all 20 local words against the genuine reference image. Any stable cross-system difference outside 0553/0559 becomes a ranked passive topology/state candidate; identical remaining words would instead eliminate the 0546 page as the missing topology discriminator.
+
+**Negative criterion:** no `0546/count20` appears after arming. That would show the pending transfer was cleared or expired between EXP218 and EXP219.
+
+**Safety:** fully RX-only. GPIO17 TX is not configured; GPIO21/DE remains forced LOW. HA buttons only arm/disarm local logging.
 
 ### EXP218 — COMPLETE / major positive local Operation Mode validation
 
