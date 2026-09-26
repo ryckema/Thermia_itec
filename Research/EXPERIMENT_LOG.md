@@ -1421,3 +1421,20 @@ No TX, YAML or production-functionality changes were made during this review.
 
 **Next:** same-reference-controller DCM-present/absent cold-boot A/B, or controller-side firmware/service-software reverse engineering.
 
+
+
+## EXP204 — controller firmware/service-software source hunt — COMPLETE / NEGATIVE-POSITIVE
+
+**Hypothesis:** actual heat-pump controller/relay-board firmware may be publicly/project-available and reveal DCM topology selection.
+
+**Observed:**
+- no usable iTec XTR / iTec / DHP-AQ controller firmware binary or update package found in Project/Library/public web/GitHub searches;
+- public XTR sources are manuals/commissioning/wiring/product documents;
+- official DHP-AQ Link material requires controller software >=2.2;
+- official compatibility documentation says older DHP-AQ units should have the display card changed if below 2.2.
+
+**Result:** negative for currently available controller firmware; positive evidence that Link/DCM capability can depend on controller/display-card software generation.
+
+**Conclusion:** stop treating Link CC firmware as a likely source of the Thermia-bus scheduler gate. Cold-boot A/B remains more valuable than further Link-side firmware mining.
+
+**Safety:** offline only.
