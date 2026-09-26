@@ -1590,3 +1590,40 @@ Run only if EXP208 boots the reference controller with the extended scheduler OF
 **Unknown:** remaining 18 page words.
 
 **Safety:** offline analysis only.
+
+
+## EXP216 — offline fail-closed DCM reference model — COMPLETE / POSITIVE
+
+**Hypothesis:** the currently reconstructed genuine DCM runtime role can be represented as a deterministic offline slave-0x0F state machine without adding any bus transport.
+
+**Implementation:** `Research/tools/thermia_dcm_reference_model.py`.
+
+**Observed / validated:**
+- exact CRC handling;
+- exact captured steady 0708 response;
+- word1 dirty selector -> 03E8/count13 fetch -> selector clears;
+- word0 dirty selector -> 0546/count20 fetch -> selector clears;
+- exact genuine 0864/count4 FC16 request -> captured echo ACK;
+- unsupported/unobserved FC16 shape -> no response.
+
+**Result:** positive. The known runtime role is implementable as a reactive fail-closed state machine.
+
+**Negative/limit:** no serial/GPIO/network transport, no scheduler/bootstrap creation, no unknown command pages, and no 0410/count21 DHW command path are implemented.
+
+**Safety:** offline only; cannot transmit to the heat pump.
+
+## EXP217 — automated topology-capture analyzer — COMPLETE / POSITIVE
+
+**Hypothesis:** EXP208/EXP214 can be judged automatically from raw timestamped capture logs using independent topology evidence families.
+
+**Implementation:** `Research/tools/thermia_capture_analyzer.py` plus `test_offline_tools.py`.
+
+**Observed:** all five genuine captures currently in the project were classified extended-topology ON using all three independent evidence families: A5, 0708/count6, and runtime 07D0..0884 FC16. All frames in those five files passed Modbus CRC validation.
+
+Known timing anchors were recovered automatically:
+- 20260925_090209: A811/A812=000C/0500 at 0.031 s; first A5 1.179 s; first 0708 33.180 s; first runtime FC16 33.915 s.
+- 20260926_073242: first DCM 0x0F FC16 ACK 27.051 s; first 0x0F FC03 response 28.470 s.
+
+**Result:** positive. New EXP208/214 logs can now be triaged reproducibly without manual frame scanning.
+
+**Safety:** offline/passive analysis only.
