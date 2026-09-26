@@ -1790,3 +1790,19 @@ Current field confidence:
 Protocol implication: 0708 word1 is now well explained as a heating/settings dirty selector. When asserted, the controller fetches a coherent heating desired-state image from the DCM at 03E8/count13.
 
 Do not translate this into direct master-originated writes to the local XTR. The semantically correct direction remains controller FC03 -> slave-0x0F response after the genuine scheduler exists.
+
+
+## EXP212 — 0708 selectors are one-shot fetch latches
+
+The genuine command/rejoin corpus now distinguishes a selector request from an actual value delta.
+
+- Heat Curve capture: 0708 word1=1 -> FC03 03E8/count13 about 40 ms later -> next 0708 word1=0. This occurs twice, with returned desired Heat Curve values 23 then 22.
+- Reconnect capture: 0708 word0=1 at 104.130 s -> FC03 0546/count20 at 104.170 s -> next 0708 word0=0 at 108.329 s.
+- The word0-triggered 0546 response is exactly identical to the controller's earlier FC16 0546/count20 image from 45.336 s.
+
+Protocol implication: word0 and word1 are best modeled as one-shot group fetch/dirty latches, not as persistent state and not as proof that a semantic value has changed. The controller consumes the latch by fetching the selected desired-state page. A future emulator should clear the selector after the corresponding successful FC03 fetch.
+
+Current selector map:
+- word0 -> 0546/count20 system/group-0-like page;
+- word1 -> 03E8/count13 heating/group-1-like page;
+- normal word2 command semantics remain unobserved.
