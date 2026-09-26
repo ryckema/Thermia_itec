@@ -1258,3 +1258,21 @@ This changes the preferred interpretation of the runtime scheduler from a collec
 
 **Next:** retain same-controller genuine DCM present/absent cold-boot A/B as highest-value discriminator.
 
+
+
+## EXP196 — public Online-index cross-map — COMPLETE / POSITIVE
+
+**Hypothesis:** public Thermia Online registerIndex metadata can directly identify fields inside unresolved runtime pages.
+
+**Observed:**
+- ATEC/DHP-AQ and iTec IQ profiles both map index 2060 to `REG_INDOOR_TEMPERATURE` with 0.1 scaling.
+- Genuine `080C/count18` starts exactly at index 2060 and word0 is consistently 200.
+- Therefore `080C.word0 = indoor temperature 20.0 °C` is strongly supported.
+- This disproves the earlier superficial `00C8 -> slave C8` reading.
+- Public 2120-region semantics differ by model/profile (ATEC 2120 Integral LSD; iTec 2120 PID), so Online-index semantics are not universally identical across all controller families.
+- No checked public profile exposes 2143..2151.
+
+**Conclusion:** the DCM runtime pages are confirmed to inhabit the same Thermia Online registerIndex database used by public Online API profiles, but mapping must remain model-aware and field-specific.
+
+**Safety:** offline only; no writes.
+
