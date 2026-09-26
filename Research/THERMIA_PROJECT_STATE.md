@@ -1408,3 +1408,22 @@ This matches the stable `registerIndex` namespace exposed by public Thermia Onli
 **Strong architectural conclusion:** the extended controller scheduler is best understood as publishing/populating the DCM-facing Thermia Online register-index database in slave 0x0F. The FC16 blocks are contiguous database pages/semantic groups, not arbitrary private command blocks.
 
 Consequently, 0864 is controller->DCM exported state at Online indices 2148..2151. Even if those words eventually prove to contain a capability/topology marker, they are an **output/reflection** of controller state, not a justified ingress/write target for activating the scheduler. The activation gate must sit upstream of the publisher.
+
+
+## Post-EXP194 continuation point
+
+- Last completed experiment: **EXP194 — COMPLETE / MIXED POSITIVE-NEGATIVE**.
+- No active bus experiment is running.
+- Production YAML remains unchanged.
+- **EXP195 — PROPOSED / NOT STARTED**: offline reconstruction of the contiguous native service family `085F/count5` + `0864/count4` (indices 2143..2151).
+
+### EXP195 hypothesis
+The local/native `085F..0863` service block and reference-only `0864..0867` block may form one semantic controller service/status family. Comparing these nine indices across local, reference boot, DCM-silent, and rejoin states may identify which fields are transport ACK, capability/topology reflection, or static diagnostics.
+
+### EXP195 constraints
+- offline/passive evidence only;
+- no local TX;
+- no write to 2143..2151;
+- do not infer `0867=22` as firmware 2.2 without independent evidence;
+- the objective is to identify a **reflected state**, not to turn an exported FC16 field into an ingress control.
+
