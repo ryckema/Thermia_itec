@@ -1438,3 +1438,19 @@ No TX, YAML or production-functionality changes were made during this review.
 **Conclusion:** stop treating Link CC firmware as a likely source of the Thermia-bus scheduler gate. Cold-boot A/B remains more valuable than further Link-side firmware mining.
 
 **Safety:** offline only.
+
+
+## EXP205 — physical-layer / dedicated-detect audit — COMPLETE / NEGATIVE-POSITIVE
+
+**Hypothesis:** DCM presence may be detected through a dedicated non-RS485 RJ45 pin or hardware strap.
+
+**Observed:**
+- observed XTR RJ45 wiring uses all eight conductors for duplicated data, ground and +12 V;
+- official DHP-AQ HP-kit wiring connects spare relay-board RJ45 directly to DCM03 RS 485, with DCM03 powered separately;
+- no documented extra detect/ID wire or jumper exists on that direct DHP-AQ path;
+- controller software >=2.2 is required for DHP-AQ Link support;
+- active reference topology survives temporary DCM service silence.
+
+**Result:** negative for a documented dedicated spare-wire detector; physical/electrical detection on the RS485 pair itself remains unresolved.
+
+**Conclusion:** prioritize early protocol/persistent capability evidence over speculative wiring tricks. No physical bus-loading experiment.
