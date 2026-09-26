@@ -1512,3 +1512,38 @@ The boot variant of 080C additionally carries word14=16 while controller 0x06 wr
 ### Decision
 Offline-only. No TX or YAML change. EXP196 strengthens the exported-register-database model but does not reveal the scheduler activation gate.
 
+
+
+## 2026-09-26 — EXP197 COMPLETE / STRONG NEGATIVE FOR 0559 AS SCHEDULER GATE
+
+**Hypothesis:** if native `0x0559 REG_LINK_INTEGRATION` is the missing scheduler gate, a genuine controller with the extended Online/DCM topology active should export `0559=1 (SYSTEM)` during full synchronization.
+
+### Address alignment
+The genuine full-sync block `0546/count20` spans native indices `0x0546..0x0559` (decimal 1350..1369).
+
+Public ATEC/DHP-AQ Thermia Online metadata maps:
+- 1363 / `0x0553` = `REG_OPERATIONMODE`, enum 0 OFF, 1 AUTO, 2 COMPRESSOR, 3 AUXILIARY, 4 HOT_WATER;
+- 1369 / `0x0559` = `REG_LINK_INTEGRATION`, enum 0 LIGHT, 1 SYSTEM.
+
+Both genuine power-event captures export the exact same `0546/count20` payload:
+- at 090209 controller boot: address 0553 = 4 and address 0559 = 0;
+- at 090550 DCM rejoin/full resync: address 0553 = 4 and address 0559 = 0.
+
+The valid 0553 enum value provides an internal alignment sanity check that the block is being indexed correctly.
+
+### Strong conclusion
+The genuine extended topology is fully active while `0559=0`, i.e. the Online register image corresponds to **Link Integration LIGHT**, not SYSTEM.
+
+Therefore:
+- `0559=1 / SYSTEM` is **not required** to instantiate or maintain A5/A4/05 + 0708 + 07D0..0884 scheduler topology;
+- the scheduler gate must be upstream/independent of Link Integration ownership mode;
+- this independently agrees with recovered Danfoss Link firmware where SystemIntegration is a higher-level ownership/synchronization choice applied after HPNode binding.
+
+### Negative result
+Remove `0559 / Link Integration SYSTEM` from the scheduler-enable candidate list. Do not test a blind local write to 0559 for topology activation.
+
+### Unknown
+0559 may still alter ownership/direction of selected semantic settings once a session exists; this experiment only rejects it as the topology-creation prerequisite.
+
+**Decision:** offline complete; no TX/YAML change.
+
