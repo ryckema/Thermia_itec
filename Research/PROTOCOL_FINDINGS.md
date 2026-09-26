@@ -1718,3 +1718,41 @@ This is an emulator-design result only. It does not reveal or bypass the control
 The next highest-value evidence is a cold boot of the same genuine reference controller with the DCM physically absent before controller power-on. This directly tests whether the extended A5/A4/05 + 0708 + 07D0..0884 topology is selected from persistent/controller capability state or requires DCM presence during boot.
 
 No local 0708 response or new semantic write is justified before that discriminator is available.
+
+
+## EXP209 — physical endpoint ownership resolved for the genuine reference topology
+
+The DCM disconnect/power-cycle/reconnect capture provides causal ownership evidence:
+
+- A5 request/response traffic continues while the genuine DCM is physically disconnected from the Thermia Modbus bus.
+- 0x06 is still polled by the controller but receives no responses anywhere in the capture.
+- controller-originated slave-0x0F requests are unanswered while the DCM is absent.
+- after DCM physical reconnection, the first returning DCM-side evidence is the standard slave-0x0F FC16 ACK, followed by slave-0x0F FC03 responses and full state resynchronisation.
+
+**Protocol conclusion:** in this genuine Online installation, the DCM/Online bridge is the responding Modbus slave 0x0F. A5 is not the DCM endpoint. Slave 0x06 is a distinct accessory/version service and is not required for Online/DCM operation in this topology.
+
+This supersedes older wording that the physical owner of slave 0x0F was unresolved.
+
+## EXP210 — validated desired-state fields in the 0x0F registerIndex database
+
+Independent Discussion #143 material reports registerIndex 1012 as room-thermostat related and 1053 as Hot Water Start, while a later sentence in the same source contradictorily names 1021 as the room thermostat.
+
+Cross-check against the genuine captures resolves the room-target ambiguity:
+
+- 090550 full sync: index 1012 = 20; repeated native room-sensor transaction write field B3C5 = 20.
+- 073242 full sync: index 1012 = 21; repeated native B3C5 = 21.
+- 071517: both observed 03E8/count13 state images contain index 1012 = 21; native B3C5 remains 21 throughout.
+- index 1021 is 10 in both available full-resync images and does not track the 20/21 room target.
+
+**Strong mapping:** registerIndex 1012 / 0x03F4 = room target / room-thermostat setpoint in the genuine reference Online database.
+
+For registerIndex 1053 / 0x041D, both available full-resync images contain value 35. This is compatible with the independent Hot Water Start identification, but the project does not yet possess a same-system one-variable Hot Water Start A/B. Classification: **strong candidate, not yet project-proven**.
+
+registerIndex 1000 / 0x03E8 remains locally proven as Heat Curve on the XTR controller->0x0F write side and is strongly supported as the matching desired-state field on the genuine DCM read side.
+
+Control-path implication once the scheduler is available:
+- heating/settings dirty selector -> 0708 word1=1;
+- controller fetches 03E8/count13;
+- desired-state image includes Heat Curve at 1000 and room target at 1012.
+
+No local semantic write is justified solely by these mappings while the XTR still lacks the genuine 0708 scheduler.
