@@ -16,7 +16,7 @@ The main goals are:
 
 ---
 
-## Current status after EXP182
+## Current status after EXP206
 
 The write-path investigation has moved beyond the earlier assumption that one missing DCM register or one additional ACK would unlock control.
 
@@ -2030,12 +2030,16 @@ This weakens the idea of a hidden dedicated-wire bootstrap. Boot-time analog det
 The unresolved gate is therefore still most plausibly upstream controller capability/commissioning or a very-early RS485 interaction. Same-controller DCM-present/absent cold boot remains the decisive missing evidence.
 
 
-## Status through EXP203 — DCM physical rejoin breakthrough
+## Status through EXP206 — DCM physical rejoin breakthrough
 
 A new genuine capture shows that an already-active extended topology survives physical DCM Modbus removal and a DCM power cycle while the heat-pump controller remains powered. Reconnect is lightweight: ACK the pending FC16 page, answer the next 0708 join state, then the controller performs full resync. No special visible topology-discovery exchange is needed for reattachment.
+
+During the off-bus interval A5 request/response traffic continues, while 0708 is unanswered and FC16 0864/count4 is retried at ~2.1 s cadence. Given the supplied physical sequence, this excludes the removed DCM itself as the physical A5 responder. The capture also contains repeated 0x06 FC17 polls with no 0x06 responses before or after DCM rejoin, proving that 0x06 is not required for genuine DCM reattachment in this topology.
 
 This cleanly separates initial topology activation, which remains unknown, from DCM session reattachment, which is now substantially understood.
 
 The same capture adds a second normal 0708 selector: w0=1 -> FC03 0546/count20 system/status family; w1=1 -> FC03 03E8/count13 heating/settings family. Prior w5=7 join interpretation is corrected because full resync also occurs with w5=6.
+
+Steady post-rejoin 0708 responses remain [0,0,0,0,0,6], including immediately around the w0=1 selector event. Therefore word4=077F is not required for an operational mailbox session or command dispatch.
 
 No local TX or YAML changes.
