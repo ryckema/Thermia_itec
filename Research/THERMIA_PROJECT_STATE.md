@@ -32,6 +32,17 @@ Last updated: 2026-09-26
 
 **Secondary discriminator:** compare all 20 local words against the genuine reference image. Any stable cross-system difference outside 0553/0559 becomes a ranked passive topology/state candidate; identical remaining words would instead eliminate the 0546 page as the missing topology discriminator.
 
+**Reference baseline strengthened before run:** the exact genuine `0546/count20` FC16 payload is byte-for-byte identical across three independent reference captures:
+- controller cold boot 20260925_090209 at 14.194 s;
+- genuine full-resync/rejoin 20260925_090550 at 85.284 s;
+- physical DCM reconnect capture 20260926_073242 at 45.336 s.
+
+All three carry:
+`[2,0,2,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0]`
+for `0546..0559`.
+
+This gives EXP219 a stable reference image rather than a single-capture baseline. The known reference Operation Mode is 4/HOT_WATER and Link Integration is 0/LIGHT in these three samples.
+
 **Negative criterion:** no `0546/count20` appears after arming. That would show the pending transfer was cleared or expired between EXP218 and EXP219.
 
 **Safety:** fully RX-only. GPIO17 TX is not configured; GPIO21/DE remains forced LOW. HA buttons only arm/disarm local logging.
