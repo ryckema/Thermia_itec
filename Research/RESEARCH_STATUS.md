@@ -16,7 +16,7 @@ The main goals are:
 
 ---
 
-## Current status after EXP217 / EXP208 awaiting external capture
+## Current status after EXP218 / EXP208 awaiting external capture
 
 The write-path investigation has moved beyond the earlier assumption that one missing DCM register or one additional ACK would unlock control.
 
@@ -59,6 +59,23 @@ However, the indexed local corpus does **not** show the reference system's compl
 - no normal A5/A4/05 service topology.
 
 This means the missing prerequisite is now best treated as a **controller-side topology / integration / scheduler state**, not as one unknown write register.
+
+### EXP218 locally validates the 0546/0553 system page
+
+A passive local display experiment now confirms on the XTR M itself that the controller's DCM-facing system page uses the same field semantics as the genuine reference topology.
+
+Changing local Operation Mode to COMPRESSOR caused repeated controller-originated 0x0F FC16 0546/count20 transfers with 0553=2 and 0559=0. Restoring AUTO changed the same pending page to 0553=1 while 0559 remained 0. The page continued to repeat afterwards because no DCM responder acknowledged it.
+
+This is a major cross-system bridge:
+- EXP215 established 0546/0553 in the genuine DCM topology;
+- EXP218 proves the same 0546/0553 meaning locally;
+- the local XTR therefore already contains the DCM-facing outbound system-state serializer.
+
+Together with EXP143's local 03E8 Heat Curve upload, this means the main missing layer is no longer register serialization. The unresolved difference is still the extended service scheduler that creates 0708 desired-state polling, A5/A4/05 service traffic and the runtime publisher.
+
+The local Operation Mode values now project-proven are:
+- 1 = AUTO;
+- 2 = COMPRESSOR.
 
 ### EXP216–217 convert the known runtime protocol into testable tooling
 
