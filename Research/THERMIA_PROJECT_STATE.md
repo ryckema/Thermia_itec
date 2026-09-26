@@ -6,12 +6,31 @@ Last updated: 2026-09-26
 
 ## Authoritative current state — 2026-09-26 (supersedes older current-experiment bullets below)
 
-- Last completed experiment: **EXP211 — COMPLETE / MAJOR POSITIVE 03E8 HEATING-PAGE SEMANTIC RECONSTRUCTION**.
+- Last completed experiment: **EXP212 — COMPLETE / POSITIVE MAILBOX SELECTOR CONSUMPTION MODEL**.
 - Current experiment: **EXP208 — PREPARED / AWAITING EXTERNAL PASSIVE SAME-CONTROLLER COLD BOOT WITHOUT DCM; no local experiment armed**.
 - Production functionality remains unchanged.
 - Do **not** repeat AFCA timing variants, direct `0x0F` FC16 semantic writes, passive topology censuses, or standalone `0708` probes already covered by EXP147/150 and EXP175–181.
 - Do **not** attempt to answer `0708/count6` locally unless the XTR controller first emits a genuine `0F 03 0708 0006`.
 - Current highest-value direction: identify the **controller-side topology / integration / scheduler enable condition** that distinguishes the genuine DCM reference system from the local XTR M.
+
+### EXP212 consolidated finding — mailbox selectors are one-shot fetch requests, not guaranteed value changes
+
+**Hypothesis:** 0708 word0/word1 may be one-shot group-fetch selectors that are consumed by the controller's corresponding FC03 read, rather than persistent state bits or proof that the returned desired-state image differs from the controller's current image.
+
+Observed:
+- in the genuine 20260924 Heat Curve command capture, 0708 word1=1 is followed ~39–42 ms later by FC03 03E8/count13; the next 0708 poll returns word1=0;
+- this happens twice, with the returned 03E8 desired image changing from Heat Curve 23 to Heat Curve 22;
+- in the genuine 20260926 reconnect capture, 0708 word0=1 at 104.130 s is followed 40 ms later by FC03 0546/count20;
+- the 0546 response payload is byte-for-byte identical to the controller's earlier FC16 0546/count20 image from 45.336 s;
+- the next 0708 poll at 108.329 s has word0=0 again.
+
+**Strong conclusions:**
+1. word0 and word1 behave as **one-shot fetch/dirty selectors**: assert on a 0708 response, controller fetches the corresponding page, then the selector clears on the next observed mailbox poll.
+2. A selector does **not** prove that the desired page contains a semantic delta. The word0 event requested a 0546 fetch even though the DCM returned exactly the same 20-word image previously published by the controller.
+3. The safer emulator model is therefore "group needs to be fetched/processed" rather than "this bit means a changed command value".
+4. The existing mapping remains: word0 -> 0546/count20 system/group-0-like page; word1 -> 03E8/count13 heating/group-1-like page. Normal word2 command behaviour remains unobserved.
+
+**Emulator implication:** a future slave-0x0F implementation should treat these selector bits as request latches and clear them after the controller has successfully fetched the selected page, matching the observed one-shot behaviour. Do not hold a selector high indefinitely.
 
 ### EXP211 consolidated finding — 03E8/count13 heating page reconstructed
 
