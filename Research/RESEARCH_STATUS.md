@@ -1916,3 +1916,13 @@ This is an important architectural validation: the extended FC16 runtime pages p
 
 The 2120 region is demonstrably model/profile dependent, and 2143..2151 remain hidden in the checked public profiles. No new write target follows. The scheduler activation gate remains upstream of the export database.
 
+
+
+## Status through EXP197
+
+The genuine full-sync image now provides a direct negative for the long-standing `0559 Link Integration` gate hypothesis. Both controller boot with DCM present and DCM rejoin export `0559=0` while the complete extended topology is active. Public ATEC/DHP-AQ metadata defines 0 as LIGHT and 1 as SYSTEM.
+
+Therefore Link Integration SYSTEM is not required for A5/A4/05, 0708 mailbox polling, or the 07D0..0884 runtime exporter. This independently matches the firmware result that SystemIntegration is a higher-level ownership/sync mode after endpoint binding.
+
+The unresolved scheduler gate is now narrowed further toward early physical/controller topology recognition or persistent commissioning/capability state, not a normal user-facing Link Integration register.
+
