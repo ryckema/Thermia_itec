@@ -1753,3 +1753,45 @@ Do not equate COMP_HAS_LINK with DCM accessory presence. The naming refers to Li
 ### Next
 Proposed EXP203: offline reconstruction of the 0x02 A80C..A812 write image as a display/status message. Use known UI symbols and natural state changes to classify which words are operational status, lifecycle, capability masks and possible DCM-installed flags. No write.
 
+
+
+## 2026-09-26 — REVIEW EXP183–EXP202 / EVIDENCE-GRADE CORRECTION (AUTHORITATIVE)
+
+This is a review, not a new experiment. It supersedes confidence wording in earlier EXP183–EXP202 notes where stated below.
+
+### Retain as strong / unchanged
+- EXP183: ordered ACK-gated 07D0..0884 runtime export plus partially independent 0708 mailbox cadence.
+- EXP184: runtime image is a semantic export layer, not a fixed raw-slave mirror.
+- EXP185: raw Link 2.7.42 HPNode partial-update groups and IntegrationMode lifecycle are retained; IntegrationMode is not demonstrated as the Thermia-bus scheduler gate.
+- EXP186: 0708.w1=1 strongly indicates the heating/settings desired-state family; w0/w2 group mapping remains unproven.
+- EXP187: 03E8/count13 is not a one-to-one serialization of Link partial group 1.
+- EXP188: Link-side HEATPUMP binding/SystemIntegration and Thermia-bus topology activation are distinct layers.
+- EXP194: 0870 is strongly mapped to operating-time/defrost statistics; Online registerIndex architecture remains strong.
+- EXP197: 0559=SYSTEM is not required for the genuine extended scheduler.
+- EXP198: 06EA RTC/date mapping is proven; 06F4 is downstream boot-state export, not scheduler creation.
+
+### Confidence downgrades / corrections
+- EXP189: replace "latched/persistent topology mode" with **runtime-maintained extended topology**. The captures prove the topology survives DCM service silence/rejoin while the controller stays powered. They do NOT prove a nonvolatile latch or persistence across a controller cold boot with DCM absent.
+- EXP190: A811/A812 remain the cleanest local-vs-reference structural discriminator, but read-count 15 vs 13 being a controller-generation/layout fingerprint is a hypothesis, not a strong conclusion.
+- EXP191: reference slave 0x04 and local 0x1E being equivalent outdoor/COMM-KIT implementations is a plausible cross-model hypothesis, not proven functional equivalence. The strong part is only that the exporter is semantic/model-aware.
+- EXP192: the earlier classification of 0870 as static/configuration/identity is **superseded by EXP194**. Invariance over short captures was real; the semantic interpretation was wrong.
+- EXP193: 080C.word14 and AFDC show a repeatable 0/16 correlation, but provenance from 0x06 is not proven. Say "correlates with accessory/lifecycle state" rather than "contains 0x06 state".
+- EXP195: 085F is safely classified as a **service/status page used locally and during synchronization/resync**. "Initialization/synchronization/service-control page" was too specific; exact role and timer relationship to 0708 remain unknown.
+- EXP196: 080C.word0=200 -> Online index2060 indoor temperature 20.0 C is **strongly mapped**, not locally proven by an independent UI measurement. The shared Online registerIndex namespace remains strongly supported by EXP194+196.
+- EXP199: **major correction**. The recovered firmware does NOT prove that SIMPLE_COMMUNICATION_MODULE / ProductID 0x8100 is not DCM03. SCMNode semantics (binary input/Away mode) make a simple DCM identity interpretation unattractive, but no source currently establishes or excludes DCM03=SCM. Therefore remove the categorical "SCM is not DCM" conclusion and do not use ProductID 0x8100 as a DCM identity without independent evidence.
+- EXP200: exact XTR distinction between "DCM accessory installed" and "Online connection" is retained. The DHP-AQ manual's lack of a documented heat-pump enable toggle is only corroborating absence-of-documentation, not proof of automatic recognition.
+- EXP201: **major correction**. A811/A812 are NOT positively mapped to DCM-installed state because local and reference systems are confounded by controller/model/topology differences. What is proven is that reference 000C/0500 does not track live DCM mailbox availability during 090550. Status is therefore **INCONCLUSIVE for DCM-installed mapping / STRONG NEGATIVE for live-session marker**.
+- EXP202: absence of an obvious public register is a valid negative search result. It does not prove the DCM-installed state is private controller/display state; that remains a hypothesis.
+
+### Documentation normalization
+Earlier canonical files had uneven coverage: EXP183 was missing as an explicit PROJECT_STATE heading, EXP188/191 were not explicit state headings, and EXP190 lacked a standalone EXPERIMENT_LOG heading. This review is the authoritative continuity record for EXP183–EXP202.
+
+### Current strongest architecture after review
+1. Genuine 0x0F FC16 runtime pages populate a Thermia Online-style registerIndex export database.
+2. 0708 is a DCM-side mailbox/session header; w1=1 strongly selects the heating/settings desired-state fetch.
+3. Scheduler creation is upstream of normal mailbox contents and 0x0F exported pages.
+4. Scheduler maintenance while the controller remains powered is independent of immediate DCM service replies.
+5. The exact activation condition remains unknown: physical recognition, commissioning state, controller/platform capability, or an earlier unobserved exchange remain viable.
+6. A811/A812 are architecture/topology-correlated markers only, not a write target and not a proven DCM-installed flag.
+
+Highest-value missing evidence remains a same-reference-controller clean cold boot with genuine DCM physically present versus physically absent.
