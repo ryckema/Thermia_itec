@@ -1538,3 +1538,28 @@ HPNode / Link application
 
 The recovered Link node model does not expose a separate DCM/Online node whose ProductID can simply be replayed on the Thermia RS485 bus.
 
+
+
+## EXP200 — XTR distinguishes DCM-present from Online-connected
+
+The exact iTec XT/XTR user guide exposes two separate UI states:
+
+DCM ACCESSORY INSTALLED
+= DCM or Thermia Connect accessory connected
+
+ONLINE CONNECTION
+= DCM or Thermia Connect connected + Internet connection
+
+Protocol implication: do not collapse physical/local DCM recognition, DCM session attachment, and cloud connectivity into one state.
+
+Current layered model:
+
+physical / commissioned accessory recognition
+-> extended Thermia topology + publisher
+-> DCM service/session attachment
+-> DCM Internet/cloud connectivity
+
+The older DHP-AQ HP-kit installation sequence corroborates automatic bus-side discovery: DCM03 is physically connected to a spare relay-board RJ45/RS485 path, the heat pump is started, then DCM03 is paired on the Link side; no heat-pump menu switch is documented for enabling the DCM.
+
+A811/A812 are worth retaining as passive candidates for the first layer, but their semantics are unproven.
+
