@@ -1515,3 +1515,16 @@ Negative: initial topology activation after controller boot remains unknown.
 **Additional correlation:** registerIndex1000 remains locally proven as Heat Curve on XTR controller->0x0F FC16 and strongly supported as the corresponding genuine DCM desired-state field.
 
 **Safety:** offline analysis only; no new write target exercised.
+
+
+## EXP211 — 03E8/count13 heating-page semantic reconstruction — COMPLETE / MAJOR POSITIVE
+
+**Hypothesis:** the genuine DCM FC03 03E8/count13 desired-state page is the Thermia Online heating-curve/settings family and can be reconstructed from public Online metadata plus the independent legacy control table.
+
+**Observed:** public ATEC/DHP-AQ and iTec IQ debug profiles identify writable registerIndex 1000..1006 and 1008 as Heat Curve, Heat Curve Min/Max, Curve +5/0/-5, Heat Stop and Room Factor. Genuine 03E8/count13 payload positions carry exactly plausible values for those fields. The independent legacy control table aligns the remaining sequence with Temperature Reduction and Curve 2 / Curve 2 Min / Curve 2 Max. EXP210 independently validates index1012 as Room Target via exact equality with native B3C5.
+
+**Result:** the page is substantially decoded: 1000 Heat Curve; 1001 Min; 1002 Max; 1003 +5; 1004 0; 1005 -5; 1006 Heat Stop; 1007 Temperature Reduction (strong structural); 1008 Room Factor; 1009 Curve 2 (strong structural); 1010 Curve 2 Min; 1011 Curve 2 Max; 1012 Room Target.
+
+**Strong conclusion:** 0708 word1 selects a coherent heating desired-state page rather than an opaque arbitrary block.
+
+**Safety:** mapping does not justify direct second-master writes; use only the slave-0x0F desired-state path if/when the controller emits the genuine scheduler.
