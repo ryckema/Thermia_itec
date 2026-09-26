@@ -1647,3 +1647,49 @@ The physical DCM recognition mechanism on the Thermia controller side remains ou
 
 **Decision:** offline firmware analysis only; no bus TX and no YAML changes.
 
+
+
+## 2026-09-26 — EXP200 COMPLETE / POSITIVE EXACT-XTR DCM PRESENCE SEMANTICS
+
+**Hypothesis:** exact iTec XTR documentation may distinguish physical DCM/Connect recognition from cloud connectivity and reveal whether a user-facing controller setting is required to enable Online topology.
+
+### Exact iTec XT/XTR user-guide evidence
+Thermia user guide AWIXT01UG0210 explicitly defines two separate display states:
+- **DCM ACCESSORY INSTALLED**: shown when a DCM or Thermia Connect accessory is connected;
+- **ONLINE CONNECTION**: shown when a DCM or Thermia Connect accessory is connected **and** has an Internet connection.
+
+Therefore the XTR controller/display model has at least two conceptually distinct states:
+1. local accessory-present/recognized;
+2. remote/Internet-connected.
+
+This distinction is directly relevant to the reverse-engineered bus: the scheduler/topology gate should be sought in the first state, not in cloud connectivity.
+
+### Cross-model DHP-AQ installation evidence
+The official Danfoss Link HP-kit manual for DHP-AQ:
+- requires controller software 2.2 or newer;
+- instructs power removal before installation;
+- connects DCM03 directly to the spare RJ45 on the relay board and to DCM03 RS485;
+- then starts the heat pump and adds the DCM03 through Danfoss Link CC;
+- documents no heat-pump service-menu toggle that enables DCM/Online after the cable is connected.
+
+The same manual places the Link-vs-Online mode selection on the **DCM03 itself** (triple button press), not on the heat-pump controller. Gateway-card variants also document lifecycle states including DCM-HP approval and sending settings to DCM.
+
+This is cross-model corroboration only; DHP-AQ is not the XTR.
+
+### Strong conclusions
+1. Exact XTR documentation proves that **DCM accessory recognized** and **Internet connected** are separate UI/controller concepts.
+2. A valid 0x06 accessory/version response that merely exposes EXP metadata is not equivalent to the XTR's DCM-accessory-installed state; prior local experiments already demonstrated that metadata presence alone does not create the extended scheduler.
+3. The DHP-AQ installation flow strongly favors automatic physical/bus recognition rather than a user-facing controller IntegrationMode/Link toggle as the topology bootstrap.
+4. A future successful DCM/Connect emulator should ideally be validated not only by A5/0708/runtime traffic but also by the XTR display's DCM-accessory-installed indication.
+
+### New passive candidate
+The stable 0x02 fingerprint words A811/A812 remain plausible **reflections** of the installed/topology state because they differ cleanly between local no-DCM and the genuine reference topology. No mapping is proven.
+
+### Unknowns
+- exact register/bit driving the two XTR display indicators;
+- whether A811/A812 encode DCM-present, platform capability, or unrelated model identity;
+- exact behavior of the display indicators during a DCM power cycle;
+- whether Thermia Connect and DCM03 produce identical legacy-bus recognition on the XTR.
+
+**Decision:** documentation/offline only; no bus TX and no YAML changes.
+
