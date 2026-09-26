@@ -1927,3 +1927,26 @@ The verdict requires at least two independent evidence families among A5, 0708 a
 All five genuine captures currently available classify as topology ON with all three families present. Known boot/rejoin timestamps are recovered automatically, including the 090209 boot fingerprint/A5/0708/runtime ordering and the 073242 DCM return ACK/FC03 timings.
 
 Protocol implication: a future same-controller cold-boot capture can be compared objectively against the genuine reference corpus without relying on manual visual inspection.
+
+
+## EXP218 — local XTR confirms 0546/0553 Operation Mode semantics
+
+A passive local display experiment validates the reference system-page mapping directly on the XTR M.
+
+Observed:
+- after changing Operation Mode to COMPRESSOR, controller-originated 0x0F FC16 0546/count20 repeatedly carried 0553=2 and 0559=0;
+- after restoring AUTO, the same repeated page changed 0553 from 2 to 1 while 0559 stayed 0;
+- 0553 remained 1 afterwards.
+
+Strong local mapping:
+- 0546/count20 = system/operation state page;
+- 0553 = Operation Mode;
+- 2 = COMPRESSOR;
+- 1 = AUTO;
+- 0559 = Link Integration and remains 0/LIGHT locally.
+
+EXP215 had already established the same page/field meaning in the genuine DCM topology, so EXP218 proves cross-system page compatibility on the local XTR.
+
+The local controller therefore already implements the DCM-facing outbound system-state serializer. The unresolved gap remains the extended Online/DCM scheduler/service layer that adds 0708 polling, desired-state reads, A5/A4/05 activity and the runtime publisher.
+
+EXP168 remains the controlling negative result that acknowledging a known local state-transfer frame alone does not create that extended topology.
