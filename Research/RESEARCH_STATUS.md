@@ -16,7 +16,7 @@ The main goals are:
 
 ---
 
-## Current status after EXP212 / EXP208 awaiting external capture
+## Current status after EXP213 / EXP208 awaiting external capture
 
 The write-path investigation has moved beyond the earlier assumption that one missing DCM register or one additional ACK would unlock control.
 
@@ -59,6 +59,20 @@ However, the indexed local corpus does **not** show the reference system's compl
 - no normal A5/A4/05 service topology.
 
 This means the missing prerequisite is now best treated as a **controller-side topology / integration / scheduler state**, not as one unknown write register.
+
+### EXP213 official documentation narrows the bootstrap model
+
+Official Danfoss/Thermia installation documentation now adds source-backed evidence for an automatic recognition/binding stage:
+
+- DHP-AQ Link/DCM support requires controller software >=2.2.
+- DCM03 is fitted with the heat pump powered off, connected directly to the DHP-AQ RS485/RJ45 path, and the heat pump is then started; no local heat-pump DCM-enable setting is documented.
+- The related HP-kit architecture explicitly names a **DCM-HP approval** stage, an **approval failed** state, and a **sending settings to DCM** state before **all OK**. This proves that an authorization/binding phase exists in the platform family, although it does not prove identical implementation on the direct DHP-AQ/XTR path.
+- Current Thermia Connect instructions for iTec/Atec again install communication hardware before commissioning, remove an existing DCM first, and then perform pairing/protocol-package onboarding through the app. No local heat-pump scheduler-enable menu is documented.
+- The controller UI distinguishes **DCM accessory installed** from **Online connection**, so local DCM recognition is separate from successful Internet/cloud connectivity.
+
+This shifts the leading scheduler-gate hypothesis further toward **automatic startup recognition / authorization / binding**, with controller software capability as a prerequisite, and away from a hidden user-facing local toggle.
+
+EXP208 therefore remains the decisive test. If it boots the reference controller with the scheduler OFF, EXP214 is prepared as the immediate passive follow-up: connect the genuine DCM at runtime without rebooting the controller and capture the first OFF->ON transition.
 
 ### Physical DCM-presence remains an open activation hypothesis
 
