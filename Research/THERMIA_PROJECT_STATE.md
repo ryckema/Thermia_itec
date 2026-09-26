@@ -1427,3 +1427,55 @@ The local/native `085F..0863` service block and reference-only `0864..0867` bloc
 - do not infer `0867=22` as firmware 2.2 without independent evidence;
 - the objective is to identify a **reflected state**, not to turn an exported FC16 field into an ingress control.
 
+
+
+## 2026-09-26 — EXP195 COMPLETE / POSITIVE SCHEDULER-ROLE SEPARATION; NEGATIVE AS GATE CANDIDATE
+
+**Hypothesis:** adjacent native ranges `085F/count5` (2143..2147) and `0864/count4` (2148..2151) may form one service/status family whose fields expose the missing Online/DCM scheduler activation state.
+
+### Observed facts
+
+**Steady genuine Online captures (210001, 071517):**
+- normal runtime cycle includes `0864/count4` once per ~21 s cycle;
+- payload is invariant `[0,0,0,22]`;
+- no `085F/count5` occurs in those steady captures.
+
+**Controller cold boot with DCM already present (090209):**
+- controller performs the large startup/full-state FC16 synchronization first;
+- `085F/count5` appears at ~29.778 s, after the long 04xx..06F4 startup sequence and before the first `0708` poll (~33.18 s) / first runtime `07D0` page (~33.915 s);
+- `085F` appears again at ~48.601 s;
+- the normal runtime `0864/count4` page then appears at ~50.828 s with `[0,0,0,22]`.
+
+**DCM rejoin with controller already running (090550):**
+- while DCM is silent, the ACK-gated runtime exporter is stuck retransmitting `0870/count17`; neither 085F nor 0864 is emitted in that stalled phase;
+- DCM first answers the 0708 join header at ~68.235 s and full FC16 resynchronization begins immediately;
+- during that full resync, `085F/count5` is emitted repeatedly at ~4.2 s cadence: 73.235, 77.448, 81.650, 85.884, 90.084, 94.411, 98.468, 102.600 s;
+- ordinary `0708` polling is largely suppressed during the resync interval and resumes at ~101.901 s;
+- after the resync ends, runtime export restarts with `07D0` at ~106.828 s;
+- no `0864` is reached before the capture ends because the restarted runtime cycle has only just begun.
+
+**Local no-DCM evidence:**
+- local XTR naturally emits `085F/count5`;
+- its middle field `0861` is the proven transaction ACK that changes 0<->16 during the AFCA four-phase accessory handshake;
+- local no-DCM does not show the genuine steady `0864` runtime page.
+
+### Strong conclusions
+
+1. Numeric adjacency does **not** mean 085F and 0864 are one nine-word runtime page. They belong to different scheduler roles.
+2. `085F/count5` is best classified as an **initialization/synchronization/service-control page**. It exists locally without a DCM, is reused during genuine startup/rejoin synchronization, and contains the proven 0861 transport ACK field.
+3. `0864/count4` is a **steady extended-runtime Online export page**. It is downstream of topology/session establishment and is not seen as the local no-DCM service-control block.
+4. In 090550, full resync starts from the DCM join response **before** the first 085F page. Therefore 085F is not the trigger that creates the DCM session or export topology.
+5. 0864 is even further downstream as a normal runtime export consequence. Neither 085F nor 0864 is now a credible scheduler-enable write target.
+
+### Hypothesis refinement
+
+The ~4.2 s 085F cadence during full resync and the normal ~4.2 s 0708 mailbox cadence suggest they may be two modes/uses of the same higher-level service timer: synchronization/service-control while a full resync is active, mailbox polling in steady state. This is a hypothesis, not proven identity.
+
+### Unknowns
+- meanings of 085F,0860,0862,0863;
+- meanings of 2148..2151 and terminal value 22;
+- whether the same controller changes 0864 payload with DCM physically absent after a clean cold boot.
+
+### Decision
+EXP195 is offline-only complete. No TX, no YAML changes, no writes to 2143..2151. The scheduler activation gate remains upstream of both pages. Same-controller DCM-present/absent cold-boot A/B remains the decisive discriminator.
+
