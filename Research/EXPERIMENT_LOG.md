@@ -1629,13 +1629,15 @@ Known timing anchors were recovered automatically:
 **Safety:** offline/passive analysis only.
 
 
-## EXP218 — local Operation Mode A/B/A correlation — PREPARED / PASSIVE BUS
+## EXP218 — local Operation Mode A/B/A correlation — READY / PASSIVE BUS / NOT RUN
 
 **Hypothesis:** the local XTR M exposes the same system/operation register semantics as the genuine reference Online database, such that a local display change AUTO -> COMPRESSOR -> AUTO produces a reversible state change at registerIndex 1363 / 0x0553, ideally in FC16 0546/count20.
 
 **Only variable:** local display operating mode AUTO -> COMPRESSOR -> AUTO.
 
 **Bus behavior:** read-only capture only. ESP/RS485 TX must remain disabled.
+
+**Experiment YAML:** `Research/experiments/EXP218/thermia_itec_xtr_m_waveshare_exp218.yaml`. Adds only passive 0546/0553 observation, phase-marker buttons under Configuration, full raw capture logging, and required bus-health frame counting.
 
 **Procedure:** >=30 s AUTO baseline; change to COMPRESSOR; hold 20–30 s; restore AUTO; capture >=60 s after restore. Do not run during anti-legionella, top-up, manual mode or active auxiliary-only demand.
 
