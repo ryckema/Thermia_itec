@@ -16,7 +16,7 @@ The main goals are:
 
 ---
 
-## Current status after EXP207 / EXP208 prepared
+## Current status after EXP210 / EXP208 awaiting external capture
 
 The write-path investigation has moved beyond the earlier assumption that one missing DCM register or one additional ACK would unlock control.
 
@@ -2052,3 +2052,14 @@ Timing across the five genuine DCM captures is now consistent with a conventiona
 This materially simplifies the future emulator: when a compatible controller already emits the genuine Online/DCM scheduler, the DCM-side bus service can remain completely reactive and fail-closed. It needs to ACK exact controller FC16 writes and answer exact FC03 reads; the observed rejoin path does not require unsolicited slave-0x0F traffic.
 
 This does not solve the local XTR scheduler gate. EXP208 is therefore prepared as the decisive external passive discriminator: cold boot the same genuine reference controller with the DCM physically absent from Modbus before power-on and observe whether the extended 0x04/A5, 0708 and 07D0..0884 topology still appears.
+
+
+## Status through EXP210 — DCM endpoint and first desired-state fields resolved
+
+EXP209 uses the physical DCM disconnect/reconnect capture as a causal ownership test. A5 continues to respond while the DCM is off-bus, 0x06 remains unanswered, and slave-0x0F responses disappear until the DCM is physically reconnected. The genuine DCM is therefore the responding slave-0x0F endpoint in this reference topology. A5 is not the DCM; its exact owner remains unknown. 0x06 is an independent accessory/version path.
+
+EXP210 cross-validates the 0x0F desired-state database against both an independent DHP-AQ/ATEC reverse-engineering source and native Thermia traffic. registerIndex 1012 / 0x03F4 tracks the native room-target field B3C5 exactly: 20 in 090550 and 21 in 073242/071517. The conflicting external claim that 1021 is the room target is rejected for this dataset because 1021 remains 10. registerIndex 1053 / 0x041D is independently identified as Hot Water Start and is 35 in both full-resync captures, but still needs a controlled same-system A/B for project-level proof.
+
+The future emulator architecture is now clearer: the DCM side is a reactive slave-0x0F service, the controller publishes current state through FC16, and desired heating/settings state is pulled after 0708 word1 indicates pending data. Heat Curve at index1000 and room target at index1012 are the strongest mapped fields in that desired image.
+
+The main blocker remains unchanged: the local XTR does not instantiate the genuine 0708/runtime scheduler. EXP208 remains the highest-value next external discriminator: same reference controller cold boot with the DCM physically absent before power-on.
