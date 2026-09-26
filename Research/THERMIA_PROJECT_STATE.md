@@ -6,12 +6,53 @@ Last updated: 2026-09-26
 
 ## Authoritative current state — 2026-09-26 (supersedes older current-experiment bullets below)
 
-- Last completed experiment: **EXP212 — COMPLETE / POSITIVE MAILBOX SELECTOR CONSUMPTION MODEL**.
+- Last completed experiment: **EXP213 — COMPLETE / POSITIVE OFFICIAL BOOTSTRAP-DOCUMENTATION AUDIT**.
 - Current experiment: **EXP208 — PREPARED / AWAITING EXTERNAL PASSIVE SAME-CONTROLLER COLD BOOT WITHOUT DCM; no local experiment armed**.
 - Production functionality remains unchanged.
 - Do **not** repeat AFCA timing variants, direct `0x0F` FC16 semantic writes, passive topology censuses, or standalone `0708` probes already covered by EXP147/150 and EXP175–181.
 - Do **not** attempt to answer `0708/count6` locally unless the XTR controller first emits a genuine `0F 03 0708 0006`.
 - Current highest-value direction: identify the **controller-side topology / integration / scheduler enable condition** that distinguishes the genuine DCM reference system from the local XTR M.
+
+### EXP213 consolidated finding — official bootstrap documentation audit
+
+**Hypothesis:** official Danfoss/Thermia installation documentation can distinguish a user-selectable heat-pump configuration gate from automatic boot-time DCM recognition/binding.
+
+Observed from official/cross-generation installation material:
+- The Danfoss Link HP-kit manual for DHP-AQ requires controller software >=2.2, instructs the installer to switch off heat-pump power, connect DCM03 directly from a spare relay-board RJ45 to the DCM03 RS485 port, then start the heat pump and add the heat pump/DCM as a Link service device. No heat-pump-local menu item is documented to enable DCM/Link after the hardware is fitted.
+- The same HP-kit manual documents an explicit **DCM-HP approval/authorization** lifecycle on the Gateway-card variant: startup -> DCM-HP approval -> approval failed or sending settings to DCM -> all OK. This is direct documentary evidence that the platform family contains an authorization/binding phase, although the LED state is not proven to be implemented identically on the direct DHP-AQ path.
+- The older Danfoss Online installation guide likewise describes direct DHP-AQ connection to a DCM and cloud-side installation/profile registration; it does not document a local heat-pump setting that manually turns the DCM scheduler on.
+- The current Thermia Connect installation guide for iTec/Atec again requires the heat-pump power to be off for installation, connects the gateway to the I/O/expansion communication port, explicitly says an existing DCM must be disconnected/removed before Connect installation, and performs commissioning/pairing through the app after hardware connection. It documents waiting for pairing/protocol packages and says a Connect factory reset removes commissioning/customer-specific data from the gateway.
+- iTec/iTec Eco/iTec XT user guides describe separate display indications for **DCM accessory installed** and **Online connection**: hardware recognition and Internet connectivity are therefore distinct controller-visible states.
+
+**Strong conclusions:**
+1. No checked official DHP-AQ/iTec/Atec accessory installation path documents a user-facing heat-pump menu toggle that enables the DCM/Connect communication topology.
+2. Official material instead supports an **automatic recognition / authorization / binding** model after hardware connection, with controller software capability as a prerequisite.
+3. The DCM-installed display indication is a local recognition state and is separate from cloud/Internet success; scheduler creation therefore does not need to be cloud-gated.
+4. The documented installation sequence makes DCM presence **before controller startup** especially important to test. This increases the value of EXP208.
+5. The exact direct-DHP-AQ/XTR bootstrap telegram remains unknown. The Gateway-card "DCM-HP approval" LED state is architectural evidence, not proof that the XTR uses the same bytes or state implementation.
+
+### EXP214 — CONTINGENT PREPARED / runtime attach after a no-DCM cold boot
+
+Run only if EXP208 shows that the reference controller boots without the extended Online/DCM scheduler when the DCM is absent.
+
+**Hypothesis:** attaching the genuine DCM to an already-running controller whose topology booted OFF can show whether the DCM can trigger OFF->ON topology creation at runtime.
+
+Procedure:
+1. keep the same sniffer/log running after the EXP208 no-DCM cold-boot observation window;
+2. do not reboot the heat-pump controller;
+3. power/connect the genuine DCM to Modbus;
+4. capture at least 180 s without changing heat-pump settings;
+5. mark the physical attach time precisely.
+
+Positive discriminator:
+- first appearance of reference fingerprint change, A5/A4/05, 0708 polling, or 07D0..0884 publisher after attach.
+
+Interpretation:
+- topology appears at runtime -> the first preceding exchange is the best bootstrap/authorization candidate;
+- topology remains OFF -> recognition is likely boot-only, persisted/commissioned elsewhere, or requires a further external pairing action;
+- if EXP208 already shows topology ON without the DCM, EXP214 is unnecessary and must not be run for this purpose.
+
+Safety: external reference-system passive capture only; no local XTR TX.
 
 ### EXP212 consolidated finding — mailbox selectors are one-shot fetch requests, not guaranteed value changes
 
