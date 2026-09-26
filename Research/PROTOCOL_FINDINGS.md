@@ -1585,3 +1585,20 @@ EXP173 independently proves that live 0x06 accessory/version presence alone does
 
 No write to A811/A812 is justified.
 
+
+
+## EXP202 — DCM UI state is not an obvious public Online register
+
+Checked public Thermia Online debug profiles expose DCM information primarily as device metadata:
+- dcmVersion
+- deviceConnectionType = Dcm
+
+No ordinary registerIndex matching the exact XTR UI concepts DCM accessory installed or Online connection was found.
+
+Model-specific COMP_HAS_LINK fields exist at different high indices (Diplomat 6003, ATEC 7003, iTec IQ 10003), but the checked DCM-connected profiles report value 0. They must not be interpreted as a generic DCM-present flag.
+
+Protocol implication:
+the XTR display's local DCM-recognition state is likely private controller/display state or capability metadata rather than a normal public 0x0F Online parameter.
+
+This increases the value of passive 0x02 write-image mapping and decreases the value of searching further public user-setting indices for the topology gate.
+
