@@ -1855,3 +1855,29 @@ Secondary offline route: obtain/reverse-engineer the **Thermia controller/relay-
 
 **Safety:** offline/passive analysis only; no TX and no YAML change.
 
+
+
+## 2026-09-26 — EXP204 COMPLETE / NEGATIVE PUBLIC-FIRMWARE HUNT, POSITIVE CAPABILITY CLUE
+
+**Hypothesis:** public/project sources may contain actual Thermia/Danfoss heat-pump controller or relay-board firmware/service tooling that exposes the controller-side DCM/topology selection logic.
+
+### Observed facts
+- no actual iTec XTR / legacy iTec / DHP-AQ controller or relay-board firmware binary/update package was found in the checked Project, Library, public web or GitHub sources;
+- no public GitHub hit for board/article `086U9238` or a usable DHP-AQ controller firmware package was found;
+- public iTec XTR material found consists of manuals, commissioning documents, wiring diagrams and product documents, not controller firmware;
+- official Danfoss Link HP-kit documentation requires DHP-AQ controller software >=2.2;
+- Danfoss compatibility documentation states that if DHP-AQ software is older than 2.2, the installer should change the display card rather than pointing to a user-downloadable controller firmware update.
+
+### Strong conclusions
+1. The current project does not possess the controller-side binary most likely to contain the missing DCM/topology bootstrap logic.
+2. Publicly accessible material checked does not provide a usable legacy DHP-AQ/iTec controller firmware image.
+3. For DHP-AQ specifically, DCM/Link capability is tied at least partly to controller/display-card software generation; older units may require display-card replacement. This is cross-model evidence, not proof of the XTR implementation.
+4. Firmware-led work should not continue by mining the Danfoss Link CC image for the Thermia-bus scheduler gate; that image is the wrong side of the bridge.
+
+### Hypothesis refinement
+The activation prerequisite may be implemented inside the heat-pump controller/display-card firmware and may depend on controller generation/capability before any ordinary RS485 application traffic appears.
+
+### Decision
+With no controller binary available, the highest-value path remains same-controller DCM-present versus DCM-absent cold-boot A/B. Secondary acquisition target: physical controller/display card, service dump, installer update package or board firmware from an external source.
+
+No bus TX and no YAML change.
