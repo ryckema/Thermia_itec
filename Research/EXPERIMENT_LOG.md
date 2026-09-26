@@ -1687,4 +1687,6 @@ Known timing anchors were recovered automatically:
 
 **Secondary result:** direct 20-word diff against the genuine reference page. Stable differences outside 0553/0559 become passive topology/state candidates; no differences would eliminate this page as a likely scheduler-gate carrier.
 
+**Pre-run offline reference census:** exact FC16 0546/count20 payload is identical in genuine 090209, 090550 and 073242 captures: `[2,0,2,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0]`. This makes that image the EXP219 comparison baseline.
+
 **Negative:** no 0546/count20 appears after arming, meaning the pending transfer cleared/expired between EXP218 and EXP219.
