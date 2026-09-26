@@ -1,6 +1,6 @@
 # THERMIA PROTOCOL FINDINGS
 
-Last updated: 2026-09-27 after EXP229
+Last updated: 2026-09-27 after EXP232
 
 ## Bus
 
@@ -2008,3 +2008,138 @@ Current classification is therefore upgraded from generic descriptor/configurati
 
 No write target is established. Confirmation should use a passive UI-driven calendar differential test, not a direct Modbus write.
 
+
+
+
+## EXP230 — `0709` command-pending field and exact `03E8` desired-state fetch
+
+Offline analysis of four genuine Online/DCM captures produced 54 exact controller-side `0F 03 0708 0006` polls. Thirty-eight receive valid responses and sixteen are unanswered during early rejoin before the `0x0F` endpoint is ready.
+
+Among the 38 valid responses:
+- 36 have `0709=0000`;
+- 2 have `0709=0001`;
+- both and only those two `0709=0001` responses are immediately followed by `0F 03 03E8 000D`.
+
+The command-state response is:
+
+```text
+0708  0000
+0709  0001   <- strongest pending-command / pending-count candidate
+070A  0000
+070B  0000
+070C  077F
+070D  0006
+```
+
+The two exact command sequences are:
+
+```text
+11.383  0F 03 0708 0006
+11.406  0F 03 0C 0000 0001 0000 0000 077F 0006
+11.447  0F 03 03E8 000D
+11.486  0F 03 1A 0017 0014 0028 0000 0001 0001 0012 0012 0002 0028 001E 003C 0014
+
+23.962  0F 03 0708 0006
+23.986  0F 03 0C 0000 0001 0000 0000 077F 0006
+24.025  0F 03 03E8 000D
+24.067  0F 03 1A 0016 0014 0028 0000 0001 0001 0012 0012 0002 0028 001E 003C 0014
+```
+
+Only `03E8` differs between the two desired-state images (`23 -> 22`), while the remaining 12 words are preserved. Since `03E8` is already established as Heating Curve, this is consistent with a full-image desired-state command serializer rather than a raw single-register write.
+
+Timing is highly deterministic in these two examples:
+- `0708` request -> response: 23/24 ms;
+- pending response -> `03E8` read: 41/39 ms;
+- `03E8` request -> desired response: 39/42 ms;
+- complete chain: 103/105 ms.
+
+On the next `0708` poll after each command, `0709` is zero again. Treat this as one-shot consume/clear behaviour; boolean versus count semantics are still unknown.
+
+`070C/070D` are not the command trigger because their common `077F/0006` values occur in both idle and pending responses, while startup/rejoin captures show other values. Keep them semantically unknown/session-like.
+
+A later genuine `090550` controller->0x0F FC16 snapshot at `03E8/count13` is byte-for-byte identical to the second desired-state response (`03E8=0016`). This supports persistence/acceptance but is not a same-capture apply acknowledgement.
+
+### Write-access consequence
+
+The Online/DCM desired-state side can now be represented as:
+
+```text
+controller: FC03 0708/count6
+DCM:        0709 = 1  (pending)
+controller: FC03 03E8/count13
+DCM:        return full desired image
+next poll:  0709 = 0
+```
+
+The unresolved blocker is no longer the `03E8` command payload shape. It is **activation of the local controller's read-side scheduler / genuine device recognition**. Direct second-master writes remain unsupported and should not replace that missing prerequisite.
+
+
+---
+## 2026-09-27 — EXP231 protocol finding: service-cycle homology points to XTR `0730..0737` read mailbox
+
+Offline cross-capture analysis materially refines the write-access direction.
+
+### Genuine ATEC/DCM scheduler
+- 54 exact `0x0F FC03 0708/count6` requests were parsed across the four reference captures.
+- Every request follows the A5 `002E/count10` response by 0.262..0.394 s and follows the recurrent `0x06` FC17 poll by 0.110..0.236 s.
+- The cycle repeats at ~4.2 s.
+- In DCM rejoin `090550`, scheduler polling is active from 0.987 s although `0x0F` does not ACK FC16 until 66.860 s and does not answer `0708` until 68.235 s; 16 polls are unanswered first.
+
+**Protocol consequence:** `0x0F` ACK/readiness does not create the service scheduler. The scheduler is already active on the controller side. Ordinary ACK emulation is therefore the wrong lever for enabling it.
+
+### Local XTR comparison
+Local EXP221+EXP222 provide 72 exact `0x0F FC17 read 0730/count8 + write 071C/count8` requests. Median cadence is ~4.25 s, and each follows the XTR `0x06` poll (median ~0.247 s). This is the same broad recurring scheduler position occupied by the ATEC `0708` command-header poll after its `0x06` slot.
+
+EXP226 proves only the FC17 write half: `071C..0723` is predominantly controller calendar/RTC serialization. The eight FC17 read registers `0730..0737` remain unknown because no response was captured.
+
+### Refined interpretation
+Do not call XTR FC17 and ATEC FC03 the same protocol. Their function codes, ranges and payload structure differ. However, the cadence and scheduler-position match now make `0730..0737` the strongest XTR-native candidate for the missing external-to-controller service/desired-state channel.
+
+This changes write-access prioritization:
+1. stop attempts to create ATEC `0708` by ACKing more local FC16 blocks;
+2. preserve the proven ATEC mailbox model as cross-generation reference;
+3. reconstruct the XTR `0730..0737` response image offline before any active reply;
+4. never use guessed zero/echo data as a response because `0730..0737` semantics are still unknown.
+
+The existing controller-state fingerprints (`A7F8` read span and `A811/A812`) remain correlates of scheduler-enabled vs local states, not safe write targets.
+
+
+---
+## 2026-09-27 — EXP232 protocol finding: Thermia FC17 uses paired `+0x14` role banks; XTR `0730..0737` is a real but unmapped ingress bank
+
+EXP232 searched the current local/reference corpus for a genuine response to the XTR request `0F 17 0730 0008 071C 0008 ...`. None was found. In particular, an eight-word FC17 response would be 21 bytes with prefix `0F 17 10`; no such response exists in the relevant EXP221/222/225 or older EXP71/71B evidence. fclauson's register spreadsheet/logger and Discussion #143 also contain no `0730` field map or response payload.
+
+The important positive result is structural. Known Thermia FC17 roles repeatedly place the external/slave-owned read bank and controller-written bank exactly `0x14` registers apart:
+
+```text
+slave 0x0A: read B3B0...   write B3C4...   delta +0x14
+slave 0x06: read AFC8...   write AFDC...   delta +0x14
+slave 0x04: read ABE0...   write ABF4...   delta +0x14
+slave 0x05: read AC12...   write AC26...   delta +0x14
+slave 0x0F: write 071C...  read 0730...   delta +0x14
+```
+
+For the XTR service region specifically, the three bases also satisfy:
+
+```text
+0708 + 0x14 = 071C
+071C + 0x14 = 0730
+```
+
+ATEC/DCM uses FC03 `0708/count6` as its command/session header. XTR uses FC17 with controller data written at `071C/count8` and external data requested from `0730/count8`. This exact spacing is architecturally suggestive but does not make the protocols semantically interchangeable.
+
+EXP226 already proves that the changing XTR `071C..0723` content is predominantly transformed RTC/calendar data. Therefore the safest current role model is:
+
+```text
+071C..0723 = controller-owned service/RTC state bank
+0730..0737 = external/service-owned return bank (semantics unknown)
+```
+
+The direction matters: `0730..0737` is genuinely read by the controller, so it is a potential ingress surface. Other Thermia FC17 paths prove the general architectural possibility that a read-bank response can carry a semantic request into the controller (e.g. the independently established room-sensor pending-setpoint mechanism), but no field/value correspondence may be copied to the XTR bank.
+
+### Consequence for write access
+
+- Preserve the proven ATEC `0708 -> 03E8 desired-state` sequence as the strongest known command serializer.
+- Treat XTR `0730..0737` as a high-value, generation-specific **candidate ingress bank**, not yet a proven command mailbox.
+- Do not synthesize an FC17 reply from zeros, an echo, RTC inversion, or another slave's layout. The corpus does not establish a safe neutral response.
+- The next useful work is cross-role FC17 schema analysis or acquisition of a genuine XTR/Connect/Online response, not an invented active packet.

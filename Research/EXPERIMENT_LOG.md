@@ -2207,3 +2207,179 @@ EXP229 independently found 396 words = 33 candidate 12-word records. The family 
 
 **Next confirmation path:** passive/manual A/B/A on one unused calendar slot using a harmless future period, observing the native `0x0F` delta and restoring immediately. No heat-pump restart or ESP TX is required.
 
+
+---
+## EXP230 — Offline write-mailbox reconstruction — COMPLETE / POSITIVE
+
+**Hypothesis**
+
+The genuine Online/DCM `0x0F FC03 0708/count6` poll exposes a command-pending indicator which causes the controller to read a desired-state settings block at `0x03E8/count13`.
+
+**Method**
+
+Offline only. Parsed the four existing genuine Online/DCM captures:
+- `thermia_capture_20260924_210001`
+- `thermia_capture_20260925_071517`
+- `thermia_capture_20260925_090209`
+- `thermia_capture_20260925_090550`
+
+No heat-pump restart, ESP TX, semantic write, configuration change or YAML change.
+
+**Observed facts**
+
+1. The corpus contains 54 exact `0F 03 0708 0006` requests.
+2. 38 receive valid six-word responses; 16 are unanswered, all in the early `090550` rejoin interval before `0x0F` becomes responsive.
+3. Exactly two valid responses have:
+   `0708..070D = 0000 0001 0000 0000 077F 0006`.
+   The remaining 36 valid responses have `0709=0000`.
+4. Both `0709=0001` responses are immediately followed by `0F 03 03E8 000D`. No `0709=0000` response is followed by that read.
+5. Across the entire four-capture corpus there are exactly two FC03 `03E8/count13` requests, so the association is 2/2 positive and 36/36 negative among valid `0708` responses.
+6. Event 1 timing:
+   - `11.383`: `0708/count6` request
+   - `11.406`: `0709=0001` response
+   - `11.447`: `03E8/count13` request
+   - `11.486`: desired-state response
+7. Event 2 timing:
+   - `23.962`: `0708/count6` request
+   - `23.986`: `0709=0001` response
+   - `24.025`: `03E8/count13` request
+   - `24.067`: desired-state response
+8. The desired-state blocks are:
+   - event 1: `0017 0014 0028 0000 0001 0001 0012 0012 0002 0028 001E 003C 0014`
+   - event 2: `0016 0014 0028 0000 0001 0001 0012 0012 0002 0028 001E 003C 0014`
+   Only `03E8` changes (`23 -> 22`); the remaining 12 words are identical.
+9. On the next `0708` poll after each event, `0709` is back to zero.
+10. `070C/070D` do not identify command-pending state: `077F/0006` occurs in both idle and command responses, while startup/rejoin captures show other values in these positions.
+11. A later `090550` FC16 `03E8/count13` authoritative snapshot matches the second desired-state image exactly. This is supportive cross-capture evidence only, not a same-transaction apply ACK.
+
+**Strong conclusions**
+
+- `0709` is the strongest available command-pending / command-count field candidate in the six-word `0708` mailbox response.
+- In the observed working Online/DCM system, `0709=1` is a sufficient discriminator for the controller to immediately fetch the `03E8/count13` desired-state image.
+- The desired-state command is not a single-register write: the DCM returns a complete 13-word image, preserving non-target values while changing the requested register.
+- This materially narrows the native write serializer.
+
+**Hypotheses**
+
+- `0709` may be a boolean dirty flag or a pending-command count. Only `0` and `1` are observed, so the distinction is unresolved.
+- Clearing `0709` on the next poll may be DCM-side consumption after serving the desired block, controller acknowledgement semantics, or both.
+- `070C/070D` likely belong to session/readiness metadata rather than the write trigger.
+
+**Unknowns**
+
+- How the local XTR controller is made to schedule `0708/count6` reads at all.
+- Whether a desired-state read alone guarantees controller acceptance/application.
+- Exact semantics of the remaining `0708` words.
+- Whether all writable setting families use the same pending flag and full-image response pattern.
+
+**Negative result / safety**
+
+EXP230 does not justify direct second-master FC03 or FC16 writes to the heat pump. The local controller must first expose the genuine read-side scheduler/device-recognition path. No new active write target is approved.
+
+**Next**
+
+EXP231 should remain offline and reconstruct the scheduler activation prerequisite from genuine Online/DCM startup/rejoin ordering, with special attention to A5 activity versus first `0708` polling and first successful `0x0F` response.
+
+
+---
+## EXP231 — Offline scheduler-origin and XTR service-slot comparison — COMPLETE / POSITIVE
+
+**Hypothesis**
+The genuine ATEC/DCM `0x0F FC03 0708/count6` poll belongs to a controller-side service scheduler that exists before `0x0F` endpoint readiness. Comparing its recurrent cycle with local XTR cold-boot traffic may reveal a homologous XTR-native mailbox/service slot relevant to write access.
+
+**Method**
+Offline only. Parsed all four genuine Online/DCM captures (`210001`, `071517`, `090209`, `090550`) and local XTR EXP221/EXP222 raw logs. No heat-pump restart, no ESP TX, no setting change.
+
+**Observed facts**
+1. Genuine corpus contains 54 exact `0F 03 0708 0006` requests.
+2. Every one of the 54 follows the A5 `002E/count10` response by 0.262..0.394 s.
+3. Every one also follows the recurrent `0x06 FC17 AFC8/12 -> AFDC/5` poll by 0.110..0.236 s.
+4. Inter-`0708` cadence is normally ~4.2 s in all four captures.
+5. In rejoin capture `090550`: first `0708` request = 0.987 s; first successful `0x0F FC16` ACK = 66.860 s; 16 prior `0708` polls are unanswered; first `0708` response = 68.235 s. Thus scheduler activity predates DCM `0x0F` readiness by ~66 s.
+6. The trace begins with the scheduler already enabled; no visible event in these captures can be identified as the original enable transition.
+7. Local XTR EXP221+EXP222 contain 72 exact `0x0F FC17 read 0730/count8 + write 071C/count8` requests. Their median cadence is ~4.25 s.
+8. Every local XTR FC17 request follows a local `0x06` poll; median delay is ~0.247 s. Local topology has no A5/0x04/`0708` service family.
+9. EXP226 already decoded the XTR FC17 write image `071C..0723` as predominantly controller RTC/date-time. `0730..0737` is still entirely unknown because no valid response has been captured.
+
+**Strong conclusions**
+1. Successful `0x0F` FC16 ACK completion is not the trigger that creates the genuine ATEC/DCM `0708` scheduler. The scheduler is controller-side and can run while the DCM `0x0F` endpoint is silent.
+2. `0708` is not an isolated poll; it is one slot in a stable ~4.2 s service cycle coupled to A5/0x04/0x06 scheduling.
+3. For the local XTR, the recurrent post-`0x06` `0x0F FC17 071C/0730` transaction occupies a strongly analogous scheduler position and cadence. This is functional/scheduling homology, not wire-protocol equivalence.
+4. For native XTR write access, `0730..0737` is now a higher-value target than trying to force the ATEC-specific `0708` scheduler into existence.
+
+**Hypotheses**
+- `0730..0737` may be an XTR-generation desired-state/status/command mailbox returned by the external service endpoint while the controller simultaneously publishes RTC state in `071C..0723`.
+- A valid `0730..0737` response may keep the XTR service session alive or cause further desired-state reads. This is unproven.
+- The scheduler-enabled controller fingerprint (`A811/A812=000C/0500`, shorter A7F8 span) may reflect persistent commissioning/firmware/platform state, but causality is still unknown.
+
+**Unknowns**
+- Exact semantics and safe idle/default values for `0730..0737`.
+- Whether an XTR FC17 response alone is sufficient to extend the service session.
+- Whether the XTR ever supports the ATEC `0708` family, or whether FC17 is its generation-specific replacement.
+- The original event/configuration that enables the ATEC extended scheduler.
+
+**Negative / safety result**
+Do not continue FC16 ACK-chain expansion as a scheduler-enablement strategy, and do not guess an eight-word `0730` response. No active write target is established by EXP231. Heat-pump restarts remain paused.
+
+**Next**
+EXP232 should remain offline and search all available firmware/artifacts/maps/source discussions for `0730..0737`, FC17 read/write-multiple semantics, or an eight-word XTR/Connect response image. If no evidence-backed neutral response can be recovered, stop before an active responder rather than synthesize zeros.
+
+
+---
+## EXP232 — Offline `0730..0737` response reconstruction — COMPLETE / STRUCTURAL POSITIVE + IMPORTANT NEGATIVE
+
+**Hypothesis**
+
+The local XTR `0x0F FC17 read 0730/count8 + write 071C/count8` exchange may contain an external-to-controller service/command return bank whose safe response can be reconstructed or at least constrained from existing captures, related Thermia FC17 role interfaces, archived artifacts and external reference work.
+
+**Method**
+
+Offline/read-only only. No heat-pump restart, ESP TX, setting change or YAML change. Searched:
+- local EXP221, EXP222 and EXP225 logs and older EXP71/71B evidence for an FC17 count-8 slave response;
+- all indexed project/library material for `0730`, `0737`, `071C`, decimal register `1840`, and exact FC17 response signatures;
+- fclauson's `0F_register_value_map.xlsx`, `modbus_slave.py`, `Config.yaml` and Discussion #143;
+- read-only repository searches in `piotr-romanowski/thermia-bus-sniffer`, `klejejs/ha-thermia-heat-pump-integration`, and `ryckema/Thermia_itec`.
+
+**Observed facts**
+
+1. Local XTR requests have exact shape `0F 17 0730 0008 071C 0008 10 <16-byte controller write image> CRC`. EXP226 already establishes that the write image is predominantly transformed controller RTC/calendar data.
+2. A valid FC17 response for eight requested words would have byte count `0x10`, total length 21 bytes, and begin `0F 17 10`. No such genuine response was found in the relevant local/archived logs. Searches for both decoded shape (`slave=0x0F function=0x17 length=21`) and raw prefix (`0F 17 10`) were negative.
+3. No `0730..0737` values are present in fclauson's spreadsheet or Python slave logger. His reference work covers the ATEC/DHP-AQ `0x0F` FC03 read blocks and FC16 state blocks, not this XTR FC17 bank.
+4. Discussion #143 similarly documents two FC03 read areas plus FC16 write areas on the reference Online/DCM topology and supplies no XTR `0730` response.
+5. Read-only repository searches for `0730`, `071C`, `0x0730`, decimal `1840`, and FC17 produced no usable source mapping in the three available repositories.
+6. A platform-wide FC17 address convention emerges from independently established interfaces:
+   - `0x0A`: read base `B3B0`, write base `B3C4`, delta `0x14`;
+   - `0x06`: read base `AFC8`, write base `AFDC`, delta `0x14`;
+   - reference `0x04`: read base `ABE0`, write base `ABF4`, delta `0x14`;
+   - reference `0x05`: read base `AC12`, write base `AC26`, delta `0x14`;
+   - local XTR `0x0F`: write base `071C`, read base `0730`, delta `0x14`.
+7. The nearby service addresses also form exact `0x14` steps: `0708 + 0x14 = 071C` and `071C + 0x14 = 0730`. ATEC/DCM uses `0708/count6` as a command/session header, whereas XTR uses `071C` as the write side and `0730` as the read side of FC17.
+8. The room-sensor path provides architectural proof that an FC17 **read-bank response can be semantic controller ingress**: a device-owned pending setpoint word returned in the read bank is adopted by the controller. This is architectural analogy only; room-sensor emulation is not a project direction and no field position is transferred to `0730`.
+
+**Strong conclusions**
+
+1. `0730..0737` is best classified as an **external/service-owned return bank** in the XTR slave-0x0F FC17 role transaction. The controller explicitly reads it, so it is a real ingress surface even though its fields are unknown.
+2. The exact `+0x14` separation is not accidental-looking: it is a repeated Thermia FC17 register-bank convention across at least five role interfaces.
+3. EXP231's scheduler/cadence homology remains useful, but the stronger EXP226+EXP232 evidence argues against calling XTR `071C/0730` a direct equivalent of the ATEC `0708` mailbox. They are structurally related service families, not proven wire-semantic equivalents.
+4. Current artifacts are insufficient to reconstruct a safe `0730..0737` response.
+
+**Hypotheses**
+
+- `071C..0723` may be controller-owned service/RTC state, while `0730..0737` is the paired external service/device state or request bank.
+- Because other FC17 read banks can carry controller-ingress requests, one or more `0730` words could eventually carry command/session semantics. No current evidence identifies which word/value.
+- The exact `0708 -> 071C -> 0730` spacing may reflect a common service-register namespace inherited across controller generations, even though ATEC and XTR use different Modbus function shapes.
+
+**Unknowns**
+
+- Any genuine value for `0730..0737`.
+- Whether the neutral image is zero, nonzero metadata, clock acknowledgement, capability data, command selectors, or another structure.
+- Whether a genuine XTR Online/Connect endpoint answers this FC17 transaction and whether that response changes after commissioning.
+- Whether command writes on XTR ultimately use this bank or a separate service path.
+
+**Negative / safety result**
+
+No genuine response image was recovered. Therefore no active FC17 responder is justified. Do not return zeros, echo `071C..0723`, synthesize an RTC mirror/inverse, or copy another slave's read-bank layout. Those would be uncontrolled semantic guesses.
+
+**Next**
+
+EXP233 should remain offline and build a formal cross-role FC17 bank-schema map (`0x0A`, `0x04`, `0x05`, `0x06`, `0x0F`), comparing read/write counts, offsets, known request/feedback fields and lifecycle timing. The goal is to determine whether response field-position homology can narrow `0730..0737` enough to justify a bounded active test.
