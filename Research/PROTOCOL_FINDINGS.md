@@ -1756,3 +1756,37 @@ Control-path implication once the scheduler is available:
 - desired-state image includes Heat Curve at 1000 and room target at 1012.
 
 No local semantic write is justified solely by these mappings while the XTR still lacks the genuine 0708 scheduler.
+
+
+## EXP211 — 03E8/count13 is the heating desired-state page
+
+Public Thermia Online debug profiles for ATEC/DHP-AQ and iTec IQ expose the following writable registerIndex meanings directly:
+- 1000 Heat Curve
+- 1001 Heat Curve Min
+- 1002 Heat Curve Max
+- 1003 Curve +5
+- 1004 Curve 0
+- 1005 Curve -5
+- 1006 Heat Stop
+- 1008 Room Factor
+
+These align position-for-position with the genuine DCM FC03 03E8/count13 values. Independent legacy control-register documentation aligns the otherwise hidden positions 1007 and 1009..1011 with Temperature Reduction and the Curve 2 family. EXP210 independently proves 1012 is the Room Target field by exact equality with native B3C5 across multiple genuine captures.
+
+Current field confidence:
+- 1000 Heat Curve — proven locally on XTR FC16, public-profile confirmed, strongly supported on genuine FC03 desired state
+- 1001 Heat Curve Min — public-profile confirmed
+- 1002 Heat Curve Max — public-profile confirmed
+- 1003 Curve +5 — public-profile confirmed
+- 1004 Curve 0 — public-profile confirmed
+- 1005 Curve -5 — public-profile confirmed
+- 1006 Heat Stop — public-profile confirmed
+- 1007 Temperature Reduction — strong structural mapping
+- 1008 Room Factor — public-profile confirmed
+- 1009 Curve 2 — strong structural mapping
+- 1010 Curve 2 Min — strong structural mapping
+- 1011 Curve 2 Max — strong structural mapping
+- 1012 Room Target — project-validated against B3C5
+
+Protocol implication: 0708 word1 is now well explained as a heating/settings dirty selector. When asserted, the controller fetches a coherent heating desired-state image from the DCM at 03E8/count13.
+
+Do not translate this into direct master-originated writes to the local XTR. The semantically correct direction remains controller FC03 -> slave-0x0F response after the genuine scheduler exists.
