@@ -1294,3 +1294,21 @@ This changes the preferred interpretation of the runtime scheduler from a collec
 
 **Conclusion:** Link Integration mode is an application ownership/sync choice above the already-active transport topology. Do not write 0559 to try to create the scheduler.
 
+
+
+## EXP198 — 06EA/06F1/06F4 startup-tail analysis — COMPLETE / POSITIVE-NEGATIVE
+
+**Hypothesis:** the final startup/full-sync pages contain identity/capability state that activates the Online/DCM scheduler.
+
+**Observed:**
+- `06EA/count7` decodes exactly as RTC/date: sec,min,hour,day,month,year,weekday. Cross-capture timing and the later 0848 RTC tail independently validate it.
+- `06F1/count3` is `FFFF,FFFF,FFFF` in both genuine power-event captures.
+- `06F4/count19` occurs in controller cold boot (090209), but not in the indexed DCM-rejoin capture (090550).
+- 06F4 first five words exactly mirror contemporaneous 0x02 write fields A80C..A810.
+- Reference-only A811/A812 values 000C/0500 are not included in those first copied fields.
+- extended topology is already active long before 06F4 appears.
+
+**Result:** no scheduler-enable token found. 06EA is RTC, 06F1 unresolved/unavailable, 06F4 is a late controller-boot snapshot.
+
+**Safety:** offline only. No write to 06EA..0706.
+
