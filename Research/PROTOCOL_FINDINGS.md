@@ -1,6 +1,6 @@
 # THERMIA PROTOCOL FINDINGS
 
-Last updated: 2026-09-26 after EXP182
+Last updated: 2026-09-26 after EXP213
 
 ## Bus
 
@@ -12,9 +12,9 @@ Last updated: 2026-09-26 after EXP182
 ## Important slaves
 
 - 0x02: controller state/sequencer data
-- 0x06: DCM/accessory slot
+- 0x06: accessory/expansion FC17 transport + version/presence path; separate from genuine DCM endpoint
 - 0x0A: room-sensor path
-- 0x0F: local controller settings/status blocks
+- 0x0F: genuine DCM/Online bridge endpoint in the reference topology; bidirectional controller-state / desired-state mailbox
 - 0x1E: outdoor-unit path
 
 ## 0x06 FC17 accessory path
@@ -1806,3 +1806,58 @@ Current selector map:
 - word0 -> 0546/count20 system/group-0-like page;
 - word1 -> 03E8/count13 heating/group-1-like page;
 - normal word2 command semantics remain unobserved.
+
+
+## EXP213 — official documentation supports automatic DCM recognition / authorization
+
+Official Danfoss/Thermia installation material adds an important architectural clue to the scheduler-gate problem.
+
+### DHP-AQ / DCM03 path
+
+The Danfoss Link HP-kit instructions for DHP-AQ:
+- require controller software >=2.2;
+- require heat-pump power to be disconnected for installation;
+- connect DCM03 directly from a spare relay-board RJ45 to the DCM03 RS485 port;
+- then start the heat pump and enrol the DCM/heat pump as a Danfoss Link service device;
+- do not document any local heat-pump menu item that manually enables Link/DCM communication.
+
+The same HP-kit document explicitly exposes a Gateway-card lifecycle containing:
+startup -> DCM-HP approval -> approval failed OR sending settings to DCM -> all OK.
+
+This is direct evidence that the broader Danfoss HP-kit architecture contains an authorization/binding phase between DCM and heat pump. It must not be overgeneralized into a claim that the direct DHP-AQ/XTR path uses the same Gateway LED state or identical bytes.
+
+### Older Online path
+
+The Danfoss Online installation guide describes direct DHP-AQ connection to DCM and then installer-side MAC/profile registration in the Online administration system. It documents no local heat-pump menu switch that turns the DCM protocol on.
+
+Cloud profile selection determines which Online features are exposed, but this is not evidence that the cloud profile creates the controller-side Modbus scheduler.
+
+### Thermia Connect replacement path
+
+Current Thermia Connect installation material for iTec/Atec:
+- installs the gateway while heat-pump power is off;
+- connects communication through the I/O/expansion communication port;
+- explicitly instructs installers to disconnect/remove an existing DCM before starting Connect installation;
+- performs onboarding/pairing after hardware connection;
+- mentions waiting for pairing and protocol packages;
+- stores commissioning/customer-specific state in the gateway, removable by factory reset.
+
+### Protocol implication
+
+The checked official documentation favors this model:
+
+controller software capability
++ physical communication hardware present during startup
++ automatic recognition / authorization / binding
+-> extended service topology
+
+rather than:
+
+manual local menu flag
+-> scheduler ON
+
+This materially strengthens EXP208. A same-reference-controller cold boot without DCM directly tests the documented installation-order dependency.
+
+If EXP208 boots with scheduler OFF, a follow-up runtime DCM attach (EXP214) becomes highly valuable because it may reveal the first actual OFF->ON authorization exchange. If EXP208 already boots with scheduler ON, physical boot-time DCM presence is not the gate and EXP214 is unnecessary.
+
+No local write or broad probe follows from this documentation result.
