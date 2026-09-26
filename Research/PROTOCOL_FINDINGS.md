@@ -1891,3 +1891,39 @@ Future command-path implication once the scheduler exists:
 4. clear word0 after successful fetch.
 
 No direct local second-master write is justified by this result.
+
+
+## EXP216 — offline reference-model implementation constrains emulator scope
+
+A pure in-memory model of the observed genuine DCM slave-0x0F runtime role now exists at `Research/tools/thermia_dcm_reference_model.py`.
+
+It is deliberately fail-closed:
+- only CRC-valid slave-0x0F frames are accepted;
+- FC16 is ACKed only for observed genuine start/count shapes;
+- FC03 is answered only for 0708/count6, 03E8/count13 and 0546/count20;
+- unknown/unobserved requests return no response;
+- one-shot word1/word0 selector semantics are implemented exactly as reconstructed in EXP212.
+
+Exact captured vectors, including the 0864/count4 request/ACK pair, pass offline self-tests.
+
+Protocol implication: ordinary DCM runtime response mechanics are no longer the main uncertainty. The remaining fundamental problem is controller-side creation of the extended scheduler/topology.
+
+The model contains no serial, GPIO, network or ESPHome transport and must remain offline until a genuine scheduler is present or a bootstrap mechanism is independently proven.
+
+## EXP217 — automated topology discriminator for future captures
+
+`Research/tools/thermia_capture_analyzer.py` now extracts the bootstrap evidence needed for EXP208/EXP214:
+
+- A5/A4/05 first activity;
+- slave 0x04 first activity;
+- first 0708/count6 poll;
+- first 07D0..0884 runtime FC16 page;
+- first slave-0x0F FC16 ACK and FC03 response;
+- A811/A812 from the controller 0x02 FC17 write image;
+- first extended-topology event and conservative topology verdict.
+
+The verdict requires at least two independent evidence families among A5, 0708 and runtime FC16.
+
+All five genuine captures currently available classify as topology ON with all three families present. Known boot/rejoin timestamps are recovered automatically, including the 090209 boot fingerprint/A5/0708/runtime ordering and the 073242 DCM return ACK/FC03 timings.
+
+Protocol implication: a future same-controller cold-boot capture can be compared objectively against the genuine reference corpus without relying on manual visual inspection.
