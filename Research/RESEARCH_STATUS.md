@@ -1971,3 +1971,13 @@ Combined with the exact XTR UI distinction between DCM accessory installed and O
 
 The decisive experiment remains same-controller clean cold boot with genuine DCM physically present versus absent. No active write is justified.
 
+
+
+## Status through EXP202
+
+The exact XTR DCM-installed UI state has no obvious counterpart in the checked public Thermia Online register profiles. DCM identity is exposed by the cloud API as device metadata, while model-specific COMP_HAS_LINK fields do not behave as generic DCM-present flags.
+
+The investigation is therefore now concentrated on private controller/display topology state. A811/A812 remain the strongest unexplained passive discriminator and are a better target for offline semantic mapping than more 0x0F public-register searches.
+
+Proposed next experiment: EXP203, passive/offline decomposition of the complete A80C..A812 display/status write image against known UI states and lifecycle changes.
+
