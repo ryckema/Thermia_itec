@@ -6,12 +6,46 @@ Last updated: 2026-09-26
 
 ## Authoritative current state — 2026-09-26 (supersedes older current-experiment bullets below)
 
-- Last completed experiment: **EXP206 — COMPLETE / MAJOR POSITIVE DCM MODBUS REJOIN CAPTURE**.
-- Current experiment: **none armed**.
+- Last completed experiment: **EXP207 — COMPLETE / POSITIVE OFFLINE DCM RESPONDER-TIMING MODEL**.
+- Current experiment: **EXP208 — PREPARED / EXTERNAL PASSIVE SAME-CONTROLLER COLD BOOT WITHOUT DCM**.
 - Production functionality remains unchanged.
 - Do **not** repeat AFCA timing variants, direct `0x0F` FC16 semantic writes, passive topology censuses, or standalone `0708` probes already covered by EXP147/150 and EXP175–181.
 - Do **not** attempt to answer `0708/count6` locally unless the XTR controller first emits a genuine `0F 03 0708 0006`.
 - Current highest-value direction: identify the **controller-side topology / integration / scheduler enable condition** that distinguishes the genuine DCM reference system from the local XTR M.
+
+### EXP207 consolidated finding
+
+**Hypothesis:** the genuine DCM's slave-0x0F behaviour can be reduced to deterministic Modbus RTU response timing, without any unsolicited 0x0F transmission, which would define the minimum safe emulator role once a controller has already enabled the Online/DCM topology.
+
+Offline census across the five genuine captures currently in the project shows:
+- healthy 0x0F FC16 controller writes are answered by standard 8-byte FC16 echoes typically 13–15 ms after the request frame has completed;
+- at 9600 8E1 an 8-byte ACK occupies about 9.17 ms on the wire, leaving a typical inferred turnaround silence of about 4–5 ms;
+- 0708/count6 FC03 responses are 17-byte frames and finish 23–26 ms after the request frame, again implying about 4.5 ms pre-response silence;
+- the observed 03E8/count13 response finishes 39–42 ms after its request and the 0546/count20 response at 56 ms, both consistent with the same ~4–5 ms turnaround plus frame-transmission time;
+- this closely matches an ordinary Modbus-RTU inter-frame wait rather than a long application-processing delay;
+- while the DCM is absent, the controller simply retries pending FC16 pages and continues mailbox polls; once the DCM returns, it resumes by answering those controller-originated requests;
+- no unsolicited slave-0x0F transmission is required by the observed rejoin path.
+
+**Strong conclusion:** for an already-enabled Online/DCM topology, the minimum DCM bus role is a fail-closed slave 0x0F service: respond to exact controller FC16 writes and FC03 reads after the normal RTU silent interval; do not originate arbitrary 0x0F traffic. This does not solve scheduler activation on the local XTR.
+
+### EXP208 — PREPARED / external passive cold-boot discriminator
+
+**Hypothesis:** a same-reference-controller cold boot with the genuine DCM physically absent will determine whether the extended scheduler/topology is persistent/capability-driven or requires DCM presence during controller boot.
+
+Required capture:
+1. use the same reference heat-pump/controller that produced the genuine DCM captures;
+2. physically disconnect the DCM from the Thermia Modbus before controller power-on; preferably keep the DCM powered off as well;
+3. start the sniffer before controller power is restored;
+4. cold boot the heat-pump controller;
+5. capture at least 120 s, preferably 180 s, with no DCM reconnect and no manual setting changes;
+6. record the display state for DCM accessory installed / Online connection if visible.
+
+Discriminators:
+- if the reference 0x02 fingerprint, 0x04/A5, 0708 scheduler and 07D0..0884 publisher still appear, physical DCM presence is not required to create the topology at boot and persistent commissioning/controller capability becomes the leading branch;
+- if they disappear and the controller falls onto a no-DCM/local-like branch, DCM presence at boot is a real topology-selection prerequisite;
+- if a delayed OFF->ON transition occurs, the first differing bus event becomes the highest-value bootstrap candidate.
+
+No local XTR TX is justified by EXP208; this is an external passive capture request only.
 
 ### EXP206 consolidated finding
 
