@@ -1949,3 +1949,15 @@ This confirms that the missing Thermia scheduler activation is below the Link ap
 
 The remaining highest-value evidence continues to be the Thermia-controller-side topology discriminator, especially same-controller cold boot with genuine DCM physically present versus absent and the early A811/A812/controller fingerprint.
 
+
+
+## Status through EXP200
+
+Exact iTec XTR documentation now provides an important semantic target: the display distinguishes DCM accessory installed from Online connection. The former means a DCM/Thermia Connect accessory is connected; the latter additionally requires Internet connectivity.
+
+This narrows the scheduler-gate problem to the controller's local accessory-recognition/topology state. It is not equivalent to Link Integration, Internet status, or 0x06 version metadata.
+
+Older DHP-AQ installation documentation independently supports a physical auto-recognition model: DCM03 is connected to the spare RJ45/RS485 path and the heat pump is started without a documented controller-side enable setting.
+
+The strongest passive unexplained fingerprint remains A811/A812 (local FFFF/0000 versus reference 000C/0500).
+
