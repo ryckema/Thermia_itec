@@ -1349,3 +1349,19 @@ This changes the preferred interpretation of the runtime scheduler from a collec
 
 **Safety:** no TX/YAML change.
 
+
+
+## EXP201 — A811/A812 versus XTR DCM-installed state — COMPLETE / PARTIAL POSITIVE
+
+**Hypothesis:** A811/A812 may reflect the XTR's documented DCM-accessory-installed state.
+
+**Observed:**
+- local no-DCM = FFFF/0000;
+- genuine extended topology = 000C/0500;
+- active local 0x06 accessory/version service does not change the local pair;
+- all 102 controller 0x02 requests in 090550 retain 000C/0500 before, during and after the DCM silent->responding transition.
+
+**Result:** partial positive as a persistent installed/topology/capability correlate; negative as a live DCM-session marker.
+
+**Conclusion:** retain A811/A812 as the strongest passive topology reflection, not as a write target and not yet as a proven UI-icon field.
+
