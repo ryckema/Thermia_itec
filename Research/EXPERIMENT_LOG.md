@@ -1627,3 +1627,20 @@ Known timing anchors were recovered automatically:
 **Result:** positive. New EXP208/214 logs can now be triaged reproducibly without manual frame scanning.
 
 **Safety:** offline/passive analysis only.
+
+
+## EXP218 — local Operation Mode A/B/A correlation — PREPARED / PASSIVE BUS
+
+**Hypothesis:** the local XTR M exposes the same system/operation register semantics as the genuine reference Online database, such that a local display change AUTO -> COMPRESSOR -> AUTO produces a reversible state change at registerIndex 1363 / 0x0553, ideally in FC16 0546/count20.
+
+**Only variable:** local display operating mode AUTO -> COMPRESSOR -> AUTO.
+
+**Bus behavior:** read-only capture only. ESP/RS485 TX must remain disabled.
+
+**Procedure:** >=30 s AUTO baseline; change to COMPRESSOR; hold 20–30 s; restore AUTO; capture >=60 s after restore. Do not run during anti-legionella, top-up, manual mode or active auxiliary-only demand.
+
+**Positive criterion:** strongest result is FC16 0546/count20 with offset13 / 0553 changing 1 -> 2 -> 1. A different exact reversible native A/B/A delta is secondary positive evidence.
+
+**Negative criterion:** no 0546 and no reversible native delta attributable to Operation Mode.
+
+**Stop:** restore AUTO immediately on alarm, unexpected stop, defrost conflict or unexpected operating behavior.
