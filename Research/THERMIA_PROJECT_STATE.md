@@ -6,12 +6,47 @@ Last updated: 2026-09-26
 
 ## Authoritative current state — 2026-09-26 (supersedes older current-experiment bullets below)
 
-- Last completed experiment: **EXP207 — COMPLETE / POSITIVE OFFLINE DCM RESPONDER-TIMING MODEL**.
-- Current experiment: **EXP208 — PREPARED / EXTERNAL PASSIVE SAME-CONTROLLER COLD BOOT WITHOUT DCM**.
+- Last completed experiment: **EXP210 — COMPLETE / POSITIVE 0x0F DESIRED-STATE FIELD VALIDATION**.
+- Current experiment: **EXP208 — PREPARED / AWAITING EXTERNAL PASSIVE SAME-CONTROLLER COLD BOOT WITHOUT DCM; no local experiment armed**.
 - Production functionality remains unchanged.
 - Do **not** repeat AFCA timing variants, direct `0x0F` FC16 semantic writes, passive topology censuses, or standalone `0708` probes already covered by EXP147/150 and EXP175–181.
 - Do **not** attempt to answer `0708/count6` locally unless the XTR controller first emits a genuine `0F 03 0708 0006`.
 - Current highest-value direction: identify the **controller-side topology / integration / scheduler enable condition** that distinguishes the genuine DCM reference system from the local XTR M.
+
+### EXP209 consolidated finding — causal endpoint ownership
+
+**Hypothesis:** the physical DCM disconnect/reconnect capture can causally assign the DCM's actual Modbus endpoint and separate it from A5 and 0x06.
+
+Observed:
+- while the genuine DCM was physically absent from the Thermia Modbus bus, A5 request/response traffic continued normally;
+- during that same interval, controller-originated 0x0F FC16 requests and FC03 0708/count6 polls received no DCM-side answers;
+- the controller continued to poll slave 0x06, but no 0x06 response appeared anywhere in the capture;
+- after the DCM was physically reconnected, the first returning DCM-side bus evidence was the FC16 ACK to slave 0x0F at 27.051 s, followed by 0x0F FC03 responses and full resynchronisation.
+
+**Strong conclusions:**
+1. In the genuine reference topology the DCM/Online bridge is the responding Modbus endpoint at **slave 0x0F**.
+2. A5 is **not** the physically removed DCM endpoint; it belongs to another topology-associated native/upstream service whose exact hardware owner remains unknown.
+3. Slave 0x06 is a separate accessory/version path and is not the DCM Online-service endpoint in this captured installation.
+4. Earlier wording that physical ownership of slave 0x0F was unresolved is superseded for the genuine reference topology.
+
+### EXP210 consolidated finding — desired-state field validation
+
+**Hypothesis:** independent DHP-AQ/ATEC reverse-engineering claims for 0x0F indices 1012 and 1053 can be checked against the genuine captures and the native room-sensor path.
+
+Observed:
+- external Discussion #143 states that index 1012 is room-thermostat related and index 1053 is Hot Water Start; the same source later contains a contradictory statement naming 1021 as the room thermostat;
+- in genuine capture 090550, full-sync index 1012 = 20 while every nearby native 0x0A FC17 controller write has B3C5 = 20;
+- in genuine capture 073242, full-sync index 1012 = 21 while every nearby native 0x0A FC17 controller write has B3C5 = 21;
+- in genuine capture 071517, both observed 03E8/count13 write images have index 1012 = 21 while the repeated native 0x0A B3C5 value is also 21;
+- index 1021 is 10 in both available full-resync images and does not follow the 20/21 room target;
+- index 1053 = 35 in both available 0410/count21 full-resync images;
+- Discussion #143 independently reports changing Hot Water Start through index 1053, but the current project corpus does not yet contain a same-system one-variable Hot Water Start A/B capture.
+
+**Strong conclusions:**
+1. 0x0F registerIndex **1012 / 0x03F4 is the room target / room-thermostat setpoint field** in the genuine reference Online database; it tracks the native B3C5 controller room-target value exactly across independent captures.
+2. The contradictory external claim that 1021 is the room thermostat is rejected for this reference dataset.
+3. registerIndex **1053 / 0x041D is a strong Hot Water Start candidate**, independently reported by another DCM reverse-engineering effort and carrying a plausible value of 35 in both full syncs, but it is not yet project-proven by a controlled one-variable A/B.
+4. registerIndex 1000 remains locally proven as Heat Curve on the XTR controller->0x0F write side and strongly supported as the corresponding desired-state field on the genuine DCM read side.
 
 ### EXP207 consolidated finding
 
@@ -81,6 +116,7 @@ extended service/topology scheduler
     -> A5 + A4/05 service family
     -> periodic 0x0F FC03 0708/count6
     -> cyclic 0x0F FC16 07D0..0884 runtime uploads
+    -> DCM is the responding slave 0x0F endpoint
     -> DCM can join/rejoin
     -> full 03E8.. state resync
     -> mailbox word1=1 can trigger FC03 03E8/count13 desired-state fetch
@@ -122,9 +158,9 @@ Physical DCM presence remains viable because the available captures do not inclu
 
 ### Current protocol model
 
-1. **0x06 accessory/version metadata path** — independently activatable; valid responses can expose `EXP / UITBR.KAART`, and `AFD1` maps to displayed version/10. This does not establish the Online/DCM session.
-2. **0x0F bidirectional mailbox/service** — controller can emit FC16 writes without a DCM, but genuine DCM topology provides an operational/ACK-capable service and later FC03 reads. Physical ownership remains unresolved.
-3. **A5 service** — appears only in genuine DCM topology so far; exact physical owner and activation mechanism remain unresolved.
+1. **0x06 accessory/version metadata path** — independently activatable; valid responses can expose `EXP / UITBR.KAART`, and `AFD1` maps to displayed version/10. This does not establish the Online/DCM session and is not the DCM endpoint in the genuine reference capture.
+2. **0x0F bidirectional mailbox/service** — in the genuine reference topology the physically reconnected DCM is causally identified as the responding slave `0x0F` endpoint. The controller writes current/export state with FC16 and reads DCM desired/session state with FC03.
+3. **A5 service** — remains active while the genuine DCM is physically off-bus, so A5 is not the DCM endpoint. Exact hardware owner and activation mechanism remain unresolved.
 4. **A4 <-> 0x05 sibling path** — genuine-topology alternate/discovery-like service; not a simple mandatory A5 precursor.
 5. **C8 FC03 0x2328/count2** — generic native startup discovery, not DCM-specific.
 
