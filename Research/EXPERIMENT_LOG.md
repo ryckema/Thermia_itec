@@ -1543,3 +1543,33 @@ Negative: initial topology activation after controller boot remains unknown.
 **Unknown:** normal word2 selector behaviour remains unobserved.
 
 **Safety:** offline analysis only.
+
+
+## EXP213 — official DCM/Connect bootstrap documentation audit — COMPLETE / POSITIVE
+
+**Hypothesis:** official installation documentation can reveal whether the missing controller scheduler is enabled by a local menu setting or by automatic hardware recognition / authorization / binding.
+
+**Observed:**
+- Danfoss Link HP-kit documentation for DHP-AQ requires controller software >=2.2, heat-pump power off during installation, DCM03 connected from the spare relay-board RJ45 directly to DCM03 RS485, then heat-pump startup and Link service-device enrolment. No local heat-pump DCM-enable menu step is documented.
+- The same HP-kit documentation explicitly names a DCM-HP approval lifecycle on the Gateway-card architecture: startup, DCM-HP approval, approval failed / sending settings to DCM, all OK.
+- Older Danfoss Online documentation describes direct DHP-AQ DCM installation plus cloud-side MAC/profile registration, with no documented local scheduler-enable toggle.
+- Current Thermia Connect documentation for iTec/Atec again installs communication hardware with heat-pump power off, removes any existing DCM first, then commissions/pairs the gateway via app and protocol packages. Gateway factory reset removes commissioning/customer-specific gateway data.
+- User guides expose separate DCM accessory installed and Online connection indicators.
+
+**Result:** positive. Official documentation supports automatic recognition/authorization/binding, with software capability as prerequisite, over a user-selectable local DCM-enable setting.
+
+**Limit:** the documented Gateway-card DCM-HP approval state is cross-architecture evidence; exact DHP-AQ/XTR bootstrap bytes remain unknown.
+
+**Next:** EXP208 remains the highest-value capture: same reference controller cold boot with DCM physically absent before power-on.
+
+## EXP214 — runtime DCM attach after no-DCM cold boot — CONTINGENT PREPARED
+
+Run only if EXP208 boots the reference controller with the extended scheduler OFF.
+
+**Hypothesis:** attaching the genuine DCM to that already-running controller can expose the actual OFF->ON authorization/bootstrap sequence.
+
+**Plan:** keep controller running and sniffer continuous after EXP208, connect/power genuine DCM, capture >=180 s, mark attach time, make no setting changes.
+
+**Stop rule:** if EXP208 already has the extended topology ON without DCM, do not run EXP214 for this purpose.
+
+**Safety:** passive external reference capture only.
