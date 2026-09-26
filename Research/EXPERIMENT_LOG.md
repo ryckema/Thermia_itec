@@ -1312,3 +1312,22 @@ This changes the preferred interpretation of the runtime scheduler from a collec
 
 **Safety:** offline only. No write to 06EA..0706.
 
+
+
+## EXP199 — Link firmware node-model / DCM identity check — COMPLETE / POSITIVE-NEGATIVE
+
+**Hypothesis:** `SIMPLE_COMMUNICATION_MODULE` or another Link node type may be the DCM bridge and expose its identity/binding requirements.
+
+**Observed:**
+- HEATPUMP = NodeType17; Division6/Brand0/Product0x0203.
+- SIMPLE_COMMUNICATION_MODULE = NodeType19; Division5/Brand0/Product0x8100.
+- GATEWAY = NodeType16; Division7/Brand0/Product0x0201.
+- SCMNode carries binary input state, input-shift count, power-cycle counter and check-in interval; its delayed callback raises AwayModeChanged.
+- recovered node-type model contains no explicit DCM/Online/Connect node.
+
+**Result:** SIMPLE_COMMUNICATION_MODULE is not the DCM bridge.
+
+**Conclusion:** DCM is best treated as a lower transport/service bridge beneath the Link application node model. Link binds the heat pump endpoint, not a separate DCM application node.
+
+**Safety:** offline only.
+
