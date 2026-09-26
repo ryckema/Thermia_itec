@@ -497,6 +497,7 @@ Key correction:
 - system integration: SET-on-sync
 
 This makes grouped synchronization / ownership a higher-priority local-mailbox hypothesis than another scalar ID/value probe.
+
 ### Identity/binding
 `OnHEServiceBind()` compares DivisionID + BrandID + ProductID against allowed products before endpoint allocation.
 This is confirmed on the HE/Z-Wave side only; mapping to AFC8..AFD3 remains unknown.
@@ -998,6 +999,7 @@ still received no response during a clean 2.015 s window.
 Protocol implication:
 The read-side service is not unlocked merely by acknowledging controller-to-0x0F transfers. A stronger architectural possibility is that the real Online/DCM module simultaneously occupies both the `0x06` accessory role and the `0x0F` mailbox/service role, with A5/A4 as an additional discovery endpoint.
 
+
 ## EXP151 prepared — simultaneous multi-endpoint presence test
 
 EXP150 rejects 0x0F ACK-only presence as sufficient bootstrap.
@@ -1496,6 +1498,7 @@ Observed:
 - ACKing `03E8/14` did not cause `0410/22`;
 - the controller kept retrying `04A6/13`;
 - bus remained clean (`resyncDelta=0`, `dropDelta=0`).
+
 Protocol implication:
 The 0x0F block stream is not a stateless sequence that can always be restarted by a new `03E8` event. An already-pending block can retain scheduler ownership across unrelated parameter-change events. Therefore staged ACK experiments must account for current pending 0x0F state.
 
@@ -1990,3 +1993,4 @@ Not proven:
 Do not write reference ATEC values into the XTR discriminator fields.
 
 Preferred next step: EXP230 offline semantic classification of the 12-word record schema.
+
