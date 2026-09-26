@@ -1725,3 +1725,31 @@ A811/A812 may be controller/display metadata reflecting a persistent installed t
 ### Safety
 Do not write A811/A812. Their ownership/effects remain unknown and they are more plausibly reflected output state than an ingress control.
 
+
+
+## 2026-09-26 — EXP202 COMPLETE / NEGATIVE PUBLIC-REGISTER SEARCH, POSITIVE LAYER NARROWING
+
+**Hypothesis:** the exact XTR display states DCM accessory installed / Online connection may be exposed as ordinary Thermia Online registerIndex parameters, allowing direct mapping from public debug profiles.
+
+### Observed facts
+Public Thermia Online debug profiles for ATEC/DHP-AQ, iTec IQ, Diplomat Duo and NCP families were searched for register names containing DCM, ONLINE, LINK, CONNECT, COMM and HAS.
+
+Results:
+- no ordinary registerIndex named for DCM accessory installed or Online connection was found;
+- DCM presence appears in cloud/device metadata instead, e.g. dcmVersion and deviceConnectionType = Dcm;
+- ATEC/DHP-AQ has model-specific COMP_HAS_LINK at index 7003;
+- iTec IQ has model-specific COMP_HAS_LINK at index 10003;
+- Diplomat Duo has COMP_HAS_LINK at index 6003;
+- these COMP_HAS_LINK values are 0 in the checked DCM-connected debug profiles, so they cannot be treated as the XTR DCM-accessory-installed indicator.
+
+### Strong conclusions
+1. The XTR's DCM-installed display state is not presently exposed as an obvious ordinary 0x0F/Online register in the checked public API profiles.
+2. DCM identity/presence is represented at least partly outside the normal public register database, consistent with an internal controller/display topology state.
+3. This makes the 0x02 controller/display write image, especially the unexplained A811/A812 discriminator, a higher-value passive target than further 0x0F user-register searches.
+
+### Negative result
+Do not equate COMP_HAS_LINK with DCM accessory presence. The naming refers to Link capability/association and its observed values do not match simple DCM-connected truth.
+
+### Next
+Proposed EXP203: offline reconstruction of the 0x02 A80C..A812 write image as a display/status message. Use known UI symbols and natural state changes to classify which words are operational status, lifecycle, capability masks and possible DCM-installed flags. No write.
+
