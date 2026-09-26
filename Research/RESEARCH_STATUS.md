@@ -1992,3 +1992,19 @@ Strongly retained: ACK-gated Online export scheduler, 0708 heating/settings sele
 Corrected: runtime persistence is not proven across controller cold boots; A811/A812 are not proven DCM-installed flags; 0x04/0x1E equivalence is only a hypothesis; 080C-AFDC is correlation rather than proven provenance; 085F exact role is open; SCM/ProductID0x8100 is unresolved with respect to DCM03; public-register absence does not prove private display-state location.
 
 Current unresolved gate remains controller-side topology recognition/capability/commissioning before normal DCM mailbox/export operation. Same-controller DCM-present versus DCM-absent cold boot remains the decisive missing discriminator.
+
+
+## Status through EXP203
+
+First-divergence analysis shows that the existing corpus no longer contains enough causal information to identify the extended-scheduler activation gate.
+
+The genuine reference cold boot is already in the reference topology at its first visible controller frame (31 ms). The local no-DCM cold boot is a different controller/platform branch and is already different by its first logged 0x02 fingerprint. The DCM-rejoin capture only shows reattachment to an already-active topology.
+
+Therefore A811/A812, read-count differences and later 0x0F/0708 behavior are useful fingerprints/consequences but cannot be promoted to causal activation fields from current evidence.
+
+Highest-value next evidence:
+1. same-reference-controller clean cold boot with DCM physically present versus absent;
+2. alternatively, Thermia controller/relay-board firmware or service/commissioning software that exposes the controller-side topology selection logic.
+
+No active write experiment is justified.
+
