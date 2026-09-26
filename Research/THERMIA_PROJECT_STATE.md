@@ -7,17 +7,19 @@ Last updated: 2026-09-26
 ## Authoritative current state — 2026-09-26 (supersedes older current-experiment bullets below)
 
 - Last completed experiment: **EXP217 — COMPLETE / POSITIVE OFFLINE CAPTURE-ANALYZER VALIDATION**.
-- Current experiment: **EXP218 — PREPARED / LOCAL PASSIVE OPERATION-MODE A/B/A CORRELATION**. EXP208 remains separately awaiting the external same-controller cold-boot capture.
+- Current experiment: **EXP218 — READY / LOCAL PASSIVE OPERATION-MODE A/B/A CORRELATION; YAML GENERATED, NOT YET RUN**. EXP208 remains separately awaiting the external same-controller cold-boot capture.
 - Production functionality remains unchanged.
 - Do **not** repeat AFCA timing variants, direct `0x0F` FC16 semantic writes, passive topology censuses, or standalone `0708` probes already covered by EXP147/150 and EXP175–181.
 - Do **not** attempt to answer `0708/count6` locally unless the XTR controller first emits a genuine `0F 03 0708 0006`.
 - Current highest-value direction: identify the **controller-side topology / integration / scheduler enable condition** that distinguishes the genuine DCM reference system from the local XTR M.
 
-### EXP218 — PREPARED / local passive Operation Mode A/B/A correlation
+### EXP218 — READY / local passive Operation Mode A/B/A correlation
 
 **Hypothesis:** the local XTR M uses the same native 0x0F system-page semantics as the genuine DCM reference system, even though it does not instantiate the extended 0708 scheduler. A normal local display change AUTO -> COMPRESSOR -> AUTO should therefore produce a reversible state change corresponding to registerIndex 1363 / 0x0553 (Operation Mode), ideally in an event-driven FC16 0546/count20 page.
 
 **Only experimental variable:** local heat-pump operating mode changed from AUTO to COMPRESSOR and back to AUTO. No ESP/RS485 transmit is allowed.
+
+**Experiment YAML:** `Research/experiments/EXP218/thermia_itec_xtr_m_waveshare_exp218.yaml` — generated from the known-good research_v27 build; still physically RX-only.
 
 **Procedure:**
 1. keep the existing read-only sniffer/capture running;
