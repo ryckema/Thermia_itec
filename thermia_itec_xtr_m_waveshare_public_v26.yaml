@@ -160,7 +160,7 @@ logger:
   baud_rate: 0
   logs:
     thermia: WARN
-    thermia_persist: INFO
+    thermia_persist: WARN
 
 
 
