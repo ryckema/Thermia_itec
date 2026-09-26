@@ -1479,3 +1479,36 @@ The ~4.2 s 085F cadence during full resync and the normal ~4.2 s 0708 mailbox ca
 ### Decision
 EXP195 is offline-only complete. No TX, no YAML changes, no writes to 2143..2151. The scheduler activation gate remains upstream of both pages. Same-controller DCM-present/absent cold-boot A/B remains the decisive discriminator.
 
+
+
+## 2026-09-26 — EXP196 COMPLETE / POSITIVE ONLINE-INDEX CROSS-MAP
+
+**Hypothesis:** public Thermia Online debug profiles can map additional fields inside the DCM runtime export blocks by matching the exact native/Online registerIndex namespace.
+
+### Observed public-profile mappings
+Across public ATEC/DHP-AQ and iTec IQ Thermia Online debug profiles:
+- index 2060 = `REG_INDOOR_TEMPERATURE` on both families, step 0.1;
+- iTec IQ additionally exposes 2068 = `REG_CURRENT_LIMITER_EXP_PORT203_1`;
+- ATEC/DHP-AQ exposes 2120 = `REG_INTEGRAL_LSD`, 2123/2124 = desired distribution-circuit values, 2125 = desired buffer tank;
+- iTec IQ instead exposes 2120 = `REG_PID`, 2121 = `REG_DESIRED_SUPPLY_LINE_TEMP`;
+- no checked public profile exposes indices 2143..2151.
+
+### Genuine-capture correlation
+The `080C/count18` runtime block starts at decimal index 2060. Its first word is consistently decimal 200 (`0x00C8`) in all checked genuine captures. Because public ATEC and iTec Online profiles independently define index 2060 as indoor temperature with 0.1-unit scaling, `080C.word0=200` strongly maps to **indoor temperature 20.0 °C**.
+
+This directly resolves the earlier ambiguity where `0x00C8` superficially resembled slave address C8. It is a data value, not a source-slave identifier.
+
+The boot variant of 080C additionally carries word14=16 while controller 0x06 write field AFDC=16, so the 2060..2077 page mixes user/telemetry semantics with hidden accessory/lifecycle state.
+
+### 0848 / 2120-family implication
+`0848/count23` spans indices 2120..2142. Public profiles confirm that this numerical region is used for operational-status / desired-state fields, but exact semantics are profile/model dependent (e.g. ATEC 2120 = Integral LSD; iTec 2120 = PID). The proven RTC/date tail at 2136..2142 therefore lives inside the same Online-index page but should not be assumed to have identical public exposure across profiles.
+
+### Strong conclusions
+1. The runtime FC16 start addresses are not merely similar to Thermia Online indices; at least index 2060 maps semantically and numerically to the public Online database.
+2. `080C.word0` is strongly identified as indoor temperature 20.0 °C, not slave C8 identity.
+3. Same numeric registerIndex can carry model/profile-dependent semantics in the 2120 area, so cross-model mapping must remain field-by-field.
+4. 2143..2151 remain hidden/private in the checked Online API profiles. This supports treating 085F/0864 as internal service/status indices rather than ordinary public user settings.
+
+### Decision
+Offline-only. No TX or YAML change. EXP196 strengthens the exported-register-database model but does not reveal the scheduler activation gate.
+
