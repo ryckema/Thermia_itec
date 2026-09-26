@@ -6,42 +6,55 @@ Last updated: 2026-09-26
 
 ## Authoritative current state — 2026-09-26 (supersedes older current-experiment bullets below)
 
-- Last completed experiment: **EXP217 — COMPLETE / POSITIVE OFFLINE CAPTURE-ANALYZER VALIDATION**.
-- Current experiment: **EXP218 — READY / LOCAL PASSIVE OPERATION-MODE A/B/A CORRELATION; YAML GENERATED, NOT YET RUN**. EXP208 remains separately awaiting the external same-controller cold-boot capture.
+- Last completed experiment: **EXP218 — COMPLETE / MAJOR POSITIVE LOCAL 0546/0553 OPERATION-MODE VALIDATION**.
+- Current experiment: **none armed locally**. EXP208 remains separately awaiting the external same-controller cold-boot capture.
 - Production functionality remains unchanged.
 - Do **not** repeat AFCA timing variants, direct `0x0F` FC16 semantic writes, passive topology censuses, or standalone `0708` probes already covered by EXP147/150 and EXP175–181.
 - Do **not** attempt to answer `0708/count6` locally unless the XTR controller first emits a genuine `0F 03 0708 0006`.
 - Current highest-value direction: identify the **controller-side topology / integration / scheduler enable condition** that distinguishes the genuine DCM reference system from the local XTR M.
 
-### EXP218 — READY / local passive Operation Mode A/B/A correlation
+### EXP218 — COMPLETE / major positive local Operation Mode validation
 
-**Hypothesis:** the local XTR M uses the same native 0x0F system-page semantics as the genuine DCM reference system, even though it does not instantiate the extended 0708 scheduler. A normal local display change AUTO -> COMPRESSOR -> AUTO should therefore produce a reversible state change corresponding to registerIndex 1363 / 0x0553 (Operation Mode), ideally in an event-driven FC16 0546/count20 page.
+**Hypothesis:** the local XTR M uses the same 0x0F system-page semantics as the genuine DCM reference system, so a normal local display change AUTO -> COMPRESSOR -> AUTO should be reflected in FC16 0546/count20 at registerIndex 1363 / 0x0553.
 
-**Only experimental variable:** local heat-pump operating mode changed from AUTO to COMPRESSOR and back to AUTO. No ESP/RS485 transmit is allowed.
+**Only experimental variable:** local heat-pump operating mode changed on the Thermia display from AUTO to COMPRESSOR and back to AUTO. ESP/RS485 remained RX-only.
 
-**Experiment YAML:** `Research/experiments/EXP218/thermia_itec_xtr_m_waveshare_exp218.yaml` — generated from the known-good research_v27 build; still physically RX-only.
+**Observed facts:**
+- EXP218 baseline marker was set at 14:35:12 with 0546 frame count = 0.
+- No 0546/count20 frame was logged during roughly the first 50 s of baseline.
+- Around the first physical mode change, controller state changed and the first 0546/count20 appeared at 14:36:02 with 0553=2 and 0559=0.
+- Nine 0546 frames carrying 0553=2 were already seen before the HA phase marker for COMPRESSOR was pressed at 14:36:11, so the marker lagged the actual display change by several seconds.
+- 0553 remained 2 through frame 38.
+- At 14:36:43 the generic mapper logged 0553 2->1; the EXP218 parser simultaneously decoded 0553=1 / AUTO and 0559=0.
+- The HA “AUTO restored” phase marker was pressed at 14:36:47, again several seconds after the bus had already reflected the physical display change.
+- 0553 then remained 1 for the rest of the capture. At experiment end the summary counted 104 0546 frames; three more arrived immediately afterwards.
+- The repeated 0546 transfer cadence is roughly alternating short/long slots (~0.6 s / ~1.4–1.6 s), consistent with an unacknowledged controller-side FC16 retry pattern.
+- The ESP remained passive: no TX pin configured, GPIO21/DE forced LOW, no Modbus write/ACK generated.
 
-**Procedure:**
-1. keep the existing read-only sniffer/capture running;
-2. confirm the heat pump is in AUTO and no anti-legionella/top-up/manual/auxiliary-only activity is in progress;
-3. capture >=30 s baseline;
-4. on the heat-pump display change INFORMATION -> OPERATION/BEDRIJF: AUTO -> COMPRESSOR;
-5. hold 20–30 s; do not change any other setting;
-6. restore COMPRESSOR -> AUTO;
-7. capture >=60 s after restore.
+**Strong conclusions:**
+1. The local XTR M uses the same 0x0F 0546/count20 system/operation page family as the genuine DCM reference system.
+2. Local registerIndex 1363 / 0x0553 is now **project-proven Operation Mode**:
+   - 2 = COMPRESSOR;
+   - 1 = AUTO.
+3. registerIndex 1369 / 0x0559 remained 0 throughout, matching the reference LIGHT state and further confirming page alignment.
+4. A local Operation Mode UI change triggers/retriggers a controller-originated 0x0F FC16 0546/count20 state transfer even with no DCM attached.
+5. The local controller therefore already contains the same DCM-facing outbound system-state serializer; the unsolved part remains creation of the extended Online/DCM scheduler and the inbound FC03 desired-state path.
+6. The 0546 payload can update in-flight while the controller is still retrying an unacknowledged transfer: the pending stream changed from 0553=2 to 0553=1 when AUTO was restored.
 
-**Expected discriminator:**
-- strongest positive: controller-originated 0x0F FC16 0546/count20 appears with 0553 / offset13 changing 1 -> 2 -> 1;
-- secondary positive: another repeatable native frame/register changes exactly A/B/A and can be correlated with the display mode;
-- negative: no 0546 page and no reversible native delta attributable to the mode change.
+**Comparison with previous experiments:**
+- EXP143 already proved the analogous local event-driven state upload for Heat Curve at 03E8/count14.
+- EXP215 validated 0546/0553 in the genuine DCM topology.
+- EXP218 closes the cross-system gap by proving 0546/0553 semantics on the local XTR itself.
+- This does **not** overturn EXP168: ACKing a known local 0x0F state upload is still not, by itself, sufficient to activate A5/0708/FC03 topology.
 
-**Safety / stop conditions:**
-- this experiment is passive on the Modbus bus; ESP TX remains disabled;
-- COMPRESSOR mode disables normal auxiliary heat and anti-legionella auxiliary heating, so do not run during anti-legionella, top-up or active auxiliary-heat demand;
-- if an alarm, unexpected stop, defrost conflict or unexpected operating change occurs, immediately restore AUTO and end the capture;
-- do not use UIT, BIJVERWARMING, WARMWATER or HANDMATIG modes for this experiment.
+**Unknowns / limitations:**
+- No pre-change AUTO-valued 0546 frame was captured because the 0546 stream only started after the first mode-change event; the return transition 2->1 provides the local AUTO proof.
+- The other 18 words in 0546/count20 remain largely unmapped.
+- Whether ACKing this specific 0546 transfer merely clears the pending state or advances into another sync page remains untested in EXP218.
+- The compiled runtime reported thermia_raw at WARN, so full raw hex frames were not preserved in this log; the dedicated EXP218 parser still positively identified FC16 0546/count20 and decoded 0553/0559.
 
-**Why useful:** a positive result would validate the same 0546/0553 system-control database on the local XTR without requiring the missing Online/DCM scheduler, strengthening the future emulator/control mapping while remaining bus-read-only.
+**Safety:** passive/read-only on the bus; no semantic or transport write was performed.
+
 
 ### EXP217 consolidated finding — automated EXP208/214 capture discriminator
 
