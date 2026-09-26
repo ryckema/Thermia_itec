@@ -1981,3 +1981,14 @@ The investigation is therefore now concentrated on private controller/display to
 
 Proposed next experiment: EXP203, passive/offline decomposition of the complete A80C..A812 display/status write image against known UI states and lifecycle changes.
 
+
+
+## Reviewed status through EXP202
+
+A full evidence-grade review of EXP183–EXP202 leaves the main architecture intact but downgrades several overstatements.
+
+Strongly retained: ACK-gated Online export scheduler, 0708 heating/settings selector behavior, Online registerIndex database model, 0870 operating-time/defrost mapping, 0559 negative as scheduler prerequisite, RTC/history mappings, and separation of scheduler creation from normal mailbox activity.
+
+Corrected: runtime persistence is not proven across controller cold boots; A811/A812 are not proven DCM-installed flags; 0x04/0x1E equivalence is only a hypothesis; 080C-AFDC is correlation rather than proven provenance; 085F exact role is open; SCM/ProductID0x8100 is unresolved with respect to DCM03; public-register absence does not prove private display-state location.
+
+Current unresolved gate remains controller-side topology recognition/capability/commissioning before normal DCM mailbox/export operation. Same-controller DCM-present versus DCM-absent cold boot remains the decisive missing discriminator.
