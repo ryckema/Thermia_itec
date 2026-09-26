@@ -1669,3 +1669,22 @@ Known timing anchors were recovered automatically:
 **Negative/limit:** no pre-change AUTO-valued 0546 frame was seen because the page stream started only after the first mode-change event. Full raw hex logging was also not active in the compiled runtime; dedicated structured EXP218 decoding remained sufficient.
 
 **Comparison:** EXP215 proved 0546/0553 in the genuine reference topology; EXP218 proves the same page/field on the local XTR. EXP168 remains a valid negative that a simple known 0x0F ACK is not sufficient to create the extended scheduler.
+
+
+## EXP219 — passive full 0546 system-page capture — READY / NOT RUN
+
+**Hypothesis:** the still-pending local 0x0F FC16 0546/count20 transfer can be captured word-for-word and compared directly with the genuine DCM reference page. Stable differences outside proven 0553 Operation Mode and 0559 Link Integration may identify controller/topology state relevant to the missing scheduler gate.
+
+**Only variable:** arm local logging. No Thermia setting change.
+
+**Bus behavior:** RX-only. No TX pin; GPIO21/DE forced LOW; no ACK or Modbus write.
+
+**Experiment YAML:** `Research/experiments/EXP219/thermia_itec_xtr_m_waveshare_exp219.yaml`.
+
+**Procedure:** flash while leaving WP in AUTO; press `EXP219 Start Full 0546 Capture`; do not touch the heat-pump settings; wait for auto-stop after 12 exact 0546/count20 frames; return the complete log.
+
+**Positive:** at least one full 20-word local 0546 page. Twelve repeated pages provide stability evidence.
+
+**Secondary result:** direct 20-word diff against the genuine reference page. Stable differences outside 0553/0559 become passive topology/state candidates; no differences would eliminate this page as a likely scheduler-gate carrier.
+
+**Negative:** no 0546/count20 appears after arming, meaning the pending transfer cleared/expired between EXP218 and EXP219.
