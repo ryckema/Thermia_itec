@@ -2019,3 +2019,12 @@ The project has now reached an evidence boundary in two directions:
 Official DHP-AQ documentation shows that Link support requires controller software >=2.2 and that older units may need display-card replacement, reinforcing a controller-generation/capability layer upstream of normal DCM protocol traffic.
 
 Priority remains a same-reference-controller DCM-present/absent cold-boot A/B. Secondary acquisition target: controller/display-card firmware, installer update package, service dump, or spare controller hardware.
+
+
+## Status through EXP205
+
+Physical-layer documentation does not reveal a separate DCM detect conductor. The observed XTR RJ45 already uses all eight contacts for duplicated bus lines, ground and +12 V, while the official DHP-AQ DCM03 path is documented simply as a spare relay-board RJ45 to the DCM03 RS 485 port plus separate DCM power.
+
+This weakens the idea of a hidden dedicated-wire bootstrap. Boot-time analog detection on the RS485 pair remains possible but unsupported and cannot be tested from current byte captures.
+
+The unresolved gate is therefore still most plausibly upstream controller capability/commissioning or a very-early RS485 interaction. Same-controller DCM-present/absent cold boot remains the decisive missing evidence.
