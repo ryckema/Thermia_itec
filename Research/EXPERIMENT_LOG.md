@@ -1331,3 +1331,21 @@ This changes the preferred interpretation of the runtime scheduler from a collec
 
 **Safety:** offline only.
 
+
+
+## EXP200 — exact XTR DCM presence/Online status semantics — COMPLETE / POSITIVE
+
+**Hypothesis:** XTR documentation distinguishes the local DCM-recognition state from Internet/cloud status.
+
+**Observed:**
+- exact iTec XT/XTR user guide defines DCM ACCESSORY INSTALLED as DCM/Thermia Connect connected;
+- separately defines ONLINE CONNECTION as accessory connected plus Internet connection;
+- older DHP-AQ HP-kit installation connects DCM03 directly to the spare relay-board RJ45, starts the heat pump, then pairs it in Link CC, without a documented heat-pump enable toggle;
+- Link-vs-Online selection is performed on DCM03 itself in that older kit.
+
+**Result:** positive.
+
+**Conclusion:** the scheduler-gate search should target the XTR's local accessory-recognized/topology state, not cloud connectivity or Link Integration ownership mode. A811/A812 remain a passive candidate reflection only.
+
+**Safety:** no TX/YAML change.
+
