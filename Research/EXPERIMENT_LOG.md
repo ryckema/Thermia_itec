@@ -1454,3 +1454,16 @@ No TX, YAML or production-functionality changes were made during this review.
 **Result:** negative for a documented dedicated spare-wire detector; physical/electrical detection on the RS485 pair itself remains unresolved.
 
 **Conclusion:** prioritize early protocol/persistent capability evidence over speculative wiring tricks. No physical bus-loading experiment.
+
+
+## EXP203 — DCM Modbus disconnect / power-cycle / reconnect — COMPLETE / MAJOR POSITIVE
+
+Hypothesis: determine whether physical DCM removal collapses the extended topology and characterize rejoin.
+
+Observed: extended 0x02/A5/0x04 topology continued while DCM was physically absent from Modbus; 0708 polls were unanswered; pending 0864 was retried. First reattach response was ACK to 0864 at 27.051 s. Next 0708 returned [0,0,7FFF,FFFF,0080,6] and full resync started immediately. Steady mailbox/runtime later resumed.
+
+New selector event: 0708 [1,0,0,0,0,6] at 104.130 s caused FC03 0546/count20. Earlier genuine events already showed w1=1 -> 03E8/count13.
+
+Result: topology maintenance is independent of current DCM electrical presence; rejoin is lightweight once topology is already active; w5=7 is not required for join; w0 and w1 now map to two distinct desired-state families.
+
+Negative: initial topology activation after controller boot remains unknown.
