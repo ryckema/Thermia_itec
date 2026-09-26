@@ -1994,3 +1994,17 @@ Do not write reference ATEC values into the XTR discriminator fields.
 
 Preferred next step: EXP230 offline semantic classification of the 12-word record schema.
 
+## EXP229 semantic refinement — `055A..06E5` strongly indicated as calendar serialization
+
+Thermia documentation provides a new semantic anchor for the 396-word family:
+
+- CALENDAR controls four function groups: hot-water blocking, EVU/power limitation, silent mode, and temperature reduction.
+- Each function supports up to 8 calendar settings, i.e. 32 user schedule slots.
+- Thermia Online documentation independently describes 8 occasions for 4 calendar categories and start/end date fields.
+- EXP229 found 396 words = 33 candidate records of 12 words.
+- The raw table contains multiple date/time-range signatures, including maxima `59`, `23`, `31`, `12` and time/date-like combinations consistent with calendar fields.
+
+Current classification is therefore upgraded from generic descriptor/configuration data to **strong calendar/schedule-serialization candidate**. The exact schema is not yet proven. In particular, do not yet assign fixed meanings to every word or assume the 33rd record is the clock/header, although 32 schedule slots + 1 metadata record is an attractive model.
+
+No write target is established. Confirmation should use a passive UI-driven calendar differential test, not a direct Modbus write.
+
