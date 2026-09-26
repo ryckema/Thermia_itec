@@ -186,7 +186,7 @@ logger:
     thermia_scan: INFO
     thermia_map: INFO
     thermia_mailbox: INFO
-    thermia_raw: DEBUG
+    thermia_raw: VERBOSE
     thermia: WARN
     thermia_a7f8: WARN
     thermia_supply: WARN
