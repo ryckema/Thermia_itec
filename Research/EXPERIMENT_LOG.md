@@ -1208,3 +1208,31 @@ Safety: offline only, no TX/YAML change.
 ### Safety
 No active local write. Do not infer 22 = firmware 2.2 and do not write 2148..2151.
 
+
+
+### EXP194 refinement — Online registerIndex database architecture
+
+Converting the cyclic runtime FC16 starts to decimal exposes the same namespace used by Thermia Online:
+
+```text
+07D0 = 2000
+07E4 = 2020
+07F8 = 2040
+080C = 2060
+0820 = 2080
+0834 = 2100
+0848 = 2120
+085F = 2143
+0864 = 2148
+0870 = 2160
+0884 = 2180
+```
+
+This changes the preferred interpretation of the runtime scheduler from a collection of private export commands to a controller-side publisher that populates the DCM-facing Thermia Online `registerIndex` database in slave `0x0F`.
+
+**Strong conclusion:** `0864` is controller->DCM exported state at indices 2148..2151. Even if one field later correlates with topology/capability, it is an output/reflection and not a justified scheduler-enable write target.
+
+**Negative result retained:** `0870` is removed from identity/scheduler-gate hypotheses; it is operational lifetime + defrost statistics.
+
+**Next proposed work:** EXP195, offline only, reconstruct `085F..0867` as one adjacent service/status family.
+
