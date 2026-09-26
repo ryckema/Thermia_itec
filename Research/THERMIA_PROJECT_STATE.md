@@ -1600,3 +1600,50 @@ This further supports the rule that 0x0F FC16 pages are exported consequences of
 
 **Decision:** offline only; no TX, no YAML changes, no write target.
 
+
+
+## 2026-09-26 — EXP199 COMPLETE / POSITIVE FIRMWARE NODE-MODEL SEPARATION
+
+**Hypothesis:** the recovered Danfoss Link 2.7.42 application may expose the DCM/Online bridge as a dedicated application node (possibly `SIMPLE_COMMUNICATION_MODULE`), whose identity/binding could reveal the missing Thermia scheduler gate.
+
+### Observed firmware facts
+
+The recovered `NodeType` enum includes:
+- 16 = GATEWAY
+- 17 = HEATPUMP
+- 18 = BOILER_RELAY
+- 19 = SIMPLE_COMMUNICATION_MODULE
+- 20 = HRV_UNIT
+
+There is no explicit node type named DCM, Online, Connect, or equivalent in the recovered DHP node model.
+
+`DHPParameterUtil::CreateNodeTypeFromDevice` maps:
+- DivisionID 6 / BrandID 0 / ProductID 0x0203 -> NodeType 17 HEATPUMP;
+- DivisionID 5 / BrandID 0 / ProductID 0x8100 -> NodeType 19 SIMPLE_COMMUNICATION_MODULE;
+- DivisionID 7 / BrandID 0 / ProductID 0x0201 -> NodeType 16 GATEWAY.
+
+The `SCMNode` implementation registers:
+- `InputStateBinary`
+- `InputShifts`
+- `HCPowerCycleCounter`
+- `CheckInInterval` default 1800 s
+- a binding peer
+
+and its delayed state-change path invokes `NodeManager::RaiseAwayModeChanged(inputState)`.
+
+### Strong conclusions
+
+1. Danfoss Link `SIMPLE_COMMUNICATION_MODULE` is not the Thermia DCM/Online bridge. Its behavior is that of a simple binary-input / Away-mode communication node.
+2. The Link application represents the heat pump itself as HEATPUMP (Division 6, Product 0x0203); the transport bridge is not exposed as a distinct DCM/Online application node in the recovered model.
+3. Searching Link-side node identities for a DCM product ID is therefore the wrong layer for the Thermia RS485 scheduler gate.
+4. This independently reinforces the layered architecture:
+   `Thermia controller physical/accessory recognition -> DCM transport bridge -> Link HE service -> HEATPUMP endpoint -> optional SystemIntegration ownership mode`.
+
+### Negative result
+Do not interpret `SIMPLE_COMMUNICATION_MODULE`, ProductID 0x8100, or its binding fields as candidates for local DCM emulation/scheduler activation.
+
+### Unknown
+The physical DCM recognition mechanism on the Thermia controller side remains outside the recovered Link application abstraction.
+
+**Decision:** offline firmware analysis only; no bus TX and no YAML changes.
+
