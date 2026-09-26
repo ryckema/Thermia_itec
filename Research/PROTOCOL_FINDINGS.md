@@ -1684,11 +1684,15 @@ Protocol implication:
 Do not alter termination/bias/loading as an experimental bootstrap target without reference electrical evidence.
 
 
-## EXP203 — physical DCM removal/rejoin and second mailbox selector
+## EXP206 — physical DCM removal/rejoin and second mailbox selector
 
-With DCM removed from Modbus and power-cycled while disconnected, the running controller continued its reference fingerprint, A5, 0x04, 0x06 polling, unanswered 0708 polling and ACK-gated export retries. Therefore DCM electrical presence is not required to maintain an already-selected topology.
+With DCM removed from Modbus and power-cycled while disconnected, the running controller continued its reference fingerprint, A5, 0x04, 0x06 polling, unanswered 0708 polling and ACK-gated export retries. The complete capture contains 33 controller 0x06 FC17 polls and no 0x06 response frames, yet genuine DCM service later rejoins and normal runtime resumes. Therefore DCM electrical presence is not required to maintain an already-selected topology, and the 0x06 accessory/version path is not required for genuine DCM session reattachment in this captured topology.
 
 Observed rejoin sequence: pending 0864 request -> ACK; next 0708 -> [0,0,7FFF,FFFF,0080,6]; immediate full resync from 03E8; steady 0708 resumes; runtime exporter resumes.
+
+Because A5 request/response traffic continues during the interval when the capture owner states that the genuine DCM is physically off the Modbus bus, the removed DCM itself cannot be the physical A5 responder on that bus. A5 should now be treated as a topology-associated native/upstream service with hardware ownership still open.
+
+After resync, steady 0708 is repeatedly [0,0,0,0,0,6]. A later command selector [1,0,0,0,0,6] is accepted and triggers 0546/count20, so word4=077F is not a generic required ready/online marker for command dispatch.
 
 Both [0,0,7FFF,FFFF,0080,7] from 090550 and [0,0,7FFF,FFFF,0080,6] from EXP203 trigger full resync. w5=7 is therefore not a required join marker.
 
