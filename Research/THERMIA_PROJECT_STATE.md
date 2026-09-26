@@ -1795,3 +1795,63 @@ Earlier canonical files had uneven coverage: EXP183 was missing as an explicit P
 6. A811/A812 are architecture/topology-correlated markers only, not a write target and not a proven DCM-installed flag.
 
 Highest-value missing evidence remains a same-reference-controller clean cold boot with genuine DCM physically present versus physically absent.
+
+
+## 2026-09-26 — EXP203 COMPLETE / POSITIVE CAUSAL-FRONTIER RESULT
+
+**Hypothesis:** a first-divergence analysis of the earliest available cold-boot traffic can determine whether the current corpus still contains the scheduler/topology activation transition, or whether the decisive state is already selected before the first observable divergent frame.
+
+### Observed facts
+
+**Local XTR no-DCM cold boot (EXP164):**
+- bus return is detected on local slave 0x1E at t=0;
+- first observed 0x0F FC16 is 04BA/count22 at t=317 ms;
+- first logged controller 0x02 A7F8/A80C request is at t=722 ms and already has:
+  - read count 15;
+  - A80C..A812 = 0040,0000,0000,0005,0005,FFFF,0000;
+- C8 first appears at t=818 ms;
+- 0x06 first appears at t=1045 ms;
+- later local lifecycle evolves A80E 0->8->0x28 and AFDC to 0x10;
+- over the complete 180 s run: A4=0, A5=0, slave05=0, 0x0F FC03=0.
+
+**Genuine reference controller cold boot with DCM already powered/present (090209):**
+- the first visible frame at t=31 ms is already controller 0x02 A7F8/A80C with:
+  - read count 13;
+  - A80C..A812 = 0040,0000,0028,0005,0005,000C,0500;
+- C8 appears at t=130 ms;
+- reference 0x04 is queried/answered at t=251/290 ms;
+- first visible 0x0F FC16 transfer is already ACKed at t=389 ms;
+- A5 is active from t=1179 ms.
+
+**DCM rejoin with controller left powered (090550):**
+- the extended reference topology is already active before DCM service replies resume;
+- the DCM stays silent for about 66 s while 0x02/0x04/A5 and controller-owned 0708 scheduling continue;
+- first DCM mailbox reply at ~68.235 s attaches/resynchronizes the DCM session but does not create the already-existing controller topology.
+
+### Strong conclusions
+1. No current capture records a same-controller transition from **extended topology OFF -> ON**.
+2. The reference cold-boot branch is already structurally different in its **first visible controller frame**. Therefore the scheduler/topology selection event is not observable later in that capture.
+3. Existing local-vs-reference differences (including A811/A812 and read-count 15 vs 13) are observational correlates, not causally identifiable gate fields, because controller/platform identity is confounded.
+4. 090550 observes **session detach/rejoin inside an already-active topology**, not topology activation.
+5. With the present corpus, temporal mining cannot determine the activation cause. The causal frontier is at or before the first visible reference controller frame (~31 ms), or in persistent/platform state established before boot traffic.
+
+### What remains causally possible
+- physical/electrical accessory recognition before normal framed bus traffic;
+- persistent commissioning/NVRAM topology state;
+- controller/model/firmware capability difference;
+- an earlier unobserved startup exchange;
+- a combination of the above.
+
+### Information-limit decision
+Do not spend further experiments attempting to infer the scheduler gate from later 0x0F export pages, 0708 contents, or A811/A812 correlations alone. The current logs do not contain the required within-controller topology transition.
+
+### Highest-value next evidence
+A same-reference-controller cold-boot A/B:
+- A: genuine DCM physically connected/powered;
+- B: genuine DCM physically absent;
+- capture begins before controller power-up and records the first returned bus frame.
+
+Secondary offline route: obtain/reverse-engineer the **Thermia controller/relay-board firmware or service/commissioning software**, not additional Danfoss Link CC application firmware.
+
+**Safety:** offline/passive analysis only; no TX and no YAML change.
+
