@@ -1906,3 +1906,13 @@ This is a material negative for the scheduler-gate search: full DCM resync start
 
 No active local write experiment is justified. The decisive missing evidence remains a same-controller clean cold boot with a genuine DCM physically present versus absent.
 
+
+
+## Status through EXP196
+
+A public Thermia Online cross-map now directly identifies `080C.word0`: runtime block 080C begins at Online registerIndex 2060, and both public ATEC/DHP-AQ and iTec IQ profiles define index 2060 as indoor temperature with 0.1 scaling. The genuine value 200 therefore corresponds to 20.0 °C.
+
+This is an important architectural validation: the extended FC16 runtime pages populate the same Thermia Online registerIndex database that is exposed by Online API metadata. Numeric coincidences with Modbus slave IDs must not be used as source identity.
+
+The 2120 region is demonstrably model/profile dependent, and 2143..2151 remain hidden in the checked public profiles. No new write target follows. The scheduler activation gate remains upstream of the export database.
+
