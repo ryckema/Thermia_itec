@@ -1629,7 +1629,7 @@ Known timing anchors were recovered automatically:
 **Safety:** offline/passive analysis only.
 
 
-## EXP218 — local Operation Mode A/B/A correlation — READY / PASSIVE BUS / NOT RUN
+## EXP218 — local Operation Mode A/B/A correlation — COMPLETE / MAJOR POSITIVE
 
 **Hypothesis:** the local XTR M exposes the same system/operation register semantics as the genuine reference Online database, such that a local display change AUTO -> COMPRESSOR -> AUTO produces a reversible state change at registerIndex 1363 / 0x0553, ideally in FC16 0546/count20.
 
@@ -1646,3 +1646,26 @@ Known timing anchors were recovered automatically:
 **Negative criterion:** no 0546 and no reversible native delta attributable to Operation Mode.
 
 **Stop:** restore AUTO immediately on alarm, unexpected stop, defrost conflict or unexpected operating behavior.
+
+
+**Observed facts from the completed run:**
+- baseline marker at 14:35:12 with 0546 frame count 0;
+- first local FC16 0546/count20 appeared at 14:36:02 carrying 0553=2 and 0559=0;
+- nine such 0553=2 frames were already present before the operator pressed the COMPRESSOR HA marker at 14:36:11, so the HA marker lagged the physical display change;
+- 0553 remained 2 through frame 38;
+- at 14:36:43 the local generic mapper logged 0553 2->1 and the EXP218 parser decoded AUTO / 0559=0;
+- the AUTO-restored HA marker followed at 14:36:47, again after the bus transition;
+- 0553 remained 1 through the rest of the capture;
+- experiment-end summary: 104 0546 frames, with three more immediately afterwards;
+- repeated 0546 cadence alternated roughly ~0.6 s and ~1.4–1.6 s;
+- no ESP TX was enabled.
+
+**Result:** major positive. 0546/count20 and 0553 Operation Mode are now locally validated on the XTR, not merely imported from the genuine DCM/reference system. Local values observed:
+- COMPRESSOR = 2;
+- AUTO = 1.
+
+**Additional conclusion:** the local controller emits the same DCM-facing system-state page after a local Operation Mode change and keeps retrying it while unacknowledged. This mirrors EXP143's event-driven 03E8 Heat Curve upload and further proves that the local controller already contains the DCM-facing outbound state serializer.
+
+**Negative/limit:** no pre-change AUTO-valued 0546 frame was seen because the page stream started only after the first mode-change event. Full raw hex logging was also not active in the compiled runtime; dedicated structured EXP218 decoding remained sufficient.
+
+**Comparison:** EXP215 proved 0546/0553 in the genuine reference topology; EXP218 proves the same page/field on the local XTR. EXP168 remains a valid negative that a simple known 0x0F ACK is not sufficient to create the extended scheduler.
