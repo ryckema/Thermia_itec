@@ -1875,3 +1875,20 @@ The runtime database mapping has improved materially. `0870/count17` is now stro
 
 No YAML or production functionality changed.
 
+
+
+## Post-EXP194 architecture and next step
+
+The extended Online/DCM scheduler is now most consistently modeled as a controller-side publisher of the Thermia Online native `registerIndex` database into slave `0x0F`. The cyclic FC16 block starts align directly with decimal Online index families: 2000, 2020, 2040, 2060, 2080, 2100, 2120, 2143, 2148, 2160 and 2180.
+
+This materially narrows the scheduler-gate problem:
+- runtime FC16 pages such as `0864` and `0870` are **exported consequences** of the active topology;
+- they should not be treated as obvious ingress controls;
+- the activation mechanism must lie upstream of this publisher.
+
+`0870/count17` is now strongly identified as operating-time + defrost statistics and is removed from the identity/gate candidate set.
+
+`0864/count4` remains unresolved at indices 2148..2151 with invariant payload `[0,0,0,22]`. Because it directly follows local/native `085F/count5` (2143..2147, containing 0861), the next useful offline task is to analyze 2143..2151 as one service/status family.
+
+**EXP195 is proposed, not started.** It is offline/passive only and introduces no YAML, TX, or production changes.
+
