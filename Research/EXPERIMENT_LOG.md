@@ -1365,3 +1365,20 @@ This changes the preferred interpretation of the runtime scheduler from a collec
 
 **Conclusion:** retain A811/A812 as the strongest passive topology reflection, not as a write target and not yet as a proven UI-icon field.
 
+
+
+## EXP202 — public register search for DCM-installed / Online-connection state — COMPLETE / NEGATIVE-POSITIVE
+
+**Hypothesis:** XTR DCM-installed state is an ordinary public Online register.
+
+**Observed:**
+- no DCM-installed or Online-connection registerName found in checked ATEC/iTec/Diplomat/NCP public debug profiles;
+- DCM appears as device metadata (dcmVersion, deviceConnectionType);
+- COMP_HAS_LINK exists only at model-specific high indices (6003/7003/10003) and is 0 in checked DCM-connected profiles.
+
+**Result:** negative for a simple public Online register; positive for layer narrowing.
+
+**Conclusion:** prioritize private controller/display state, especially A811/A812, rather than additional 0x0F public-register hunting.
+
+**Safety:** offline only.
+
