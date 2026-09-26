@@ -497,7 +497,6 @@ Planned controlled variable: manually change only DHW START by -1 °C and restor
 
 Safety: run only after EXP133 review; use a moment when DHW production is inactive and the actual DHW temperature is sufficiently above START so the -1 °C step cannot create a new heat demand.
 
-
 ### EXP134 — passive DHW START correlation — PROCEDURAL / INCIDENTAL
 Only `03E8 34 -> 35` changed, tracking Heating Curve. No valid DHW mapping resulted.
 
@@ -997,4 +996,1199 @@ Combined with EXP148, A5 is strongly indicated to belong to or depend on the mis
 
 ### EXP150 — staged Online/DCM bootstrap role-emulation harness — PREPARED
 
-Single hypothesis:
+Single hypothesis:sustained known `0x0F` slave-side ACK presence may bootstrap the missing Online/DCM read/discovery layer.
+
+Efficiency:
+one gated run combines:
+- passive baseline;
+- known-shape `0x0F FC16` ACK-only presence;
+- exact captured A5 discovery responses if requested;
+- one exact `0x0F 0708/count6` read-only probe;
+- conditional exact `0x0F 03E8/count13` probe if the first succeeds.
+
+Known caveat:
+ACKing 0x0F FC16 deliberately advances the proven controller transfer state machine.
+
+No semantic payload values are invented.
+
+
+### EXP150 — staged Online/DCM bootstrap role-emulation harness — COMPLETE / NEGATIVE
+
+Observed:
+- phase 1 passive baseline showed pending `04A6/count13`;
+- phase 2 ACKed `04A6/count13`, then `0662/count33`;
+- phase 3 armed exact A5 responder, but no A5 request appeared;
+- no A4 activity;
+- no spontaneous `0x0F FC03`;
+- phase 4 sent exact genuine `0F 03 0708 0006 4450`;
+- no response in 2015 ms;
+- `ack=2`, `ackRefused=0`, `A5req=0`, `A5resp=0`, `A4=0`, `0F03req=0`, `0F03resp=0`, `resyncDelta=0`, `dropDelta=0`.
+
+Conclusion:
+ACK-capable `0x0F` presence alone is not the missing Online/DCM bootstrap.
+
+Next:
+test simultaneous known-good `0x06` accessory presence plus `0x0F` ACK/mailbox presence in one controlled harness.
+
+
+### EXP151 — combined 0x06 + 0x0F role-emulation harness — PREPARED
+
+Hypothesis:
+simultaneous known 0x06 accessory presence plus known 0x0F ACK/mailbox presence may enable the missing Online/DCM read/discovery layer.
+
+Run:
+- 10 s passive baseline;
+- 60 s combined 0x06 REQ-low responder + known 0x0F ACK service + exact A5 responder if polled;
+- then exact read-only 0x0F 0708/count6 probe;
+- conditional 03E8/count13 probe only after a valid 0708 response.
+
+No semantic setting write or AFCA REQ transaction is introduced.
+
+
+### EXP151 — combined 0x06 + 0x0F role-emulation harness — COMPLETE / NEGATIVE
+
+Observed:
+- 2 passive baseline 0x06 polls;
+- phase 2 enabled the known REQ-low 0x06 responder;
+- final counts: `06req=60`, `06resp=58`, `06refused=0`;
+- fast accessory-presence cadence restored;
+- no 0x0F FC16 occurred during the active combined-role window, so `ack=0`;
+- no A5/A4 traffic;
+- no spontaneous 0x0F FC03;
+- exact genuine `0F 03 0708 0006 4450` sent after 60 s of 0x06 presence;
+- no response in 2010 ms;
+- `resyncDelta=0`, `dropDelta=0`.
+
+Conclusion:
+Valid 0x06 transport presence does not make the local 0x0F FC03 read side appear and does not trigger A5/A4 discovery.
+
+The intended simultaneous 0x0F ACK role was armed but not exercised in this run because the controller produced no FC16 transaction during the phase.
+
+Architectural implication:
+A5/A4 and the 0x0F FC03 responder increasingly look like endpoints/functions hosted by the missing external Online/DCM participant itself.
+
+
+### EXP152 — genuine Online ownership reconstruction — COMPLETE / OFFLINE
+
+No bus TX.
+
+Main result:
+The genuine Online capture behaves like a coordinated polling schedule:
+A5 service reads, 0x04/0x06 polling, 0x0F read service, and 0x0F write/ACK traffic coexist in a topology not present locally.
+
+A5 provides three repeated read blocks and later falls back to equivalent A4 reads when A5 disappears. 0x0F provides both FC16 ACK and FC03 data service.
+
+Strongest current ownership hypothesis:
+the heat-pump controller remains the common master and enables extra A5/A4 + 0x0F FC03 polling only after recognizing genuine external Online/DCM hardware.
+
+This is not electrically proven from the two-wire capture.
+
+Untested quadrant identified:
+cold boot with BOTH 0x06 accessory presence and 0x0F slave ACK/service presence from the beginning.
+
+Decision:
+EXP153 = cold-boot combined-role presence test.
+
+
+### EXP153 — cold-boot combined 0x06 + 0x0F role presence — PREPARED
+
+Hypothesis:
+recognition of the genuine Online/DCM topology may be boot-latched and require both external roles present from first relevant controller traffic.
+
+Arm while bus is healthy, then restart the heat-pump/controller while ESP remains powered. The firmware waits for >=3 s bus-down, detects the first returned valid frame, and only then enables:
+- known 0x06 REQ-low responder;
+- strict known 0x0F FC16 ACK;
+- exact A5 responses if A5 is spontaneously polled.
+
+A4 and spontaneous 0x0F FC03 are observation-only.
+
+Positive = any spontaneous A5/A4/0x0F FC03 after boot return.
+Negative = 300 s clean post-return with none.
+
+
+### EXP153 — cold-boot combined 0x06 + 0x0F role presence — COMPLETE / NEGATIVE
+
+Observed:
+- real bus-down confirmed;
+- ~18.547 s controller outage;
+- first returned valid frame: `0x1E FC04`;
+- combined emulation active immediately on return;
+- boot-time 0x0F ACK sequence:
+  `04BA/22 -> 05FF/33 -> 04A6/13 -> 085F/5 -> 0662/33 -> 04A6/13`;
+- continuous valid 0x06 REQ-low responses;
+- final after 300 s:
+  `06req=297 06resp=283 06refused=0 ack=6 ackRefused=0 unknown0F16=0 A5req=0 A5resp=0 A4=0 0F03req=0 0F03resp=0 resyncDelta=0 dropDelta=0`.
+
+Conclusion:
+Cold-boot presence of both known transport roles is not sufficient to activate A5/A4 or 0x0F FC03. The missing prerequisite is now strongly likely to be semantic identity/application state rather than presence/timing.
+
+Next:
+return to firmware-led identity/integration reconstruction and choose one evidence-backed semantic discriminator for EXP154.
+
+
+### EXP154 — semantic firmware→wire reconstruction — COMPLETE / OFFLINE
+
+Main finding:
+Recovered HE `0x4414 IntegrationMode` and public Online `0x0559 Link Integration` match semantically and enum-for-enum:
+- 0 = LIGHT
+- 1 = SYSTEM.
+
+Firmware shows IntegrationMode triggers SystemIntegrationInit and a full three-group sync. The public Online dump identifies `0x0559` as writable Link Integration.
+
+Confidence is strengthened because the same Online registerIndex namespace is locally validated on the XTR at `0x0442 Activate Cooling` and strongly matches the local `03E8..03EE` heating family.
+
+Limitation:
+`0x0559` has not yet been observed natively on this XTR; EXP119 saw no 0559 boot broadcast. Therefore the mapping is STRONGLY INDICATED, not PROVEN.
+
+Decision:
+No blind write. EXP155 should determine the local ownership/direction/block shape for `0x0559`.
+
+
+### EXP154 refinement — documentary DCM03 integration-mode / approval evidence
+
+External Danfoss HP-kit manual adds two high-value facts:
+1. DCM03 has an explicit selectable Danfoss Link vs Danfoss Online integration mode, changed/reported by triple button press.
+2. Gateway-based HP-kit diagnostics explicitly include `DCM-HP approval`, approval failure, and `sending settings to DCM` states.
+
+This provides independent documentary support for the missing semantic approval layer inferred from EXP147–153.
+
+It also narrows the role of public `0x0559 Link Integration`: it remains a strong candidate, but may represent DCM-side integration state rather than a simple controller-local boot register.
+
+Decision:
+EXP155 should use a genuine DCM03 mode toggle as the controlled variable and compare the exact bus delta. Do not spend another local experiment on passive 0559 observation already covered by EXP119/153.
+
+
+### EXP155 — genuine DCM03 Link ↔ Online mode-transition capture — PREPARED
+
+Passive-only. Controls under Configuration:
+START, MARK Switch to LINK, MARK Switch to ONLINE, STOP.
+
+Run sequence:
+Online baseline 30–60 s -> MARK LINK + immediate physical DCM triple-press -> ~60 s -> MARK ONLINE + immediate triple-press -> ~60 s -> STOP.
+
+No RS485 TX is generated by EXP155.
+
+
+### EXP155 — correction before execution
+
+The previously prepared genuine-DCM mode-transition YAML is not runnable on the local installation because no DCM03 hardware is available.
+
+This is not a failed experiment; it was a planning mismatch.
+
+EXP155 is re-scoped to offline serializer/ownership reconstruction using existing genuine capture + firmware + Online dump + documentation. No bus TX.
+
+### EXP155 — Discussion #143 / genuine capture re-analysis — OFFLINE
+
+Key correction: the external AI commentary claiming Heat Curve 20->21->20 in FC16 block 0x0848 is not supported by direct word parsing. At 12.116 `0x0858=0, 0x085A=20`; at 33.107 `0x0858=21, 0x085A=20`. The 43.705 frame is a different block (`0x07E4/count17`).
+
+Most valuable new lead: obtain the actual `0F_register_value_map.xlsx`, `modbus_slave.py`, and `config.yaml` referenced by fclauson. These are likely to contain more actionable ownership/block information than another local speculative write.
+
+
+### EXP155 — fclauson 0F artifacts — COMPLETE / OFFLINE
+
+Analysed `0F_register_value_map.xlsx`, `modbus_slave.py`, and add-on manifests.
+
+Key result:
+- passive logger tracks Unit 0x0F FC03 read blocks;
+- spreadsheet maps 1000..1012 (position 12 = 1012 room target) and 1040..1060 (position 13 = 1053 DHW start);
+- FC16 map includes 1350..1369 with 1363=4 and 1369=0;
+- public semantics identify those as Operation Mode and Link Integration.
+
+Conclusion:
+`0x0559 Link Integration` is observed in the FC16 controller->0x0F state/snapshot direction, so it should not be used as a guessed DCM->controller activation write.
+
+The stronger model is:
+controller writes state/snapshots to 0x0F via FC16; controller reads desired-state/command mailbox areas from 0x0F via FC03.
+
+Next:
+anchor on the proven 03E8/count13 FC03 command mailbox and reconstruct genuine command semantics / scheduler activation.
+
+### EXP156 — genuine Online connected + local display Heating Curve change — COMPLETE / POSITIVE
+
+Hypothesis: a local-display setting change should update controller->0x0F FC16 state without requiring the remote command-mailbox FC03 03E8/count13 path.
+
+Capture: `thermia_capture_20260925_071517.log`, ~79.4 s / 674 frames.
+
+Observed:
+- 0x0F FC03 only at 0708/count6 (18x); **no FC03 03E8/count13**.
+- FC16 03E8/count13 at 22.185 s: 03E8=23.
+- FC16 03E8/count13 at 61.676 s: 03E8=22.
+- Remaining 12 words unchanged.
+- 0848-family changes were unrelated dynamic fields, not a clean 23->22 mirror.
+
+Conclusion:
+Local Heating Curve change is propagated in the FC16 state/snapshot direction and does not itself cause an FC03 03E8/count13 read. This strongly supports FC03 03E8/count13 as an externally supplied desired-state/command path rather than a generic settings mirror.
+
+Also observed:
+A4 is transiently probed and A5 resumes shortly after; treat A4 as alternate/discovery/fallback-like, not as proof of permanent A5 failure.
+
+### EXP157 — genuine DCM + HP power-up captures — COMPLETE / POSITIVE
+
+Hypothesis: boot captures can separate Online discovery from 0x0F mailbox readiness and expose the trigger for the initial state sync.
+
+Observed:
+- DCM power-up: early repeated valid `C8 FC03 2328/count2`; 0x0F already ACKing by 0.389 s; A5 responsive by 1.236 s; long ACKed FC16 sync sweep `042E..06F4`; one valid `A4 FC06 0032=0046` later.
+- HP power-up: A5 already responsive, but 0x0F FC03 `0708/count6` unanswered and FC16 `0870/count17` unACKed for ~66 s.
+- First 0x0F ACK at 66.860 s; next 0708 read gets a response; then broad ACKed FC16 initial sync begins at `03E8`, followed by `03FC`, `0410`, `042E`, etc.
+- A4 discovery trio + 0x05 FC17 occurs before 0x0F readiness.
+
+Strong conclusion: A5 discovery/status availability and 0x0F mailbox readiness are separate stages. First successful 0x0F ACK is a strong gate for the controller's full state/configuration upload to the DCM.
+
+Safety/result: offline/passive analysis only; no local TX.
+
+## EXP158 — Cross-capture structural analysis — COMPLETE / POSITIVE
+
+**Hypothesis:** the two new genuine boot captures can expose stable address/service pairing and separate deterministic initial-sync fields from dynamic data.
+
+**Observed facts:**
+- Nine unanswered `C8 FC03 2328/count2` probes occur only in the DCM-power-up capture, with alternating ~1.28/~0.81 s gaps.
+- A4 and A5 are queried with the same three FC03 shapes. In HP boot, the A4 triplet is immediately followed by 0x05 FC17; normal Online runtime pairs A5 activity with 0x06 FC17.
+- `A4-05 = A5-06 = 0x9F`, strongly supporting paired logical slots/services `A4<->05` and `A5<->06`.
+- The one-off `A4 FC06 0032=0046` writes a register/value that exactly matches A5 register 0032 inside its `002E/count10` response.
+- Across the two boot captures, 27/28 overlapping FC16 initial-sync blocks in `042E..06F1` are byte-identical. Only `06EA/count7` changes.
+- `06EA/count7` is RTC/date-time. The same fields are mirrored later at runtime `0858..085E`; elapsed seconds line up exactly with capture time.
+- `085F/count5` periodically interleaves with the HP initial-sync upload, so it is not part of the linear bulk config sequence.
+- `0708/count6` responses change form across mailbox-ready / sync / post-sync phases, so that block carries session/state information.
+
+**Strong conclusions:**
+- A4/05 and A5/06 are structurally paired address families, not a simple primary/fallback pair.
+- A4/A5 share register semantics/layout.
+- Genuine initial-sync content is highly deterministic across DCM-only and HP boots.
+- `06EA..06F0` is an initial-sync RTC block and `0858..085E` its runtime mirror.
+
+**Negative/open results:**
+- C8 remains unanswered and semantically unknown.
+- A4 FC06 ownership/effect remains unknown; do not reproduce it yet.
+- HP boot omits visible 06F4 before runtime; reason unknown.
+
+## EXP159 — Passive wildcard no-DCM cold-boot differential — PREPARED
+
+**Hypothesis:** the newly discovered DCM-era boot addresses/functions (`0xC8`, `0xA4/0xA5`, `0x05/0x06`, FC06 and `0x0F` mailbox traffic) can be classified against a clean local no-DCM cold boot only if the parser is widened beyond the address/function whitelist used in older EXP94-era tooling.
+
+**Why this is not a repeat of EXP94:** EXP94 established the no-DCM controller/accessory state machine (`A80E 0->8->0x28`, `AFDC 0->0x10`) but its parser/logging was designed before `C8`, `A4/A5`, `0x05` and A4 FC06 were known as relevant boot/discovery traffic. EXP159 changes only observability: wildcard legal-slave parsing plus FC06 recognition.
+
+**Only controlled variable:** power-cycle the heat-pump/controller with no DCM present. ESP32/Waveshare remains externally powered and already listening. No setting is changed.
+
+**Instrumentation:**
+- accept CRC-valid Modbus frames for legal slave IDs `0x01..0xF7`;
+- recognize FC03/FC04/FC06/FC16/FC17 and exception frames;
+- focused red/brown logs for `C8`, `A4/A5`, `05/06`, `0x0F`, first 15 s of `0x02`, and first-seen unexpected slave IDs;
+- auto-detect >=3 s complete bus silence, set first returning valid frame to t=0, capture 180 s;
+- summary counts include `C8`, A4, A5, 05, 06, 0F FC03 req/rsp, 0F FC16 req/ACK, unexpected addresses, parser resyncs and RX drops.
+
+**Safety:** strictly passive RX-only; GPIO17 TX not configured; DE forced LOW; no replies/ACKs, no 05/06 response, no scan, no register write, no room-sensor emulation. Known-good production parsing/entities remain intact.
+
+**Success criteria:** determine with current observability whether `C8`, A4/A5, 05/06 pairing, FC06, 0x0F FC03 or ACKed 0x0F FC16 appear during a no-DCM cold boot and align their timing against EXP157 genuine DCM/Online boot.
+
+**Negative result:** none of the newly discovered discovery/mailbox frames appears despite a valid complete boot capture with zero parser/RX errors. This would materially strengthen the conclusion that the missing layer is DCM-dependent rather than ordinary controller startup.
+
+**Prepared YAML:** `thermia_exp159_passive_wildcard_cold_boot_profiler.yaml`.
+
+**Current experiment:** **EXP159 PREPARED / PASSIVE WILDCARD NO-DCM COLD-BOOT DIFFERENTIAL.**
+
+## EXP159 — Passive wildcard no-DCM cold-boot differential — COMPLETE / POSITIVE
+
+**Hypothesis:** C8/A4/A5/05/06/0F boot traffic may distinguish genuine DCM startup from ordinary no-DCM controller startup when observed with a widened passive parser.
+
+**Observed:**
+- passive RX-only; no TX/ACK/response/scan/write;
+- bus-down confirmed after 3005 ms quiet; first returned frame set t=0;
+- exact `C8 FC03 2328/count2` occurred with no DCM: 20 requests from +0.565 s to +20.775 s, no response;
+- controller state reproduced known boot path A80E 0->8->0x28 and sequence 5->10;
+- 0x06 FC17 appeared from +0.789 s; AFDC settled to 0x0010;
+- 0x0F FC16 requests: 04BA/count22 twice, then repeated 04A6/count13 and periodic 085F/count5; zero ACKs observed;
+- no A4, A5, 0x05, FC06 or 0x0F FC03 observed in the available ~90 s post-boot capture;
+- capture ended before planned 180 s summary.
+
+**Strong conclusion:** C8 probing is generic native cold-boot discovery, not a DCM-specific signature. The higher-value DCM discriminator remains the transition into A5/A4/05 and responsive 0x0F FC03/FC16 mailbox behaviour.
+
+**Negative result recorded:** absence of DCM does NOT suppress C8 probing. Reject the previous hypothesis that C8 itself is DCM-originated/DCM-specific.
+
+**Current experiment:** EXP159 COMPLETE / POSITIVE GENERIC-DISCOVERY DIFFERENTIAL.
+
+## EXP160 — isolated genuine A5 responder — COMPLETE / NEGATIVE
+
+**Hypothesis:** exact genuine A5 service responses may be sufficient to advance controller discovery beyond the generic no-DCM boot state seen in EXP159.
+
+**Observed:** clean no-DCM cold boot completed for 180 s. No A5 request occurred, therefore the exact A5 responder was never invoked (`A5=0`, `A5tx=0`). No A4/05 activity and no `0x0F FC03` occurred. The controller continued native C8 discovery and unACKed 0x0F FC16 startup traffic. Final summary: `frames=1596 s02=336 s05=0 s06=42 s0F=290 A4=0 A5=0 A5tx=0 C8=20 0F03req=0 0F03rsp=0 0F16req=248 0F16ack=0 resyncDelta=0 dropDelta=0`.
+
+**Strong conclusion:** an isolated passive A5 responder cannot advance the local no-DCM boot because the controller never addresses A5.
+
+**Negative result recorded:** the captured A5 payloads were not disproven; they were never requested.
+
+## EXP161 — offline cross-capture discovery analysis — COMPLETE / POSITIVE
+
+**Hypothesis:** genuine DCM captures may reveal the ordering/prerequisite missing before A5 activation without another active bus intervention.
+
+**Observed:** in the DCM-power-up capture, a successful 0x0F FC16 ACK is visible before the first A5 request, while C8 probes continue in parallel. A5 therefore does not require the C8 retry sequence to finish. Genuine DCM startup enters an ordered ACKed 0x0F initial-sync sequence. A4 can occur later while A5 is already established, so A4 is not a simple A5 precursor. Normal genuine runtime repeatedly shows the A5 triplet followed by 0x06 and responsive `0x0F FC03 0708/6` service.
+
+**Strong conclusions:** C8 completion/success is not a necessary gate for A5/0x0F functionality; A4 is not a simple precursor to A5; genuine 0x0F service is operational before the first visible A5 transaction in the DCM-power-up capture.
+
+**Hypothesis:** the missing local prerequisite is closer to a combined DCM service/mailbox presence or binding state than to C8 alone or A5 payload contents.
+
+**Unknown:** the exact event that makes the controller begin A5 polling.
+
+## EXP162 — combined known 0x0F FC16 ACK + genuine A5 responder — COMPLETE / NEGATIVE
+
+**Hypothesis:** a working known 0x0F FC16 ACK role combined with the exact A5 responder may activate or advance DCM-like service state on a no-DCM cold boot.
+
+**Observed:** 180 s run completed. The ESP transmitted six valid whitelisted 0x0F FC16 ACKs (`0FtxACK=6`), demonstrating that the active ACK path was exercised. Nevertheless no A5 request occurred (`A5=0`, `A5tx=0`), no A4/05 appeared, and no `0x0F FC03` request/response appeared. C8 remained at 20 probes. Final summary: `frames=1388 s02=344 s05=0 s06=43 s0F=49 A4=0 A5=0 A5tx=0 0FtxACK=6 C8=20 unexpectedSlaves=0 0F03req=0 0F03rsp=0 0F16req=6 0F16ack=0 resyncDelta=1 dropDelta=0`.
+
+**Strong conclusions:** known 0x0F FC16 ACKs successfully advance/terminate the visible FC16 retry path, but 0x0F ACK + a waiting A5 responder is insufficient to activate A5 polling or `0x0F FC03` service.
+
+**Negative result recorded:** do not repeat the hypothesis that merely acknowledging the visible 0x0F FC16 startup writes causes the controller to start A5 polling.
+
+**Unknown:** the earlier discovery/binding/service-state prerequisite that enables A5 scheduling.
+
+## EXP163 — 0x0F ACK then exact A5 master read-only probe — PROPOSED / NOT YET RUN
+
+**Hypothesis:** A5 may be an endpoint that the genuine DCM actively reads rather than a service the DCM provides. After the known 0x0F ACK phase, issuing the exact captured A5 FC03 read triplet may reveal whether an A5 endpoint responds locally or whether this action changes subsequent controller scheduling.
+
+**Only new experimental variable relative to EXP162:** remove the A5 slave responder and, after the known 0x0F ACK phase, send one bounded read-only A5 FC03 sequence: `0000/count18`, `0023/count1`, `002E/count10`. No A5 writes. C8/0x06/A4/0x05 remain otherwise passive; no room-sensor emulation.
+
+**Success evidence:** a CRC-valid A5 response, newly autonomous A5 traffic, new `0x0F FC03`, A4/05 activation, or another repeatable state transition after the probe.
+
+**Stop/negative criterion:** one bounded probe sequence completes without A5 response or higher-layer transition; do not escalate to guessed writes or broad scans.
+
+Status: **PROPOSED / NOT YET RUN**.
+
+
+---
+
+## EXP163 — 0x0F ACK then exact A5 master probe — COMPLETE / NEGATIVE
+
+**Hypothesis:** after the known `0x0F` ACK phase, the exact genuine A5 FC03 triplet may reveal or activate the missing service endpoint.
+
+**Result:** valid 180020 ms no-DCM cold-boot run. Six known-shape `0x0F FC16` requests were ACKed. The ESP then transmitted exactly three read-only A5 FC03 requests (`0000/18`, `0023/1`, `002E/10`). No A5 response or higher-layer transition followed.
+
+**Final summary:** `frames=1363 s02=338 s05=0 s06=42 s0F=48 A4=0 A5=0 A5probeTX=3 A5rsp=0 0FtxACK=6 C8=20 unexpectedSlaves=0 0F03req=0 0F03rsp=0 0F16req=6 0F16ack=0 resyncDelta=5 dropDelta=0`.
+
+**Observed facts:** A5 response count remained zero; A4/0x05 remained absent; no `0x0F FC03` request appeared; C8 repeated 20 times; 0x06 continued normally. Five parser resyncs occurred at the end of the A5 injection sequence, with zero RX buffer drops and no continuing resync growth.
+
+**Strong conclusion:** post-ACK exact A5 master polling does not establish A5 or the genuine DCM service state.
+
+**Negative result:** do not repeat A5 read probing without a newly identified prerequisite.
+
+## EXP164 — passive early-boot discriminator census — PROPOSED / NOT YET RUN
+
+**Hypothesis:** a still-unmodelled early ordering/state discriminator can be isolated by a clean passive no-DCM cold boot and direct timing comparison with the genuine DCM power-up capture.
+
+**Only change:** remove EXP163 active ACK/probe behaviour; add passive event timestamps/counters. No bus transmission.
+
+**Success criterion:** identify at least one reproducible event/order/state difference that exists before genuine A5 activation and is absent/different in no-DCM boot.
+
+**Stop criterion:** if the passive trace adds no new discriminator, close negative and return to offline differential analysis rather than escalating to guessed writes.
+
+## EXP164 — COMPLETE / POSITIVE PASSIVE DISCRIMINATION
+Hypothesis: passive early-boot ordering may reveal a missing pre-A5 DCM-binding discriminator.
+
+Result: clean 180 s no-DCM cold boot, fully passive. Summary: `frames=1601 s05=0 s06=42 s0F=291 A4=0 A5=0 C8=20 0F03req=0 0F03rsp=0 0F16req=249 0F16ack=0 resyncDelta=0 dropDelta=0 PASSIVE_ONLY_DE_LOW`.
+
+Observed: C8, 0x06, A80E `0->8->0x28`, AFDC=0x0010 and sustained unACKed 0x0F FC16 all occur without A5/A4/0x05/0x0F-FC03.
+
+Conclusion: those visible states are not sufficient DCM recognition/binding discriminators. EXP164 reproduces EXP159 and closes the planned cold-boot series unless a future hypothesis uniquely requires another reboot.
+
+## EXP165 — PREPARED — runtime DCM-surface hot-plug test
+Hypothesis: simultaneous known 0x06 accessory presence plus exercised 0x0F ACK service at runtime may trigger the same dynamic service transition seen when a genuine DCM is powered while the controller is already running.
+
+Basis: genuine DCM power-up capture 090209 shows 0x0F ACK at ~0.389 s and working A5 from ~1.179 s without controller restart. EXP151 did not actually exercise a 0x0F FC16 ACK during its combined runtime phase; EXP153 tested the same broad roles only at cold boot.
+
+Controlled runtime surface: exact 0x06 REQ-low response, strict known 0x0F FC16 ACKs, and exact A5 responses only if A5 is autonomously requested. No AFCA strobe, semantic write, master probe, scan or reboot. 180 s automatic stop.
+
+Status: **PREPARED / NOT YET RUN**.
+
+## 2026-09-25 — EXP165 — runtime DCM-surface hot-plug — COMPLETE / PARTIAL NEGATIVE
+
+Hypothesis:
+Known 0x06 accessory presence plus known 0x0F ACK service, introduced while the controller remains running, may reproduce the genuine DCM hot-plug transition and activate A5 / 0x0F FC03.
+
+Observed facts:
+- No controller reboot.
+- Final summary: `duration_ms=180020 frames=1330 s05=0 s06=43 s0F=5 A4=0 A5=0 06tx=0 0FtxACK=5 A5tx=0 0F03req=0 0F03rsp=0 0F16req=5 resyncDelta=0 dropDelta=0`.
+- ACKed 0x0F FC16 blocks: 04A6/13, 085F/5, 04BA/22, 05FF/33, 0662/33.
+- No A5, A4/05 or 0x0F FC03.
+- No parser resync or RX drop.
+- 43 0x06 frames were observed but zero 0x06 responses were transmitted.
+
+Negative result:
+Runtime 0x0F ACK service alone is insufficient to activate the DCM-like A5 / 0x0F FC03 service state.
+
+Implementation defect:
+The intended 0x06 role was not exercised because EXP165 required a 27-byte FC17 request; the native AFC8/12 + AFDC/5 request is 23 bytes. Thus EXP165 cannot be used as a negative result for simultaneous 0x06 + 0x0F presence.
+
+Classification:
+**COMPLETE / NEGATIVE for 0x0F-only runtime activation; INVALID for the intended combined-role hypothesis.**
+
+## 2026-09-25 — EXP166 — corrected runtime 0x06 + 0x0F hot-plug — PREPARED
+
+Hypothesis:
+Actually exercising the proven 0x06 REQ-low responder at runtime together with the known 0x0F FC16 ACK role may activate native A5 and/or 0x0F FC03 without a controller reboot.
+
+Single correction relative to EXP165:
+- 0x06 exact FC17 request-length discriminator: 27 -> 23 bytes.
+
+Controls and safety:
+- HA Configuration: `EXP166 ARM Runtime DCM Surface`, `EXP166 STOP Runtime DCM Surface`.
+- 180 s runtime window, no heat-pump/controller reboot.
+- No AFCA strobe, setting write, master probe, scan or room-sensor emulation.
+- Exact known 0x06 response only; strict known 0x0F ACK whitelist; exact A5 response only if natively requested.
+
+Validity / success criteria:
+- First verify `06tx > 0`; `EXP 0.0` on VERSION is corroborating evidence of the known 0x06 metadata path.
+- Combined role is fully exercised only if both `06tx > 0` and `0FtxACK > 0` occur in the run.
+- Primary positive result is spontaneous A5 and/or 0x0F FC03.
+
+## 2026-09-25 — EXP166 — corrected runtime 0x06 + 0x0F hot-plug — COMPLETE / PARTIAL NEGATIVE, POSITIVE 0x06→EXP RESULT
+
+**Hypothesis:** actually exercising the proven 0x06 REQ-low responder at runtime while the known 0x0F FC16 ACK role is available may activate native A5 and/or 0x0F FC03 without a controller reboot.
+
+**Observed facts:** runtime-only, no controller reboot. The first 0x06 TX occurred ~3.3 s after ARM and the user observed `EXP 0.0` appear almost immediately. Final summary: `duration_ms=180018 frames=1444 s05=0 s06=169 s0F=0 A4=0 A5=0 06tx=169 0FtxACK=0 A5tx=0 0F03req=0 0F03rsp=0 0F16req=0 resyncDelta=0 dropDelta=0`. All 169 observed 0x06 transactions were answered. No 0x0F request occurred, so the 0x0F ACK role was not exercised. No A5, A4/05 or 0x0F FC03 appeared. Bus remained clean.
+
+**Strong conclusions:** runtime 0x06 presence is sufficient for the UI `EXP 0.0` metadata to appear, but insufficient for DCM-like A5/0x0F service activation. `EXP 0.0` is therefore an accessory/version metadata indication, not proof of DCM binding. The intended simultaneous exercised 0x06+0x0F hypothesis remains technically uncompleted because no 0x0F traffic occurred during this run.
+
+**Comparison with EXP165:** EXP165 exercised five 0x0F ACKs but accidentally sent zero 0x06 responses; EXP166 exercised 169 0x06 responses but saw zero 0x0F requests. Each surface alone is insufficient. Do not simply repeat either role or reboot the controller.
+
+**Next:** offline differential analysis of the earliest genuine DCM-power-up sequence before defining EXP167. Do not emulate the unresolved A4 FC06 write or invent a new register write.
+
+Classification: **COMPLETE / POSITIVE for 0x06→EXP UI mapping; NEGATIVE for 0x06-only DCM activation; INCOMPLETE for simultaneous exercised 0x06+0x0F activation.**
+
+
+---
+
+## EXP167 — Runtime 0x06 then native 0x0F ACK wait — COMPLETE / INCONCLUSIVE COMBINED TEST; STRONG NEGATIVE FOR 0x06-DRIVEN ACTIVATION
+
+**Hypothesis:** after the proven `0x06` accessory-presence response is active, a naturally occurring controller-originated known `0x0F FC16` request that is ACKed may reproduce the missing runtime service transition and cause native A5 and/or `0x0F FC03`.
+
+**Only experimental change from EXP166:**
+- keep the proven exact 23-byte `0x06 FC17` responder active;
+- do not ACK `0x0F` until `06tx > 0`;
+- wait up to 600 s for a native known `0x0F FC16`;
+- if it occurs, first ACK becomes T0 and observe 120 s;
+- no controller/heat-pump reboot.
+
+**Safety:** no AFCA strobe, semantic setting write, ESP-generated FC16, A5 master probe, broad scan, room-sensor emulation, A4/05 response or C8 response. DE LOW outside exact response windows.
+
+**Observed facts:**
+- ARM at 14:12:45; first successful `0x06` response at 14:12:46;
+- terminal summary at 14:22:45.530;
+- `duration_ms=600009`;
+- `frames=4715`;
+- `s05=0`;
+- `s06=559`;
+- `s0F=0`;
+- `A4=0`;
+- `A5=0`;
+- `06tx=559`;
+- `0FtxACK=0`;
+- `A5tx=0`;
+- `0F03req=0`;
+- `0F03rsp=0`;
+- `0F16req=0`;
+- `resyncDelta=0`;
+- `dropDelta=0`;
+- firmware reason: `NO_NATIVE_0F_WITHIN_600S`;
+- firmware classification: `INCONCLUSIVE_COMBINED_ROLE_NOT_EXERCISED_DE_LOW_IDLE`.
+
+**Strong conclusions:**
+1. Valid `0x06` accessory/version presence can be sustained for 600 s without inducing any native `0x0F` traffic.
+2. It also does not induce A5, A4 or 0x05 scheduling.
+3. EXP167 is technically inconclusive for the exact combined condition because `0F16req=0`, so no `0x0F` ACK was actually exercised.
+4. EXP167 is nevertheless a strong negative result for the hypothesis that `0x06` presence itself causes or eventually unlocks native `0x0F`/A5 service.
+5. Combined with EXP165 and EXP166, neither runtime `0x0F` ACK alone nor runtime `0x06` presence alone reproduces the genuine DCM service state.
+**Comparison with genuine DCM power-up:** in `thermia_capture_20260925_090209.log`, `0x0F` is already ACK-capable at ~0.389 s and A5 starts at ~1.179 s while C8 continues in parallel. The no-DCM runtime emulation therefore lacks a prerequisite that exists essentially immediately in the real DCM topology.
+
+**Negative result retained:** do not repeat longer 0x06-only dwell tests or treat `EXP 0.0` as evidence of DCM recognition.
+
+**Next:** offline transmitter/ownership analysis of the first seconds of genuine DCM power-up before defining EXP168.
+
+
+## EXP168 — Runtime 0x06 presence + manually triggered 03E8/count14 ACK — PREPARED
+
+**Hypothesis:** a proven active `0x06` accessory-presence role plus an actually exercised runtime `0x0F FC16 0x03E8/count14` ACK may activate native A5 and/or `0x0F FC03`.
+
+**Design:** arm at runtime; after >=10 valid `0x06` responses log READY; manually change only Heat Curve +1; ACK only exact `03E8/count14`; define that ACK as T0; observe 120 s. A5/A4/0x05 are passive. No controller reboot.
+
+**Classification:** positive if spontaneous A5 and/or `0x0F FC03` appears after T0; valid negative if the exact ACK is exercised and neither appears during 120 s; inconclusive if no exact `03E8/count14` event is captured.
+
+
+## EXP168 — Runtime 0x06 presence + manually triggered 03E8/count14 ACK — COMPLETE / VALID NEGATIVE
+
+**Hypothesis:** a proven active `0x06` accessory-presence role plus an actually exercised runtime `0x0F FC16 0x03E8/count14` ACK may activate native A5 and/or `0x0F FC03`.
+
+**Observed facts:**
+- READY after 10 valid `0x06` responses.
+- Manual Heat Curve +1 caused exact `0x0F FC16 03E8/count14`.
+- First payload word: `36 (0x0024)`.
+- One exact FC16 ACK was transmitted and defined T0.
+- 120 s post-T0 observation completed.
+- Final summary: `duration_ms=163187 frames=1308 s05=0 s06=155 s0F=1 A4=0 A5=0 06tx=155 0FtxACK=1 A5tx=0 0F03req=0 0F03rsp=0 0F16req=1 firstAckRelMs=43163 resyncDelta=0 dropDelta=0 COMBINED_06_PLUS_03E8_ACK_EXERCISED_DE_LOW_IDLE`.
+
+**Result:** VALID NEGATIVE.
+
+**Strong conclusion:** simultaneous proven runtime `0x06` presence and a deliberately exercised known controller-originated `0x0F FC16` ACK do not activate A5, A4/0x05, or `0x0F FC03`. This closes the exact combined-role gap left open by EXP167.
+
+**Comparison:**
+- EXP165: runtime `0x0F` ACK role alone -> no A5/0F03.
+- EXP166/167: valid runtime `0x06` presence -> no A5/0F03; EXP167 sustained 600 s with zero native 0x0F.
+- EXP168: valid `0x06` + exercised `0x0F 03E8/14` ACK -> still no A5/0F03.
+
+**Negative result retained:** stop repeating simple `0x06` + `0x0F` transport-role combinations.
+
+**Next:** offline analysis of genuine DCM transmitter ownership / service activation before EXP169. No controller reboot required.
+
+
+### EXP170 — Heat Curve sync to 042E ACK -> A5 watch — COMPLETE / INCONCLUSIVE
+
+Hypothesis:
+Advance the proven native 0x0F synchronization path `03E8/14 -> 0410/22 -> 042E/15`, then observe whether ACK of `042E/15` activates A5.
+
+Observed:
+- runtime/no-reboot ARM successful;
+- controller was already repeatedly sending `0x04A6/count13` before the manual Heat Curve change; these were intentionally not ACKed;
+- Heat Curve +1 produced `0x03E8/count14`, first word `37 / 0x0025`;
+- ESP ACKed `03E8/14` once;
+- expected `0410/22` never appeared;
+- controller continued repeating the pre-existing `04A6/13`;
+- phase-1 timeout after 15 s; final: `ackTx=1 ack03E8=1 ack0410=0 ack042E=0 0F16req=48 resyncDelta=0 dropDelta=0`.
+
+Result: INCONCLUSIVE — intended chain not reached.
+
+Strong conclusion:
+A new `03E8/14` parameter-change event does not necessarily restart/override an already-pending 0x0F block. The controller's native 0x0F synchronization is stateful and current pending-block context matters.
+
+Negative result retained:
+Do not repeat EXP170 unchanged from arbitrary runtime state. First understand/clear the pending `04A6/13` state offline or via a specifically justified experiment.
+
+
+### EXP172 — passive controller scheduler fingerprint — COMPLETE
+
+Hypothesis:
+A controller-side scheduler-enable state may be visible in ordinary `0x02` / `0x04` FC17 traffic.
+
+Observed:
+- 180002 ms passive-only;
+- frames=1456;
+- s02=336, s04=0, s05=0, s06=42, s0F=168, A4=0, A5=0, C8=0;
+- 0F03req=0, 0F03rsp=0, 0F16req=168;
+- resyncDelta=0, dropDelta=0;
+- all visible FC16 traffic was repeated `04A6/count13`;
+- local controller request fingerprint repeated as `0217A7F8000FA80C00070E004000000000000A000AFFFF0000...`, i.e. read count 15 and `A80C..A812 = 64,0,0,10,10,65535,0`.
+
+Comparison with scheduler-enabled pre-DCM `090550`:
+- `A7F8` read count is 13;
+- `A80C..A812 = 64,0,0,10,10,12,0x0500`;
+- A5 and `0x0F FC03 0708/6` already run before DCM response.
+
+Conclusion:
+There is a stable controller-side structural/state difference. `A811/A812` (`FFFF/0000` local versus `000C/0500` scheduler-enabled) and the read-span difference (15 versus 13) are now the highest-value correlation markers. They are not yet proven controls and must not be written blindly.
+
+Status: COMPLETE.
+
+
+### EXP173 — 0x06 presence vs A811/A812 — COMPLETE / VALID NEGATIVE
+
+Hypothesis:
+The local-vs-reference difference in `A811/A812` and A7F8 read-count may be caused by current accessory presence.
+
+Result:
+- baseline: read-count 15, A811=FFFF, A812=0000;
+- 56 exact known `0x06` REQ-low responses during 60 s active phase;
+- no change in read-count, A811, or A812;
+- 180 s passive recovery also unchanged;
+- A5=0, A4=0, 0x05=0, 0F03req=0;
+- parser and RX-drop deltas both 0.
+
+Conclusion:
+Simple `0x06` accessory presence does not explain or activate the scheduler-enabled controller state. The discriminator now points more strongly to persistent controller configuration / firmware / commissioning state.
+
+Status: COMPLETE / VALID NEGATIVE.
+
+
+### EXP174 — COMPLETE / VALID NEGATIVE
+
+Across a real Heat Curve `36 -> 37 -> 36` cycle, A7F8 read-count stayed 15 and A811/A812 stayed FFFF/0000. No A5/A4/0x05/0x0F FC03 appeared. Record as negative for ordinary fingerprint mutability, not as proof of scheduler causality.
+
+### EXP175 — passive topology fingerprint — COMPLETE
+
+Hypothesis:
+Scheduler-enabled external captures may reflect a different/broader bus topology rather than a directly reproducible scheduler state on the local XTR M.
+
+Result:
+`duration_ms=180009 frames=1457 s02=336 s04=0 s1E=670 s05=0 s06=42 s0F=168 A4=0 A5=0 C8=0 0F03req=0 0F03rsp=0 0F16req=168 lastReadCount=15 lastA811=FFFF lastA812=0000 resyncDelta=0 dropDelta=0`
+
+Observed:
+- local slave 0x1E was highly active with repeated FC16 and FC04 request/response cycles;
+- no slave 0x04 frame occurred in the full 180 s;
+- no A5, A4, 0x05, C8 or 0x0F FC03 scheduler traffic occurred;
+- controller fingerprint remained FFFF/0000, read-count 15;
+- passive capture was clean with zero parser resync/drop delta.
+
+Conclusion:
+Valid passive topology discriminator. The local XTR M bus topology differs materially from the scheduler-enabled reference captures. Do not assume the external 0x04/A5/0x0F FC03 scheduler can be transplanted one-for-one to local XTR M.
+
+Negative result:
+No evidence that a hidden local 0x04 or scheduler family spontaneously appears under ordinary runtime conditions.
+
+
+### EXP176 — offline reconstruction around 0x0559 — COMPLETE / NEGATIVE
+
+Hypothesis:
+The scheduler-enabled reference may carry `0x0559 Link Integration = 1`, explaining scheduler activation.
+
+Observed:
+- external FC16 block `0x0546/count20` spans `0x0546..0x0559`;
+- its last word, address `0x0559`, is `0x0000`;
+- next FC16 block starts at `0x055A`;
+- identical structure is present in both scheduler-enabled external captures.
+
+Conclusion:
+Scheduler-enabled operation is observed while 0x0559 is zero. `0x0559=1` is not a required scheduler-enable condition in the reference topology. Do not proceed to a 0x0559 write test from this hypothesis.
+
+## 2026-09-26 — EXP218 COMPLETE / MAJOR POSITIVE — local 0x0553 Operation Mode validation
+
+Hypothesis:
+Local XTR M uses the same `0x0F FC16 0546/count20` system-page family as the genuine DCM reference, with `0x0553` carrying Operation Mode.
+
+Observed:
+- Controlled physical `AUTO -> COMPRESSOR -> AUTO` produced local `0x0553: 1 -> 2 -> 1`.
+- `0x0559` remained `0`.
+- Repeated controller-originated `0546/count20` frames updated in-flight when the physical mode was restored.
+
+Conclusion:
+`0x0553` is project-proven Operation Mode on this XTR for at least `1=AUTO`, `2=COMPRESSOR`.
+
+
+## 2026-09-26 — EXP219 COMPLETE / MAJOR POSITIVE — local full 0546/count20 page
+
+Hypothesis:
+Capture the complete local `0546/count20` page and compare it with the genuine DCM reference.
+
+Observed:
+- 12/12 local pages were byte-for-byte identical:
+  `[1,1,2,0,2,0,0,0,0,3,0,0,0,1,0,0,0,0,0,0]`.
+- Stable local/reference differences exist at `0546`, `0547`, `054A`, `054F`, and the expected operational difference at `0553`.
+- `0559=0` in both local and genuine reference.
+
+Conclusion:
+`0546`, `0547`, `054A`, and `054F` are stable structural/configuration/topology candidates; semantics remain unknown.
+
+
+## 2026-09-26 — EXP220 COMPLETE / POSITIVE — Operation Mode independence of 0546/0547/054A/054F
+
+Hypothesis:
+During physical `AUTO -> COMPRESSOR -> AUTO`, the four EXP219 candidates remain stable while `0553` changes `1 -> 2 -> 1`.
+
+Observed:
+- `0546=1`, `0547=1`, `054A=2`, `054F=3`, `0559=0` remained unchanged.
+- Only `0553` changed reversibly `1 -> 2 -> 1`.
+- End counts: total 195 full pages; baseline 41, compressor 49, restored 105.
+
+Conclusion:
+The four EXP219 candidates are not simple Operation Mode mirrors and remain stronger structural/configuration/topology candidates.
+
+
+## 2026-09-26 — EXP221 COMPLETE / STRONG NEGATIVE — local cold-boot scheduler activation
+
+Hypothesis:
+A true local cold boot without DCM might spontaneously create the extended Online/DCM scheduler.
+
+Observed:
+- ~200 s post-power-on capture.
+- End summary: `A5=0`, `A4=0`, `S04=0`, `S05=0`, `0F03=0`, `0708=0`, `S06=61`, parser resync delta 1, RX drops 0.
+- Native local `0x0F` traffic resumed rapidly after boot, including `04BA/count22`, `04A6/count13`, `085F/count5`, and FC17 `0730/count8`.
+- EXP221's original `runtime/topology hit` counter incorrectly counted `085F`; this is corrected conceptually: lone `085F` does not prove the genuine scheduler.
+
+Conclusion:
+The local no-DCM controller does not spontaneously create A5/A4/0x04/0x05 + FC03/0708 scheduler topology during a normal cold boot, despite native `0x0F` serializer/runtime traffic being present.
+
+
+## 2026-09-26 — EXP222 PREPARED — bounded cold-boot FC16 ACK completion test
+
+Hypothesis:
+The genuine DCM scheduler may start only after the controller completes its long initial slave-0x0F FC16 state/snapshot synchronization with valid FC16 ACKs.
+
+Evidence motivating test:
+- Genuine startup capture shows a long ACKed FC16 initialization sequence through `06F4/count19` and `085F/count5`.
+- First observed `0x0F FC03 0708/count6` follows a few seconds later; cyclic runtime exporter starts at `07D0/count19`.
+- Earlier local ACK experiments advanced individual FC16 stages but did not reproduce the entire genuine startup synchronization in one cold-boot run.
+- A4/0x05 burst observed in another genuine capture occurs after 0708 is already active, so that burst is not the primary scheduler-start trigger.
+
+Experimental variable:
+During one controlled cold boot only, ACK CRC-valid slave-0x0F FC16 requests whose exact start/count shape is in the fixed local/genuine allow-list.
+
+Safety:
+- FC16 echo ACK only.
+- No desired-state payloads.
+- No FC03 responses.
+- First FC03 or 07D0 runtime-start frame disables TX immediately.
+- Unknown FC16 shape, parser resync, or RX-buffer fault disables TX immediately.
+- No room-sensor emulation.
+
+Status:
+**PREPARED / NOT YET RUN.**
+
+
+
+---
+## EXP222 — Cold-boot 0x0F FC16 ACK completion probe — COMPLETE / IMPORTANT NEGATIVE
+
+**Hypothesis**
+ACKing only known controller-originated `0x0F FC16` state writes from before/through a controlled Thermia cold boot may be enough to create the Online/DCM read-side scheduler (`0x0F FC03 0708/count6`) and runtime exporter.
+
+**Observed facts**
+- Thermia power OFF was marked; ESP stayed powered. ACK mode was enabled before Thermia power ON.
+- First acknowledged request after boot: `04BA/count22` at ~9.37 s post-on.
+- ACK sequence actually observed: `04BA/22`, `05FF/33`, `04A6/13`, `085F/5`, `0662/33`, `04A6/13`. Total ACKs: 6.
+- Total `0x0F FC16` requests counted: 72 (includes pre-test/pending repeats); no unknown target was seen.
+- After the six ACKs, no further FC16 progression toward FC03 occurred.
+- `FC03=0`, `0708=0`, `07D0=0`, `A5=0`, `A4=0`, `S04=0`, `S05=0` at END.
+- Normal `0x06` polls and `0x0F FC17 0730/count8` remained present.
+- Clean transport: `resyncDelta=0`, `dropDelta=0`.
+
+**Strong conclusions**
+- The tested ACK-only `0x0F` responder does not activate the extended scheduler.
+- Local FC16 completion and extended A5/FC03 topology are separate conditions.
+- This reproduces the earlier post-`0662` quiet behavior in a controlled cold-boot context.
+
+**Hypotheses**
+- Extended topology probably depends on persistent accessory/service binding, commissioning/configuration state, firmware/model capability, or an earlier non-0x0F service-discovery path.
+- A5 is more likely a prerequisite/parallel service context than a consequence of FC16 ACK completion.
+
+**Unknowns / limits**
+- The local boot did not emit the genuine module's whole FC16 startup dump, so EXP222 does not test ACKing every genuine page.
+- Exact trigger that enables A5 remains unknown.
+
+**Negative result recorded**
+ACKing the locally offered known FC16 boot/state pages is not sufficient to start `0x0F FC03 0708` or the runtime exporter.
+
+
+---
+## EXP223 — Offline XTR-native 0x0F FC17 071C/0730 discriminator — COMPLETE / POSITIVE
+
+**Hypothesis**
+The recurring local slave-0x0F FC17 transaction may be an XTR-native Online/DCM keepalive/session/mailbox surface that is distinct from the ATEC/DCM FC03/FC16+A5 scheduler family.
+
+**Observed facts**
+- Exact local request contract: read `0x0730/count8`, write `0x071C/count8`, bytecount 16.
+- EXP221 contained 47 exact requests; EXP222 contained 25, for 72 analysed local frames.
+- No response was present locally, consistent with no DCM/Online endpoint attached.
+- In all 72 frames:
+  - 071C=`1A16`, 071E=`F906`, 0720=`DC1A`, 0722=`001E` stayed fixed;
+  - 0723=`2*071D+0500` modulo 16 bits;
+  - low byte of 071F=`AC`, and high byte of 071F=`floor(low_byte(071D)/4)`.
+- 0721 changes much more slowly, approximately once per minute-scale interval.
+- None of the three available genuine ATEC/DCM captures (`071517`, `090209`, `090550`) contains slave-0x0F FC17 traffic. Those captures instead show the ATEC `0x04`+A5+`0x0F FC03/FC16` topology.
+- Local XTR passive topology already established in EXP175 is the inverse at this layer: active slave `0x1E`, no slave `0x04`, no A5.
+
+**Strong conclusions**
+1. The ATEC/DCM scheduler topology must not be assumed to be a one-for-one transport template for XTR.
+2. The local `071C/0730` FC17 exchange is a higher-value XTR-specific target for passive characterization than another A5/FC03 injection.
+3. The deterministic write-side relations argue against interpreting the 071C block as eight independent ordinary setting values.
+
+**Hypotheses**
+- `071C..0723` may be a heartbeat/challenge/session image supplied by the XTR controller to an external slave-0x0F service.
+- `0730..0737` may be the corresponding external response/status/command image.
+- A genuine XTR/iTec/DHP-AQ Online module capture is still required to know the correct response semantics.
+
+**Unknowns**
+- Exact meaning of all sixteen request bytes.
+- Whether a genuine DCM answers this FC17 request on XTR-family systems.
+- Whether any controller semantic state changes the 071C write image beyond its deterministic timing/counter evolution.
+- Meaning and safety of the 0730 read-side values.
+
+**Negative result recorded**
+No response value is inferred or guessed from the request structure. Do not emulate `0730` yet.
+
+---
+## EXP224 — Passive 071C/0730 Heat Curve A/B/A correlation — COMPLETE / INCONCLUSIVE TARGET NOT EXERCISED
+
+**Hypothesis**
+If the XTR FC17 071C write image includes semantic controller state, a known Heat Curve `baseline -> +1 -> baseline` change should produce a phase-correlated reversible change beyond the already observed deterministic counter/timer relations.
+
+**Observed facts**
+- ESP was RX-only; no experimental TX, ACK, FC17 response, scan or semantic write.
+- The experiment ran from the explicit START marker to END with clean parser/resource diagnostics.
+- Native `03E8/count14` ground-truth frames clearly exercised the semantic change: Heat Curve was observed at 37 during the +1 phase and 36 after restore.
+- 96 `03E8` ground-truth frames were logged.
+- Exact target FC17 count at END: `total=0 baseline=0 plus=0 restored=0`.
+- RX buffer drops remained 0 and parser resyncs remained 0.
+
+**Strong conclusions**
+1. EXP224 is not a valid negative for Heat-Curve influence on the 071C write image because the target FC17 transaction never occurred.
+2. The 071C/0730 FC17 family is not continuously present in ordinary steady runtime.
+3. Combined with EXP221, where it appeared from ~2.9 s after controller power-on and continued throughout the ~200 s cold-boot observation, the FC17 family is strongly gated by controller boot/recovery/service-session state.
+
+**Hypotheses**
+- `071C/0730` may be a cold-boot/recovery session establishment or challenge exchange toward the absent slave-0x0F endpoint.
+- It may be more relevant to XTR Online/DCM startup than the ATEC-specific A5/FC03 topology.
+
+**Unknowns**
+- Whether Heat Curve or any semantic setting modifies the 071C image while the cold-boot FC17 stream is active.
+- Exact semantics of `071C..0723` and `0730..0737`.
+- Whether a genuine XTR-family DCM responds to this FC17 request and what response transformation is required.
+
+**Negative result recorded**
+Do not treat EXP224 as evidence that Heat Curve has no effect on 071C; the target was absent.
+
+---
+## EXP225 — Passive cold-boot-gated 071C/0730 Heat Curve A/B/A correlation — PREPARED
+
+**Hypothesis**
+The local XTR 071C/0730 FC17 stream is a controller-cold-boot/recovery exchange. Once that stream is re-established, a Heat Curve `baseline -> +1 -> baseline` A/B/A can determine whether the controller-written 071C image carries semantic state or only session/timing/challenge data.
+
+**Required setup condition**
+ESP stays independently powered and armed while the Thermia/controller is power-cycled normally. No setting is changed until at least three exact target FC17 frames have been observed.
+
+**Only experimental variable after FC17 READY**
+Physical Heat Curve on the Thermia display: baseline -> baseline+1 -> exact baseline. No other setting changes.
+
+**Instrumentation**
+- exact target FC17 matcher: slave0F FC17 read `0730/count8`, write `071C/count8`;
+- logs all eight write words and validates the known deterministic 0723/071F relations;
+- records first/last post-power-on FC17 timing and per-phase counts;
+- native `03E8/count14` Heat Curve frame remains the semantic ground truth;
+- Home Assistant controls remain Configuration-category markers only.
+
+**Safety**
+Strict RX-only. No `tx_pin`, FC17 reply, FC16 ACK, probe, scan, semantic write, or room-sensor emulation.
+
+**Status**
+PREPARED / NOT YET RUN.
+
+---
+## EXP225 — Passive cold-boot-gated 071C/0730 Heat Curve A/B/A — COMPLETE / PROCEDURAL-INCONCLUSIVE
+
+**Hypothesis**
+The local XTR 071C/0730 FC17 stream is a controller-cold-boot/recovery exchange. Once active, a Heat Curve `baseline -> +1 -> baseline` A/B/A can test whether the controller-written `071C..0723` image carries semantic setting state or only session/timing/challenge data.
+
+**Observed facts**
+- ESP remained RX-only; no FC17 response, ACK, probe, scan or semantic write.
+- A real Thermia/controller power-off interval was observed: valid bus traffic stopped and `Bus Healthy` went OFF, then bus traffic recovered.
+- The exact target FC17 stream reappeared after bus recovery and 32 exact frames were captured.
+- The first 13 target frames occurred before the manually pressed Power ON marker; consequently their `post_on` field remained 0.
+- The Power ON marker was pressed late and reset `exp225_phase` to 1 after the target stream was already active.
+- Native `03E8` ground truth shows Heat Curve `36 -> 37` at 23:52:38.785 and `37 -> 36` at 23:53:17.395.
+- No valid `Mark Heat Curve +1` phase was recorded; final counters were `total=32 baseline=32 plus=0 restored=0`.
+- The restore marker was explicitly refused because the firmware had not recorded a +1 phase.
+- All 32 captured FC17 images satisfy `rel0723=YES` and `rel071F=YES`.
+- The static words remained `071C=1A17`, `071E=F906`, `0720=DC1A`, `0722=001E`; the other words progressed in the same deterministic counter/timing pattern.
+- Parser resyncs and RX buffer drops remained 0.
+
+**Strong conclusions**
+1. EXP225 successfully reproduces the cold-boot-gated 071C/0730 stream, independently confirming EXP221/224's cold-boot/recovery association.
+2. EXP225 is **not** a valid negative for Heat-Curve influence because the user phase markers were not executed in the required order and the late Power ON marker reset the phase state.
+3. The write image continues to look strongly structured/counter-like; no obvious Heat-Curve-correlated discontinuity is visible in the raw sequence, but that observation is only supportive, not conclusive.
+
+**Hypotheses**
+- `071C..0723` is primarily a timed/session/challenge structure rather than a direct scalar settings block.
+- Any semantic input, if present, may be encoded in a response at `0730..0737`, in a subtler transformation, or in another session layer.
+
+**Unknowns**
+- Whether a correctly phased Heat Curve A/B/A causes any reproducible change in `071C..0723`.
+- Exact semantics of `071C..0723` and all `0730..0737` response words.
+- Whether a genuine XTR-family Online/DCM device responds to this FC17 transaction.
+
+**Recorded result**
+Procedural/inconclusive for semantic correlation; positive reproduction of the cold-boot FC17 stream. Do not infer response values and do not proceed to a responder test yet.
+
+---
+## EXP226 — Offline 071C..0723 generator/calendar analysis — COMPLETE / POSITIVE
+
+**Hypothesis**
+The dynamic words in the XTR-native `0x0F FC17 read 0730/count8 + write 071C/count8` image are primarily derived from time/counter/session state rather than ordinary heat-pump settings.
+
+**Method**
+Offline only. No ESP/heat-pump action, no restart, no TX and no setting change.
+Analysed 129 already-recorded exact target requests:
+- EXP221: 47
+- EXP222: 25
+- EXP225: 32
+- older 2026-09-22 EXP71/EXP71B captures: 25
+
+The older September 22 frames were deliberately included as out-of-sample date/time validation rather than deriving the mapping only from the September 26 experiments.
+
+**Observed facts**
+Across all 129 frames:
+- `071E=F906` in 129/129;
+- `0722=001E` in 129/129;
+- high byte of `071D=45` in 129/129;
+- high byte of `0720=DC` in 129/129;
+- high byte of `0721=C5` in 129/129;
+- high byte of `0723=8F` in 129/129;
+- low byte of `071D` was always even;
+- low byte of `0721` and `0723` was always divisible by 4;
+- the earlier `071F` and `0723` algebraic relations held in 129/129.
+
+Cross-date/time decoding:
+- `071C high byte = year-2000`; all frames carry `1A` = 26.
+- `071C low byte = hour`: Sep22 14h -> `0E`; Sep26 22h -> `16`; Sep26 23h -> `17`.
+- `0720 low byte = day-of-month`: Sep22 -> `16` hex (=22); Sep26 -> `1A` hex (=26).
+- `071D low byte = 2*second`.
+- `071F high byte = floor(second/2)`, low byte fixed `AC`.
+- `0721 low byte = 4*minute`.
+- `0723 low byte = 4*second`.
+
+Reconstructed controller time from `071C/0721/071D` is consistently ahead of the ESP/log clock:
+- Sep22 EXP71: mean +200.94 s;
+- Sep22 EXP71B: mean +200.99 s;
+- Sep26 EXP221: mean +206.37 s;
+- Sep26 EXP222: mean +206.32 s;
+- Sep26 EXP225: mean +206.37 s.
+Within-run scatter is roughly sub-second, strongly supporting the RTC interpretation rather than a coincidental counter fit.
+
+**Strong conclusions**
+1. EXP226 materially refines EXP223: `071C..0723` is not merely "counter/timing-like"; most of its changing content is a transformed calendar/clock image.
+2. The previous fixed/dynamic observations now have concrete explanations:
+   - `071C 1A16 -> 1A17` = hour 22 -> 23;
+   - `0721` slow changes = minute * 4;
+   - `071D`, `071F`, `0723` are redundant second representations.
+3. The observed dynamic write image is not a direct Heat Curve/settings image. This substantially lowers the value of another Heat-Curve correlation run against 071C..0723.
+4. The return bank `0730..0737` remains unknown; nothing in this analysis justifies responding with zeros, echoes or a guessed inverse transform.
+
+**Hypotheses**
+- `0722=001E` may encode calendar metadata such as days-in-month (September has 30 days), but this is unproven because every available validating raw capture is from September.
+- `071E=F906` and the fixed high/magic bytes may encode month/calendar format/check metadata.
+- The FC17 transaction may be a time/date synchronization, validation or challenge surface toward an external service endpoint, but the purpose and response semantics are still unknown.
+
+**Unknowns**
+- Exact semantics of `071E`, `0722`, and the fixed high bytes.
+- Where/how month is encoded.
+- Meaning and required values of `0730..0737`.
+- Whether a genuine XTR Online/DCM endpoint transforms, validates or simply consumes this time image.
+
+**Safety / negative result**
+No response is inferred. No active responder test is justified from EXP226 alone. Heat-pump restarts are explicitly paused for subsequent work.
+
+**Next**
+EXP227 should remain offline and compare local XTR transport/block topology with the genuine ATEC/DCM captures, using this newly identified RTC image to avoid misclassifying time-derived traffic as semantic settings.
+
+
+
+---
+## EXP227 — Offline XTR vs genuine ATEC/DCM architecture comparison — COMPLETE / POSITIVE HOMOLOGY
+
+**Hypothesis**
+The local XTR and genuine ATEC/DCM systems may differ mainly in outer scheduler/topology while retaining a homologous native slave-`0x0F` page/register serializer. If so, locally proven XTR sync pages should align by start address/order with genuine ATEC/DCM full-sync pages even when page selection/counts and service scheduling differ.
+
+**Method**
+Offline only. No restart, no ESP TX, no setting change.
+
+Compared:
+- genuine DCM/Online captures `210001`, `071517`, `090209`, `090550`;
+- local XTR raw EXP221/222 traffic;
+- locally proven XTR ACK-walk sequence from EXP137–142;
+- EXP175/182 topology and scheduler findings;
+- EXP226 RTC decode to exclude time-derived `071C/0730` from semantic-setting comparisons.
+
+**Observed facts**
+
+Local proven ACK-walk:
+`03E8/14 -> 0410/22 -> 042E/15 -> 04A6/13 -> 04BA/22 -> 05FF/33 -> 0662/33`
+
+Genuine ATEC/DCM full sync contains the same seven start addresses in the same relative order:
+- `03E8/13` — same start, XTR has one extra word;
+- `0410/21` — same start, XTR has one extra word;
+- `042E/15` — exact shape match;
+- `04A6/13` — exact;
+- `04BA/22` — exact;
+- `05FF/33` — exact;
+- `0662/33` — exact.
+
+Additional recurrent common shapes:- `0546/20` exact;
+- `085F/5` exact.
+
+Selected payload comparison using exact shared shapes:
+- `04BA/22`: 20 of 22 words equal between compared XTR and ATEC frames; differences only at word0 (`0014` vs `0013`) and word6 (`0028` vs `001E`);
+- `05FF/33`: 31/33 words equal;
+- `0662/33`: 31/33 equal;
+- `085F/5`: 5/5 equal (all zero);
+- `0546/20`: 15/20 equal in the compared states;
+- `04A6/13`: same shape but strongly different payload, consistent with state/model-specific page content.
+
+Genuine ATEC/DCM full sync includes many intermediate pages absent from the local XTR ACK-walk, including `03FC`, `0442`, `0456`, `046A`, `047E`, `0492`, `04D8`, `04F6`, `050A`, `051E`, `0532`, `055A` and multiple `33`-word pages through the `06xx` range.
+
+The outer topology remains different:
+- local XTR: active slave `0x1E`; no `0x04`, A5, or local `0x0F FC03/0708` service scheduler;
+- genuine ATEC/DCM: active slave `0x04`, A5 service traffic, `0x0F FC03 0708/count6`, and cyclic runtime `07D0..0884`.
+- reference 0x04 recurrent wire contract is FC17 `ABE0/12 -> ABF4/4`;
+- local 0x1E recurrent wire contract is FC16 `0000/9`, `0014/3` plus FC04 `0000/22`, `001E/6`.
+
+Across all four genuine DCM captures:
+- exact `0x06 FC17 read AFC8/count12, write AFDC/count5` polls: 69;
+- slave-0x06 responses: 0.
+The Online/DCM service is nevertheless active through A5/`0x0F`.
+
+DCM-rejoin capture `090550`:
+- A5 active from ~0.526 s;
+- first `0708/count6` poll at ~0.987 s;
+- first successful `0x0F FC16` ACK only at 66.860 s;
+- first `0708` DCM response at 68.235 s;
+- 16 earlier `0708` polls were unanswered.
+Thus controller-side extended scheduling exists before the DCM `0x0F` endpoint is ready.
+
+**Strong conclusions**
+1. EXP175 is refined: XTR and ATEC/DCM are not the same *outer bus topology*, but they are not unrelated protocol families. Their native `0x0F` page/register serialization is substantially homologous.
+2. All seven locally proven XTR ACK-walk stage addresses map into the genuine ATEC/DCM full-sync sequence in the same relative order. Five match exact start/count; the first two use the same start with XTR count = ATEC count + 1.
+3. The high word-for-word similarity in several exact shared pages strongly supports common page schemas with model/state-specific values.
+4. The main missing local feature is the extended Online/DCM runtime service subsystem (`A5 + 0708 + 07D0..0884`), not basic `0x0F` register serialization.
+5. `0x06` should not be pursued as the Online/DCM endpoint on the basis of the genuine ATEC captures; it remains a parallel expansion/accessory path.
+6. Reference slave `0x04` and local slave `0x1E` are not wire-compatible renumberings; any functional equivalence would be at a higher architectural level.
+7. EXP226's `071C/0730` RTC exchange is not the XTR equivalent of the ATEC `0708` mailbox merely by address proximity.
+
+**Hypotheses**
+- The shared `0x0F` serializer has model/firmware/capability-dependent page selection, explaining the sparse XTR sync path versus broad ATEC full sync.
+- Extended scheduler activation may depend on commissioning/binding/platform capability or another service-discovery state outside the ordinary `0x0F` page ACK chain.
+- Some fixed differences inside homologous shared pages may expose model/service capability fields and are suitable for the next offline discriminator study.
+
+**Unknowns**
+- Whether this XTR firmware can ever enable the A5/0708/07D0 service subsystem without genuine Online/DCM commissioning.
+- Which exact field(s), if any, encode that capability/binding.
+- Whether slave 0x04 and local 0x1E are functionally analogous at a higher layer.
+- Semantics of the XTR `0730..0737` return bank.
+- Exact reason for the +1 page-length differences at `03E8` and `0410`.
+
+**Negative/safety result**
+No active write or responder follows from EXP227. No guessed `0708`, `0730`, A811/A812, or runtime-page injection is justified. Heat-pump restarts remain paused.
+
+**Next**
+Prefer EXP228 offline: build a field-level homology/difference map for shared pages (`04BA`, `0546`, `05FF`, `0662`, `085F`, plus the near-matching `03E8`/`0410`) and rank only persistent cross-system discriminator fields for further passive validation.
+
+
+---
+## EXP228 — Offline shared-page field discriminator map — COMPLETE / POSITIVE
+
+**Hypothesis**
+Persistent word-level differences inside the homologous native `0x0F` pages shared by local XTR and genuine ATEC/DCM systems may expose model/platform/capability fields. Values that vary within one platform should be rejected as fixed capability discriminators.
+
+**Method**
+Offline only: no restart, no ESP TX and no Thermia setting change. Exact FC16 payloads were parsed and compared from local XTR EXP221/222/141 and genuine ATEC/DCM `090209`/`090550`. Prior local Operation-Mode evidence was used to exclude the already-semantic `0553` field.
+
+Page-level replication used for the discriminator test:
+- `04BA/count22`: XTR 5 identical frames; ATEC 2 identical full-sync frames.
+- `0546/count20`: XTR 55 identical EXP221 frames; ATEC 2 identical full-sync frames; earlier local A/B/A proves only `0553` changes with Operation Mode.
+- `05FF/count33`: XTR 30 identical EXP141 frames plus one identical EXP222 frame; ATEC 2 identical frames.
+- `0662/count33`: XTR 267 identical EXP141 frames plus one identical EXP222 frame; ATEC 2 identical frames.
+- `085F/count5`: XTR 115 compared frames from EXP221/222 and ATEC 10 frames from `090209/090550`; all payloads all-zero.
+- `04A6/count13`: 223 local XTR frames showed multiple payload variants, so it was treated as state-dependent rather than a fixed discriminator.
+
+**Observed facts**
+Stable differences in exact shared pages:
+
+| Register | XTR | genuine ATEC/DCM | status |
+|---|---:|---:|---|
+| `04BA` | `0014` | `0013` | persistent candidate |
+| `04C0` | `0028` | `001E` | persistent candidate |
+| `0546` | `0001` | `0002` | persistent candidate |
+| `0547` | `0001` | `0000` | persistent candidate |
+| `054A` | `0002` | `0000` | persistent candidate |
+| `054F` | `0003` | `0000` | persistent candidate |
+| `0553` | `0001` in compared local frame | `0004` | excluded: known Operation Mode |
+| `061C` | `0003` | `0000` | persistent candidate |
+| `061E` | `0001` | `0000` | persistent candidate |
+| `067E` | `0003` | `0000` | persistent candidate |
+| `067F` | `0001` | `0000` | persistent candidate |
+
+Exact page-difference counts:
+- `04BA/22`: only 2 of 22 words differ (`04BA`, `04C0`).
+- `05FF/33`: only 2 of 33 differ (`061C`, `061E`).
+- `0662/33`: only 2 of 33 differ (`067E`, `067F`).
+- `0546/20`: 5 of 20 differ in the compared frames; one of those is known runtime-semantic `0553`, leaving four stronger structural candidates.
+- `085F/5`: 0 of 5 differ; explicit negative result.
+
+`04A6/13` is not stable locally. EXP221 uses an image dominated by zeros with `04B0=4020`; EXP222 additionally shows `04A6=0042`, `04A7=0001`, and one observed `04B0=4000`. The genuine ATEC image is stable but very different. Therefore this page is unsuitable as a fixed scheduler/capability fingerprint without semantic decomposition.
+
+Structural differences retained from EXP227:
+- XTR `03E8/count14` versus ATEC `03E8/count13`;
+- XTR `0410/count22` versus ATEC `0410/count21`.
+These are schema/page-length discriminators only.
+
+**Strong conclusions**
+1. The cross-platform homology from EXP227 can now be narrowed to a small, reproducible set of word-level differences rather than broad page mismatch.
+2. `0546`, `0547`, `054A`, `054F`, `04BA`, `04C0`, `061C`, `061E`, `067E`, and `067F` are the best current passive discriminator candidates.
+3. `0553` must be excluded from that list because it is already proven to encode Operation Mode locally.
+4. `04A6` is state-dependent locally and should not be used as a fixed model/Online fingerprint.
+5. `085F` is shared all-zero state in the compared systems and provides no platform discrimination.
+6. No field is proven to *cause* the Online/DCM scheduler. Cross-system persistence supports model/config/capability association only.
+
+**Hypotheses**
+- The `0546/0547/054A/054F` group may be system/model/hardware configuration metadata.
+- The XTR-specific `061C/061E` and `067E/067F` values may belong to a repeated table/capability structure in the 33-word `05xx/06xx` family.
+- Their location near points where XTR skips ATEC pages (`0620`, `0641`, then post-`0662` pages) makes a page-selection/capability relationship worth testing offline, but this is not yet causal evidence.
+- The +1 page lengths at `03E8` and `0410` may represent XTR schema extensions.
+
+**Unknowns**
+- Semantic names for the new discriminator registers.
+- Whether any candidate is configurable or firmware-fixed.
+- Whether any candidate participates directly in scheduler/binding enablement.
+- Whether the 33-word family encodes repeated hardware/module tables, feature groups or another structure.
+
+**Negative / safety result**
+No active write target emerges from EXP228. Do not write the discriminator candidates to reference ATEC values. Heat-pump restarts remain paused.
+
+**Next**
+EXP229 should remain offline and analyse the entire 33-word page family `055A..06C5`, including the pages present on ATEC but skipped by XTR, to test whether the candidate tail words form a coherent table/capability/page-selection structure.
+
+---
+## EXP229 — Offline 33-word family / 12-word structure analysis — COMPLETE / POSITIVE
+
+**Hypothesis**
+The contiguous `055A..06C5` count-33 family is a coherent table/descriptor structure. The XTR-only values `061C/061E` and `067E/067F` may be structural fields associated with model-dependent page selection rather than ordinary runtime state.
+
+**Method**
+Offline only. Parsed existing genuine ATEC/DCM full-sync captures `090209` and `090550`, plus local XTR EXP141 and EXP222 payloads. No heat-pump restart, no ESP TX and no setting change.
+
+The ATEC full-sync contains twelve consecutive FC16 `count33` pages:
+`055A, 057B, 059C, 05BD, 05DE, 05FF, 0620, 0641, 0662, 0683, 06A4, 06C5`.
+
+**Observed facts**
+1. Every page start advances by exactly `0x21` (=33) words. The twelve pages therefore form one contiguous 396-word image covering `055A..06E5`.
+2. `090209` and `090550` are bit-for-bit identical across all 396 words in this family.
+3. The concatenated image has strong periodicity at 12 words:
+   - `315/384 = 82.0%` of values equal the value 12 words later;
+   - 396 words = `33 * 12`, allowing a natural candidate decomposition into 33 records of 12 words.
+4. Exact 12-word template repetitions include:
+   - records `9..15`: seven identical records;
+   - records `17..23`: seven identical records;
+   - records `29..31`: three identical records;
+   - records `6..7`: two identical records.
+5. Local XTR `05FF/count33`:
+   - 31 observed frames across EXP141+EXP222;
+   - one unique payload;
+   - differs from ATEC only at `061C=0003` (ATEC `0000`) and `061E=0001` (ATEC `0000`).
+   - In the 12-word decomposition these are record 16 fields 2 and 4, directly after the seven-record repeated run `9..15`.
+6. Local XTR `0662/count33`:
+   - 268 observed frames across EXP141+EXP222;
+   - one unique payload;
+   - differs from ATEC only at `067E=0003` (ATEC `0000`) and `067F=0001` (ATEC `0000`).
+   - These fall in record 24 fields 4 and 5, directly after the seven-record repeated run `17..23`.
+7. The ATEC reference image contains zero occurrences of value `0003` across all 396 words. It contains multiple `0001` values. Therefore the XTR `0003` values are the more distinctive cross-platform markers.
+8. Local transport page selection differs:
+   - ATEC: `05FF -> 0620 -> 0641 -> 0662`;
+   - XTR acknowledged sequence: `05FF -> 0662`.
+   The XTR jump is three page strides (`3 * 0x21`), numerically matching `061C=3`.
+9. A second numerical correlation exists: `0662 + 3 * 0x21 = 06C5`, while XTR `067E=3`. However, after the local `0662` ACK the XTR becomes quiescent and does not emit `06C5`; therefore a literal "next-page stride" interpretation is not supported.
+
+**Strong conclusions**
+1. The `055A..06E5` data is a coherent structured family rather than twelve unrelated 33-word blocks.
+2. The FC16 `count33` boundaries are transport chunk boundaries superimposed on a stronger 12-word internal periodicity.
+3. The four XTR-vs-ATEC differences inside `05FF` and `0662` occur in transition records between repeated 12-word regions. This is substantially more specific than EXP228's page-level discriminator result.
+4. The family behaves like static/configuration/descriptor data in the two genuine ATEC captures; it does not look like ordinary fast runtime telemetry.
+5. No causal Online/DCM scheduler-enable field is identified.
+
+**Hypotheses**
+- `061C/061E` and `067E/067F` may encode model/configuration metadata controlling which substructures are relevant or serialized.
+- `061C=3` may be related to the three-page-stride jump from `05FF` to `0662`; this remains correlation only.
+- Repeated numerical constants (`31`, `12`, `59`, `23`) also fit a calendar/range/constraint-descriptor interpretation, which competes with a page-selection/capability interpretation.
+- The family begins immediately after the previously identified `0559 Link Integration` register, but adjacency alone is insufficient to call the family integration-specific.
+
+**Unknowns**
+- Formal record width/schema; 12 words is strongly supported statistically but undocumented.
+- Semantic meaning of records 16 and 24.
+- Whether XTR's skipped pages are absent, unsupported, unchanged, or merely omitted from the particular sync path.
+- Whether the XTR-only `0003` values are counts, enum values, pointers, feature identifiers, or unrelated metadata.
+
+**Negative / safety result**
+The attractive `value 3 == three page strides` observation is not sufficient for a pointer interpretation because the second `3` does not cause an observed `0662 -> 06C5` transition. No write target follows from EXP229.
+
+**Next**
+EXP230 should stay offline and classify the 12-word records semantically, explicitly testing calendar/range-descriptor versus model/capability/page-selection hypotheses against the public Online map, recovered firmware semantics and all available cross-model evidence.
