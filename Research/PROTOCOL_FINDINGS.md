@@ -1624,3 +1624,34 @@ Still strong:
 - 0559=SYSTEM not required for the genuine extended scheduler.
 - 06EA RTC/date.
 - 0884 ten-entry timestamped alarm/history structure.
+
+
+## EXP203 — causal frontier of current captures
+
+Earliest comparable cold-boot evidence:
+
+```text
+Local XTR no DCM (EXP164)
+t=0 ms    first returned bus frame: 0x1E
+t=317     0x0F FC16 04BA/count22
+t=722     first logged 0x02 A7F8/count15, A811/A812=FFFF/0000
+t=818     C8
+t=1045    0x06
+180 s     no A4/A5/05/0x0F-FC03
+
+Reference with DCM present (090209)
+t=31 ms   first visible frame: 0x02 A7F8/count13, A811/A812=000C/0500
+t=130     C8
+t=251/290 0x04 request/response
+t=389     ACKed 0x0F FC16
+t=1179    A5 active
+```
+
+The two branches are already different at the first available controller frame. Because they are different physical/controller systems, the differing fingerprint cannot distinguish platform identity from DCM-installed topology state.
+
+090550 adds a different fact: an already-enabled topology survives DCM service silence and later accepts a DCM rejoin. It does not show topology creation.
+
+**Protocol implication:** the activation gate lies upstream of all ordinary mailbox/export behavior observed so far. Current captures establish consequences and maintenance of the topology, not its creation.
+
+The project has reached an evidence boundary for the scheduler gate with the existing logs. The decisive capture is same-controller cold boot with genuine DCM present versus absent.
+
