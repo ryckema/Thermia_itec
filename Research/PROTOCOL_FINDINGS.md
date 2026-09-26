@@ -1697,3 +1697,24 @@ After resync, steady 0708 is repeatedly [0,0,0,0,0,6]. A later command selector 
 Both [0,0,7FFF,FFFF,0080,7] from 090550 and [0,0,7FFF,FFFF,0080,6] from EXP203 trigger full resync. w5=7 is therefore not a required join marker.
 
 Second selector: 0708 [1,0,0,0,0,6] -> FC03 0546/count20, which includes known OperationMode 0553 and Link Integration 0559. Previous mapping remains w1=1 -> FC03 03E8/count13 heating/settings. Current model: w0 selects a system/status desired-state family strongly aligned with firmware partial group 0; w1 selects the heating/settings family strongly aligned with partial group 1; normal w2 selector remains unobserved.
+
+
+## EXP207 — DCM slave-0x0F responder timing model
+
+Offline timing analysis across all five genuine DCM captures shows a consistent normal-response pattern at 9600 8E1:
+
+- FC16 write ACKs are normally seen 13–15 ms after the request frame has completed. The 8-byte ACK itself occupies about 9.17 ms on the wire, leaving roughly 4–5 ms of silent turnaround.
+- 0708/count6 FC03 responses are 17-byte frames and complete 23–26 ms after the request, implying a median pre-response silent interval of about 4.5 ms.
+- 03E8/count13 responses are 31-byte frames and complete in 39–42 ms; 0546/count20 is a 45-byte response completing in 56 ms. Both imply the same approximately 4–5 ms pre-response delay.
+
+This is consistent with ordinary Modbus-RTU inter-frame timing, not a long hidden DCM processing phase.
+
+Protocol implication: once the controller has already enabled the Online/DCM topology, the observed DCM bus role can be implemented as a strict slave-0x0F state machine that responds only to controller-originated FC16 writes and FC03 reads after a normal RTU silent interval. The captured rejoin path does not require unsolicited 0x0F frames from the DCM.
+
+This is an emulator-design result only. It does not reveal or bypass the controller-side scheduler/topology activation gate.
+
+## EXP208 — next decisive external discriminator
+
+The next highest-value evidence is a cold boot of the same genuine reference controller with the DCM physically absent before controller power-on. This directly tests whether the extended A5/A4/05 + 0708 + 07D0..0884 topology is selected from persistent/controller capability state or requires DCM presence during boot.
+
+No local 0708 response or new semantic write is justified before that discriminator is available.
