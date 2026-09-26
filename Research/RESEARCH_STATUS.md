@@ -2008,3 +2008,14 @@ Highest-value next evidence:
 
 No active write experiment is justified.
 
+
+
+## Status through EXP204
+
+The project has now reached an evidence boundary in two directions:
+- current bus logs do not contain a same-controller topology OFF->ON transition;
+- current Project/Library/public sources do not contain the actual legacy Thermia/DHP-AQ controller firmware that would expose the missing bootstrap logic.
+
+Official DHP-AQ documentation shows that Link support requires controller software >=2.2 and that older units may need display-card replacement, reinforcing a controller-generation/capability layer upstream of normal DCM protocol traffic.
+
+Priority remains a same-reference-controller DCM-present/absent cold-boot A/B. Secondary acquisition target: controller/display-card firmware, installer update package, service dump, or spare controller hardware.
