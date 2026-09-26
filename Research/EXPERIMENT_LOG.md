@@ -1528,3 +1528,18 @@ Negative: initial topology activation after controller boot remains unknown.
 **Strong conclusion:** 0708 word1 selects a coherent heating desired-state page rather than an opaque arbitrary block.
 
 **Safety:** mapping does not justify direct second-master writes; use only the slave-0x0F desired-state path if/when the controller emits the genuine scheduler.
+
+
+## EXP212 — mailbox selector consumption semantics — COMPLETE / POSITIVE
+
+**Hypothesis:** 0708 word0/word1 are one-shot group-fetch selectors consumed by the corresponding controller FC03 read, rather than persistent state bits or guaranteed evidence of changed values.
+
+**Observed:** in the genuine 20260924 Heat Curve command capture, word1=1 is followed ~40 ms later by FC03 03E8/count13 and the next 0708 poll has word1=0; this occurs twice, with returned Heat Curve desired values 23 then 22. In the genuine 20260926 reconnect capture, word0=1 at 104.130 s is followed at 104.170 s by FC03 0546/count20; the returned 20-word page is byte-for-byte identical to the controller's earlier FC16 0546/count20 image at 45.336 s; the next 0708 poll at 108.329 s has word0=0.
+
+**Result:** positive. word0 and word1 are best modeled as one-shot fetch/dirty latches. A set selector requests processing/fetch of a page but does not prove a semantic value difference exists in that page.
+
+**Emulator implication:** assert the relevant selector until the controller performs the selected FC03 fetch, then clear it for the next mailbox poll. Do not hold it high indefinitely.
+
+**Unknown:** normal word2 selector behaviour remains unobserved.
+
+**Safety:** offline analysis only.
