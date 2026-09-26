@@ -1961,3 +1961,13 @@ Older DHP-AQ installation documentation independently supports a physical auto-r
 
 The strongest passive unexplained fingerprint remains A811/A812 (local FFFF/0000 versus reference 000C/0500).
 
+
+
+## Status through EXP201
+
+A811/A812 remain the best passive local-vs-reference discriminator, now with a sharper interpretation. They are fixed at 000C/0500 across the entire genuine DCM silent->rejoin transition and therefore do not track DCM mailbox/session attachment. Local no-DCM remains FFFF/0000, and 0x06 metadata presence alone does not change it.
+
+Combined with the exact XTR UI distinction between DCM accessory installed and Online connection, the pair is now best treated as a candidate reflection of persistent installed topology/controller capability rather than live connectivity.
+
+The decisive experiment remains same-controller clean cold boot with genuine DCM physically present versus absent. No active write is justified.
+
