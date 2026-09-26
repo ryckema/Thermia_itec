@@ -1547,3 +1547,56 @@ Remove `0559 / Link Integration SYSTEM` from the scheduler-enable candidate list
 
 **Decision:** offline complete; no TX/YAML change.
 
+
+
+## 2026-09-26 — EXP198 COMPLETE / POSITIVE STARTUP-TAIL MAPPING; NEGATIVE AS GATE CANDIDATE
+
+**Hypothesis:** startup/full-sync tail blocks `06EA`, `06F1` and `06F4` may contain identity/capability/commissioning data that explains activation of the extended Online/DCM scheduler.
+
+### 06EA/count7 — RTC/date snapshot proven
+The genuine controller-boot capture (090209) contains:
+
+`06EA/count7 = [22,6,8,25,9,26,4]`
+
+The genuine DCM-rejoin capture (090550) contains:
+
+`06EA/count7 = [14,11,8,25,9,26,4]`
+
+These decode as:
+`second, minute, hour, day, month, two-digit year, weekday(Monday=0)`.
+
+Two independent timing checks prove the interpretation:
+1. In 090209, runtime block `0848` later carries the same seven-word RTC tuple with seconds advanced from 22 to 41 over ~18.96 s of capture time.
+2. Between the 090209 06EA event and the 090550 06EA event, logger absolute time advances ~291.8 s while the encoded RTC advances exactly 292 s.
+
+**Strong conclusion:** `06EA` is a full-sync/startup RTC/calendar snapshot, not identity or scheduler state.
+
+### 06F1/count3 — unavailable/reserved tuple
+Both genuine power-event captures carry:
+`06F1/count3 = [FFFF,FFFF,FFFF]`.
+
+No public Thermia Online profile checked exposes indices 1777..1779. Current classification: unavailable/reserved/private fields; no scheduler evidence.
+
+### 06F4/count19 — controller-boot-only snapshot
+090209 contains one `06F4/count19` immediately after 06F1 and before 085F:
+`[0040,0000,0028,000A,000A,0000,0000,000E,0004,0000,0000,000E,0000,0010,0000,0000,0000,0000,0000]`.
+
+The first five words exactly match the contemporaneous controller 0x02 FC17 write image `A80C..A810 = [0040,0000,0028,000A,000A]`.
+
+Notably:
+- the following reference-only discriminator words `A811/A812 = 000C/0500` are **not** copied into 06F4;
+- 06F4 is absent from the complete indexed 090550 DCM-rejoin capture, even though that capture performs a full DCM state resynchronization;
+- the extended topology in 090209 is already active from the first visible frames (0x04/A5 etc.) tens of seconds before 06F4 is sent.
+
+**Strong conclusion:** 06F4 is a controller-boot-specific state snapshot derived partly from normal controller state. It is not the event that creates the extended topology and is not a justified activation target.
+
+### Architectural consequence
+The startup-tail search produced no identity/gate token:
+- 06EA = clock/date;
+- 06F1 = unavailable/private sentinel tuple;
+- 06F4 = late controller-boot snapshot, downstream of topology activation.
+
+This further supports the rule that 0x0F FC16 pages are exported consequences of an already-selected topology, not the topology-selection ingress.
+
+**Decision:** offline only; no TX, no YAML changes, no write target.
+
