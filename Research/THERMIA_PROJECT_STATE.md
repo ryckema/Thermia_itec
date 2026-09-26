@@ -497,6 +497,7 @@ EXP98 result carried forward: AFC8=00FF alone produced no detectable semantic ef
 **Observed:** all ten 8 s phases completed cleanly. The run delivered 75/75 guarded responses with no refusals. All single, pairwise, and full historical non-REQ combinations produced no change in controller state, paired RSP02, AFDC..AFE0, `0861`, settings, CMD1E, or outdoor state. Poll cadence remained the normal fast-presence pattern (`707..1450 ms`). Parser resync and RX-drop deltas were zero.
 
 **Strong conclusion:** `AFC8=00FF`, `AFC9=0001`, and `AFCB=0001` are not standalone semantic triggers, individually or in the tested combinations, when `AFCA` remains low. The only historical field with proven behavioural effect remains `AFCA=03E8` as transaction REQ.
+
 ## EXP100 — prepared
 
 **Hypothesis:** the historical non-REQ fields may acquire meaning only when carried inside a valid four-phase `AFCA=03E8` transaction.
@@ -998,6 +999,7 @@ Safety rationale for new target:
 
 Current experiment: **EXP138 PREPARED, not yet run**.
 
+
 ---
 
 ## 2026-09-24 — Correction after fclauson follow-up analysis of genuine Online capture
@@ -1496,6 +1498,7 @@ Procedure:
 7. Restore the exact original Heat Curve value.
 8. Press `EXP143 MARK Heat Curve Restored`.
 9. EXP143 observes a final 60 s and ends automatically.
+
 Safety:
 - ESP TX disabled for the experiment; DE forced LOW.
 - no FC16 ACK;
@@ -1995,6 +1998,7 @@ Current experiment: **EXP148 PREPARED, not yet run**.
 
 
 ---
+
 ## 2026-09-24 — EXP148 COMPLETE / STRONG TOPOLOGY NEGATIVE
 
 Hypothesis:
@@ -2494,6 +2498,7 @@ Current experiment:
 
 Hypothesis:
 Genuine Online/DCM recognition may be latched during controller boot. If both known external roles are present from the first relevant returned traffic (`0x06` accessory responder + `0x0F` ACK/mailbox side), the controller may add A5/A4 and/or `0x0F FC03` traffic to its scheduler.
+
 Observed facts:
 - EXP153 armed cleanly and remained passive before the intended controller restart.
 - A real bus-down interval was detected after >=3 s silence.
@@ -2992,7 +2997,8 @@ Hypotheses:
 - C8 may be a generic discovery/commissioning target polled for a bounded timeout; when genuine Online/DCM services become available, the controller advances out of that discovery phase sooner.
 - The important discriminator is likely not the presence of C8 requests, but the transition that causes C8 probing to stop and A5/0x0F mailbox activity to become established.
 
-Unknowns:- What device/service should answer slave 0xC8 and what registers 0x2328..0x2329 represent.
+Unknowns:
+- What device/service should answer slave 0xC8 and what registers 0x2328..0x2329 represent.
 - Whether the shorter nine-probe C8 sequence in the genuine DCM capture is causally terminated by A5/0x0F readiness or simply a capture-specific phase difference.
 - Exact event that enables A5 and 0x0F FC03 scheduling.
 
@@ -3492,6 +3498,7 @@ Authoritative continuation point: **EXP181 COMPLETE / VALID NEGATIVE FOR 5 ms RE
 ---
 
 ## 2026-09-25 — EXP178–181 NEGATIVE TIMING BRANCH + DCM MAILBOX BREAKTHROUGH
+
 ### EXP178–181 summary
 
 EXP178 tested AFCA/0861 plus 0x0F ACK context, EXP179 removed 0x0F ACK service, EXP180 restored proven LONG->direct-SHORT phase selection, and EXP181 additionally restored the historical 5 ms response delay. None reproduced 0861=16 in the current runtime context. EXP180/181 were parser-clean and hit the intended LONG (~4.29 s) -> direct SHORT (~0.707 s) sequence. Therefore further AFCA timing micro-variants are low priority. The historical AFCA/0861 handshake remains proven from earlier experiments, but its current runtime preconditions are not fully reconstructed.
