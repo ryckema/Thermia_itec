@@ -6,12 +6,34 @@ Last updated: 2026-09-26
 
 ## Authoritative current state — 2026-09-26 (supersedes older current-experiment bullets below)
 
-- Last completed experiment: **EXP213 — COMPLETE / POSITIVE OFFICIAL BOOTSTRAP-DOCUMENTATION AUDIT**.
+- Last completed experiment: **EXP215 — COMPLETE / MAJOR POSITIVE 0546 SYSTEM-PAGE VALIDATION**.
 - Current experiment: **EXP208 — PREPARED / AWAITING EXTERNAL PASSIVE SAME-CONTROLLER COLD BOOT WITHOUT DCM; no local experiment armed**.
 - Production functionality remains unchanged.
 - Do **not** repeat AFCA timing variants, direct `0x0F` FC16 semantic writes, passive topology censuses, or standalone `0708` probes already covered by EXP147/150 and EXP175–181.
 - Do **not** attempt to answer `0708/count6` locally unless the XTR controller first emits a genuine `0F 03 0708 0006`.
 - Current highest-value direction: identify the **controller-side topology / integration / scheduler enable condition** that distinguishes the genuine DCM reference system from the local XTR M.
+
+### EXP215 consolidated finding — 0546/count20 system desired-state page validated
+
+**Hypothesis:** the 0708 word0-selected FC03 page at 0546/count20 is the genuine system/operation desired-state page and contains the public Thermia Online Operation Mode and Link Integration fields at their native registerIndex positions.
+
+Observed:
+- 0546 decimal = registerIndex 1350, so a 20-word page spans indices 1350..1369.
+- Public Thermia Online ATEC/DHP-AQ and iTec IQ profiles independently expose:
+  - registerIndex 1363 / 0x0553 = REG_OPERATIONMODE, writable enum;
+  - registerIndex 1369 / 0x0559 = REG_LINK_INTEGRATION, writable enum with LIGHT=0 and SYSTEM=1.
+- In the genuine reference FC16 0546/count20 image, offset 13 / index 1363 = 4 and offset 19 / index 1369 = 0.
+- At 104.130 s the DCM asserts 0708 word0=1; the controller reads FC03 0546/count20 40 ms later; the returned 20-word desired-state image is byte-for-byte identical to the earlier controller FC16 image, including 1363=4 and 1369=0.
+- The genuine reference scheduler is fully operational while Link Integration is 0/LIGHT in this page.
+
+**Strong conclusions:**
+1. 0546/count20 is a coherent system/operation desired-state page and 0708 word0 is its fetch selector.
+2. registerIndex 1363 / 0x0553 is the Operation Mode field in both controller-state FC16 and DCM desired-state FC03 directions.
+3. registerIndex 1369 / 0x0559 is the Link Integration field in both directions.
+4. **Link Integration=1/SYSTEM is not required for the genuine Online/DCM scheduler to exist or operate.** The reference session runs with 0559=0/LIGHT. This directly strengthens the earlier EXP176 negative result and removes 0559 from the scheduler-gate candidate list.
+5. Future operating-mode control, once the scheduler exists, should use the desired-state path: DCM updates 0553 in the 0546 page, asserts 0708 word0, controller fetches 0546. Do not use a direct second-master write as a substitute.
+
+**Unknown:** semantics of the other 18 words in 0546/count20 remain largely open.
 
 ### EXP213 consolidated finding — official bootstrap documentation audit
 
