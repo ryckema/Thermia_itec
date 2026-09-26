@@ -1909,3 +1909,22 @@ Do not add resistors, straps or experimental loading to the live bus based on th
 1. obtain same-controller DCM-present/absent cold-boot evidence;
 2. obtain DCM03/Connect hardware, electrical measurements or controller firmware/service tooling;
 3. continue semantic mapping only where it directly supports a future emulator.
+
+
+## 2026-09-26 — EXP203 COMPLETE / DCM MODBUS DISCONNECT-POWER-CYCLE-RECONNECT
+
+Hypothesis: removing a genuine DCM from the Thermia Modbus bus, power-cycling it while disconnected, and reconnecting it can distinguish controller topology maintenance from DCM session attachment and reveal the minimal rejoin protocol.
+
+Physical sequence supplied by capture owner: DCM removed from Modbus; DCM powered down/up while removed; DCM Modbus reconnected. Controller remained running.
+
+Observed: while disconnected, the controller kept the reference 0x02 fingerprint (A811/A812 000C/0500), A5, slave 0x04, 0x06 polling and unanswered 0708 polls. Pending 0864/count4 was retried about every 2.1 s. First successful reattachment evidence was ACK of pending 0864 at 27.051 s. The next 0708 poll at 28.444 s was answered at 28.470 s with [0000,0000,7FFF,FFFF,0080,0006], immediately followed by full resync from 03E8/count13.
+
+Join-state correction: prior 090550 used [0000,0000,7FFF,FFFF,0080,0007]. EXP203 proves w5=7 is not required for join/resync. The compound w2/w3/w4 state is the stronger signature.
+
+After full resync, steady 0708 had resumed by 62.119 s and runtime export restarted at 07D0 by 67.024 s.
+
+Major selector breakthrough: at 104.130 s, normal mailbox state [0001,0000,0000,0000,0000,0006] caused immediate FC03 0546/count20. The returned image includes 0553=4 OperationMode and 0559=0 Link Integration LIGHT. Together with earlier w1=1 -> 03E8/count13, this gives two independently observed selector families. w0 strongly aligns with firmware partial-group-0-like system/status semantics; w1 strongly aligns with group-1-like heating/settings semantics. Exact one-to-one serialization remains unproven.
+
+Strong conclusions: already-active extended topology survives complete DCM Modbus removal and DCM power cycle while controller stays powered; reattachment needs no visible special discovery exchange before normal service; initial controller cold-boot topology activation remains unsolved.
+
+Safety: passive external capture analysis only; no local TX and no YAML change.
