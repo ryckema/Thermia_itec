@@ -1,8 +1,156 @@
 # THERMIA PROJECT STATE
 
-Last updated: 2026-09-26
+Last updated: 2026-09-27
 
 ## Authoritative experiment state
+
+
+## Authoritative current state — 2026-09-27 after EXP229
+
+- Last completed experiment: **EXP229 — COMPLETE / OFFLINE POSITIVE STRUCTURE: `055A..06E5` is a stable 396-word structured family with strong 12-word periodicity; the XTR-only differences sit in transition records rather than the repeated templates**.
+- Current experiment: **none running**. Heat-pump restarts remain paused. EXP229 used only existing captures; no ESP TX, no Thermia setting change and no controller restart.
+- Hypothesis: the `055A..06C5` count-33 sequence is a coherent table/descriptor family, and the EXP228 XTR-only values near `061C/061E` and `067E/067F` may explain the model-dependent page-selection pattern.
+- Genuine ATEC/DCM full-sync (`090209`, `090550`) contains exactly 12 consecutive `count33` pages:
+  `055A, 057B, 059C, 05BD, 05DE, 05FF, 0620, 0641, 0662, 0683, 06A4, 06C5`.
+  Every start is exactly `+0x21` words from the previous one; together they cover the contiguous range `055A..06E5` with no gaps or overlap.
+- All 396 words in that family are identical between the two independent ATEC full-sync captures. This is strong evidence that the family is static/configuration/descriptor-like on that reference system rather than ordinary fast-changing telemetry; immutability across other configurations is not proven.
+- The 396-word image has a strong 12-word periodicity:
+  - `315/384` word comparisons (`82.0%`) match at lag 12;
+  - when aligned from `055A`, the image can be represented as 33 candidate logical records of 12 words;
+  - exact repeated 12-word templates occur in runs of 7 records (`records 9..15`), 7 records (`17..23`), 3 records (`29..31`) and 2 records (`6..7`).
+- The local XTR `05FF/count33` page was observed 31 times with one identical payload (EXP141+EXP222). It matches ATEC in 31/33 words; the only differences are:
+  - `061C`: XTR `0003`, ATEC `0000`;
+  - `061E`: XTR `0001`, ATEC `0000`.
+  In the 12-word model these lie in **record 16**, immediately after the seven-record repeated template at records `9..15`.
+- The local XTR `0662/count33` page was observed 268 times with one identical payload. It also matches ATEC in 31/33 words; the only differences are:
+  - `067E`: XTR `0003`, ATEC `0000`;
+  - `067F`: XTR `0001`, ATEC `0000`.
+  These lie in **record 24**, immediately after the seven-record repeated template at records `17..23`.
+- Therefore the four strongest EXP228 discriminators in this family are not random page-tail values: they occur specifically in **transition records between highly repetitive table regions**. This materially strengthens a table-metadata/model-configuration interpretation.
+- Numeric page-jump correlation:
+  - local sync jumps `05FF -> 0662`, which is exactly `3 * 0x21` words, while XTR `061C=3`;
+  - `0662 + 3 * 0x21 = 06C5`, and XTR also has `067E=3`.
+  This is **hypothesis-generating only**. The second correlation does not behave as a simple next-page pointer because the local XTR became quiescent after ACKing `0662` and did not emit `06C5`.
+- Additional negative discriminator: the ATEC 396-word family contains **no `0003` values at all**. Thus the two XTR `0003` fields are especially platform-specific in the compared corpus. `0001` is common in ATEC and is less distinctive by itself.
+- An alternative semantic interpretation remains open: repeated constants such as `001F=31`, `000C=12`, `003B=59`, and `0017=23` are compatible with calendar/range/constraint metadata. Therefore EXP229 does **not** label the table as an Online capability table or scheduler jump table.
+- Strong conclusion: this family is best treated as **structured static/descriptor data with model-specific transition-record fields**, not as a set of ordinary runtime registers.
+- No write target is justified. Do not copy ATEC zeros or other reference values into `061C`, `061E`, `067E`, or `067F`.
+- Preferred next experiment: **EXP230 — OFFLINE 12-word descriptor semantics**, testing competing explanations (calendar/range descriptors vs model/capability/page-selection metadata) using the public Online register map, recovered firmware semantics and all available cross-model captures.
+
+
+
+## Authoritative current state — 2026-09-27 after EXP228
+
+- Last completed experiment: **EXP228 — COMPLETE / OFFLINE POSITIVE FIELD-LEVEL DISCRIMINATOR MAP**.
+- Current experiment: **none running**. Heat-pump restarts remain paused. No bus TX or setting change was performed for EXP228.
+- Hypothesis: persistent word-level differences inside the homologous `0x0F` pages shared by XTR and genuine ATEC/DCM systems may expose model/platform/capability fields, while transient operating-state words can be filtered out offline.
+- Sources: local XTR raw EXP221, EXP222 and EXP141 page payloads; the already-proven local Operation-Mode correlation on `0546/count20`; genuine ATEC/DCM boot/rejoin captures `090209` and `090550`; EXP227 page-homology result.
+- High-confidence persistent cross-system discriminator candidates now include:
+  - `0x0546`: XTR `0001` vs ATEC `0002`;
+  - `0x0547`: XTR `0001` vs ATEC `0000`;
+  - `0x054A`: XTR `0002` vs ATEC `0000`;
+  - `0x054F`: XTR `0003` vs ATEC `0000`;
+  - `0x04BA`: XTR `0014` vs ATEC `0013`;
+  - `0x04C0`: XTR `0028` vs ATEC `001E`;
+  - `0x061C`: XTR `0003` vs ATEC `0000`;
+  - `0x061E`: XTR `0001` vs ATEC `0000`;
+  - `0x067E`: XTR `0003` vs ATEC `0000`;
+  - `0x067F`: XTR `0001` vs ATEC `0000`.
+- Replication strength:
+  - local `0546/count20`: 55 identical EXP221 page images, plus prior A/B/A evidence that only known Operation Mode register `0553` changes across `AUTO -> COMPRESSOR -> AUTO`; genuine `090209` and `090550` carry the same ATEC values;
+  - local `04BA/count22`: 5 identical images across EXP221/222; genuine `090209` and `090550` are identical and differ only at `04BA` and `04C0`;
+  - local `05FF/count33`: 30 identical EXP141 images plus the identical EXP222 image; genuine `090209` and `090550` are identical; only `061C` and `061E` differ;
+  - local `0662/count33`: 267 identical EXP141 images plus the identical EXP222 image; genuine `090209` and `090550` are identical; only `067E` and `067F` differ;
+  - `085F/count5` is an explicit negative discriminator: all five words are zero on both platforms in all compared frames.
+- Important exclusions:
+  - `0x0553` is **not** promoted as a platform/capability discriminator because local experiments already prove it is Operation Mode (`1=AUTO`, `2=COMPRESSOR`); the ATEC value `4` can therefore reflect runtime mode rather than architecture;
+  - `04A6/count13` is **not** a fixed capability candidate: the local XTR payload itself changes between EXP221 and EXP222 (`04A6/04A7` and `04B0` vary), despite a stable but very different ATEC image.
+- Structural discriminator candidates from EXP227 remain: XTR uses `03E8/count14` versus ATEC `/13`, and XTR `0410/count22` versus ATEC `/21`. These +1 extensions are model/schema candidates, not scheduler-enable bits.
+- Strong conclusion: EXP228 identifies a **small persistent discriminator set**, but does **not** identify a proven Online scheduler-enable flag. The fields above may encode model, installed hardware, capability, configuration or table metadata; causality must not be inferred from the cross-system difference alone.
+- New high-value pattern for offline follow-up: XTR sends `05FF/33` and then `0662/33`, while genuine ATEC full-sync also includes the intermediate `0620/33` and `0641/33` pages. The XTR-specific tail values at `061C/061E` and `067E/067F` sit at boundaries of this 33-word family. This is a **hypothesis-generating structural correlation only**, not proof that these fields control page selection.
+- Preferred next experiment: **EXP229 — OFFLINE 33-word family/table-structure analysis (`055A..06C5`)**, testing whether the XTR discriminator words and skipped pages form a coherent model/capability table. No active responder/write is justified.
+
+## Authoritative current state — 2026-09-27 after EXP227
+
+- Last completed experiment: **EXP227 — COMPLETE / OFFLINE POSITIVE ARCHITECTURE HOMOLOGY: XTR and genuine ATEC/DCM share a homologous native `0x0F` page/register family, while the extended runtime service scheduler/topology is different and remains absent locally**.
+- Current experiment: **none running**. Heat-pump restarts remain paused. Next preferred work is another offline experiment, focused on cross-system page/value discriminators rather than active scheduler probing.
+- EXP227 was fully offline: no heat-pump restart, no ESP TX, no setting change.
+- Sources compared: four genuine ATEC/DCM captures (`210001`, `071517`, `090209`, `090550`), local XTR raw EXP221/222 evidence, and the locally proven ACK-walk sequence from EXP137–142.
+- The local XTR proven sync path is:
+  `03E8/14 -> 0410/22 -> 042E/15 -> 04A6/13 -> 04BA/22 -> 05FF/33 -> 0662/33`.
+- Every one of those seven XTR stage start addresses has a counterpart in the genuine ATEC/DCM full-sync sequence and appears in the same relative order:
+  - `03E8`: XTR count14 vs ATEC count13;
+  - `0410`: XTR count22 vs ATEC count21;
+  - `042E/15`, `04A6/13`, `04BA/22`, `05FF/33`, `0662/33`: exact start/count matches.
+- Two additional recurrent local XTR pages also align exactly with genuine ATEC/DCM pages: `0546/20` and `085F/5`.
+- Selected exact shared-page payload comparisons strongly support homologous layouts rather than coincidental addresses:
+  - `04BA/22`: 20/22 words equal in compared XTR vs ATEC frames;
+  - `05FF/33`: 31/33 equal;
+  - `0662/33`: 31/33 equal;
+  - `085F/5`: 5/5 equal;
+  - `0546/20`: 15/20 equal in the compared states.
+  `04A6/13` is structurally shared but its values differ strongly between the compared states/models.
+- Therefore EXP175's topology result is refined, not reversed: **the outer bus/service topology differs, but the inner/native `0x0F` application/register serializer is substantially shared across XTR and ATEC/DHP-AQ-family systems**.
+- Genuine ATEC/DCM full synchronization contains many intermediate pages that the local XTR ACK-walk skips. Current hypothesis: the common serializer emits a model/firmware/capability-dependent subset on XTR. This is not yet proven as the cause.
+- The genuine extended Online/DCM runtime service task remains absent locally. Reference systems combine:
+  - A5 service traffic;
+  - controller `0x0F FC03 0708/count6` mailbox polling;
+  - cyclic `0x0F FC16` runtime uploads in the `07D0..0884` family.
+  Local indexed/raw evidence continues to show none of that subsystem.
+- Genuine DCM rejoin capture `090550` strengthens the separation of scheduler activation from endpoint readiness: A5 and `0708` scheduling are active from the start, while the `0x0F` endpoint remains silent until ~66.86 s; 16 `0708` polls are unanswered before the first DCM mailbox response.
+- `0x06` is further demoted as an Online/DCM endpoint hypothesis for these reference systems: across the four genuine captures there are 69 exact `0x06 FC17 AFC8/12 -> AFDC/5` controller polls and **zero** slave-0x06 responses, despite working Online/DCM traffic on `0x0F`/A5.
+- The ATEC slave-0x04 path and local XTR slave-0x1E path are not wire-level address substitutes:
+  - reference 0x04 uses recurrent FC17 `ABE0/12 -> ABF4/4`;
+  - local 0x1E uses FC16 `0000/9`, `0014/3` plus FC04 `0000/22`, `001E/6`.
+  Functional relationship may exist at a higher platform level, but wire protocol is different.
+- EXP226 also prevents a false equivalence: local `071C/0730` FC17 is RTC/calendar-bearing traffic, whereas reference `0708/count6` is a mailbox/session header. They must not be treated as the same transaction family solely because both sit near `0x07xx`.
+- Strongest current architectural model:
+  1. a largely shared native `0x0F` register/page serializer exists across platforms;
+  2. page lengths/selection and outer device topology vary by model/controller generation;
+  3. the Online/DCM command path depends on an additional controller-side extended service scheduler/binding state;
+  4. the missing local problem is therefore no longer “find the `0x0F` register map”, but “identify what enables the extended scheduler/topology on XTR, if XTR supports it at all”.
+- No active responder/write experiment is justified by EXP227 alone. Production functionality remains unchanged.
+
+## Authoritative current state — 2026-09-27 after EXP226
+
+- Last completed experiment: **EXP226 — COMPLETE / OFFLINE POSITIVE: `0x0F FC17 071C..0723` is predominantly a transformed controller calendar/clock image**.
+- Current experiment: **none running**. Next preferred work is **EXP227 — OFFLINE XTR vs genuine ATEC/DCM architecture comparison**.
+- EXP226 performed **no interaction with the heat pump**: no restart, no bus TX, no configuration change. It re-analysed 129 already-recorded exact `0x0F FC17 read 0730/count8 + write 071C/count8` requests: EXP221=47, EXP222=25, EXP225=32, plus 25 older 2026-09-22 frames from EXP71/EXP71B for out-of-sample date/time validation.
+- The write words are now mapped structurally as:
+  - `071C`: high byte = year-2000; low byte = hour (`1A0E` on 2026-09-22 14h, `1A16`/`1A17` on 2026-09-26 22h/23h).
+  - `071D`: high byte `45`; low byte = `2 * second`.
+  - `071E`: constant `F906` in all 129 analysed frames; exact meaning unknown.
+  - `071F`: low byte `AC`; high byte = `floor(second/2)`.
+  - `0720`: high byte `DC`; low byte = day-of-month (`16` hex = 22 on Sep 22; `1A` hex = 26 on Sep 26).
+  - `0721`: high byte `C5`; low byte = `4 * minute`.
+  - `0722`: constant `001E` in all 129 analysed frames; exact meaning unknown.
+  - `0723`: high byte `8F`; low byte = `4 * second`.
+- The previously discovered algebraic relations are therefore explained by redundant second encoding:
+  - `0723 = (2 * 071D + 0x0500) mod 65536`;
+  - `low(071F)=0xAC`;
+  - `high(071F)=floor(low(071D)/4)`.
+- Reconstructing `hour:minute:second` from `071C/0721/071D` tracks logger time with a stable controller-clock lead: about +200.98 s on 2026-09-22 and +206.3 s on 2026-09-26 (within-run scatter roughly sub-second). This independently validates the clock interpretation.
+- Strong conclusion: the changing portion of `071C..0723` is **not a generic free-running session counter and not a direct heating-settings image**; its observed variation is explained by controller RTC/calendar data. The previous apparent `071C 1A16 -> 1A17` change is simply hour 22 -> 23, and the slow `0721` progression is minute encoding.
+- The exact role of the fixed/magic bytes (`45`, `F906`, `AC`, `DC`, `C5`, `001E`, `8F`) is not fully proven. `0722=001E` numerically equals 30, the number of days in September, but this is only a hypothesis because all available raw validation captures are from September.
+- `0730..0737` remains completely unknown. EXP226 provides **no basis to synthesize or guess a response**.
+- Active project constraint: **do not restart/power-cycle the heat pump for now**. Prefer offline analysis and ordinary-runtime passive observation unless the user explicitly lifts this constraint.
+- Production functionality remains unchanged.
+
+
+
+## Authoritative current state — 2026-09-26 after EXP225
+
+- Last completed experiment: **EXP225 — COMPLETE / PROCEDURAL-INCONCLUSIVE FOR HEAT-CURVE CORRELATION; POSITIVE cold-boot reproduction of the 071C/0730 FC17 stream**.
+- Current experiment: **none running**. The next experiment should be a passive rerun with automatic/guarded phase handling before any new responder work.
+- EXP225 reproduced the exact local XTR `0x0F FC17 read 0730/count8 + write 071C/count8` stream after a real controller power cycle. The stream resumed immediately after bus recovery and then continued at roughly 4.2 s cadence.
+- The user-side Power ON marker was pressed late, after the FC17 stream had already restarted and after Heat Curve had already been changed from 36 to 37. That marker reset the experiment phase to 1. The `+1` phase marker was never accepted/recorded and the later restore marker was refused because the firmware still considered the experiment in phase 1.
+- Therefore the final summary `baseline=32 plus=0 restored=0` is a **procedural invalidation**, not evidence that Heat Curve has no effect on `071C..0723`.
+- The actual bus ground truth still shows Heat Curve `36 -> 37 -> 36` while FC17 traffic was active. Across those changes there is no obvious discrete reversible jump in the 071C image; instead the dynamic words continue the same deterministic counter/time progression already identified in EXP223. This is supportive evidence for a timer/session/challenge structure, but not a valid negative semantic correlation because phase control was invalid.
+- All 32 captured FC17 frames satisfy the previously identified `0723` and `071F` deterministic relations. The observed image keeps `071C=1A17`, `071E=F906`, `0720=DC1A`, `0722=001E` constant while `071D/071F/0721/0723` progress structurally.
+- Parser integrity remained clean (`resync=0`, `drops=0`).
+- No response values for `0730..0737` are inferred. No responder experiment is justified yet.
+- Production functionality remains unchanged; EXP225 was RX-only.
+
 
 
 ## Authoritative current state — 2026-09-26 after EXP224
@@ -850,151 +998,3 @@ Safety rationale for new target:
 `0410/count22` is not guessed. EXP137 locally observed it immediately after the successful `03E8/count14` ACK and then saw it retransmitted 83 times while unacknowledged. ACKing that exact request is therefore the smallest bounded continuation of the proven controller sequence.
 
 Current experiment: **EXP138 PREPARED, not yet run**.
-
-
----
-
-## 2026-09-24 — Correction after fclauson follow-up analysis of genuine Online capture
-
-The follow-up GitHub comments contain an automated interpretation of the same capture. The raw frames were re-parsed independently before accepting those claims.
-
-Raw-frame correction:
-- `0x0F FC16 start 0x0848 count 23` occurs at ~12.116 s and ~33.107 s.
-- At 12.116 s, register `0x0858` is `0x0000`.
-- At 33.107 s, register `0x0858` is `0x0015` (=21).
-- Register `0x085A` is `0x0014` (=20) in BOTH 0x0848 frames.
-- Therefore the statement that the same 0x0848 field changed `20 -> 21` is incorrect. The actual observed delta is:
-  `0x0858: 0 -> 21`, while `0x085A` remains 20.
-- The `0x07E4` frame at ~43.705 s matches the earlier recurring `0x07E4` block and does not by itself prove a `21 -> 20` revert of the same field.
-
-What remains useful:
-- A value 21 appears exactly once in the second `0x0848` block, at `0x0858`, temporally during the user's Heat Curve 20->21->20 test.
-- This makes `0x0858` a strong event/command/synchronization candidate related to the Heat Curve change, but NOT yet a proven persistent Heat Curve register.
-- The earlier `0x03E8` FC03 responses still differ by exactly one in their first word (`23 -> 22`) and remain independently consistent with Heat Curve correlation, but exact click timestamps are still needed to assign the two snapshots unambiguously to 20/21/20 phases.
-
-Protocol implication:
-Do not adopt the follow-up comment's claim that `0x0848` directly carries a persistent 20->21->20 setpoint in one field. Keep the raw-frame facts separate from that interpretation.
-
-EXP138 remains the next controlled local test because it only probes the locally proven ACK sequence and does not depend on the disputed semantic interpretation of `0x0858`.
-
-
----
-
-## 2026-09-24 — EXP138 COMPLETE — sequential 0x0F FC16 ACK probe
-
-Hypothesis:
-After EXP137 proved `03E8/count14 -> ACK -> 0410/count22`, ACKing the exact locally observed `0410/count22` stage should advance the XTR controller to the next 0x0F transfer stage.
-
-Observed:
-- At EXP138 start, the controller was already repeatedly transmitting `0410/count22` during the 30 s passive baseline.
-- This means the controller-side 0x0F transfer state persisted across the ESP reboot / firmware change after EXP137.
-- Baseline summary before active phase:
-  - `fc16Seen=28`
-  - `whitelisted=28`
-  - `unknown=0`
-  - no pre-existing 0x0F ACK responder
-  - no FC03 activity
-  - parser/drop counters clean.
-- Active phase:
-  - first `0410/count22` request was ACKed once.
-  - `ack0410=1`.
-  - ~1.54 s later the controller advanced to a NEW block:
-    `042E/count15` (decimal 1070..1084).
-  - EXP138 correctly did NOT ACK the new block and stopped immediately.
-- Final summary:
-  - reason=`POSITIVE_NEW_FC16_STAGE_AFTER_0410`
-  - duration_ms=31949
-  - fc16Seen=30
-  - whitelisted=29
-  - unknown=1
-  - ackTx=1
-  - txRefused=0
-  - fc16AckSeen=0
-  - fc03Req=0
-  - fc03Resp=0
-  - existingResponder=NO
-  - resyncDelta=0
-  - dropDelta=0
-  - DE_LOW.
-
-Strong conclusions:
-1. The local XTR 0x0F transfer is a controller-side persistent acknowledged sequence.
-2. Sequence state survives the ESP reboot / responder disappearance: after EXP137 stopped at `0410`, EXP138 booted and the controller resumed/retried `0410`.
-3. One valid ACK to `0410/count22` deterministically advances the controller to `042E/count15`.
-4. The sequence established locally is now at least:
-   `03E8/count14 -> ACK -> 0410/count22 -> ACK -> 042E/count15`.
-5. `042E/count15` is now a locally proven XTR 0x0F transfer block, not merely an external-map candidate.
-
-External-map alignment:
-`0x042E` = decimal 1070 and count 15 covers decimal 1070..1084, exactly matching a block family seen in the external DHP/ATEC register map. Semantics of individual words remain unproven on XTR.
-
-Negative result:
-No FC03 read phase is reached before `042E/count15` is acknowledged.
-
-Current experiment: **EXP138 COMPLETE / POSITIVE TRANSPORT PROGRESSION**.
-
-Smallest next experiment:
-EXP139 should add only `042E/count15` to the exact ACK whitelist. All other behavior remains unchanged. The first new FC16 shape or first FC03 request after that ACK is the positive discriminator and must not be answered.
-
-
----
-
-## 2026-09-24 — EXP139 PREPARED — sequential 0x0F FC16 ACK probe, stage 0x042E
-
-Hypothesis:
-EXP138 proved the local acknowledged sequence:
-`03E8/count14 -> ACK -> 0410/count22 -> ACK -> 042E/count15`.
-EXP139 tests the smallest next discriminator: does ACKing the exact locally observed `042E/count15` stage advance the controller again to another FC16 transfer block or to the FC03 read phase seen in the genuine Online capture?
-
-Only experimental variable changed versus EXP138:
-- add `0x042E/count15` to the exact FC16 ACK whitelist.
-
-Known facts about the new target before testing:
-- address `0x042E` = decimal 1070;
-- count 15 covers `0x042E..0x043C` / decimal 1070..1084;
-- EXP138 locally observed this block only after a valid ACK to `0410/count22`;
-- EXP138 stopped before acknowledging it;
-- external DHP/ATEC material contains a structurally matching 1070..1084 block family, but individual semantics are NOT imported as XTR truth.
-
-Possible effect:
-ACKing this request may advance the controller's 0x0F synchronization state to the next stage. No semantic register value is generated or modified by the ESP; the ACK only confirms receipt of the controller's own write request.
-
-Everything else remains unchanged:
-- 30 s passive baseline;
-- abort on pre-existing 0x0F responder/read activity;
-- no value injection;
-- no FC03 response;
-- no slave-0x06 responder;
-- no room-sensor emulation;
-- exact start/count whitelist only;
-- fail closed on parser/RX-drop errors;
-- DE LOW outside brief ACK transmission.
-
-Active ACK whitelist:
-- `03E8/count14`
-- `0410/count22`
-- `042E/count15` **NEW**
-- `0442/count13`
-- `04A6/count13`
-- `085F/count5`
-
-Positive criterion:
-After at least one successful ACK of `042E/count15`, either:
-1. a previously unseen 0x0F FC16 block appears; or
-2. the controller issues an 0x0F FC03 request.
-
-For either positive discriminator, EXP139 does not answer the new stage and stops with DE LOW.
-
-Current experiment: **EXP139 PREPARED, not yet run**.
-
-
----
-
-## 2026-09-24 — EXP139 COMPLETE — sequential 0x0F FC16 ACK probe, stage 0x042E
-
-Hypothesis:
-After EXP138 proved `03E8/14 -> ACK -> 0410/22 -> ACK -> 042E/15`, ACKing the exact locally observed `042E/count15` stage should advance the controller to the next 0x0F transfer stage.
-
-Observed:
-- At experiment start, the controller was already repeatedly transmitting `042E/count15` during the 30 s passive baseline.
-- This again confirms that the Thermia/controller-side 0x0F transfer state persists across ESP reboot / firmware replacement.
