@@ -16,7 +16,7 @@ The main goals are:
 
 ---
 
-## Current status after EXP210 / EXP208 awaiting external capture
+## Current status after EXP211 / EXP208 awaiting external capture
 
 The write-path investigation has moved beyond the earlier assumption that one missing DCM register or one additional ACK would unlock control.
 
@@ -2063,3 +2063,12 @@ EXP210 cross-validates the 0x0F desired-state database against both an independe
 The future emulator architecture is now clearer: the DCM side is a reactive slave-0x0F service, the controller publishes current state through FC16, and desired heating/settings state is pulled after 0708 word1 indicates pending data. Heat Curve at index1000 and room target at index1012 are the strongest mapped fields in that desired image.
 
 The main blocker remains unchanged: the local XTR does not instantiate the genuine 0708/runtime scheduler. EXP208 remains the highest-value next external discriminator: same reference controller cold boot with the DCM physically absent before power-on.
+
+
+## Status through EXP211 — heating desired-state page substantially decoded
+
+Cross-matching genuine DCM 03E8/count13 traffic with public Thermia Online ATEC/DHP-AQ and iTec IQ debug profiles reconstructs most of the heating desired-state page. Public metadata directly names 1000..1006 and 1008 as Heat Curve, Heat Curve Min/Max, Curve +5/0/-5, Heat Stop and Room Factor. Independent legacy register documentation fits the remaining 1007 and 1009..1011 positions as Temperature Reduction and the Curve 2 family, while EXP210 independently validates 1012 as Room Target through native B3C5 equality.
+
+This makes the mailbox model materially stronger: 0708 word1 is not just empirically correlated with 03E8; it selects a coherent heating/settings desired-state image whose field semantics are now mostly known.
+
+The control-side model is therefore mature enough for a future emulator once the scheduler gate is solved. The unresolved blocker remains controller-side creation of the extended Online/DCM topology on the local XTR. EXP208 remains the highest-value next external capture: same reference controller cold boot with DCM physically absent before power-on.
