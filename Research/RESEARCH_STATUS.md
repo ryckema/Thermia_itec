@@ -2028,3 +2028,14 @@ Physical-layer documentation does not reveal a separate DCM detect conductor. Th
 This weakens the idea of a hidden dedicated-wire bootstrap. Boot-time analog detection on the RS485 pair remains possible but unsupported and cannot be tested from current byte captures.
 
 The unresolved gate is therefore still most plausibly upstream controller capability/commissioning or a very-early RS485 interaction. Same-controller DCM-present/absent cold boot remains the decisive missing evidence.
+
+
+## Status through EXP203 — DCM physical rejoin breakthrough
+
+A new genuine capture shows that an already-active extended topology survives physical DCM Modbus removal and a DCM power cycle while the heat-pump controller remains powered. Reconnect is lightweight: ACK the pending FC16 page, answer the next 0708 join state, then the controller performs full resync. No special visible topology-discovery exchange is needed for reattachment.
+
+This cleanly separates initial topology activation, which remains unknown, from DCM session reattachment, which is now substantially understood.
+
+The same capture adds a second normal 0708 selector: w0=1 -> FC03 0546/count20 system/status family; w1=1 -> FC03 03E8/count13 heating/settings family. Prior w5=7 join interpretation is corrected because full resync also occurs with w5=6.
+
+No local TX or YAML changes.
