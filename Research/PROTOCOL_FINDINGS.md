@@ -1563,3 +1563,25 @@ The older DHP-AQ HP-kit installation sequence corroborates automatic bus-side di
 
 A811/A812 are worth retaining as passive candidates for the first layer, but their semantics are unproven.
 
+
+
+## EXP201 — A811/A812 fit persistent topology better than live DCM session
+
+Exact XTR documentation provides a useful semantic distinction:
+
+- DCM accessory installed = local accessory connected/recognized;
+- Online connection = accessory connected plus Internet.
+
+Against that model, the controller 0x02 write-image pair behaves as follows:
+
+local no DCM: A811/A812 = FFFF/0000
+genuine reference: A811/A812 = 000C/0500
+
+During the 090550 DCM power-up/rejoin capture, the reference pair stays 000C/0500 throughout the long DCM-silent interval, the first mailbox response, full resync, and return to runtime.
+
+Therefore the pair does not represent current 0x0F session readiness. If it is DCM-related at all, it is more consistent with an installed/commissioned topology or controller capability reflection.
+
+EXP173 independently proves that live 0x06 accessory/version presence alone does not change FFFF/0000 to the reference values.
+
+No write to A811/A812 is justified.
+
