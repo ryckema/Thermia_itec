@@ -1,8 +1,8 @@
 # THERMIA EXPERIMENT LOG
 
-Last updated: 2026-09-23
+Last updated: 2026-09-27
 
-This file is the compact canonical experiment record. Detailed YAML and raw logs remain the primary evidence.
+This file is the canonical experiment record. The compact table below indexes the early experiment series; EXP100+ are documented in the detailed chronological sections that follow. Detailed YAML and raw logs remain the primary evidence.
 
 | Experiment | Purpose | Result |
 |---|---|---|
@@ -46,14 +46,13 @@ This file is the compact canonical experiment record. Detailed YAML and raw logs
 | EXP90 | Correct persistent 00FF 90 s | Negative; 84 responses |
 | EXP91 | Historical 00FF,1,REQ-low,1 envelope 90 s | Negative; 84 responses; no A80E/AFDC/settings/errors |
 | **EXP92** | Completed four-phase 03E8 handshake, then historical REQ-low envelope 90 s | **VALID NEGATIVE. ACK high after 401 ms, ACK low after 1031 ms; 84 observation responses; A80E/AFDC stayed 0; no setting/error changes** |
-
 | EXP93 | Passive A80F=50 discriminator | Armed in two captures but A80F=50 never occurred; observation window never started; NOT a negative result |
 | **EXP94** | Passive cold-boot + initial-sync timeline | **COMPLETED.** Boot sequence: A80F/A810 5→10, A80E 0→8→0x28, AFDC 0→0x10; then stable for 600 s; 0861 unchanged; no settings changes |
 | **EXP95** | Cold-boot zero-presence from first 0x06 poll | **VALID NEGATIVE.** 112/112 responses; cadence accelerated to 638..1503 ms, but `A80E=0x28`, `A80F/A810=10`, `AFDC=0x10`, `0861=0`; no settings changes |
 | **EXP96** | Cold-boot historical envelope + canonical four-phase REQ handshake | **VALID NEGATIVE.** Handshake completed (`0861` high after 367 ms, low 1196 ms after deassert); no controller/session/settings progress |
 | **EXP97** | Passive natural A80E/AFDC edge correlator | **COMPLETED.** Natural `A80E 28→20→0`, then `AFDC 10→0`; no ESP TX; 0861/outdoor/CMD1E/RSP02 unchanged at all three edges |
 | **EXP98** | AFC8 single-word A/B/A influence | **COMPLETED NEGATIVE.** AFC8=00FF alone had no detectable effect; 81 polls/81 TX, no controller/0861/settings/CMD1E/outdoor changes |
-| **EXP99** | Historical-field matrix, REQ low | **PREPARED.** Ten 8 s phases testing AFC9, AFCB and historical combinations; AFCA=0000 throughout |
+| **EXP99** | Historical-field matrix, REQ low | **COMPLETED NEGATIVE.** Ten phases completed; no controller/0861/settings/CMD1E/outdoor effect; parser/drop deltas zero |
 
 ## EXP92 detailed record
 
@@ -997,3 +996,5 @@ Combined with EXP148, A5 is strongly indicated to belong to or depend on the mis
 
 
 ### EXP150 — staged Online/DCM bootstrap role-emulation harness — PREPARED
+
+Single hypothesis:
