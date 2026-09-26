@@ -1467,3 +1467,24 @@ New selector event: 0708 [1,0,0,0,0,6] at 104.130 s caused FC03 0546/count20. Ea
 Result: topology maintenance is independent of current DCM electrical presence; rejoin is lightweight once topology is already active; 0x06 is not required for genuine DCM reattachment in this capture; continued A5 responses while the supplied sequence says the DCM is physically absent exclude the removed DCM itself as the A5 responder; w5=7 is not required for join; w0 and w1 now map to two distinct desired-state families.
 
 Negative: initial topology activation after controller boot remains unknown.
+
+
+## EXP207 — offline DCM responder timing / minimum slave-role model — COMPLETE / POSITIVE
+
+**Hypothesis:** genuine DCM slave-0x0F behaviour is a deterministic Modbus-RTU responder role, with no unsolicited 0x0F transmission required for normal runtime or rejoin.
+
+**Observed:** across the five genuine captures, healthy FC16 echoes typically complete 13–15 ms after the controller request frame; after subtracting the 8-byte ACK wire time at 9600 8E1, the inferred silent turnaround is about 4–5 ms. FC03 responses scale with response length: 0708/count6 completes in 23–26 ms, 03E8/count13 in 39–42 ms, and 0546/count20 in 56 ms, all consistent with the same ~4–5 ms pre-response interval. During DCM absence the controller retries; after rejoin the DCM resumes by answering controller-originated requests.
+
+**Result:** positive. The minimum reference DCM role on an already-enabled topology is a fail-closed slave 0x0F service responding to exact FC16/FC03 requests after normal RTU silence. No evidence requires arbitrary unsolicited 0x0F TX.
+
+**Negative/limit:** this does not activate the extended scheduler on the local XTR and must not be used to justify standalone local 0708 spoofing.
+
+## EXP208 — same-reference-controller cold boot without DCM — PREPARED / EXTERNAL PASSIVE
+
+**Hypothesis:** cold-booting the same genuine reference controller with the DCM physically absent will distinguish persistent/controller-capability topology from DCM-presence-at-boot selection.
+
+**Plan:** disconnect DCM from Modbus before controller power-on, start capture before power restoration, cold boot controller, capture 120–180 s with no reconnect or setting changes, and record visible DCM-installed / Online-connected display state if available.
+
+**Primary discriminator:** presence or absence of the reference 0x02 fingerprint, 0x04/A5 service, 0708 polling and 07D0..0884 runtime publisher.
+
+**Safety:** passive external capture only; no local XTR TX or YAML change.
