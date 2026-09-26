@@ -1693,3 +1693,35 @@ The stable 0x02 fingerprint words A811/A812 remain plausible **reflections** of 
 
 **Decision:** documentation/offline only; no bus TX and no YAML changes.
 
+
+
+## 2026-09-26 — EXP201 COMPLETE / PARTIAL POSITIVE A811/A812 AS INSTALLED-TOPOLOGY REFLECTION
+
+**Hypothesis:** the stable 0x02 write-image discriminator A811/A812 may encode the exact iTec XTR UI state DCM accessory installed, or a closely related controller topology/capability state.
+
+### Observed facts
+- exact XTR documentation distinguishes local DCM accessory installed from Online connection;
+- local no-DCM XTR fingerprint is A811/A812 = FFFF/0000;
+- scheduler-enabled genuine reference fingerprint is A811/A812 = 000C/0500;
+- EXP173 already showed that making the known 0x06 accessory/version responder active does not change local A811/A812 away from FFFF/0000 and does not activate the scheduler;
+- in the entire 090550 DCM rejoin capture, all 102 parsed controller 0x02 FC17 requests carrying the seven-word A80C..A812 write image keep A811/A812 fixed at 000C/0500;
+- they are already 000C/0500 during the ~66 s period when the DCM service is silent and remain unchanged after the first DCM mailbox response at ~68.235 s and through the full resync.
+
+### Strong conclusions
+1. A811/A812 do **not** track DCM mailbox/session attachment or the transition from silent DCM service to responding DCM service.
+2. If A811/A812 are related to the XTR's DCM UI semantics, they fit the more persistent accessory installed / topology selected / capability present layer, not transient service health.
+3. The pair remains the cleanest passive structural correlate between local no-DCM and genuine scheduler-enabled topology, but it is still not proven to be the display-icon field itself.
+4. Simple live 0x06 metadata presence is insufficient to produce the reference A811/A812 state.
+
+### Hypothesis
+Best current interpretation:
+A811/A812 may be controller/display metadata reflecting a persistent installed topology or platform capability that is selected before DCM session attachment.
+
+### Unknowns
+- whether either word directly drives the DCM accessory installed symbol;
+- whether 000C and/or 0500 are bitfields, identifiers, firmware-layout values, or installed-node masks;
+- whether the same reference controller changes them after a true cold boot with the DCM physically absent.
+
+### Safety
+Do not write A811/A812. Their ownership/effects remain unknown and they are more plausibly reflected output state than an ingress control.
+
