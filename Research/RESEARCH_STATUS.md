@@ -16,7 +16,7 @@ The main goals are:
 
 ---
 
-## Current status after EXP213 / EXP208 awaiting external capture
+## Current status after EXP215 / EXP208 awaiting external capture
 
 The write-path investigation has moved beyond the earlier assumption that one missing DCM register or one additional ACK would unlock control.
 
@@ -59,6 +59,16 @@ However, the indexed local corpus does **not** show the reference system's compl
 - no normal A5/A4/05 service topology.
 
 This means the missing prerequisite is now best treated as a **controller-side topology / integration / scheduler state**, not as one unknown write register.
+
+### EXP215 validates the system desired-state page and eliminates 0559 as scheduler gate
+
+The genuine word0 command event now resolves another desired-state page. 0546/count20 spans registerIndex 1350..1369. Public Online profiles identify writable 0553/1363 as Operation Mode and 0559/1369 as Link Integration. The genuine controller FC16 image and the later DCM FC03 response are byte-for-byte identical, with Operation Mode=4 and Link Integration=0.
+
+This has two important consequences:
+- 0708 word0 is a one-shot fetch selector for a coherent system/operation desired-state page;
+- the genuine Online/DCM scheduler is already fully operational while Link Integration=0/LIGHT, so 0559=1/SYSTEM is not the missing scheduler-enable condition.
+
+Future operating-mode control is therefore conceptually straightforward once the scheduler gate is solved: alter 0553 in the DCM-side 0546 page, assert word0, let the controller fetch the page, then clear the selector.
 
 ### EXP213 official documentation narrows the bootstrap model
 
