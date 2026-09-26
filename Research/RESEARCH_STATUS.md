@@ -16,7 +16,7 @@ The main goals are:
 
 ---
 
-## Current status after EXP215 / EXP208 awaiting external capture
+## Current status after EXP217 / EXP208 awaiting external capture
 
 The write-path investigation has moved beyond the earlier assumption that one missing DCM register or one additional ACK would unlock control.
 
@@ -59,6 +59,16 @@ However, the indexed local corpus does **not** show the reference system's compl
 - no normal A5/A4/05 service topology.
 
 This means the missing prerequisite is now best treated as a **controller-side topology / integration / scheduler state**, not as one unknown write register.
+
+### EXP216–217 convert the known runtime protocol into testable tooling
+
+The reconstructed DCM runtime role is now implemented as a pure offline, fail-closed reference model. It can reproduce observed 0x0F FC16 ACKs, answer the known 0708, 03E8 and 0546 FC03 pages, and implement the one-shot selector semantics without any serial/GPIO/network transport. This demonstrates that normal DCM runtime behavior is now sufficiently constrained for deterministic emulation once the controller scheduler exists.
+
+A separate offline capture analyzer now automates the exact discriminators needed for EXP208/EXP214. It extracts A5/A4/05, 0x04, 0708, runtime FC16, DCM ACK/FC03 return timing and the A811/A812 controller fingerprint, then gives a conservative topology verdict.
+
+Validation over all five genuine captures currently in the project produced topology ON with all three independent families present and recovered the known 090209 boot and 073242 rejoin timing anchors automatically.
+
+This materially changes project readiness: emulator mechanics and future-log triage can proceed in parallel while the remaining bootstrap gate is investigated. No hardware TX capability was added.
 
 ### EXP215 validates the system desired-state page and eliminates 0559 as scheduler gate
 
