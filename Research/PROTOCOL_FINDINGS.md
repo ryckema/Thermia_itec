@@ -1506,3 +1506,35 @@ exactly match the contemporaneous 0x02 FC17 write image A80C..A810. The A811/A81
 
 Protocol implication: 06F4 is a controller-state/bootstrap snapshot, not demonstrated identity ingress. Because reference topology is already active before it is emitted and DCM rejoin does not require it, do not treat 06F4 as scheduler activation.
 
+
+
+## EXP199 — DCM is not the Danfoss Link SIMPLE_COMMUNICATION_MODULE node
+
+Recovered 2.7.42 firmware distinguishes:
+
+```text
+NodeType 16 GATEWAY                     -> Div 7 / Brand 0 / Product 0x0201
+NodeType 17 HEATPUMP                    -> Div 6 / Brand 0 / Product 0x0203
+NodeType 19 SIMPLE_COMMUNICATION_MODULE -> Div 5 / Brand 0 / Product 0x8100
+```
+
+`SCMNode` is built around `InputStateBinary`, `InputShifts`, `HCPowerCycleCounter` and a 30-minute check-in interval. Its state-change callback ultimately raises Link `AwayModeChanged`.
+
+Therefore SCM is an external/simple-input communication node, not the Thermia Online/DCM transport bridge.
+
+Architectural implication:
+
+```text
+Thermia-side topology recognition
+        ↓
+DCM transport/service bridge
+        ↓
+HE service sees heat-pump device identity
+        ↓
+HEATPUMP endpoint (Div6 / Product0x0203)
+        ↓
+HPNode / Link application
+```
+
+The recovered Link node model does not expose a separate DCM/Online node whose ProductID can simply be replayed on the Thermia RS485 bus.
+
