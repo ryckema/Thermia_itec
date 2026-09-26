@@ -1473,3 +1473,36 @@ This aligns with the firmware-side conclusion that SystemIntegration controls se
 
 Do not use a guessed 0559 write as a topology activation experiment.
 
+
+
+## EXP198 — startup tail 06EA/06F1/06F4
+
+### 06EA/count7
+Proven RTC/calendar snapshot:
+
+```text
+word0 second
+word1 minute
+word2 hour
+word3 day
+word4 month
+word5 year (two-digit)
+word6 weekday (Monday=0)
+```
+
+090209: `22,6,8,25,9,26,4`.
+A later 0848 runtime page contains the same date/time tuple with seconds advanced consistently with capture elapsed time.
+090550: `14,11,8,25,9,26,4`; encoded clock delta relative to 090209 matches logger delta to within ~0.2 s.
+
+### 06F1/count3
+Observed `FFFF,FFFF,FFFF` in both genuine power-event captures. Treat as unavailable/reserved/private until independent evidence exists.
+
+### 06F4/count19
+Observed in controller cold boot only in the current genuine corpus. First five words:
+
+`0040,0000,0028,000A,000A`
+
+exactly match the contemporaneous 0x02 FC17 write image A80C..A810. The A811/A812 structural discriminator values 000C/0500 are not copied there.
+
+Protocol implication: 06F4 is a controller-state/bootstrap snapshot, not demonstrated identity ingress. Because reference topology is already active before it is emitted and DCM rejoin does not require it, do not treat 06F4 as scheduler activation.
+
