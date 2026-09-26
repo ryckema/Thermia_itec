@@ -1926,3 +1926,16 @@ Therefore Link Integration SYSTEM is not required for A5/A4/05, 0708 mailbox pol
 
 The unresolved scheduler gate is now narrowed further toward early physical/controller topology recognition or persistent commissioning/capability state, not a normal user-facing Link Integration register.
 
+
+
+## Status through EXP198
+
+The remaining startup-tail blocks have been narrowed:
+- `06EA/count7` is proven RTC/date;
+- `06F1/count3` is an unresolved all-FFFF reserved/private tuple;
+- `06F4/count19` is a controller-boot-specific snapshot whose first five words mirror A80C..A810.
+
+No topology-enable token was found. In particular, the extended reference topology is already active long before 06F4 is emitted, and the DCM-rejoin full synchronization does not contain a confirmed 06F4 page.
+
+The scheduler-gate search should therefore move away from controller->0x0F startup/export pages and toward the upstream topology-recognition mechanism or persistent controller configuration.
+
