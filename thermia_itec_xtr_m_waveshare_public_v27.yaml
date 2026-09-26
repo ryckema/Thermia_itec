@@ -35,15 +35,18 @@
 #   real credentials to a public repository.
 #
 # v27 protocol-model update (still RX-only):
-# - 0x06 is documented as the Online/DCM-facing accessory transport slot,
-#   not as proof that slave 0x06 is literally the physical DCM device.
-# - 0x0F is treated as native controller settings/state.
-# - A syntactically valid 0x06 response proves accessory presence only.
+# - 0x06 is a separate expansion/accessory FC17 path; a syntactically valid
+#   0x06 response proves transport presence only.
+# - In the genuine reference Online topology, the physical DCM responds as
+#   slave 0x0F. Controller FC16 writes state/snapshot pages to it, while
+#   controller FC03 reads desired/mailbox pages from it.
+# - A5 is topology-associated native/upstream service traffic and is not the
+#   physically removed DCM endpoint.
 # - AFCA 0000->03E8->0000 / 0x0F:0861 0000->0010->0000 is a proven
 #   transport transaction, not proof of semantic command success.
 # - EXP135/136 invalidate the old assumption that recurrent 03E8..03F5
 #   directly contains DHW START or DHW COMFORT/ECO mode.
-# - No write/injection support has been added to either shared build.
+# - No write/injection support has been added to this public build.
 # =============================================================================
 
 
@@ -156,7 +159,7 @@ debug:
 # =============================================================================
 
 logger:
-  # Public / production mode: warnings only, plus cache-status information.
+  # Public / production mode: warnings only. Cache INFO messages stay suppressed.
   level: WARN
   baud_rate: 0
   logs:
@@ -201,6 +204,11 @@ switch:
 
 globals:
   - id: thermia_last_valid_frame_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: thermia_valid_frame_count
     type: uint32_t
     restore_value: no
     initial_value: '0'
@@ -329,8 +337,9 @@ uart:
           };
 
           auto known_slave = [](uint8_t s) -> bool {
-            return s == 0x02 || s == 0x06 || s == 0x0A ||
-                   s == 0x0F || s == 0x14 || s == 0x1E;
+            return s == 0x02 || s == 0x04 || s == 0x06 || s == 0x0A ||
+                   s == 0x0F || s == 0x14 || s == 0x1E ||
+                   s == 0xA4 || s == 0xA5;
           };
 
           auto process_frame = [&](const std::vector<uint8_t> &bytes) {
@@ -460,6 +469,7 @@ uart:
               const uint8_t fc = bytes[1];
 
               id(thermia_last_valid_frame_ms) = millis();
+              id(thermia_valid_frame_count)++;
               publish_bool_if_changed(id(thermia_bus_healthy), true);
 
               ESP_LOGD(
@@ -1586,7 +1596,7 @@ uart:
                 if (
                   slave == 0x02 &&
                   start == 0xA7F8 &&
-                  count >= 12
+                  count >= 15
                 ) {
 
                   // -----------------------------------------------------------
@@ -1850,7 +1860,9 @@ uart:
 
             uint8_t slave = pending[0];
             uint8_t fn = pending[1];
-            bool known_fn = fn == 0x04 || fn == 0x10 || fn == 0x17 || (fn & 0x80);
+            bool known_fn =
+              fn == 0x03 || fn == 0x04 || fn == 0x10 || fn == 0x17 ||
+              (fn & 0x80);
             if (!known_slave(slave) || !known_fn) {
               pending.erase(pending.begin());
               continue;
@@ -1858,20 +1870,25 @@ uart:
 
             std::vector<size_t> candidates;
             if (fn & 0x80) candidates.push_back(5);
+            if (fn == 0x03) {
+              candidates.push_back(8);
+              if (pending.size() >= 3 && pending[2] <= 240)
+                candidates.push_back(5 + size_t(pending[2]));
+            }
             if (fn == 0x04) {
               candidates.push_back(8);
-              if (pending.size() >= 3 && pending[2] <= 80)
+              if (pending.size() >= 3 && pending[2] <= 240)
                 candidates.push_back(5 + size_t(pending[2]));
             }
             if (fn == 0x10) {
               candidates.push_back(8);
-              if (pending.size() >= 7 && pending[6] <= 80)
+              if (pending.size() >= 7 && pending[6] <= 240)
                 candidates.push_back(9 + size_t(pending[6]));
             }
             if (fn == 0x17) {
-              if (pending.size() >= 3 && pending[2] <= 80)
+              if (pending.size() >= 3 && pending[2] <= 240)
                 candidates.push_back(5 + size_t(pending[2]));
-              if (pending.size() >= 11 && pending[10] <= 80)
+              if (pending.size() >= 11 && pending[10] <= 240)
                 candidates.push_back(13 + size_t(pending[10]));
             }
 
@@ -1881,7 +1898,7 @@ uart:
             size_t matched = 0;
             bool waiting = false;
             for (size_t len : candidates) {
-              if (len < 5 || len > 128) continue;
+              if (len < 5 || len > 256) continue;
               if (pending.size() < len) { waiting = true; continue; }
               if (valid_crc(len)) { matched = len; break; }
             }
