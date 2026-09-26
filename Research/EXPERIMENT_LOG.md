@@ -1402,3 +1402,22 @@ Authoritative corrections after rechecking the offline branch:
 - EXP202: public-register search negative retained; private controller/display location remains hypothesis.
 
 No TX, YAML or production-functionality changes were made during this review.
+
+
+## EXP203 — causal-frontier / first-divergence analysis — COMPLETE / POSITIVE
+
+**Hypothesis:** existing cold-boot data may still contain the transition that enables the extended Online/DCM topology.
+
+**Observed:**
+- local EXP164 no-DCM: t=0 first bus return on 0x1E; 0F 04BA at 317 ms; first logged 0x02 fingerprint at 722 ms already read-count15 and A811/A812=FFFF/0000; C8 at 818 ms; 0x06 at 1045 ms; no A4/A5/05/FC03 over 180 s.
+- genuine 090209: first visible frame at 31 ms is already the reference 0x02 fingerprint, read-count13 and A811/A812=000C/0500; C8 130 ms; 0x04 251/290 ms; ACKed 0x0F FC16 389 ms; A5 1179 ms.
+- genuine 090550: topology remains active while DCM service is silent, then DCM rejoins at ~68.235 s.
+
+**Result:** the present corpus contains no same-controller topology OFF->ON transition.
+
+**Strong conclusion:** current cross-system fingerprints cannot identify a causal gate. In the reference boot, topology selection is already reflected by the first observable controller frame. Further late-frame mining cannot recover an event that is not present in the capture.
+
+**Stop rule:** do not promote A811/A812, read-count differences, 0x0F pages or 0708 fields to activation causes without same-controller differential evidence.
+
+**Next:** same-reference-controller DCM-present/absent cold-boot A/B, or controller-side firmware/service-software reverse engineering.
+
