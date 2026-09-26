@@ -1359,3 +1359,47 @@ This matches the stable `registerIndex` namespace exposed by public Thermia Onli
 **Strong architectural conclusion:** the extended controller scheduler is best understood as publishing/populating the DCM-facing Thermia Online register-index database in slave 0x0F. The FC16 blocks are contiguous database pages/semantic groups, not arbitrary private command blocks.
 
 Consequently, 0864 is controller->DCM exported state at Online indices 2148..2151. Even if those words eventually prove to contain a capability/topology marker, they are an **output/reflection** of controller state, not a justified ingress/write target for activating the scheduler. The activation gate must sit upstream of the publisher.
+
+
+## EXP195 — 085F and 0864 are adjacent but scheduler-distinct
+
+### 085F/count5 — indices 2143..2147
+Current classification: **initialization / synchronization / service-control page**.
+
+Evidence:
+- exists on the local XTR without a genuine DCM;
+- contains 0861, the proven AFCA transaction ACK field;
+- absent from checked steady genuine Online captures;
+- appears after/between startup synchronization activity in 090209;
+- repeats at ~4.2 s cadence throughout the 090550 DCM full-resync interval.
+
+It is therefore not a DCM-topology presence bit and not the trigger for the full resync: in the rejoin capture the DCM join header at 68.235 s already causes the full FC16 resync before the first 085F at 73.235 s.
+
+### 0864/count4 — indices 2148..2151
+Current classification: **extended steady-runtime Online export page**.
+
+Evidence:
+- appears once per normal 10-slot runtime cycle in steady genuine Online captures;
+- invariant observed payload `[0,0,0,22]`;
+- not observed as the local no-DCM 085F service block;
+- appears only after the extended runtime exporter is already active.
+
+### Scheduler implication
+Do not merge 085F+0864 into one nine-word semantic object solely because their native indices are adjacent.
+
+Best current state machine:
+
+```text
+topology/session already selected
+        ↓
+full initialization/resync
+        ├─ 085F service-control page (repeated)
+        └─ 0708 mailbox mostly suppressed
+        ↓
+steady runtime
+        ├─ 0708 mailbox ~4.2 s
+        └─ 07D0..0884 export cycle, including 0864
+```
+
+The similar ~4.2 s cadence of resync-time 085F and steady-state 0708 is a useful hypothesis for a shared service timer/state machine, but is not yet proven.
+
