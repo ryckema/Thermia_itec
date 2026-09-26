@@ -1276,3 +1276,21 @@ This changes the preferred interpretation of the runtime scheduler from a collec
 
 **Safety:** offline only; no writes.
 
+
+
+## EXP197 — genuine 0559 Link Integration gate test — COMPLETE / STRONG NEGATIVE
+
+**Hypothesis:** extended Online/DCM scheduler requires `0559 REG_LINK_INTEGRATION = 1 (SYSTEM)`.
+
+**Observed:**
+- genuine full-sync `0546/count20` spans 0546..0559;
+- both 090209 controller boot and 090550 DCM rejoin export identical values;
+- `0553 = 4`, consistent with the public OperationMode enum;
+- `0559 = 0`;
+- public ATEC/DHP-AQ Online metadata defines 0559: 0 LIGHT, 1 SYSTEM;
+- extended A5/0x04/0708/runtime scheduler is definitely active in both captures.
+
+**Result:** strong negative for 0559=SYSTEM as the scheduler/topology gate.
+
+**Conclusion:** Link Integration mode is an application ownership/sync choice above the already-active transport topology. Do not write 0559 to try to create the scheduler.
+
