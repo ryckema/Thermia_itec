@@ -1403,3 +1403,36 @@ steady runtime
 
 The similar ~4.2 s cadence of resync-time 085F and steady-state 0708 is a useful hypothesis for a shared service timer/state machine, but is not yet proven.
 
+
+
+## EXP196 — registerIndex 2060 confirms runtime database semantics
+
+The runtime page `080C/count18` starts at decimal registerIndex 2060.
+
+Public Thermia Online debug profiles independently expose:
+
+```text
+2060 = REG_INDOOR_TEMPERATURE
+step = 0.1
+```
+
+on both ATEC/DHP-AQ and iTec IQ families.
+
+The genuine runtime payload starts:
+
+```text
+080C/count18:
+00C8 0000 0000 ...
+```
+
+`0x00C8 = 200`, which decodes naturally as **20.0 °C** at 0.1 scaling.
+
+Therefore:
+- `080C.word0` is strongly identified as indoor temperature;
+- the value 00C8 is not evidence of slave C8 identity;
+- the Online/DCM runtime FC16 pages share the public Thermia Online registerIndex namespace semantically, not only numerically.
+
+The same public profiles show model-dependent differences around index 2120 (ATEC: Integral LSD; iTec: PID), so cross-model semantics must not be copied blindly.
+
+Indices 2143..2151 remain absent from the checked public API profiles and are best treated as internal/private service-status fields until independently mapped.
+
