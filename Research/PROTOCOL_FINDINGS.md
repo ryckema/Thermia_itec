@@ -1602,3 +1602,25 @@ the XTR display's local DCM-recognition state is likely private controller/displ
 
 This increases the value of passive 0x02 write-image mapping and decreases the value of searching further public user-setting indices for the topology gate.
 
+
+
+## REVIEW EXP183–EXP202 — corrected confidence model
+
+The following protocol statements supersede stronger wording in earlier entries:
+
+- "runtime-latched" is supported for the reference topology while the controller remains powered; "persistent/nonvolatile latch" is not.
+- A811/A812 = FFFF/0000 vs 000C/0500 is a cross-system architecture/topology correlation, not a proven DCM-presence bitfield.
+- 0x04 and 0x1E may fill analogous subsystem roles across controller families, but functional equivalence is unproven.
+- 080C.word14 tracks AFDC in observed 0/16 states; direct source provenance is unproven.
+- 085F is a service/status page that participates in local operation and full resync; its exact control/state-machine role remains open.
+- SIMPLE_COMMUNICATION_MODULE / ProductID 0x8100 must be treated as unresolved with respect to DCM03. SCMNode behavior does not justify a categorical exclusion.
+- Public Online-profile absence does not prove the XTR DCM-installed status lives outside 0x0F; it only shows that no obvious public register was found.
+- EXP201 does not establish A811/A812 as the XTR DCM-installed indicator because the local/reference comparison is model/topology-confounded.
+
+Still strong:
+- 0708.w1=1 -> immediate 03E8/count13 heating/settings fetch.
+- ordered ACK-gated 07D0..0884 exporter.
+- Thermia Online registerIndex alignment, including 0870 operating-time/defrost block.
+- 0559=SYSTEM not required for the genuine extended scheduler.
+- 06EA RTC/date.
+- 0884 ten-entry timestamped alarm/history structure.
