@@ -1488,3 +1488,30 @@ Negative: initial topology activation after controller boot remains unknown.
 **Primary discriminator:** presence or absence of the reference 0x02 fingerprint, 0x04/A5 service, 0708 polling and 07D0..0884 runtime publisher.
 
 **Safety:** passive external capture only; no local XTR TX or YAML change.
+
+
+## EXP209 — causal DCM endpoint ownership — COMPLETE / MAJOR POSITIVE
+
+**Hypothesis:** the physical disconnect/reconnect capture can causally determine whether the genuine DCM is slave 0x0F, A5, 0x06, or another visible endpoint.
+
+**Observed:** while the DCM was physically absent from Modbus, A5 request/response traffic continued, 0x06 polls remained unanswered, and controller-originated 0x0F FC16/FC03 requests received no DCM-side responses. After physical DCM reconnection, the first returning service evidence was the standard 0x0F FC16 ACK at 27.051 s, followed by 0x0F FC03 responses and full resync.
+
+**Result:** positive causal ownership assignment.
+
+**Strong conclusions:** the genuine DCM/Online bridge is the responding slave 0x0F endpoint in this topology; A5 is not the DCM; 0x06 is a separate accessory/version path and is not required for Online/DCM operation here.
+
+**Unknown:** exact hardware owner of A5.
+
+**Safety:** offline analysis only.
+
+## EXP210 — 0x0F desired-state field cross-validation — COMPLETE / POSITIVE
+
+**Hypothesis:** independent DHP-AQ/ATEC field claims for 1012 and 1053 can be validated against the genuine captures and native Thermia traffic.
+
+**Observed:** Discussion #143 identifies 1012 as room thermostat and 1053 as Hot Water Start, but later contains a conflicting statement naming 1021 as the room thermostat. Genuine 090550 has index1012=20 and repeated native 0x0A B3C5=20; genuine 073242 has index1012=21 and B3C5=21; genuine 071517 likewise has index1012=21 and B3C5=21. Index1021 remains 10 in both full-resync captures. Index1053 is 35 in both available full-resync 0410 pages.
+
+**Result:** 1012/0x03F4 is strongly validated as the room target field in the reference Online database and the 1021 room-target claim is rejected for this dataset. 1053/0x041D is retained as a strong Hot Water Start candidate, but remains short of project proof until a controlled one-variable A/B is captured.
+
+**Additional correlation:** registerIndex1000 remains locally proven as Heat Curve on XTR controller->0x0F FC16 and strongly supported as the corresponding genuine DCM desired-state field.
+
+**Safety:** offline analysis only; no new write target exercised.
