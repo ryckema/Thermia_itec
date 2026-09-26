@@ -6,12 +6,62 @@ Last updated: 2026-09-26
 
 ## Authoritative current state — 2026-09-26 (supersedes older current-experiment bullets below)
 
-- Last completed experiment: **EXP215 — COMPLETE / MAJOR POSITIVE 0546 SYSTEM-PAGE VALIDATION**.
+- Last completed experiment: **EXP217 — COMPLETE / POSITIVE OFFLINE CAPTURE-ANALYZER VALIDATION**.
 - Current experiment: **EXP208 — PREPARED / AWAITING EXTERNAL PASSIVE SAME-CONTROLLER COLD BOOT WITHOUT DCM; no local experiment armed**.
 - Production functionality remains unchanged.
 - Do **not** repeat AFCA timing variants, direct `0x0F` FC16 semantic writes, passive topology censuses, or standalone `0708` probes already covered by EXP147/150 and EXP175–181.
 - Do **not** attempt to answer `0708/count6` locally unless the XTR controller first emits a genuine `0F 03 0708 0006`.
 - Current highest-value direction: identify the **controller-side topology / integration / scheduler enable condition** that distinguishes the genuine DCM reference system from the local XTR M.
+
+### EXP217 consolidated finding — automated EXP208/214 capture discriminator
+
+**Hypothesis:** the decisive topology evidence for EXP208/EXP214 can be extracted automatically and reproducibly instead of manually scanning long captures.
+
+A new offline-only tool now exists at `Research/tools/thermia_capture_analyzer.py`.
+
+It reports:
+- first A5 / A4 / 0x05 activity;
+- first slave 0x04 activity;
+- first controller `0x0F FC03 0708/count6` poll;
+- first `0x0F FC16` runtime page in `07D0..0884`;
+- first slave-0x0F FC16 ACK and FC03 response;
+- first observed `0x02` A811/A812 fingerprint;
+- first extended-topology event;
+- a conservative topology ON/OFF verdict requiring at least two independent families among A5, 0708, and runtime FC16.
+
+Validation against all five genuine captures currently mounted:
+- all captured frames in those files passed Modbus CRC validation;
+- all five were correctly classified as extended topology ON with all three evidence families present;
+- genuine boot capture 20260925_090209 was automatically recovered as A811/A812=000C/0500 at 0.031 s, first A5 at 1.179 s, first 0708 at 33.180 s, and first runtime FC16 at 33.915 s;
+- DCM reconnect capture 20260926_073242 recovered first slave-0x0F FC16 ACK at 27.051 s and first FC03 response at 28.470 s.
+
+**Strong conclusion:** EXP208/214 can now be evaluated immediately and consistently from a new log. The analyzer itself is passive/offline only and contains no bus-transmit code.
+
+### EXP216 consolidated finding — offline fail-closed DCM reference model
+
+**Hypothesis:** current protocol knowledge is sufficient to implement the observed DCM runtime role as a pure offline state machine before any hardware emulator is considered.
+
+A new offline-only model exists at `Research/tools/thermia_dcm_reference_model.py`.
+
+Implemented behaviour:
+- CRC validation and generation;
+- exact Modbus FC16 echo ACKs only for an allow-list of observed genuine slave-0x0F start/count shapes;
+- FC03 `0708/count6` mailbox response;
+- FC03 `03E8/count13` heating desired-state page;
+- FC03 `0546/count20` system desired-state page;
+- one-shot word1 -> 03E8 and word0 -> 0546 selector clearing from EXP212;
+- explicit semantic setters for Heat Curve, Room Target, Operation Mode and Link Integration that only modify the in-memory model.
+
+Exact captured vectors pass:
+- steady `0708` response;
+- word1 dirty selector response;
+- genuine `0864/count4` FC16 request -> exact captured ACK `0f1008640004835b`;
+- heating/system FC03 response construction and selector clearing;
+- unsupported write shapes fail closed with no response.
+
+The model deliberately omits serial/GPIO/network transport, scheduler activation, unknown command pages and the 0410/count21 DHW command path.
+
+**Strong conclusion:** once a controller emits the genuine scheduler, the known DCM runtime role is sufficiently constrained to be implemented deterministically. The remaining fundamental blocker is topology/bootstrap creation, not ordinary 0x0F runtime response mechanics.
 
 ### EXP215 consolidated finding — 0546/count20 system desired-state page validated
 
