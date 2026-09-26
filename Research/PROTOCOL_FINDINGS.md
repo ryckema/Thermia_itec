@@ -1,6 +1,6 @@
 # THERMIA PROTOCOL FINDINGS
 
-Last updated: 2026-09-23 after completed EXP96 + EXP97 design
+Last updated: 2026-09-27 after EXP229
 
 ## Bus
 
@@ -12,12 +12,12 @@ Last updated: 2026-09-23 after completed EXP96 + EXP97 design
 ## Important slaves
 
 - 0x02: controller state/sequencer data
-- 0x06: DCM/accessory slot
+- 0x06: local expansion/accessory presence/version path; **not proven to be the Online/DCM endpoint**
 - 0x0A: room-sensor path
-- 0x0F: local controller settings/status blocks
+- 0x0F: native controller application/settings/state serializer; genuine Online/DCM reference systems also use this role for mailbox/state exchange
 - 0x1E: outdoor-unit path
 
-## 0x06 FC17 accessory path
+## 0x06 FC17 expansion/accessory path
 
 Controller reads AFC8..AFD3 (12 words) and writes AFDC..AFE0 (5 words).
 
@@ -44,7 +44,7 @@ EXP92 timing example:
 
 This is a proven transport-level handshake.
 
-03E8 is therefore not treated as a normal local Thermia register address.
+The **AFCA value** `03E8` is therefore a transport strobe/constant in this 0x06 transaction and must not be confused with native `0x0F` register address `0x03E8`, which is independently proven to belong to the Heating Curve/settings family.
 
 ## Historical A80E/AFDC state propagation
 
