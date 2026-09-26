@@ -16,7 +16,7 @@ The main goals are:
 
 ---
 
-## Current status after EXP206
+## Current status after EXP207 / EXP208 prepared
 
 The write-path investigation has moved beyond the earlier assumption that one missing DCM register or one additional ACK would unlock control.
 
@@ -2043,3 +2043,12 @@ The same capture adds a second normal 0708 selector: w0=1 -> FC03 0546/count20 s
 Steady post-rejoin 0708 responses remain [0,0,0,0,0,6], including immediately around the w0=1 selector event. Therefore word4=077F is not required for an operational mailbox session or command dispatch.
 
 No local TX or YAML changes.
+
+
+## Status through EXP207 — minimum DCM responder role reconstructed
+
+Timing across the five genuine DCM captures is now consistent with a conventional Modbus-RTU slave-0x0F implementation. Healthy FC16 ACKs and FC03 data responses all imply approximately 4–5 ms of silent turnaround after the controller frame, followed immediately by the response transmission. Longer observed FC03 request-to-response times are explained by longer response frames, not by longer application processing.
+
+This materially simplifies the future emulator: when a compatible controller already emits the genuine Online/DCM scheduler, the DCM-side bus service can remain completely reactive and fail-closed. It needs to ACK exact controller FC16 writes and answer exact FC03 reads; the observed rejoin path does not require unsolicited slave-0x0F traffic.
+
+This does not solve the local XTR scheduler gate. EXP208 is therefore prepared as the decisive external passive discriminator: cold boot the same genuine reference controller with the DCM physically absent from Modbus before power-on and observe whether the extended 0x04/A5, 0708 and 07D0..0884 topology still appears.
