@@ -1655,3 +1655,16 @@ The two branches are already different at the first available controller frame. 
 
 The project has reached an evidence boundary for the scheduler gate with the existing logs. The decisive capture is same-controller cold boot with genuine DCM present versus absent.
 
+
+
+## EXP204 — controller-side firmware remains the missing implementation layer
+
+No usable heat-pump controller/relay-board firmware image was found in the checked Project, Library, public web or GitHub sources.
+
+Official DHP-AQ Link documentation gives an important cross-model clue:
+- Link integration requires DHP-AQ controller software >=2.2;
+- compatibility documentation directs installers to replace the display card when the software is older than 2.2.
+
+Therefore DCM/Link support is at least generation/software-capability dependent on DHP-AQ. This does not prove how iTec XTR selects the topology, but it makes a pre-bus controller capability/configuration gate plausible.
+
+The recovered Danfoss Link CC firmware remains valuable for HE/HPNode semantics, but it should not be expected to contain the lower Thermia-controller RS485 topology bootstrap.
