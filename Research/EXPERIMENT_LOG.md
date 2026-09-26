@@ -1236,3 +1236,25 @@ This changes the preferred interpretation of the runtime scheduler from a collec
 
 **Next proposed work:** EXP195, offline only, reconstruct `085F..0867` as one adjacent service/status family.
 
+
+
+## EXP195 — 085F/0864 adjacent service-family reconstruction — COMPLETE / POSITIVE-NEGATIVE
+
+**Hypothesis:** 085F/count5 and 0864/count4 may be one contiguous service/status family exposing scheduler activation.
+
+**Observed:**
+- steady genuine Online: 0864 appears once per runtime cycle; 085F absent;
+- 090209 controller boot: 085F occurs after the large startup sync, then runtime starts; 0864 appears later in the normal runtime cycle;
+- 090550 DCM rejoin: DCM join response at 68.235 s starts full resync; 085F then repeats every ~4.2 s throughout the resync; 0708 mailbox polling is mostly suppressed; runtime restarts with 07D0 at 106.828 s;
+- local no-DCM XTR already emits 085F and uses 0861 inside that page as the AFCA transport ACK;
+- local no-DCM does not show the genuine steady 0864 runtime page.
+
+**Result:**
+- 085F = synchronization/service-control class, not steady Online runtime data;
+- 0864 = extended steady-runtime export page;
+- adjacency 2143..2151 is address-space adjacency, not one scheduler role.
+
+**Negative result:** neither page is a credible scheduler-enable write target. Full resync starts before the first rejoin 085F, and 0864 appears only later as runtime output.
+
+**Next:** retain same-controller genuine DCM present/absent cold-boot A/B as highest-value discriminator.
+
