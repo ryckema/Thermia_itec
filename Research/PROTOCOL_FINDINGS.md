@@ -1334,3 +1334,28 @@ No public Online profile checked exposes indices 2148..2151. The range is struct
 
 Do not infer the value 22 as a software version and do not write any field in 2148..2151.
 
+
+
+### EXP194 refinement — Online registerIndex namespace pattern
+
+Converting the cyclic FC16 block starts from hex to decimal reveals a deliberate Online-index layout:
+
+```text
+07D0 = 2000
+07E4 = 2020
+07F8 = 2040
+080C = 2060
+0820 = 2080
+0834 = 2100
+0848 = 2120
+085F = 2143
+0864 = 2148
+0870 = 2160
+0884 = 2180
+```
+
+This matches the stable `registerIndex` namespace exposed by public Thermia Online profiles (for example 2000 supply temperature, 2023 outdoor temperature on ATEC-family data, 2120/2121 operational status/PID or desired supply depending profile, and the now-proven 2160+ operating-time family).
+
+**Strong architectural conclusion:** the extended controller scheduler is best understood as publishing/populating the DCM-facing Thermia Online register-index database in slave 0x0F. The FC16 blocks are contiguous database pages/semantic groups, not arbitrary private command blocks.
+
+Consequently, 0864 is controller->DCM exported state at Online indices 2148..2151. Even if those words eventually prove to contain a capability/topology marker, they are an **output/reflection** of controller state, not a justified ingress/write target for activating the scheduler. The activation gate must sit upstream of the publisher.
