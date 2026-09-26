@@ -1892,3 +1892,17 @@ This materially narrows the scheduler-gate problem:
 
 **EXP195 is proposed, not started.** It is offline/passive only and introduces no YAML, TX, or production changes.
 
+
+
+## Status through EXP195
+
+EXP195 separates the adjacent 2143..2151 area into two scheduler roles.
+
+`085F/count5` (2143..2147) is now best classified as an initialization/synchronization/service-control page. It exists locally without DCM, contains the proven 0861 AFCA transaction ACK, disappears from steady genuine Online cycles, and repeats at ~4.2 s during the genuine DCM full-resync phase.
+
+`0864/count4` (2148..2151) is a steady extended-runtime Online export page. Its observed payload remains `[0,0,0,22]`.
+
+This is a material negative for the scheduler-gate search: full DCM resync starts before the first 085F page after rejoin, and 0864 appears only later as runtime output. Neither range is a justified activation write target.
+
+No active local write experiment is justified. The decisive missing evidence remains a same-controller clean cold boot with a genuine DCM physically present versus absent.
+
