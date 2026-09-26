@@ -1861,3 +1861,33 @@ This materially strengthens EXP208. A same-reference-controller cold boot withou
 If EXP208 boots with scheduler OFF, a follow-up runtime DCM attach (EXP214) becomes highly valuable because it may reveal the first actual OFF->ON authorization exchange. If EXP208 already boots with scheduler ON, physical boot-time DCM presence is not the gate and EXP214 is unnecessary.
 
 No local write or broad probe follows from this documentation result.
+
+
+## EXP215 — 0546/count20 is the system/operation desired-state page
+
+The word0-selected FC03 page starts at 0x0546 / decimal registerIndex 1350 and spans 20 words through index 1369.
+
+Public Thermia Online profiles for both ATEC/DHP-AQ and iTec IQ independently expose:
+- 1363 / 0x0553 = REG_OPERATIONMODE, writable enumeration;
+- 1369 / 0x0559 = REG_LINK_INTEGRATION, writable enumeration, LIGHT=0 and SYSTEM=1.
+
+The genuine reference controller FC16 0546/count20 image has:
+- offset 13 / index 1363 = 4;
+- offset 19 / index 1369 = 0.
+
+At 104.130 s the DCM returns 0708 word0=1. At 104.170 s the controller reads FC03 0546/count20. The DCM response is byte-for-byte identical to the earlier controller FC16 image, including 1363=4 and 1369=0. The selector clears on the following mailbox poll.
+
+Strong mapping:
+- 0708 word0 -> 0546/count20 system/operation desired-state page;
+- 0553 -> Operation Mode;
+- 0559 -> Link Integration.
+
+Critical exclusion: the genuine Online/DCM scheduler is fully operational with 0559=0/LIGHT. Therefore Link Integration SYSTEM (1) is not required to instantiate or maintain the scheduler and must not be used as a scheduler-activation write target.
+
+Future command-path implication once the scheduler exists:
+1. update desired Operation Mode at 0553 in the DCM-side 0546 page;
+2. assert 0708 word0;
+3. controller fetches 0546/count20;
+4. clear word0 after successful fetch.
+
+No direct local second-master write is justified by this result.
