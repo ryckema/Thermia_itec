@@ -7,6 +7,20 @@ Last updated: 2026-09-27
 
 ## Authoritative current state — 2026-09-27 after EXP229
 
+## EXP229 interpretation refinement — calendar structure strongly indicated
+
+New documentary cross-check after EXP229 materially strengthens the calendar interpretation of the `055A..06E5` 396-word family:
+
+- Thermia iTec/iTec XTR documentation states that the CALENDAR controls four function groups: hot-water blocking, EVU/power limitation, silent mode, and temperature reduction.
+- Up to **8 calendar settings per function** are supported, giving **32 schedule slots**.
+- The Thermia Online guide likewise states up to 8 occasions for 4 calendar categories and exposes start/end date fields.
+- EXP229 independently found **33 candidate logical records of 12 words** in the 396-word family (`396 = 33 * 12`).
+- The raw family contains conspicuous calendar-limit values and time/date-like tuples, including `59`, `23`, `31`, `12` and combinations compatible with `23:59`, `22:30`, `16:00`, `05:30`, and `31/12` boundaries.
+
+**Revised interpretation:** the family is now **strongly indicated to be calendar/schedule serialization**, rather than merely a generic descriptor/configuration table. The exact 12-word record schema and the role of the 33rd record remain unproven. A plausible but unproven model is 32 user calendar slots plus one header/current-time/default/metadata record.
+
+**Safety:** this finding does not justify writing the table. A future confirmation can be fully passive: change one unused/future calendar entry in the Thermia UI and observe which `055A..06E5` words change, then restore it. No restart is required.
+
 - Last completed experiment: **EXP229 — COMPLETE / OFFLINE POSITIVE STRUCTURE: `055A..06E5` is a stable 396-word structured family with strong 12-word periodicity; the XTR-only differences sit in transition records rather than the repeated templates**.
 - Current experiment: **none running**. Heat-pump restarts remain paused. EXP229 used only existing captures; no ESP TX, no Thermia setting change and no controller restart.
 - Hypothesis: the `055A..06C5` count-33 sequence is a coherent table/descriptor family, and the EXP228 XTR-only values near `061C/061E` and `067E/067F` may explain the model-dependent page-selection pattern.
