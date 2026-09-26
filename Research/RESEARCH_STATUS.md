@@ -1939,3 +1939,13 @@ No topology-enable token was found. In particular, the extended reference topolo
 
 The scheduler-gate search should therefore move away from controller->0x0F startup/export pages and toward the upstream topology-recognition mechanism or persistent controller configuration.
 
+
+
+## Status through EXP199
+
+Firmware analysis rules out another tempting identity path. The Danfoss Link `SIMPLE_COMMUNICATION_MODULE` is a distinct binary-input/Away-mode node (Div5/Product0x8100), not the Thermia DCM/Online bridge. The heat pump itself is the Link HEATPUMP node (Div6/Product0x0203).
+
+This confirms that the missing Thermia scheduler activation is below the Link application-node layer. Neither SystemIntegration nor a Link SCM/DCM ProductID is a credible local RS485 bootstrap token.
+
+The remaining highest-value evidence continues to be the Thermia-controller-side topology discriminator, especially same-controller cold boot with genuine DCM physically present versus absent and the early A811/A812/controller fingerprint.
+
