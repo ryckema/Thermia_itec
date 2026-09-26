@@ -6,12 +6,42 @@ Last updated: 2026-09-26
 
 ## Authoritative current state — 2026-09-26 (supersedes older current-experiment bullets below)
 
-- Last completed experiment: **EXP210 — COMPLETE / POSITIVE 0x0F DESIRED-STATE FIELD VALIDATION**.
+- Last completed experiment: **EXP211 — COMPLETE / MAJOR POSITIVE 03E8 HEATING-PAGE SEMANTIC RECONSTRUCTION**.
 - Current experiment: **EXP208 — PREPARED / AWAITING EXTERNAL PASSIVE SAME-CONTROLLER COLD BOOT WITHOUT DCM; no local experiment armed**.
 - Production functionality remains unchanged.
 - Do **not** repeat AFCA timing variants, direct `0x0F` FC16 semantic writes, passive topology censuses, or standalone `0708` probes already covered by EXP147/150 and EXP175–181.
 - Do **not** attempt to answer `0708/count6` locally unless the XTR controller first emits a genuine `0F 03 0708 0006`.
 - Current highest-value direction: identify the **controller-side topology / integration / scheduler enable condition** that distinguishes the genuine DCM reference system from the local XTR M.
+
+### EXP211 consolidated finding — 03E8/count13 heating page reconstructed
+
+**Hypothesis:** the genuine DCM desired-state page 03E8/count13 is the Thermia Online heating-curve/settings register family and can be semantically reconstructed by cross-matching genuine bus values with public Thermia Online debug profiles and the independent legacy control-register table.
+
+Observed:
+- public ATEC/DHP-AQ and iTec IQ Thermia Online debug profiles independently identify writable registerIndex 1000..1006 and 1008 as:
+  1000 Heat Curve, 1001 Heat Curve Min, 1002 Heat Curve Max, 1003 Curve +5, 1004 Curve 0, 1005 Curve -5, 1006 Heat Stop, 1008 Room Factor;
+- the genuine reference 03E8/count13 payloads have exactly plausible values in those positions, e.g. 22,20,40,0,1,1,18,...,2;
+- the independent legacy control table places Temperature Reduction and the Curve 2 / Curve 2 Min / Curve 2 Max family directly after the same heating-curve fields, matching the remaining observed 03E8 values 18,40,30,60;
+- EXP210 independently validates registerIndex 1012 as the room-target field by exact equality with native B3C5 across captures.
+
+Current semantic map for 03E8/count13:
+- 1000 / 03E8 — Heat Curve — **proven locally on XTR FC16; public-profile confirmed; strong on genuine desired-state read**
+- 1001 / 03E9 — Heat Curve Min — **public-profile confirmed**
+- 1002 / 03EA — Heat Curve Max — **public-profile confirmed**
+- 1003 / 03EB — Curve +5 — **public-profile confirmed**
+- 1004 / 03EC — Curve 0 — **public-profile confirmed**
+- 1005 / 03ED — Curve -5 — **public-profile confirmed**
+- 1006 / 03EE — Heat Stop — **public-profile confirmed**
+- 1007 / 03EF — Temperature Reduction — **strong structural mapping; not directly exposed in checked Online profiles**
+- 1008 / 03F0 — Room Factor — **public-profile confirmed**
+- 1009 / 03F1 — Curve 2 — **strong structural mapping**
+- 1010 / 03F2 — Curve 2 Min — **strong structural mapping**
+- 1011 / 03F3 — Curve 2 Max — **strong structural mapping**
+- 1012 / 03F4 — Room Target — **project-validated against native B3C5**
+
+**Strong conclusion:** 03E8/count13 is now a substantially decoded heating desired-state page, not merely an opaque block. This independently explains why 0708 word1 selects this page.
+
+**Safety implication:** semantic knowledge of these fields does not justify local second-master writes. Any future control must still occur through the genuine slave-0x0F FC03 desired-state path after the controller itself emits the scheduler.
 
 ### EXP209 consolidated finding — causal endpoint ownership
 
