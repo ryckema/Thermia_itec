@@ -1456,14 +1456,14 @@ No TX, YAML or production-functionality changes were made during this review.
 **Conclusion:** prioritize early protocol/persistent capability evidence over speculative wiring tricks. No physical bus-loading experiment.
 
 
-## EXP203 — DCM Modbus disconnect / power-cycle / reconnect — COMPLETE / MAJOR POSITIVE
+## EXP206 — DCM Modbus disconnect / power-cycle / reconnect — COMPLETE / MAJOR POSITIVE
 
 Hypothesis: determine whether physical DCM removal collapses the extended topology and characterize rejoin.
 
-Observed: extended 0x02/A5/0x04 topology continued while DCM was physically absent from Modbus; 0708 polls were unanswered; pending 0864 was retried. First reattach response was ACK to 0864 at 27.051 s. Next 0708 returned [0,0,7FFF,FFFF,0080,6] and full resync started immediately. Steady mailbox/runtime later resumed.
+Observed: extended 0x02/A5/0x04 topology continued while DCM was physically absent from Modbus; 0708 polls were unanswered; pending 0864/count4 was retried about every 2.1 s. A5 request/response traffic continued while the DCM was off-bus. The capture contains 33 controller 0x06 FC17 polls and no 0x06 response frames. First reattach response was ACK to 0864 at 27.051 s. Next 0708 returned [0,0,7FFF,FFFF,0080,6] and full resync started immediately. Steady mailbox/runtime later resumed with [0,0,0,0,0,6].
 
-New selector event: 0708 [1,0,0,0,0,6] at 104.130 s caused FC03 0546/count20. Earlier genuine events already showed w1=1 -> 03E8/count13.
+New selector event: 0708 [1,0,0,0,0,6] at 104.130 s caused FC03 0546/count20. Earlier genuine events already showed w1=1 -> 03E8/count13. The successful selector event while word4 remained 0 also proves that 077F is not required for normal command dispatch after rejoin.
 
-Result: topology maintenance is independent of current DCM electrical presence; rejoin is lightweight once topology is already active; w5=7 is not required for join; w0 and w1 now map to two distinct desired-state families.
+Result: topology maintenance is independent of current DCM electrical presence; rejoin is lightweight once topology is already active; 0x06 is not required for genuine DCM reattachment in this capture; continued A5 responses while the supplied sequence says the DCM is physically absent exclude the removed DCM itself as the A5 responder; w5=7 is not required for join; w0 and w1 now map to two distinct desired-state families.
 
 Negative: initial topology activation after controller boot remains unknown.
