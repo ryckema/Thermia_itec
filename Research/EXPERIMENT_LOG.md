@@ -1382,3 +1382,23 @@ This changes the preferred interpretation of the runtime scheduler from a collec
 
 **Safety:** offline only.
 
+
+
+## REVIEW EXP183–EXP202 — evidence-grade audit (not a new experiment)
+
+Authoritative corrections after rechecking the offline branch:
+
+- EXP183–188: core findings retained. EXP186/187 already correctly downgraded the exact partial-group mapping.
+- EXP189: topology is proven to be **runtime-maintained through DCM service silence/rejoin**, not proven persistent/nonvolatile across controller boots.
+- EXP190: A811/A812 remain a structural discriminator; read-count 15/13 as generation/layout is hypothesis only.
+- EXP191: 0x04 <-> 0x1E equivalence is hypothesis; semantic/model-aware export is the retained conclusion.
+- EXP192: 0870 "static/config/identity" interpretation is superseded by EXP194 operating-time/defrost mapping.
+- EXP193: 080C.word14 <-> AFDC is a correlation; direct 0x06 provenance remains unproven.
+- EXP195: 085F = service/status page active locally and during resync; exact initialization/control role remains unknown.
+- EXP196: 2060 indoor-temperature mapping is strong, not independently proven on the reference UI.
+- EXP199: retract categorical "SCM is not DCM". Firmware shows SCM binary-input/Away semantics, but no source proves or excludes DCM03=SCM.
+- EXP200: XTR DCM-installed vs Online-connected distinction retained; DHP-AQ no-toggle installation sequence is corroborating only.
+- EXP201: reclassify to **INCONCLUSIVE for DCM-installed mapping / STRONG NEGATIVE for live DCM-session marker**.
+- EXP202: public-register search negative retained; private controller/display location remains hypothesis.
+
+No TX, YAML or production-functionality changes were made during this review.
