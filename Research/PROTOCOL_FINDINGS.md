@@ -1682,3 +1682,14 @@ Protocol implication:
 - byte-level captures cannot prove or exclude such analog detection.
 
 Do not alter termination/bias/loading as an experimental bootstrap target without reference electrical evidence.
+
+
+## EXP203 — physical DCM removal/rejoin and second mailbox selector
+
+With DCM removed from Modbus and power-cycled while disconnected, the running controller continued its reference fingerprint, A5, 0x04, 0x06 polling, unanswered 0708 polling and ACK-gated export retries. Therefore DCM electrical presence is not required to maintain an already-selected topology.
+
+Observed rejoin sequence: pending 0864 request -> ACK; next 0708 -> [0,0,7FFF,FFFF,0080,6]; immediate full resync from 03E8; steady 0708 resumes; runtime exporter resumes.
+
+Both [0,0,7FFF,FFFF,0080,7] from 090550 and [0,0,7FFF,FFFF,0080,6] from EXP203 trigger full resync. w5=7 is therefore not a required join marker.
+
+Second selector: 0708 [1,0,0,0,0,6] -> FC03 0546/count20, which includes known OperationMode 0553 and Link Integration 0559. Previous mapping remains w1=1 -> FC03 03E8/count13 heating/settings. Current model: w0 selects a system/status desired-state family strongly aligned with firmware partial group 0; w1 selects the heating/settings family strongly aligned with partial group 1; normal w2 selector remains unobserved.
