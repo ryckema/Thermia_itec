@@ -1573,3 +1573,20 @@ Run only if EXP208 boots the reference controller with the extended scheduler OF
 **Stop rule:** if EXP208 already has the extended topology ON without DCM, do not run EXP214 for this purpose.
 
 **Safety:** passive external reference capture only.
+
+
+## EXP215 — 0546/count20 system-page validation — COMPLETE / MAJOR POSITIVE
+
+**Hypothesis:** the word0-selected FC03 0546/count20 page is the system/operation desired-state page and contains the public Thermia Online Operation Mode and Link Integration fields at their native indices.
+
+**Observed:** page 0546/count20 spans registerIndex 1350..1369. Public ATEC/DHP-AQ and iTec IQ Online profiles identify writable 1363/0553 as REG_OPERATIONMODE and 1369/0559 as REG_LINK_INTEGRATION. Genuine controller FC16 0546 image has offset13=4 and offset19=0. The DCM later asserts 0708 word0=1; controller reads FC03 0546/count20 40 ms later; returned page is byte-for-byte identical, again 1363=4 and 1369=0.
+
+**Result:** positive. 0546/count20 is a coherent system/operation desired-state page. word0 is its one-shot fetch selector.
+
+**Major negative/exclusion:** the genuine scheduler is fully operational while 0559 Link Integration = 0/LIGHT. Therefore 0559=1/SYSTEM is not the scheduler-enable gate.
+
+**Control implication:** future Operation Mode control should modify 0553 in the DCM desired page and assert word0, not direct-write the controller register.
+
+**Unknown:** remaining 18 page words.
+
+**Safety:** offline analysis only.
