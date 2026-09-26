@@ -497,6 +497,7 @@ Planned controlled variable: manually change only DHW START by -1 °C and restor
 
 Safety: run only after EXP133 review; use a moment when DHW production is inactive and the actual DHW temperature is sufficiently above START so the -1 °C step cannot create a new heat demand.
 
+
 ### EXP134 — passive DHW START correlation — PROCEDURAL / INCIDENTAL
 Only `03E8 34 -> 35` changed, tracking Heating Curve. No valid DHW mapping resulted.
 
@@ -996,7 +997,8 @@ Combined with EXP148, A5 is strongly indicated to belong to or depend on the mis
 
 ### EXP150 — staged Online/DCM bootstrap role-emulation harness — PREPARED
 
-Single hypothesis:sustained known `0x0F` slave-side ACK presence may bootstrap the missing Online/DCM read/discovery layer.
+Single hypothesis:
+sustained known `0x0F` slave-side ACK presence may bootstrap the missing Online/DCM read/discovery layer.
 
 Efficiency:
 one gated run combines:
@@ -1495,6 +1497,7 @@ Classification: **COMPLETE / POSITIVE for 0x06→EXP UI mapping; NEGATIVE for 0x
 3. EXP167 is technically inconclusive for the exact combined condition because `0F16req=0`, so no `0x0F` ACK was actually exercised.
 4. EXP167 is nevertheless a strong negative result for the hypothesis that `0x06` presence itself causes or eventually unlocks native `0x0F`/A5 service.
 5. Combined with EXP165 and EXP166, neither runtime `0x0F` ACK alone nor runtime `0x06` presence alone reproduces the genuine DCM service state.
+
 **Comparison with genuine DCM power-up:** in `thermia_capture_20260925_090209.log`, `0x0F` is already ACK-capable at ~0.389 s and A5 starts at ~1.179 s while C8 continues in parallel. The no-DCM runtime emulation therefore lacks a prerequisite that exists essentially immediately in the real DCM topology.
 
 **Negative result retained:** do not repeat longer 0x06-only dwell tests or treat `EXP 0.0` as evidence of DCM recognition.
@@ -1994,7 +1997,8 @@ Genuine ATEC/DCM full sync contains the same seven start addresses in the same r
 - `05FF/33` — exact;
 - `0662/33` — exact.
 
-Additional recurrent common shapes:- `0546/20` exact;
+Additional recurrent common shapes:
+- `0546/20` exact;
 - `085F/5` exact.
 
 Selected payload comparison using exact shared shapes:
@@ -2192,3 +2196,4 @@ The attractive `value 3 == three page strides` observation is not sufficient for
 
 **Next**
 EXP230 should stay offline and classify the 12-word records semantically, explicitly testing calendar/range-descriptor versus model/capability/page-selection hypotheses against the public Online map, recovered firmware semantics and all available cross-model evidence.
+
