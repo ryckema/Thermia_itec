@@ -1881,3 +1881,31 @@ The activation prerequisite may be implemented inside the heat-pump controller/d
 With no controller binary available, the highest-value path remains same-controller DCM-present versus DCM-absent cold-boot A/B. Secondary acquisition target: physical controller/display card, service dump, installer update package or board firmware from an external source.
 
 No bus TX and no YAML change.
+
+
+## 2026-09-26 — EXP205 COMPLETE / PHYSICAL-LAYER DETECTION AUDIT
+
+**Hypothesis:** the missing scheduler/topology bootstrap may be caused by a dedicated physical detect/ID conductor or other non-protocol wiring state on the RJ45 connection, rather than by normal framed RS485 traffic.
+
+### Observed facts
+- Project wiring observation for the iTec XTR RJ45 accounts for all eight conductors as duplicated data, ground and supply: pins 1/2 same signal, 3/4 same signal, two ground conductors and two +12 V conductors. No spare conductor is identified in the observed XTR wiring.
+- Official Danfoss Link HP-kit documentation for DHP-AQ powers DCM03 from a separate AC/DC supply and connects the DHP-AQ-DCM03 communication cable from a spare relay-board RJ45 directly to the DCM03 connector labelled RS 485.
+- The official installation sequence documents no separate detect/ID wire, strap, jumper or sense contact for DCM03 on the DHP-AQ direct-connection path.
+- The same documentation requires DHP-AQ controller software >=2.2, showing that controller capability/software generation is a prerequisite for the integration path.
+- Genuine 090550 shows that once the extended topology is active, it remains active while the DCM service is silent/unavailable for ~66 s; therefore continuous successful DCM communication is not required to maintain the selected topology.
+
+### Strong conclusions
+1. There is currently no evidence for a dedicated spare DCM-detect conductor on the observed XTR RJ45 path.
+2. The DHP-AQ direct-DCM installation is explicitly presented as an RS485 communication path plus separate DCM power, with no documented additional detect line.
+3. This reduces the priority of a hidden dedicated-wire bootstrap hypothesis.
+4. A boot-time electrical signature on the RS485 pair itself (bias/termination/load) remains theoretically possible, but the present byte captures cannot test it and no documentation currently supports it.
+5. Persistent commissioning/controller capability or a very-early RS485 dialogue remain at least as plausible as analog physical detection.
+6. The absence of a spare detect conductor does not prove that topology recognition is purely protocol-driven.
+
+### Safety / decision
+Do not add resistors, straps or experimental loading to the live bus based on this result. No active physical-layer test is justified without a genuine DCM or direct electrical measurements from a reference system.
+
+### Next priority
+1. obtain same-controller DCM-present/absent cold-boot evidence;
+2. obtain DCM03/Connect hardware, electrical measurements or controller firmware/service tooling;
+3. continue semantic mapping only where it directly supports a future emulator.
