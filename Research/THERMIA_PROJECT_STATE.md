@@ -5,6 +5,21 @@ Last updated: 2026-09-26
 ## Authoritative experiment state
 
 
+## Authoritative current state — 2026-09-26 after EXP224
+
+- Last completed experiment: **EXP224 — COMPLETE / INCONCLUSIVE FOR HEAT-CURVE CORRELATION BECAUSE TARGET FC17 WAS NOT EXERCISED; POSITIVE evidence that 071C/0730 FC17 is not continuously present in ordinary runtime**.
+- Current experiment: **EXP225 — PREPARED / PASSIVE COLD-BOOT-GATED 071C/0730 CORRELATION; not yet run**.
+- EXP224 was RX-only and parser-clean. The Heat Curve A/B/A was successfully exercised (`37 -> 36` visible in native `03E8/count14` ground truth), with 96 `03E8` frames, but the exact target `0x0F FC17 read 0730/count8 + write 071C/count8` appeared **zero** times in baseline, +1, and restored phases.
+- EXP224 therefore does not answer whether Heat Curve changes the 071C write image. It does establish that this FC17 family is not an always-on steady-runtime exchange.
+- EXP221 cold-boot evidence is now reinterpreted more narrowly: after Thermia/controller power-on, exact 071C/0730 FC17 requests began at ~2.9 s post-on and continued at ~4.2 s cadence through the end of the ~200 s observation. The stream is therefore strongly associated with controller cold-boot/recovery/service-session state.
+- This makes the XTR FC17 family more interesting as a possible startup/session handshake with an absent slave-0x0F endpoint, and less likely to be an ordinary background heartbeat. Exact semantics remain unknown.
+- EXP225 keeps the ESP independently powered, performs one controlled Thermia/controller cold boot to re-establish the proven FC17 stream, requires >=3 exact FC17 frames before permitting the Heat Curve phase marker, then performs the same single semantic variable `baseline -> +1 -> baseline`.
+- EXP225 remains fully RX-only: no FC17 response, no ACK, no scan, no semantic write, no room-sensor emulation.
+- Do not infer or guess `0730..0737` response values. A responder experiment remains blocked pending genuine-response evidence or a proven transformation.
+- Production functionality remains unchanged. Experiment YAMLs/logs stay out of GitHub; canonical Research files may be maintained under the user's standing permission.
+
+
+
 ## Authoritative current state — 2026-09-26 after EXP223
 
 - Last completed experiment: **EXP223 — COMPLETE / OFFLINE POSITIVE DISCRIMINATION: local XTR exposes a recurring slave-0x0F FC17 `read 0730/count8 + write 071C/count8` exchange that is absent from the three available ATEC/DCM captures**.
@@ -983,18 +998,3 @@ After EXP138 proved `03E8/14 -> ACK -> 0410/22 -> ACK -> 042E/15`, ACKing the ex
 Observed:
 - At experiment start, the controller was already repeatedly transmitting `042E/count15` during the 30 s passive baseline.
 - This again confirms that the Thermia/controller-side 0x0F transfer state persists across ESP reboot / firmware replacement.
-- Baseline before active phase:
-  - `fc16Seen=28`
-  - `whitelisted=28`
-  - `unknown=0`
-  - no pre-existing 0x0F responder
-  - no FC03 activity
-- Active phase:
-  1. `042E/count15` was ACKed once (`ack042E=1`);
-  2. ~0.52 s later the controller sent `04A6/count13`;
-  3. `04A6/count13` was already in the unchanged whitelist and was ACKed;
-  4. ~1.55 s later the controller advanced to a previously unseen block:
-     `04BA/count22` (decimal 1210..1231);
-  5. EXP139 did not ACK `04BA/count22` and stopped immediately.
-- Final summary:
-  - reason=`POSITIVE_NEW_FC16_STAGE_AFTER_042E`
