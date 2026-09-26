@@ -1436,3 +1436,40 @@ The same public profiles show model-dependent differences around index 2120 (ATE
 
 Indices 2143..2151 remain absent from the checked public API profiles and are best treated as internal/private service-status fields until independently mapped.
 
+
+
+## EXP197 — 0559 LIGHT is compatible with full Online/DCM topology
+
+Genuine full synchronization includes `0x0F FC16 0546/count20`, ending exactly at 0559.
+
+Using the ATEC/DHP-AQ Online register map:
+
+```text
+0553 = REG_OPERATIONMODE
+  0 OFF
+  1 AUTO
+  2 COMPRESSOR
+  3 AUXILIARY
+  4 HOT_WATER
+
+0559 = REG_LINK_INTEGRATION
+  0 LIGHT
+  1 SYSTEM
+```
+
+The two genuine power-event snapshots decode:
+
+```text
+090209: 0553=4, 0559=0
+090550: 0553=4, 0559=0
+```
+
+Yet both captures have the extended A5/0x04/0x0F topology active.
+
+Protocol implication:
+**Link Integration SYSTEM is not the scheduler-enable condition.** LIGHT mode coexists with the full Online/DCM transport/export scheduler.
+
+This aligns with the firmware-side conclusion that SystemIntegration controls semantic ownership/synchronization after a heat-pump endpoint exists, rather than creating the endpoint/topology itself.
+
+Do not use a guessed 0559 write as a topology activation experiment.
+
