@@ -1,3 +1,10 @@
+## EXP266 target — locally confirmed 0708 mailbox, genuine Eco5 idle response
+
+- EXP265 locally confirmed `FC03 0708/count6` as the first meaningful post-sync mailbox request after `06F4/19`, with `085F/5` appearing first as recurrent background traffic.
+- Genuine Eco5 capture contains the exact idle response `0F030C0000000000000000010000001C88`, i.e. six words `0000 0000 0000 0000 0001 0000`.
+- EXP266 will test that response exactly once against the local XTR M. This remains a hypothesis until run.
+- No inference is made that `0001` is a generic ready flag; its semantics remain unknown.
+
 ## EXP264 — proven sync tail and background-overlay caveat
 
 Local XTR now proves the ordered Online/Link tail:
@@ -990,11 +997,3 @@ ACK only `04BA/count22` as the one new variable; do not answer the next new FC16
 
 Locally proven progression before EXP140:
 `03E8/14 -> ACK -> 0410/22 -> ACK -> 042E/15 -> ACK -> 04A6/13 -> ACK -> 04BA/22`.
-
-EXP140 changes one variable only:
-acknowledge `04BA/count22`.
-
-This block covers `0x04BA..0x04CF` (decimal 1210..1231). Exact semantics remain OPEN.
-
-Positive:
-- first new FC16 stage after a successful 04BA ACK, or
