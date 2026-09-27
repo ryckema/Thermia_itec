@@ -1,7 +1,6 @@
 # THERMIA PROTOCOL FINDINGS
 
-Last updated: 2026-09-27 after EXP257 + external Eco 5 follow-up
-
+Last updated: 2026-09-27 after EXP257; EXP258 prepared. Detailed historical findings restored from the uploaded canonical snapshots.
 
 ## External Eco 5 endpoint behavior refined after EXP257
 
@@ -26,7 +25,6 @@ A public comment wrote the fifth word as `0100`; this is not what the raw frame 
 Later fifth-word values in the same session descend through `03DC` (988), 984, 976, 908, 896, 768, 512, then 0. The sequence is factual; "pending synchronization item counter" is only a hypothesis.
 
 The known local `COMM. ERR ONLINE/LINK` after partial participation is compatible with a session-service timeout, but that causal interpretation remains a hypothesis until a sufficiently serviced local session avoids the alarm.
-
 ## EXP257 — local XTR reproduces genuine Eco 5 `03E8 -> 03FC` synchronization transition
 
 EXP257 adds the first local XTR proof of the next acknowledged post-approval transition.
@@ -70,7 +68,6 @@ This materially strengthens the cross-model architectural link. It does not yet 
 No semantic register write was performed in EXP257: the only new active frame was a standard FC16 acknowledgement echoing address/count and carrying no register-value payload.
 
 Last updated: 2026-09-27 after EXP256 + full external Eco 5 capture refinement
-
 ## EXP256 — R1 crosses approval boundary into native 03E8 synchronization
 
 EXP256 materially resolves the ambiguity left by EXP252/EXP255. After one exact replay of the already-tested R1 response to the first local `071C/0730` approval request:
@@ -96,6 +93,91 @@ The EXP255 numerical clue (`582 - 195 ≈ 386`) is now recorded as a misleading 
 The user again observed the DHW/tank-side literal `0`, followed after the run by the exact same front-panel alarm as EXP252: **`COMM. ERR ONLINE/LINK`**. No VERSION-screen change was seen; this is compatible with the architecture because VERSION `EXP` display is controlled by the separate `0x06/AFD1` expansion metadata path, not by the `0x0F` approval/synchronization path tested here.
 
 **Still unknown:** full Online/Link session establishment, the required ACK chain after `03E8`, any eventual FC03/mailbox phase, and the semantic meaning of the DHW-side `0`.
+## 2026-09-27 — EXP256 approval-to-sync transition
+
+EXP256 provides the first direct local link between the startup `071C/0730` approval exchange and the native `0x0F` synchronization chain.
+
+Observed sequence:
+
+```text
+BUS_RETURN
+  -> first exact 071C/0730 approval request
+  -> one-shot R1 response
+  -> approval retries stop
+  -> 124 ms later: controller FC16 03E8/count14
+  -> no endpoint ACK
+  -> repeated 03E8/count14 for the remainder of the 7-minute run
+```
+
+Complete active census: `04BA/count22` x1 before R1, then `03E8/count14` x389; `04A6/count13` x0; `085F/count5` x0; no FC03 phase.
+
+**Protocol consequence:** the earlier EXP255/EXP252 count coincidence did not represent simple selective `085F` suppression. R1 instead advances the controller into the first stage of the acknowledged native settings synchronization state machine previously mapped in EXP137+. The endpoint is expected to ACK the FC16 block before progression.
+
+**Session-status refinement:** R1 is accepted far enough to suppress approval retries and start sync, but this is not proof of a complete Online/Link session. In EXP256 no FC16 ACK, FC03 mailbox response, or later sync stage was supplied.
+
+**UI side effect:** the DHW/tank-side literal `0` reappeared and the front panel again raised **`COMM. ERR ONLINE/LINK`** after the active run, exactly reproducing EXP252; VERSION did not change. This makes the R1 incomplete-session side effect reproducible while remaining separate from the `0x06/AFD1` VERSION metadata path. Exact meaning of the `0` remains unknown.
+
+
+---
+## 2026-09-27 — complete genuine iTec Eco 5 gateway capture: approval -> sync -> mailbox chain
+
+A complete 1482.480 s Eco 5 gateway capture provides the first continuous raw evidence connecting genuine approval responses to the downstream acknowledged synchronization state machine.
+
+### Approval retry behavior
+
+The capture contains 99 exact `0x0F FC17 read 0730/count8 + write 071C/count8` requests in three windows (29, 41 and 29 requests). Their median cadences are about 4.24 s, 4.26 s and 4.21 s. 98 of the 99 16-byte `071C` payloads are unique; one payload repeats once. Thus the genuine Eco 5 source normally regenerates the 16-byte challenge-like value across retries.
+
+Two successful challenge/response pairs are present inline in the raw capture:
+
+```text
+C1 63CE FB32 C6F4 1382 0879 9237 0CAC EEBA
+R1 1691 A5F3 F8E8 D587 3892 4416 E8E6 A3D5
+
+C2 31FB 59FC 8FB1 175C D89F 904D 06D9 2EA4
+R2 FD63 6CCD 0F92 1D83 FF23 2A1A 2413 B372
+```
+
+### Reproducible post-approval prefix
+
+Both successful responses produce the same prefix:
+
+```text
+FC17 response
+ -> 03E8/count14 request
+ -> FC16 ACK 03E8/count14
+ -> 03FC/count11 request
+ -> FC16 ACK 03FC/count11
+ -> 0410/count22 request
+ -> FC16 ACK 0410/count22
+```
+
+Timing:
+
+```text
+                         R1 cycle       R2 cycle
+03E8 request             +92 ms         +92 ms
+03E8 ACK                 +137 ms        +122 ms
+03FC request             +510 ms        +536 ms
+0410 request             +1.950 s       +2.189 s
+```
+
+This is stronger than the earlier local EXP137 observation. `0410/count22` is not the demonstrated immediate successor to `03E8`; the genuine Eco 5 reference contains an intervening `03FC/count11` block.
+
+### Ordered initial synchronization export
+
+The first successful cycle establishes this ordered FC16 sequence (retries omitted):
+
+`03E8/14 -> 03FC/11 -> 0410/22 -> 042E/15 -> 0442/13 -> 0456/12 -> 046A/18 -> 047E/19 -> 0492/11 -> 04A6/13 -> 04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10 -> 0532/18 -> 0546/20 -> 055A/33 -> 057B/33 -> 059C/33 -> 05BD/33 -> 05DE/33 -> 05FF/33 -> 0620/33 -> 0641/33 -> 0662/33 -> 0683/33 -> 06A4/33 -> 06C5/33 -> 06EA/7 -> 06F1/3 -> 06F4/19`.
+
+The next observed stage is `07D0/count19`, interleaved with `FC03 0708/count6` mailbox polls. Later established traffic includes acknowledged `07E4`, `07F8`, `080C`, `0820`, `0834`, `0848`, `0864` and `0870` pages plus dynamic `0708` responses.
+
+### Consequences for the local XTR project
+
+- EXP256's local `R1 -> 03E8/count14` transition is now a direct prefix match to genuine Eco 5 Online/DCM behavior.
+- The response replay reaches a real protocol boundary, not an arbitrary controller retry quirk.
+- Full session establishment still cannot be inferred from R1 alone; the genuine endpoint acknowledges a long sequence and participates in `0708` mailbox/runtime exchange.
+- EXP257 remains correctly bounded: ACK exactly the first local `03E8/count14` once, then capture the first different block without answering it.
+- External-reference positive discriminator is now specifically `03FC/count11`. A local `0410/count22` first would demonstrate a platform/order difference and would also be valuable.
 
 ## Bus
 
@@ -916,85 +998,3 @@ EXP144 itself did not test progression because it aborted on its intentionally s
 
 ### EXP144 repeatability
 The event-triggered pending `03E8/count14` retry state was reproduced across two additional EXP144 starts, each with the same payload first word `0x0023` and the same strict-baseline abort behavior.
-
-This makes the controller-side persistence of the outstanding 03E8 stage highly repeatable.
-
-
-## EXP145 prepared — transition probe, not more blind FC16 walking
-
-The project focus is now explicitly the transition from the proven controller->0x0F FC16 snapshot path to the desired/read-side behavior seen with genuine Online hardware.
-
-EXP145 resumes the persistent outstanding `03E8/count14` from EXP143/144, ACKs only locally proven shapes, and then stops transmitting after `0662/count33`.
-
-The discriminator is what follows:
-- `0x0F FC03` => read-side transition;
-- new FC16 => missing transport stage;
-- 120 s quiet => snapshot ACK completion is insufficient by itself.
-
-A5/A4 FC03 activity is also logged passively because those addresses were active in the genuine Online capture.
-
-
-## EXP145 — event-triggered FC16 update is distinct from startup snapshot sequence
-
-A pending runtime Heat Curve update at `0x0F FC16 03E8/count14` was ACKed once. The retry stream stopped and no `0410/count22` or later startup-chain block followed.
-
-Therefore:
-- runtime/event-triggered FC16 synchronization can consist of a single changed block;
-- the long `03E8 -> 0410 -> 042E -> ... -> 0662` sequence belongs to a different initialization/snapshot context;
-- FC03 read-side traffic does not automatically follow ACK of the runtime 03E8 update.
-
-This narrows the missing write-access mechanism to an Online-side/session trigger rather than further controller-originated FC16 acknowledgement.
-
-
-## EXP146 prepared — test Online-side master hypothesis directly
-
-The genuine Online capture repeatedly contains:
-`0F 03 0708 0006`
-followed by a 12-byte-data FC03 response, and then a `0F 03 03E8 000D` settings read.
-
-EXP145 showed FC03 does not emerge automatically after ACKing a controller-originated runtime FC16 update.
-
-EXP146 therefore tests a more direct architecture:
-the Online module may actively be the master issuing FC03 reads to shared slave/mailbox 0x0F.
-
-Only the exact read-only `0708/count6` request is transmitted in EXP146.
-
-
-## EXP146 invalid — timing bug prevents interpretation
-
-The exact genuine Online FC03 request `0F 03 0708 0006` was transmitted, but EXP146's timeout logic used a stale phase elapsed-time value. The nominal 2 s response window collapsed to roughly 10 ms.
-
-No protocol conclusion can be drawn from the absence of a captured response.
-
-The next experiment must repeat the same request with only the timing bug corrected; changing the address or protocol target before doing so would confound the result.
-
-
-## EXP147 prepared — corrected repeat of EXP146
-
-No protocol target is changed.
-
-EXP147 repeats the exact genuine-Online read:
-`0F 03 0708 0006`
-
-The only change is procedural: the response timer now starts from the actual TX timestamp and the same interval callback exits immediately after sending.
-
-This experiment is the valid discriminator for whether the local 0x0F endpoint answers an Online-style master read.
-
-
-## EXP147 — bare 0x0F FC03 master read does not receive a local response
-
-Exact request:
-`0F 03 0708 0006`
-
-A genuine >2 s observation window produced no decodable 0x0F response.
-
-This weakens the simplest Online-side-master model in which the ESP can issue the same FC03 request without any prior Online/DCM session state.
-
-Important logging note:
-EXP147's terminal summary has a printf argument-count defect, so some printed counters are shifted. The protocol result remains interpretable from the independent timestamped TX line and >2 s later summary line.
-
-Architectural implication:
-The genuine Online environment likely provides additional topology/session state before 0x0F becomes readable. A5/A4 remains a prime candidate for that missing layer, but its exact role is still unknown.
-
-
-### EXP147 repeatability
