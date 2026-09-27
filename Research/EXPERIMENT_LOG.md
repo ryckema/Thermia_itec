@@ -2,6 +2,28 @@
 
 Last updated: 2026-09-27
 
+## EXP259 — ACK `0410/count22`, capture next stage — COMPLETE / STRONG POSITIVE
+
+**Hypothesis:** after the proven prefix `R1 -> 03E8/14 ACK -> 03FC/11 ACK -> 0410/22`, one exact FC16 ACK to `0410/count22` should advance the XTR to the next ordered sync block. Genuine Eco 5 predicted `042E/count15`.
+
+**Observed:**
+- approval at +1283 ms after BUS_RETURN;
+- R1 once;
+- `03E8/14` +138 ms after R1, ACKed once;
+- `03FC/11` +682 ms after `03E8` ACK, ACKed once;
+- `0410/22` +1498 ms after `03FC` ACK, ACKed once;
+- `042E/15` +696 ms after `0410` ACK;
+- `042E/15` not ACKed;
+- `approval_after_r1=0`, `same03e8_after_ack=0`, `same03fc_after_ack=0`, `same0410_after_ack=0`;
+- `peer17=0`, `unexpected_peer_ack=0`, `self_echo_r1=0`, `self_echo_ack=0`;
+- `resync_postreturn=0`, `drop_postreturn=0`, `DE=LOW`.
+
+**Result:** strong positive. Local XTR matches the genuine Eco 5 ordered sync prefix through `042E/count15`.
+
+**Negative/safety result:** full Online/Link session is still not established; no `042E` ACK, no later FC16 ACK, and no FC03/mailbox response was emitted.
+
+---
+
 ## EXP259 — exact `0410/count22` ACK then next-stage capture — PREPARED / NOT RUN
 
 **Hypothesis:** after the locally proven prefix `R1 -> 03E8/14 ACK -> 03FC/11 ACK -> 0410/22`, one exact standard FC16 ACK to `0410/count22` should advance the XTR controller to a different block. The genuine Eco 5 reference predicts `042E/count15`.
@@ -976,25 +998,3 @@ ACKing the event-triggered 03E8 block does not itself trigger FC03 read-side beh
 
 Next:
 Investigate the missing Online-side trigger around the first genuine Online FC03 request instead of continuing FC16 chain-walking.
-
-
-### EXP146 — direct Online-style 0x0F FC03 0708 read probe — PREPARED
-
-Hypothesis:
-The genuine Online module itself may be the source of `0x0F FC03` reads.
-
-Test:
-After a clean 10 s baseline, transmit exactly once:
-`0F 03 07 08 00 06 44 50`.
-
-This exact request is present in the genuine Online capture and receives a 12-byte FC03 response there.
-
-No semantic write is performed. Positive = local 0x0F responds; negative = no response within 2 s.
-
-
-### EXP146 — direct Online-style 0x0F FC03 0708 read probe — INVALID / PROCEDURAL
-
-Two attempts transmitted the intended exact request:
-`0F 03 07 08 00 06 44 50`.
-
-However both runs logged `NO_RESPONSE_2S` approximately 8–10 ms after `FC03_TX`.
