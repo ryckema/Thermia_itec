@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## EXP260 bounded-batch target
+
+EXP256–259 locally reproduced the genuine Eco 5 Online/Link prefix through 042E/count15. EXP260 increases throughput while remaining fail-closed: ACK only exact 042E/15, 0442/13, and 0456/12 in order, then capture the first different stage. Genuine Eco 5 predicts 046A/count18. This does not authorize broad FC16 ACKing or any 0708 mailbox response.
+
+
 Last updated: 2026-09-27 after EXP259
 
 ## EXP259 — local ordered Online/Link sync confirmed through `042E/count15`
