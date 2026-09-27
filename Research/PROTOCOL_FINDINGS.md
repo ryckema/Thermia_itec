@@ -1,3 +1,14 @@
+## EXP264 — proven sync tail and background-overlay caveat
+
+Local XTR now proves the ordered Online/Link tail:
+`06EA/7 -> ACK -> 06F1/3 -> ACK -> 06F4/19 -> ACK`.
+
+Immediately after the `06F4` ACK, the first observed FC16 was `085F/5` (+107 ms). Because `085F/5` was already established from passive captures as recurrent background traffic, it must not be promoted to an ordered synchronization stage merely because it is first after an ACK.
+
+Protocol implication: future post-sync discovery must distinguish ordered session traffic from recurrent background families. Known recurrent `085F/5` should be logged but ignored as a discovery terminator after `06F4`; `04A6/13` remains context-sensitive because it can be both recurrent and ordered depending on phase.
+
+The next meaningful stage after `06F4` remains unknown locally. `0708/count6` mailbox timing is still unresolved and no local mailbox response has been sent.
+
 ## EXP263 finding — 055A..06C5 33-word sync run locally confirmed
 
 ## EXP264 target — final small FC16 tail before mailbox/runtime observation
@@ -987,14 +998,3 @@ This block covers `0x04BA..0x04CF` (decimal 1210..1231). Exact semantics remain 
 
 Positive:
 - first new FC16 stage after a successful 04BA ACK, or
-- first 0x0F FC03 request.
-
-Neither will be answered in EXP140.
-
-
-## EXP140 — 0x0F sequence extends to 0x05FF/count33
-
-Observed local XTR progression:
-`04BA/count22 -> ACK -> 05FF/count33`.
-
-Combined proven sequence:
