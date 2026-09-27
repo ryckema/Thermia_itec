@@ -1,5 +1,12 @@
 # THERMIA EXPERIMENT LOG
 
+## EXP260 — bounded 042E -> 0442 -> 0456 ACK batch — PREPARED / NOT RUN
+
+Hypothesis: continue the proven local Online/Link prefix with a bounded batch of three exact standard FC16 ACKs: 042E/count15, then 0442/count13, then 0456/count12. Genuine Eco 5 predicts 046A/count18 next.
+
+Safety: each new stage must be the first exact expected block within 5 s with clean parser/drop counters and no retries or unexpected peer frames. After the 0456 ACK, capture only; no 046A ACK and no FC03/mailbox response. Known incomplete-session recovery remains one normal controller reboot.
+
+
 Last updated: 2026-09-27
 
 ## EXP259 — ACK `0410/count22`, capture next stage — COMPLETE / STRONG POSITIVE
