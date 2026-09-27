@@ -1,5 +1,19 @@
 # THERMIA PROJECT STATE
 
+## Authoritative current state — 2026-09-27 — EXP260 COMPLETE / STRONG POSITIVE
+
+- Last completed experiment: **EXP260 — COMPLETE / STRONG POSITIVE**.
+- Hypothesis: continue the proven local Online/Link prefix with a bounded three-block ACK batch `042E/15 -> 0442/13 -> 0456/12`, then capture only. Genuine Eco 5 predicts `046A/count18` next.
+- Observed local sequence: `R1 -> 03E8/14 ACK -> 03FC/11 ACK -> 0410/22 ACK -> 042E/15 ACK -> 0442/13 ACK -> 0456/12 ACK -> 046A/18`.
+- Timing after previous ACK: `042E` +695 ms after `0410` ACK; `0442` +1502 ms after `042E` ACK; `0456` +566 ms after `0442` ACK; `046A` +1473 ms after `0456` ACK.
+- `046A/count18` was captured and **not acknowledged**.
+- Integrity: approval retries after R1=0; all same-block retry counters=0; no unexpected peer FC17/FC16 ACK; post-return parser-resync delta=0; RX-drop delta=0; DE LOW at summary.
+- User reports the DHW-side literal **`0` appeared again** during/after EXP260. `COMM. ERR ONLINE/LINK` has not yet been reported for this run. Do not wait for the alarm; recovery remains one normal controller reboot after the summary.
+- Strong conclusion: the local XTR now matches the genuine Eco 5 ordered Online/Link sync through `046A/count18`. The bounded batch method worked without losing causal order.
+- Full Online/Link session establishment remains unproven.
+- No next experiment is prepared yet.
+- **EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.**
+
 ## Authoritative current state — 2026-09-27 — EXP259 COMPLETE / EXP260 PREPARED / NOT RUN
 
 - Last completed experiment: **EXP259 — COMPLETE / STRONG POSITIVE**.
@@ -984,17 +998,3 @@ has been correlated with the final bus trace.
 - Ordinary bus traffic remains alive after the final `071C/0730`; therefore the target stream
   stops naturally rather than disappearing because of bus loss.
 - No A80E/A80F/AFDC transition coincides with the final target; monitored state stays
-  `0028 / 000A / 0010`.
-- No cadence slowdown/backoff is visible before the stop.
-- Strong timing hypothesis: an approximately **270 s startup retry deadline**. The next target would
-  normally be due around **271.421 s**, so a ~270 s deadline lies naturally
-  between target 63 and the suppressed target 64. This is not yet proven from one run.
-- No active `0730` response was sent, derived or approved. Production functionality is unchanged.
-- **EXP239 remains OPEN** pending the external genuine iTec Eco 5 raw capture.
-- **EXP238 remains PARKED / NOT RUN.**
-- Preferred next experiment: **EXP249 — passive repeatability test of the ~270 s natural-stop
-  deadline**, using the same RX-only instrumentation and one additional cold boot.
-
-
-
-## Authoritative current state — 2026-09-27 — EXP248 VALID STOP CANDIDATE / CONFIRMATION TAIL MISSING
