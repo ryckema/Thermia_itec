@@ -1,12 +1,47 @@
-# EXP268 — PREPARED / NOT RUN — post-mailbox parallel runtime observation
+# EXP269 — PREPARED / NOT RUN — extended bounded mailbox service
 
-**Hypothesis:** EXP267 established that repeated exact `FC03 0708/count6` polling continues after three genuine Eco5 idle responses. External genuine Eco5 behavior indicates that `0708/6` is a periodic runtime mailbox poll and can coexist with later FC16 synchronization/runtime traffic. EXP268 changes only the post-third-response observation policy: reproduce the complete proven prefix and the same maximum three exact idle mailbox responses, then remain RX-only for 30 s. Fourth and later exact `0708/6` polls are logged as expected mailbox polling and do **not** terminate the experiment.
+**Hypothesis:** EXP268 showed that after three genuine Eco5 idle responses followed by 30 s RX-only, `FC03 0708/count6` continued at the same ~4.2 s cadence and only recurrent `085F/5` FC16 background traffic appeared. If genuine Online keeps the idle mailbox serviced continuously, stopping after response #3 may itself prevent or delay later parallel runtime/synchronization traffic. EXP269 therefore changes only one active variable: increase the maximum exact idle mailbox responses from 3 to 10. The response payload, proven prefix, timing gates and fail-closed checks remain unchanged. After response #10, remain RX-only for 30 s.
 
-The first different non-background FC16 or different FC03 ends the observation and is captured without response. Special-interest genuine Eco5 families are `07D0/19, 07E4/17, 07F8/17, 080C/18, 0820/18, 0834/18, 0848/23, 0864/4`. Recurrent `085F/5` and `04A6/13` remain background for discovery purposes.
+Special-interest capture-only families remain `07D0/19, 07E4/17, 07F8/17, 080C/18, 0820/18, 0834/18, 0848/23, 0864/4`. Any first different non-background FC16 or different FC03 ends the experiment without ACK/response. Recurrent `085F/5` and `04A6/13` remain background.
 
-**Safety:** active traffic is unchanged from EXP267: proven R1/prefix ACK chain plus at most three exact `0708/6` responses using `0F030C0000000000000000010000001C88`. No fourth mailbox response, no post-mailbox FC16 ACK, no new payload values, no broad writes/scans. Parser/RX-drop delta, approval retry or unexpected peer response remains fail-closed. Recovery remains one normal Thermia-controller reboot after the incomplete session.
+**Safety:** same known-good exact mailbox response `0F030C0000000000000000010000001C88`; maximum 10 responses; no eleventh response; no new payload values; no post-mailbox FC16 ACK; no broad writes/scans. Parser/RX-drop delta after BUS_RETURN, approval retry or unexpected peer response stops TX. Recovery remains one normal Thermia-controller reboot.
 
-# EXP267 RESULT# EXP267 RESULT — COMPLETE / NEGATIVE FOR <=3-IDLE-RESPONSES PROGRESSION
+# EXP268 RESULT — COMPLETE / NEGATIVE FOR 30 S RX-ONLY PARALLEL-RUNTIME OBSERVATION
+
+**Hypothesis:** after three bounded genuine Eco5 idle responses, later Online/Link FC16/runtime traffic may still appear while repeated `0708/6` mailbox polling continues unanswered.
+
+**Observed facts**
+- Full proven approval/synchronization prefix reproduced through `06F4/19`.
+- One CRC resync occurred at controller BUS_RETURN; the experiment then established that value as its baseline. Final summary reported `resync_postreturn=0` and `drop_postreturn=0`.
+- First `0708/6` arrived +3.621 s after the `06F4` ACK.
+- Three exact genuine Eco5 idle responses were transmitted.
+- After response #3, the ESP remained RX-only for 30 s.
+- During that RX-only window, exact `0708/6` continued repeatedly; total mailbox requests for the run reached 10, so 7 post-response-#3 polls were observed without response.
+- Recurrent `085F/5` continued throughout; 21 post-`06F4` background FC16 frames were counted.
+- No different non-background FC16 and no different FC03 appeared during the 30 s RX-only window.
+- No `07D0..0864` special-interest family was observed.
+- A80E later changed `0008 -> 0028` and AFDC changed to 32 during the observation window, but the semantics of those state changes remain unknown.
+- DE was LOW at summary.
+
+**Strong conclusions**
+- Unanswered `0708/6` remains a persistent periodic mailbox poll for at least 30 s after three valid idle responses.
+- Stopping mailbox replies after response #3 does not cause any immediate later FC16/runtime family to appear within the next 30 s.
+- EXP268 does **not** prove that later runtime traffic is absent during correctly continued mailbox servicing.
+
+**Hypotheses**
+- A genuine Online endpoint may need to keep returning the idle mailbox response continuously while other synchronization/runtime traffic progresses in parallel.
+- The absence of later FC16 pages in EXP268 may be caused by the bounded mailbox service ending after only three responses, or simply by a longer timing/state dependency.
+
+**Unknowns**
+- Whether continued exact idle service for a longer bounded interval causes or permits `07D0..0864` traffic.
+- Whether A80E `0x28` / AFDC `32` are related to an active-but-incomplete Online state.
+- Whether later mailbox non-idle fifth-word values are required for application writes only, rather than session progression.
+
+**Current experiment state:** EXP268 COMPLETE / NEGATIVE. EXP269 PREPARED / NOT RUN.
+
+---
+
+# EXP267 RESULT# EXP267 RESULT# EXP267 RESULT — COMPLETE / NEGATIVE FOR <=3-IDLE-RESPONSES PROGRESSION
 
 **Hypothesis:** up to three consecutive exact `FC03 0708/count6` polls may require the same genuine Eco5 idle response before the controller progresses.
 
