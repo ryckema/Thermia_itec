@@ -4,6 +4,17 @@ Last updated: 2026-09-27
 
 This file is the canonical experiment record. The compact table below indexes the early experiment series; EXP100+ are documented in the detailed chronological sections that follow. Detailed YAML and raw logs remain the primary evidence.
 
+## EXP258 — exact `03FC/count11` ACK then next-stage capture — PREPARED / NOT RUN
+
+**Hypothesis:** after the already-proven local prefix `R1 -> 03E8/count14 ACK -> 03FC/count11`, one exact standard FC16 ACK to `03FC/count11` should advance the XTR controller to a different block. The genuine Eco 5 reference predicts `0410/count22`.
+
+**Only new active variable:** one ACK frame `0F1003FC000B4094` for exact slave `0x0F` FC16 `start=03FC`, `count=11`, `bytecount=22`, request length `31`. The ACK carries no register-value payload.
+
+**Safety:** R1 and the `03E8` ACK retain the EXP257 guards. The new `03FC` ACK is one-shot, latch-before-DE, permitted only on the first exact post-`03E8`-ACK `03FC/11` within 5 s with clean parser/drop counters and no approval retry, `03E8` retry, or unexpected peer. After that, capture-only: no `0410` ACK, no later FC16 ACK, no FC03/mailbox response. Reboot controller after summary.
+
+**Expected positive discriminator:** first post-`03FC`-ACK block is `0410/count22`. Any other different FC16/FC03 is still recorded as a protocol result.
+
+
 ## Post-EXP257 external Eco 5 follow-up — raw-log verified
 
 No new local experiment was run. New external interpretation was checked against the complete public Eco 5 raw capture.
@@ -986,15 +997,3 @@ EXP147 changes only the timing implementation:
 
 Protocol stimulus is unchanged:
 `0F 03 07 08 00 06 44 50`
-
-Positive = byte-count-12 FC03 response from 0x0F.
-Negative = no response during a genuine 2 s observation window.
-
-
-### EXP147 — corrected Online-style 0x0F FC03 0708 read probe — COMPLETE / NEGATIVE
-
-Observed:
-- exact request transmitted at 23:38:38.137:
-  `0F 03 07 08 00 06 44 50`;
-- experiment ended at 23:38:40.375, giving ~2.238 s actual post-TX observation;
-- no matching 0x0F FC03 response;
