@@ -1,5 +1,54 @@
 # THERMIA PROJECT STATE
 
+## Authoritative current state — 2026-09-27 — EXP260 COMPLETE / EXP261 PREPARED / NOT RUN
+
+- Last completed experiment: **EXP260 — COMPLETE / STRONG POSITIVE**.
+- Current prepared experiment: **EXP261 — bounded three-block continuation `046A/18 -> 047E/19 -> 0492/11`, then capture-only — PREPARED / NOT RUN**.
+- **EXP239 remains OPEN.**
+- **EXP238 remains PARKED / NOT RUN.**
+
+### EXP261 hypothesis
+
+EXP260 proved the bounded-batch method works and extended the local XTR Online/Link sequence through exact `046A/count18`. EXP261 keeps all previously proven behavior unchanged and adds only three further one-shot FC16 ACKs, in the genuine Eco 5 order:
+
+`046A/count18 -> ACK -> 047E/count19 -> ACK -> 0492/count11 -> ACK -> capture first different FC16/FC03`
+
+The genuine Eco 5 capture commonly has `04A6/count13` after `0492/count11`, but `04A6/13` is also a recurrent passive family. EXP261 therefore treats `04A6/13` as the primary prediction, not as a required success condition. The first different post-0492 frame is captured and never answered.
+
+### Exact new active targets
+
+- `046A/count18` ACK: `0F 10 04 6A 00 12 60 06`
+- `047E/count19` ACK: `0F 10 04 7E 00 13 E1 C2`
+- `0492/count11` ACK: `0F 10 04 92 00 0B 20 3D`
+
+All three are standard FC16 ACKs carrying no register-value payload.
+
+### EXP261 fail-closed boundary
+
+Each new ACK is permitted only for the first exact expected FC16 block, within 5 s of the immediately preceding ACK, with no prior stage retry, no unexpected peer response, and unchanged post-BUS_RETURN parser/RX-drop counters. All one-shot latches close before DE is enabled.
+
+After the single `0492` ACK:
+- no `04A6` ACK;
+- no later FC16 ACK;
+- no FC03/mailbox response;
+- first different FC16 or any FC03 is captured and the experiment stops;
+- 15 s capture timeout if no different stage appears.
+
+Known side effect remains the reproducible DHW-side literal `0`, often followed by `COMM. ERR ONLINE/LINK`, after deliberately incomplete sessions. Recovery is one normal Thermia-controller reboot after summary.
+
+### Build validation
+
+- YAML syntax parsed successfully with ESPHome custom tags tolerated.
+- `${device_name}` and `${friendly_name}` are the only substitutions referenced and both are defined.
+- All YAML IDs are unique and all `id(...)` references resolve.
+- Exactly ten DE-enable/UART TX paths exist: R1 plus nine exact FC16 ACKs through `0492`.
+- All nine FC16 ACK CRCs validate.
+- CRC-valid-frame bus-health bookkeeping remains present.
+- ESPHome compile was **not run** because the ESPHome CLI is unavailable.
+
+---
+
+
 ## Authoritative current state — 2026-09-27 — EXP260 COMPLETE / STRONG POSITIVE
 
 - Last completed experiment: **EXP260 — COMPLETE / STRONG POSITIVE**.
@@ -949,52 +998,3 @@ has been correlated with the final bus trace.
 - A ~270 s fixed deadline remains the leading practical model, but a fixed 63-request budget is still equally compatible because cadence and phase are also nearly identical.
 - Do **not** claim that 270.000 s is proven or that the mechanism is definitively time-based.
 - No active `0730` response was sent, derived or approved.
-- **EXP239 remains OPEN.**
-- **EXP238 remains PARKED / NOT RUN.**
-- Preferred next experiment: **EXP250 — passive cutoff-neighborhood raw-frame differential**, using the deterministic ~267 s stop to capture every CRC-valid bus frame around ~245–285 s and search for an externally visible event that suppresses the next target slot.
-
-
-## Authoritative current state — 2026-09-27 — EXP249 PREPARED / NOT RUN
-
-- Last completed experiment: **EXP248 — COMPLETE / VALID PASSIVE POSITIVE**.
-- Current prepared experiment: **EXP249 — PASSIVE 071C/0730 STOP REPEATABILITY TRACE — PREPARED / NOT RUN**.
-- EXP249 hypothesis: the EXP248 natural stop is governed primarily by a repeatable approximately 270 s startup/service window. A second otherwise-identical RX-only cold boot should reproduce the final target within one normal retry interval (~4.3 s) of EXP248's +267.123 s result.
-- EXP248 comparison baseline:
-  - first target +1.283 s after BUS_RETURN;
-  - 63 targets;
-  - median cadence 4.298 s;
-  - last target +267.123 s;
-  - monitored stop state `A80E=0028 A80F=000A AFDC=0010`;
-  - confirmed target-free silence 80.793 s.
-- **Only experimental variable:** one additional controlled Thermia/controller cold boot. All EXP248 observation thresholds and RX-only behavior are retained.
-- EXP249 contains no Thermia TX path: GPIO17 TX remains unconfigured and GPIO21 DE is forced LOW.
-- No ACK, `0730` response, scan, semantic write, setting change, room-sensor emulation or production-function change is introduced.
-- Experimental controls remain under Home Assistant Configuration; experiment logs retain the red/brown convention.
-- **EXP239 remains OPEN.**
-- **EXP238 remains PARKED / NOT RUN.**
-- No active `0730` response is approved.
-- Do not mark EXP249 complete until the automatic `SUMMARY CONFIRMED_STOP` (or a clearly recorded censor/abort) is present in the returned log.
-
-
-## Authoritative current state — 2026-09-27 — EXP248 COMPLETE / VALID PASSIVE POSITIVE
-
-- Last completed experiment: **EXP248 — COMPLETE / VALID PASSIVE POSITIVE**.
-- Hypothesis tested: the local XTR `0x0F FC17 read 0730/count8 + write 071C/count8`
-  startup/service transaction retries for a finite unanswered window and then stops naturally.
-- Attempt 1 was an intentional/accidental setup negative: armed at 14:55:38.670 but no controller
-  power-cycle occurred; the >=6 s boot-gap guard correctly auto-aborted after 60 s. No protocol
-  conclusion is drawn from that attempt.
-- Attempt 2 is valid and complete:
-  - ARM 14:57:25.491;
-  - boot gap detected 14:57:53.961;
-  - BUS_RETURN 14:58:01.042;
-  - first target +1.283 s;
-  - **63 targets total**;
-  - last target **+267.123 s** with `A80E=0028 A80F=000A AFDC=0010`;
-  - stable target cadence, median **4298.0 ms**;
-  - STOP_CANDIDATE after 20.793 s target silence;
-  - `SUMMARY CONFIRMED_STOP` with **80.793 s final silence**, **0 false stops**,
-    **0 resync delta**, **0 RX-drop delta**, and **86 observed 0x06 polls**.
-- Ordinary bus traffic remains alive after the final `071C/0730`; therefore the target stream
-  stops naturally rather than disappearing because of bus loss.
-- No A80E/A80F/AFDC transition coincides with the final target; monitored state stays
