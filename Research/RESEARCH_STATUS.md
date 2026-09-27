@@ -1,5 +1,19 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-27 — EXP264 COMPLETE / EXP265 PREPARED
+
+- Last completed experiment: **EXP264 — COMPLETE / STRONG POSITIVE**.
+- Current prepared experiment: **EXP265 — post-06F4 discovery window — PREPARED / NOT RUN**.
+- Proven local sync tail reaches `06EA/7 -> 06F1/3 -> 06F4/19`.
+- EXP264 first saw `085F/5` +107 ms after the `06F4` ACK; this is already known recurrent background traffic and therefore did not identify the next meaningful stage.
+- EXP265 reproduces the proven prefix unchanged, then observes RX-only for up to 240 s after `06F4`.
+- Exact recurrent `085F/5` and `04A6/13` are logged and ignored as discovery stops.
+- First other FC16 or any FC03 is captured. `0708/count6` is specially flagged if it appears.
+- No FC03/mailbox response and no post-`06F4` TX.
+- Parser/RX-drop delta during the discovery window stops fail-closed.
+- No new GitHub files are created; existing Research files only.
+- EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.
+
 ## Current status — 2026-09-27 — EXP263 COMPLETE / EXP264 PREPARED
 
 - Last completed experiment: **EXP263 — COMPLETE / STRONG POSITIVE**.
