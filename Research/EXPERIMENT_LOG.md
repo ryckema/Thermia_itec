@@ -1,3 +1,27 @@
+## EXP263 — accelerated 12-block 33-word batch — COMPLETE / STRONG POSITIVE
+
+## EXP264 — end-of-bulk sync tail — PREPARED / NOT RUN
+
+Hypothesis: preserve the complete proven prefix through `06C5/33`, then ACK exact `06EA/7`, `06F1/3`, and `06F4/19` once each. After `06F4` ACK, capture the first different FC16 or FC03 and do not answer it. A `0708/6` FC03 is logged specifically but never answered in EXP264.
+
+Negative/stop criteria: retry of the previous stage, unexpected FC16, any FC03 before tail completion, parser resync delta, RX drop delta, approval retry, peer FC17/ACK, or >5 s stage timeout.
+
+Hypothesis: after the proven prefix through 0546/count20, ACK exact 055A, 057B, 059C, 05BD, 05DE, 05FF, 0620, 0641, 0662, 0683, 06A4 and 06C5 (all count=33), then capture only. Genuine Eco 5 predicted 06EA/count7.
+
+Observed:
+- Approval +1283 ms after controller return; R1 sent once.
+- All twelve 33-word pages appeared in the expected order and were ACKed exactly once.
+- First different post-06C5 frame: 06EA/count7, +475 ms after 06C5 ACK.
+- Raw 06EA request: 0F1006EA00070E000A00200017001B0009001A0006F81A.
+- 06EA not ACKed.
+- Parser resyncs 0; RX buffer drops 0 after the run; DE LOW.
+- No approval retry after R1 and no stage retry observed.
+
+Conclusion:
+Local XTR now confirms the genuine Eco 5 synchronization chain through the complete 055A..06C5 33-word run and exact 06EA/count7 next. Full Online/Link establishment remains unproven. Negative result retained: the session was intentionally stopped before 06EA ACK, so runtime/mailbox completion was not tested.
+
+Recovery: one normal Thermia-controller reboot.
+
 ## EXP262 — accelerated 04A6..0546 ACK batch — COMPLETE / STRONG POSITIVE
 
 Hypothesis: after the proven prefix through `0492/11`, ACK exact `04A6/13`, `04BA/22`, `04D8/27`, `04F6/14`, `050A/19`, `051E/10`, `0532/18`, and `0546/20` in order, then capture the first different FC16/FC03 without answering it.
@@ -974,27 +998,3 @@ A manual +1 Heat Curve change and restore may trigger the otherwise quiescent po
 
 Only variable:
 Heat Curve on the Thermia UI, current -> current+1 -> original.
-
-ESP behavior:
-strictly passive; no ACK, no FC03 response, no Modbus write.
-
-Controls:
-- START
-- MARK +1 applied
-- MARK restored
-- STOP
-
-Positive:
-0x0F FC16 or FC03 activity temporally associated with the manual change or restore.
-
-
-### EXP143 — passive post-sync Heat Curve trigger probe — COMPLETE / STRONG POSITIVE
-
-Observed:
-- passive baseline: no 0x0F FC16/FC03;
-- after manual Heat Curve +1, `0x0F FC16 03E8/count14` started immediately;
-- controller repeated it continuously because no ACK was sent;
-- first payload word was `0x0024` while HA showed Heating Curve 36;
-- after restoring Heat Curve, first payload word became `0x0023` while HA showed Heating Curve 35;
-- remaining 13 words stayed unchanged in the shown frames;
-- final summary:
