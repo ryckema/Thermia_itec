@@ -1,3 +1,13 @@
+## EXP266 — PREPARED / NOT RUN
+
+**Hypothesis:** respond once to the first exact locally proven post-`06F4/19` mailbox request `FC03 0708/count6` using the genuine Eco5 idle response `0F030C0000000000000000010000001C88`, then observe RX-only.
+
+**Delta from EXP265:** replaces passive capture of `0708/6` with a single tightly gated response. The complete proven prefix is otherwise unchanged. No response to any other FC03, no repeated mailbox response, no post-mailbox FC16 ACK.
+
+**Expected success signal:** after the one mailbox response, a new meaningful FC16/runtime frame or other FC03 appears without approval retry, parser/drop delta, or immediate 0708 retry.
+
+**Negative result criteria:** repeated 0708, parser/drop delta, unexpected peer traffic, no meaningful post-mailbox frame within 10 s, or UI/controller side effect requiring recovery.
+
 ## EXP264 — 06EA/06F1/06F4 tail — COMPLETE / STRONG POSITIVE WITH CAPTURE AMBIGUITY
 
 Hypothesis: ACK exact `06EA/7`, `06F1/3`, `06F4/19` in order after the proven prefix, then capture only.
@@ -988,13 +998,3 @@ Only new ACK target:
 - `0662/count33`.
 
 All later unknown FC16 stages remain human-gated after >=3 exact repetitions. FC03 is never answered.
-
-Active observation window is 900 s to catch a delayed phase transition after 0662.
-
-
-### EXP142 — post-0x0662 gated sequence walker — RUNNING / IMPORTANT NEGATIVE
-
-Observed:
-- 30 s baseline completed with `fc16Seen=0`.
-- Active phase began with `fc16Seen=0 known=0 unknown=0`.
-- For ~61 s of active observation in the supplied log there was no slave-0x0F FC16 or FC03 traffic.
