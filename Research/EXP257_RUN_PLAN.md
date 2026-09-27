@@ -1,6 +1,6 @@
 # EXP257 — ONE-SHOT R1 + SINGLE `03E8/count14` ACK + NEXT-STAGE CAPTURE
 
-Status: **PREPARED / NOT RUN**
+Status: **COMPLETE / STRONG POSITIVE**
 
 ## Hypothesis
 
@@ -132,3 +132,22 @@ or after 15 seconds:
 ```text
 [EXP257] ===== SUMMARY POST_ACK_TIMEOUT ... =====
 ```
+
+
+## Result — 2026-09-27
+
+EXP257 completed exactly within the planned fail-closed boundary.
+
+- first approval: +1285 ms after BUS_RETURN
+- one R1 sent
+- first post-R1 FC16: `03E8/count14`, +130 ms after R1
+- one exact ACK sent: `0F 10 03 E8 00 0E C0 93`
+- first different post-ACK request: `03FC/count11`, +691 ms after ACK
+- `expected_03FC_11=1`
+- `03FC` was not acknowledged
+- no approval retry, no same-03E8 retry after ACK, no unexpected peer response
+- `resync_postreturn=0`, `drop_postreturn=0`, `DE=LOW`
+
+**Conclusion:** positive. The local XTR reproduces the genuine Eco 5 `03E8/14 ACK -> 03FC/11` transition.
+
+Recovery: one normal controller reboot after the capture if not already performed.
