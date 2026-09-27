@@ -1,8 +1,8 @@
 ## EXP268 — PREPARED / NOT RUN
 
-Hypothesis: after the three locally proven genuine Eco5 idle responses from EXP267, later meaningful Online/Link FC16/FC03 traffic may still appear even if all further `0708/6` polls are left unanswered. EXP268 keeps the proven prefix and the same max-three mailbox responses unchanged, then observes RX-only for 30 s. Fourth and later `0708/6` polls are capture-only. Known recurrent `085F/5` is ignored for discovery. No post-mailbox FC16 ACK and no new mailbox payload is authorized.
+Hypothesis: `FC03 0708/count6` is a persistent runtime mailbox poll and may coexist with later Online/Link FC16/runtime traffic. Preserve the full proven prefix and exactly the same maximum three genuine Eco5 idle responses as EXP267. After response #3, become RX-only for 30 s. Fourth and later exact `0708/6` polls are logged but are **not** treated as completion/failure. Capture the first different non-background FC16 or different FC03 without answering it. No post-mailbox FC16 ACK and no new mailbox payload is authorized.
 
-## EXP267 — COMPLETE / NEGATIVE
+## EXP267 — COMPLETE## EXP267 — COMPLETE / NEGATIVE
 
 Hypothesis: up to three consecutive exact `FC03 0708/count6` polls require the same genuine Eco5 idle response before the controller progresses.
 
