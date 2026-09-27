@@ -4,6 +4,31 @@ Last updated: 2026-09-27
 
 This file is the canonical experiment record. The compact table below indexes the early experiment series; EXP100+ are documented in the detailed chronological sections that follow. Detailed YAML and raw logs remain the primary evidence.
 
+## Post-EXP257 external Eco 5 follow-up — raw-log verified
+
+No new local experiment was run. New external interpretation was checked against the complete public Eco 5 raw capture.
+
+Observed facts:
+- first cold-start approval request at +1.199/+1.202/+1.210 s after bus return in the three Eco 5 power-ups;
+- successful genuine gateway responses at +120.153 s and +119.808 s after bus return, after 29 challenges each;
+- middle no-gateway run ended by power-off at ~174 s and therefore cannot test a ~267 s natural cutoff;
+- steady-state pre-power-off segment contains no approval exchange; Eco 8 steady-state absence must therefore remain open pending a cold-start capture;
+- only two answered Eco 5 challenges exist, so repeated-challenge response determinism and cross-power-cycle response stability are unresolved;
+- genuine endpoint continues ACKing the FC16 export stream after approval; `04A6/13` and `085F/5` are recurrent passive families whose ACK timing varies and is not a demonstrated precondition;
+- first post-approval `0708/count6` mailbox polls occur at +158.393 s and +186.828 s after bus return, while the FC16 transfer is still active;
+- in the first successful power-up the first mailbox poll is unanswered and the following poll is answered;
+- the raw repeated idle response is six words `0000 0000 0000 0000 0001 0000` (not `...0100...` under standard Modbus word order);
+- later fifth-word values include `03DC`=988 -> 984 -> 976 -> 908 -> 896 -> 768 -> 512 -> 0.
+
+Interpretation/hypothesis:
+- `COMM. ERR ONLINE/LINK` being a timeout of an approved-but-incompletely-serviced session is increasingly plausible but remains unproven;
+- the fifth-word countdown may represent pending synchronization work, but no semantic mapping is established.
+
+Decision:
+- do not broaden directly to full-chain ACK + mailbox emulation;
+- next candidate is **EXP258 (not prepared)**: add exactly one `03FC/count11` ACK after the already-proven EXP257 prefix and capture the first subsequent frame; genuine Eco 5 predicts `0410/count22`.
+
+
 ## EXP257 — One-shot R1 + single `03E8/count14` ACK + next-stage capture — COMPLETE / STRONG POSITIVE
 
 **Hypothesis:** after EXP256's one-shot R1 transition into `03E8/count14`, acknowledge exactly the first `03E8/count14` once and capture the first different downstream FC16/FC03 request without answering it. Full genuine Eco 5 capture predicted `03FC/count11`.
@@ -973,27 +998,3 @@ Observed:
   `0F 03 07 08 00 06 44 50`;
 - experiment ended at 23:38:40.375, giving ~2.238 s actual post-TX observation;
 - no matching 0x0F FC03 response;
-- no other 0x0F activity in that window;
-- normal bus traffic continued.
-
-Logging bug:
-The summary format string has 8 `%u` fields but only 7 numeric arguments after `reason`, so `responseWindowMs`, `tx`, and later printed fields are shifted/corrupt. This does not invalidate the protocol observation because TX and timing are independently visible in timestamped log lines.
-
-Conclusion:
-A bare exact Online-style FC03 read is not sufficient to obtain a local 0x0F response in the current state.
-
-Next:
-reconstruct the genuine Online topology/session prerequisite, with A5/A4 as the leading discriminator.
-
-
-#### EXP147 repeat run — same negative reproduced
-Second run:
-- TX 23:39:13.389;
-- summary 23:39:15.632;
-- actual response window ~2.243 s;
-- no 0x0F response and no other 0x0F activity.
-
-This reproduces the first negative result. The summary printf-field defect remains and must not be used for counter interpretation.
-
-
-### EXP148 — passive Online topology and timing profiler — PREPARED
