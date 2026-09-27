@@ -1,3 +1,6 @@
+### UI side effect after EXP269
+A visible lower-right display/status glyph changed after the single `0080/0006` response, while an alarm remained active. This supports the possibility that the mailbox response affected controller/UI state even though `07D0/19` did not follow. Do not map the glyph to a protocol bit yet.
+
 ## EXP269 finding — Eco5 0080/0006 alone does not unlock 07D0 on XTR
 
 Local XTR sequence:
