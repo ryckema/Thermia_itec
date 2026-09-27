@@ -1,10 +1,18 @@
-## EXP268 target — persistent 0708 mailbox + parallel runtime observation
+## EXP268 finding — persistent mailbox confirmed; no 30 s RX-only runtime progression
 
-EXP267 locally showed that exact `0708/6` keeps returning after three genuine Eco5 idle responses. This is now treated as expected persistent mailbox polling, not as a handshake that must terminate. EXP268 therefore preserves the proven active chain and the same three bounded idle responses, then observes RX-only for 30 s. Further `0708/6` polls are logged and ignored for experiment-completion purposes.
+Local XTR now confirms that `FC03 0708/count6` persists for at least 30 s after three valid idle mailbox responses are followed by silence. EXP268 observed 10 total mailbox polls: the first three were answered with `0F030C0000000000000000010000001C88`, while seven later polls were left unanswered. The cadence remained approximately ~4.2 s. During the same post-third-response observation, recurrent `085F/5` continued (21 post-`06F4` background frames), but no different non-background FC16/FC03 and no `07D0..0864` family appeared.
 
-Discovery targets the first different non-background FC16/FC03, especially genuine Eco5 later families `07D0/19, 07E4/17, 07F8/17, 080C/18, 0820/18, 0834/18, 0848/23, 0864/4`. None of those families is ACKed in EXP268. Recurrent `085F/5` and `04A6/13` remain background.
+Integrity caveat: one parser resync occurred exactly at controller BUS_RETURN before the experimental post-return baseline. Final experimental deltas were `resync_postreturn=0`, `drop_postreturn=0`; therefore the negative result is not explained by a later parser/RX integrity failure.
 
-## EXP267 finding## EXP267 finding — repeated 0708 idle service persists after three responses
+**Protocol implication:** persistent `0708/6` is strongly supported as normal mailbox polling. However, EXP268 does not test faithful continuous idle servicing, because replies stopped after #3. Therefore absence of later FC16 traffic cannot yet distinguish “longer timing dependency” from “continued mailbox service required/permitted in parallel”.
+
+## EXP269 target — extend only the known-good idle service count
+
+Increase only the maximum exact `0708/6` idle responses from 3 to 10, using the same genuine Eco5 payload and all existing timing/integrity gates. After response #10, observe RX-only for 30 s. Capture but do not ACK any first different non-background FC16/FC03. No new mailbox values and no new register-write targets are introduced.
+
+---
+
+## EXP267 finding## EXP267 finding## EXP267 finding — repeated 0708 idle service persists after three responses
 
 Local XTR now confirms the sequence:
 
