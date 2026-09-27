@@ -1,3 +1,32 @@
+# EXP266 RESULT — COMPLETE / PARTIAL POSITIVE
+
+**Hypothesis:** After the proven prefix through `06F4/19`, respond exactly once to local `FC03 0708/count6` with the genuine Eco5 idle mailbox response `0F030C0000000000000000010000001C88`, then remain RX-only.
+
+**Observed facts**
+- Full proven prefix repeated cleanly through `06F4/19`.
+- `085F/5` appeared +95 ms after the `06F4` ACK and was correctly ignored as recurrent background traffic.
+- Local `FC03 0708/count6` arrived +1.561 s after the `06F4` ACK.
+- Exactly one mailbox response was transmitted: `0F030C0000000000000000010000001C88`; DE returned LOW and the one-shot latch remained closed.
+- The controller issued the same `FC03 0708/count6` again +4.180 s after the mailbox response. No second response was sent.
+- Parser resyncs remained 0 and RX buffer drops remained 0.
+
+**Strong conclusion**
+- The genuine Eco5 idle mailbox response does not by itself complete the local XTR mailbox exchange; the controller requests `0708/6` again about 4.18 s later.
+- This is a real local protocol result, not a parser artefact.
+
+**Hypotheses**
+- The `0001` idle response may need to be returned repeatedly while idle, as in the genuine Eco5 capture.
+- Alternatively, a later mailbox-state value or cadence may be required before runtime sync proceeds.
+
+**Unknowns**
+- Whether repeated identical idle responses will advance the session.
+- Whether the later fifth-word countdown seen in the genuine capture is controller-driven, gateway-driven, or dependent on repeated polls.
+- Whether completing mailbox servicing removes DHW `0` / `COMM. ERR ONLINE/LINK`.
+
+**Current experiment state:** EXP266 COMPLETE / PARTIAL POSITIVE. No EXP267 prepared yet.
+
+---
+
 # EXP266 — PREPARED / NOT RUN — ONE-SHOT 0708 MAILBOX RESPONSE
 
 **Hypothesis:** after the locally proven sync tail `06EA/7 -> 06F1/3 -> 06F4/19`, the first exact `FC03 0708/count6` mailbox request can be answered once with the genuine Eco5 idle response `0F030C0000000000000000010000001C88` (words `0000 0000 0000 0000 0001 0000`), causing the XTR M to advance into the next Online/Link runtime phase.
@@ -969,32 +998,3 @@ EXP254 is fully RX-only and will establish:
 - **Strong conclusion:** R1 is not simply ignored. It terminates/suppresses the local approval retry
   state, but full DCM/Online approval is **not proven** because no downstream peer ACK/mailbox phase
   appears.
-- New controller-visible side effects:
-  - front-panel displayed a new literal `0` beside the DHW/tank icon;
-  - after the experiment summary, A80E fell `0x28 -> 0x20 -> 0x00` and AFDC fell `0x10 -> 0x00`;
-  - the user subsequently reported a front-panel alarm.
-- Alarm text is now known: **`COMM. ERR ONLINE/LINK`**.
-- **Safety hold:** no further active `0730` response experiments until a normal passive/no-responder
-  boot is shown to restore normal operation. The alarm is specifically an Online/Link communication
-  error, not currently evidence of a direct heating/DHW process fault.
-- Next evidence required: verify that `COMM. ERR ONLINE/LINK` and the DHW-icon `0` clear after return
-  to passive/no-responder operation.
-- **EXP239 remains OPEN.**
-- **EXP238 remains PARKED / NOT RUN.**
-
-
-## EXP252 provisional UI observation — 2026-09-27
-
-After the single R1 `0730` oracle response, the local Thermia front-panel display visibly shows a
-literal `0` immediately beside/above the domestic-hot-water tank icon. The display otherwise reads
-`KAMER`, `GEEN WARMTEVRAAG`, and `BEDRIJF AUTO`; no alarm/fault text is visible in the supplied photo.
-
-This UI change is temporally associated with the one-shot R1 response and the immediate suppression
-of further `071C/0730` approval retries, but its semantic meaning is **unknown**. It must not yet be
-interpreted as `0 °C`, a changed DHW setpoint, or proof of successful DCM approval.
-
-The visual formatting does not clearly show a temperature unit next to the `0`, so a status/index/
-service indicator remains plausible.
-
-Do not perform another active response test before the EXP252 run is complete and the display state
-has been correlated with the final bus trace.
