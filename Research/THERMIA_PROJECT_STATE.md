@@ -1,5 +1,48 @@
 # THERMIA PROJECT STATE
 
+## Authoritative current state — 2026-09-27 — EXP257 COMPLETE / EXP258 PREPARED / NOT RUN
+
+- Last completed experiment: **EXP257 — COMPLETE / STRONG POSITIVE**.
+- Current prepared experiment: **EXP258 — R1 + exact `03E8/count14` ACK + exact `03FC/count11` ACK + next-stage capture — PREPARED / NOT RUN**.
+- **EXP239 remains OPEN.**
+- **EXP238 remains PARKED / NOT RUN.**
+
+### EXP258 hypothesis
+
+EXP257 locally proved `R1 -> 03E8/count14 -> ACK -> 03FC/count11`. EXP258 changes one active variable only: acknowledge that already-proven exact `03FC/count11` request once, then capture the first different FC16/FC03 stage without answering it. The genuine Eco 5 reference predicts `0410/count22` next.
+
+### Exact new active target
+
+- Required request: slave `0x0F`, FC16, start `0x03FC`, count `11` (`0x000B`), bytecount `22` (`0x16`), full request length `31` bytes.
+- Exact standard FC16 ACK: `0F 10 03 FC 00 0B 40 94`.
+- CRC16 over `0F1003FC000B` is `0x9440`, transmitted little-endian `40 94`.
+- The ACK carries no register-value payload; it echoes only start/count.
+- The same ACK frame is present in the genuine Eco 5 raw capture.
+
+### EXP258 fail-closed boundary
+
+Maximum experimental TX is three frames: one R1, one exact `03E8/count14` ACK, one exact `03FC/count11` ACK. The new `03FC` ACK is allowed only after the proven prefix, only when the first post-`03E8`-ACK FC16 is exact `03FC/11`, within 5 s, with unchanged parser/drop counters, no approval retry, no `03E8` retry, and no unexpected peer frame. All one-shot latches close before DE is enabled.
+
+After the one `03FC` ACK:
+- no second `03FC` ACK;
+- no ACK of `0410` or any later FC16;
+- no FC03/mailbox response;
+- first different FC16 or any FC03 is captured and the experiment stops;
+- 15 s timeout if only `03FC` retries continue.
+
+Known possible side effect remains an incomplete Online/Link session with DHW-side `0` and/or `COMM. ERR ONLINE/LINK`; recovery is one normal Thermia-controller reboot after the summary.
+
+### Build validation
+
+- YAML syntax parsed successfully with ESPHome custom tags tolerated.
+- `${device_name}` and `${friendly_name}` are the only substitutions referenced and both are defined.
+- All `id(...)` references resolve to defined YAML IDs; no duplicate IDs found.
+- Exactly three DE-enable / UART TX call sites exist: R1, `03E8` ACK, `03FC` ACK.
+- CRC-valid-frame bus-health bookkeeping remains present and unchanged.
+- ESPHome compile was **not run** because the ESPHome CLI is not installed in the available environment.
+
+---
+
 ## External Eco 5 follow-up after EXP257 — 2026-09-27
 
 The new public-comment analysis has been cross-checked against the full raw Eco 5 capture. It materially refines the reference behavior but does not change the EXP257 result.
@@ -954,47 +997,3 @@ Last updated: 2026-09-27
 - **Safety:** no active 0730 response is approved; no brute force or replay.
 
 ---
-
-## Authoritative current state — 2026-09-27 after EXP240
-
-- **Last completed experiment:** **EXP240 — COMPLETE / OFFLINE DCM03 IMPLEMENTATION-LOCUS AND FIRMWARE-LINEAGE ARCHAEOLOGY**.
-- **EXP239:** remains **IN PROGRESS**; its completion still requires the genuine Eco 5 raw capture/timeline or a DCM03 firmware dump.
-- **EXP238:** remains **PREPARED / NOT RUN** and parked.
-- **EXP240 hypothesis:** the `071C -> 0730` approval function resides in the DCM03 / HP-facing gateway layer, and product topology can identify the correct firmware target.
-- **Only variable:** offline/public-source analysis. No Thermia TX, ACK, response, write, scan, restart, YAML change or room-sensor emulation.
-- **Key topology result:** DHP-AQ kit `086L2382` has no separate GateWay card; DCM03 connects directly from its `RS 485` port to the heat-pump relay-board RJ45. By contrast, DHP-H/L/A uses a separate internal GateWay card plus DCM03.
-- **Strong architectural consequence:** for DHP-AQ/iTec-like topology, the HP-facing approval implementation is in DCM03 itself or the directly connected controller-side firmware, not in the Link CC host. This materially strengthens the EXP234B boundary result.
-- **Product identifiers:** DCM03 module `086L1602`; Link DCM kit `086L2381`; Link DCM AQ kit `086L2382`.
-- **Mode result:** official instructions show the same DCM03 family can operate in Danfoss Link integration or Danfoss Online mode. Therefore Link-mode DCM03 firmware/hardware remains a valid target for recovering the HP-facing approval function.
-- **Firmware-lineage clue:** public Thermia API debug reports expose `dcmVersion = 2.0.17` separately from heat-pump `programVersion`/`firmwareVersion`. Treat `2.0.17` as the highest-value concrete DCM firmware search token.
-- **Historical corroboration:** field reports describe DCM02 -> DCM03 replacement for newer Link compatibility and visually identical DCM03 units with different firmware. This is supportive, not authoritative.
-- **Negative:** targeted public search still recovered no DCM03 firmware image/update package/service loader and no trustworthy MCU/debug-pad identification.
-- **Safety:** no active `0730` response is approved. Brute force, cross-challenge replay and invented responses remain prohibited.
-- **Next offline targets:** DCM03 `2.0.17` binary/service package, PCB/MCU/debug photos, or the full Eco 5 challenge-response capture.
-
----
-
-## Authoritative current state — 2026-09-27 after EXP239 Phase B
-
-- **Current experiment:** **EXP239 — IN PROGRESS / OFFLINE 071C→0730 CHALLENGE-RESPONSE ANALYSIS**.
-- **Hypothesis:** controller `071C..0723` is a 16-byte DCM-HP approval challenge/session token and `0730..0737` is the corresponding reproducible non-trivial DCM response. Successful approval gates state synchronisation and the `0708` mailbox.
-- **EXP238:** remains **PREPARED / NOT RUN** and parked.
-- **Experimental variable:** offline analysis/documentation only. No Thermia TX, ACK, response, scan, restart, YAML production change or room-sensor emulation.
-- **Phase A retained:** the two published pairs rule out fixed XOR, fixed add/subtract, per-byte addition, rotate+XOR and byte-permutation+XOR. Two pairs remain insufficient to identify a named primitive.
-- **New Phase B evidence:** official Danfoss Link HP-kit documentation explicitly names a firmware state `DCM-HP approval`, a separate `approval failed` state, then `sending settings to DCM`, followed by `all OK`.
-- **Architectural alignment:** this vendor state order strongly matches the externally reported genuine Eco 5 sequence `repeated 071C/0730 -> first valid response -> FC16/full-state synchronisation -> 0708 mailbox`. Treat this as strong cross-platform corroboration; the manual is an older HP-kit platform, not direct XTR firmware documentation.
-- **Refined strong conclusion:** `071C/0730` is now best treated as the **DCM-HP approval handshake**, not an RTC/calendar block or generic keepalive. The subsequent bulk FC16 transfer is a strong candidate for the documented `sending settings to DCM` phase.
-- **Crypto triage:** Link CC 2.7.42 contains AES/RSA/SHA code in `OMService.dll` / encrypted-file-system infrastructure, but no obvious AES/Rijndael/CMAC/HMAC strings in the audited DHP/regulation/HE modules. AES presence in the ROM is therefore not evidence that 071C/0730 itself uses AES.
-- **Narrow AES negative:** AES-128 ECB encrypt/decrypt and AES-CMAC with only zero, FF, and obvious padded ASCII keys (`Danfoss`, `Thermia`, `DanfossLink`, `LinkCC`, `DCM03`) do not reproduce either published response. This does **not** rule out AES with unknown/derived key or a different construction.
-- **Exhaustive direct-key negative:** every contiguous 16-byte and 32-byte window in the available Link CC 2.7.42 and 4.2.1724 `ccimage.bin` files was tested as a literal AES-128/AES-256 key for direct ECB encrypt/decrypt and one-block CMAC of the known challenge. Zero windows produced the known response. This rules out a verbatim embedded raw key under those direct constructions, not derived/obfuscated/DCM-local keys or other algorithms.
-- **Mode clue:** official HP-kit instructions show the DCM03 hardware family can operate in Danfoss Link integration or Danfoss Online mode. Therefore a Link-mode DCM03 firmware dump remains a high-value target for the HP-facing approval implementation; Online-specific firmware is not the only useful artifact.
-- **Firmware-search negative:** targeted public search still found no DCM03/Connect firmware image or source containing the missing approval implementation.
-- **Pairing-secret inference:** vendor replacement/install instructions expose no manual HP↔DCM secret-provisioning step. This weakens only the hypothesis of a manually provisioned pump-specific secret; factory, fixed, derived, identity-bound or automatic keying remain open.
-- **Safety consequence:** still no evidence-backed arbitrary XTR response; no active `0730` response is approved and brute force remains prohibited.
-- **EXP239 blocker:** obtain the genuine Eco 5 raw capture/timeline or a DCM03/Connect firmware dump, then test response determinism, retries, cross-boot behavior and exact approval→sync timing.
-
----
-
-## Authoritative current state — 2026-09-27 after EXP239 Phase A
-
-- **Current experiment:** **EXP239 — IN PROGRESS / OFFLINE 071C→0730 CHALLENGE-RESPONSE ANALYSIS**.
