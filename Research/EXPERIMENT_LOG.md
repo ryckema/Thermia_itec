@@ -1,5 +1,35 @@
 # THERMIA EXPERIMENT LOG
 
+## EXP262 — accelerated 04A6..0546 batch — PREPARED / NOT RUN
+
+Hypothesis: after the proven local Online/Link prefix through `0492/count11`, ACK a bounded batch of eight exact FC16 pages: `04A6/13`, `04BA/22`, `04D8/27`, `04F6/14`, `050A/19`, `051E/10`, `0532/18`, `0546/20`; then capture the first different FC16/FC03 without responding. Genuine Eco 5 predicts `055A/count33`.
+
+Safety: all pages are exact known controller-originated FC16 export requests. EXP262 sends only standard address/count acknowledgements. Every stage is first-exact, time-bounded and parser-clean; unexpected traffic stops fail-closed. No FC03/mailbox response and no ACK after `0546`. Known incomplete-session recovery remains one normal controller reboot.
+
+
+## EXP261 — bounded 046A/047E/0492 ACK batch — COMPLETE / STRONG POSITIVE
+
+**Hypothesis:** after the proven local prefix, ACK exact `046A/count18`, then exact `047E/count19`, then exact `0492/count11`, and capture the first different FC16/FC03 stage without answering it.
+
+**Observed facts:**
+- first approval at +1245 ms after BUS_RETURN;
+- R1 accepted with no approval retry;
+- the proven prefix through `0456/count12` reproduced cleanly;
+- `046A/count18` appeared and was ACKed once;
+- `047E/count19` followed +722 ms later and was ACKed once;
+- `0492/count11` followed +1480 ms later and was ACKed once;
+- the first different block was exact `04A6/count13`, +576 ms after the 0492 ACK;
+- raw `04A6` request: `0F1004A6000D1A0000000000000000000000000000000000000000402000000000CA9A`;
+- `04A6` was not ACKed;
+- no stage retries, no approval retry after R1, no unexpected peer frame, no post-return parser/RX-drop delta; DE LOW.
+
+**Strong conclusion:** local XTR follows the genuine Eco 5 ordered synchronization path through `0492/count11`, with `04A6/count13` next in this run. The bounded-batch strategy remains valid.
+
+**Unknown:** full Online/Link establishment and mailbox behavior remain unproven.
+
+**Recovery:** one normal Thermia-controller reboot after the summary.
+
+
 ## EXP261 — bounded `046A -> 047E -> 0492` continuation — PREPARED / NOT RUN
 
 **Hypothesis:** the local XTR continues to follow the genuine Eco 5 Online/Link FC16 sequence after EXP260. Preserve the complete proven prefix and ACK exactly three new expected stages: `046A/count18`, `047E/count19`, and `0492/count11`. Then capture the first different FC16/FC03 without answering it.
@@ -968,33 +998,3 @@ No FC03 was reached because `03E8/count14` was deliberately not ACKed.
 
 Next:
 EXP144 = same manual Heat Curve trigger, then ACK only already-proven sequence shapes and stop on the first unknown FC16 or FC03 discriminator.
-
-
-### EXP144 — Heat Curve-triggered known-sequence progression — PREPARED
-
-Hypothesis:
-The event-triggered sync discovered in EXP143 can be walked through the already-proven FC16 stages and may reveal either a new FC16 stage or FC03 read phase.
-
-Single protocol-method change:
-Known shapes are ACKed after the manual +1 Heat Curve trigger.
-
-Stop conditions:
-- first unknown FC16: log, no ACK, stop;
-- first FC03 request: log, no response, stop.
-
-Heat Curve must be restored to its original value after the run.
-
-
-### EXP144 — Heat Curve-triggered known-sequence progression — ABORTED / PROCEDURAL
-
-Observed:
-- baseline immediately contained repeated `03E8/count14`;
-- payload first word remained `0x0023` (35);
-- 29 FC16 requests seen in 30 s;
-- no FC03, no real 0x0F ACK/response;
-- parser/drop clean;
-- automatic abort:
-  `ABORT_BASELINE_0F_ACTIVITY fc16=29 fc03Req=0 fc03Resp=0 fc16Ack=0 DE_LOW`.
-
-Interpretation:
-The outstanding `03E8/count14` request from EXP143 persisted over reboot. Therefore EXP144's quiet-baseline prerequisite was invalid for the actual controller state and the intended hypothesis was not tested.
