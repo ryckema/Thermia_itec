@@ -1,5 +1,17 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-27 — EXP257 COMPLETE / EXP258 PREPARED
+
+- Last completed experiment: **EXP257 — COMPLETE / STRONG POSITIVE**.
+- Current prepared experiment: **EXP258 — R1 + exact 03E8/14 ACK + exact 03FC/11 ACK + next-stage capture — PREPARED / NOT RUN**.
+- Only new active variable is one standard FC16 ACK of the already-proven local `03FC/count11` block: `0F1003FC000B4094`.
+- Genuine Eco 5 reference predicts the next block `0410/count22`.
+- EXP258 stops on that first different FC16/FC03 and does not ACK it.
+- No FC03/mailbox response and no broad chain emulation.
+- Maximum active TX: R1, one 03E8 ACK, one 03FC ACK.
+- Recovery after summary: one normal Thermia-controller reboot.
+- EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.
+
 ## Current status — 2026-09-27 — EXP257 COMPLETE / external Eco 5 follow-up verified
 
 - Last completed experiment: **EXP257 — COMPLETE / STRONG POSITIVE**.
