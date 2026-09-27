@@ -1,5 +1,83 @@
 # THERMIA PROJECT STATE
 
+## Authoritative current state — 2026-09-27 — EXP257 COMPLETE / STRONG POSITIVE
+
+- Last completed experiment: **EXP257 — COMPLETE / STRONG POSITIVE**.
+- **EXP239 remains OPEN.**
+- **EXP238 remains PARKED / NOT RUN.**
+- No next experiment is yet authorized/prepared.
+
+### EXP257 hypothesis
+
+After the same guarded one-shot R1 used in EXP256, acknowledge exactly the **first** post-R1 `0x0F FC16 03E8/count14` request once. Then observe the first different `0x0F` FC16/FC03 stage without answering it.
+
+The full genuine Eco 5 gateway capture predicted `03FC/count11` as the immediate next stage.
+
+### EXP257 observed result
+
+The complete experiment sequence was:
+
+```text
+BUS_RETURN
+  -> +1285 ms approval request 071C/0730
+  -> R1 sent once
+  -> +130 ms first post-R1 FC16 03E8/count14
+  -> one exact FC16 ACK 0F1003E8000EC093
+  -> +691 ms first different post-ACK block FC16 03FC/count11
+  -> NO ACK
+  -> SUMMARY NEXT_STAGE_FC16
+```
+
+Exact first different request:
+
+`0F1003FC000B160028000A0037000000000000000200120028001E003C369E`
+
+Decoded FC16 header:
+- slave `0x0F`
+- function `0x10`
+- start `0x03FC`
+- count `11`
+- bytecount `22`
+
+Payload words:
+`0028 000A 0037 0000 0000 0000 0002 0012 0028 001E 003C`
+
+Safety/integrity summary:
+- R1 used: `1`
+- one `03E8` ACK used: `1`
+- approvals: `1`
+- approval retries after R1: `0`
+- same-`03E8` retries after ACK: `0`
+- unexpected peer FC17: `0`
+- unexpected peer FC16 ACK: `0`
+- self echo R1/ACK: `0/0`
+- post-return parser resync delta: `0`
+- post-return RX-drop delta: `0`
+- DE returned LOW
+- `03FC/count11` was **not acknowledged**
+
+### Strong conclusion
+
+EXP257 reproduces the same post-approval synchronization prefix as the genuine Eco 5 reference:
+
+`approval response -> 03E8/count14 -> ACK -> 03FC/count11`
+
+This is a second independent XTR-to-Eco5 architecture match after EXP256 first established `approval response -> 03E8/count14`.
+
+The result strongly supports that the replayed R1 is sufficient to advance the local XTR through at least the first two native controller->Online/Link synchronization stages. It still does **not** prove full Online/Link session establishment, because `03FC` and all downstream stages/mailbox traffic were deliberately left unanswered.
+
+### Comparison with genuine Eco 5
+
+The full Eco 5 capture shows the same prefix twice, then continues:
+
+`03E8/14 -> ACK -> 03FC/11 -> ACK -> 0410/22 -> ...`
+
+EXP257 stopped exactly at `03FC/11`, as intended. Therefore the next protocol question is whether acknowledging this exact `03FC/count11` on the XTR yields `0410/count22`, but no such next experiment has yet been run or authorized.
+
+### UI / recovery status
+
+The protocol objective is complete from the supplied log. Front-panel side effects for this run have not yet been reported. Because EXP252/EXP256 showed the recoverable DHW-side `0` / `COMM. ERR ONLINE/LINK` failure mode after incomplete Online/Link participation, perform one normal controller reboot after this EXP257 capture if not already done.
+
 ## Authoritative current state — 2026-09-27 — EXP256 COMPLETE / EXP257 PREPARED / NOT RUN
 
 - Last completed experiment: **EXP256 — COMPLETE / ACTIVE STRONG POSITIVE**.
@@ -920,81 +998,3 @@ Last updated: 2026-09-27
 - **EXP238 hypothesis:** repeat the same passive full-bus method with the independently proven Operation Mode path `AUTO -> COMPRESSOR -> AUTO`. If a common physical-panel ingress exists on this segment, a reversible pre-export event should precede the first `0546/count20` page carrying `0553=2` and then `0553=1`.
 - **EXP238 safety:** RX-only; GPIO17 TX absent; GPIO21 DE LOW; Configuration-category marker controls only; no ACK, response, probe, scan, write, restart or room-sensor emulation.
 - **EXP238 logger improvements:** target-value-aware detection ignores stale `0546` frames and records the true number of frames before the first `0553=2` / `0553=1` target export; standard Modbus unit IDs `0x00..0xF7` are accepted passively so an unexpected panel/service address is not discarded.
-
-
----
-## 2026-09-27 — EXP234B COMPLETE / offline raw-binary completion of service-page archaeology
-
-- **Status:** offline/read-only historical completion of EXP234; current bus experiment remains **EXP238 PREPARED / NOT RUN**. No Thermia TX, restart or setting change.
-- **Hypothesis:** the raw Danfoss Link CC 2.7.42 firmware might expose the missing low-level `0708/071C/0730` service-page serializer or a genuine `0730..0737` response builder.
-- Successfully materialized and parsed the original 2.7.42 Windows CE `ccimage.bin`; carved the managed DHP/regulation assemblies and reconstructed native `HECTArch.dll`.
-- `ParameterCache.dll` positively contains the real abstract DHP layer (`DHPParameterCache`, `SyncParameters`, `OnHEServiceSetGet`, `OnHEServiceBind`, `HESetGetReqRsp`) and real parameter-ID constants including `0x030A`, `0x4402`, `0x4414`. This validates the raw extraction target.
-- **Negative:** no managed `ldc.i4 0x071C` or `ldc.i4 0x0730` exists in the audited heat-pump/regulation assemblies; `ParameterCache.dll` contains no `0708/071C/0730` page constant.
-- Three `0x0708` immediates in `RegulationEngine.dll` map by CLR metadata to ordinary node constructors (`BatteryPoweredNodeBase`, `SCMNode`, `HCNode`) and occur with other timing/configuration integers; they are not DHP service-page references.
-- Full-ROM ownership mapping places every exact 32-bit `0x071C`/`0x0730` hit in unrelated Windows/UI/framework/application files, not in the DHP/HE stack.
-- Native `HECTArch.dll` is explicitly the HE/Z-Wave layer (`HESetGetReqRsp`, `ServiceBind`, `ServiceSetGet`, `ZW*` functions) and contains no exact 32-bit `0708/071C/0730` constants.
-- **Strong conclusion:** the audited Link CC host firmware stops at abstract HE/DHP Set/Get. The missing DCM03/Connect -> Thermia local serializer is in another device/layer and cannot supply an evidence-backed XTR `0730..0737` response from this firmware.
-- Official Danfoss HP-kit documentation independently describes a distinct `DCM-HP approval` phase and `sending settings to DCM`, consistent with a separate application/session layer beyond syntactic bus presence.
-- The raw `THERMIA_PART9_BUNDLE.zip` remains non-materializable, but the original 2.7.42 firmware that underpinned that line of investigation was directly materialized and audited.
-- **Safety:** no active `0730` response is approved. Do not use zero-bank, echo or positional guesses.
-- **Next direction:** search specifically for Thermia Connect/DCM03 firmware/update images or heat-pump Gateway/controller firmware; use XTR as an active protocol oracle only after a concrete response candidate is evidence-backed.
-
-
----
-## 2026-09-27 — Offline genuine DCM log re-audit before EXP238
-
-No bus experiment was run. EXP238 remains PREPARED and has not been executed. The four genuine external Online/DCM captures were re-analysed specifically for command-dispatch and endpoint-rejoin state.
-
-### Observed facts
-- Across the genuine captures, the reference controller periodically issues `0x0F FC03 0708/count6` even while the slave-0x0F endpoint is absent. In `090550`, 16 such polls are unanswered before the first valid reply at 68.235 s. This strengthens that the reference scheduler is controller-side and does not appear merely because the DCM endpoint responds.
-- The already-proven runtime command discriminator remains exact: `0709=0001` occurs twice and only twice, and both occurrences are immediately followed by `0x0F FC03 03E8/count13`; the next `0708` response clears `0709` back to zero.
-- A second, distinct `0708` role is visible during endpoint rejoin. The first valid `090550` reply is `0708..070D = [0000,0000,7FFF,FFFF,0080,0007]`. 69 ms later the controller starts a large controller->0x0F FC16 snapshot at `03E8/count13`, then walks the configuration/state pages through `06F1/count3`. The next `0708` poll does not occur until 101.901 s, when the reply has become the normal idle image `[0000,0000,0000,0000,077F,0006]`.
-- In `090209`, `070C` is `0080` in one valid reply and becomes `0000` on later replies while the high-page FC16 snapshot (`07D0`, `07E4`, `07F8`, ...) is still continuing. Therefore `070C=0080` is not simply an on/off bit meaning “full snapshot currently active”.
-- Across all available valid `0708` replies, `070D=0007` is observed only in the first successful `090550` rejoin reply; normal/command/runtime replies use `070D=0006`.
-- The 13-word desired image returned after the second known Heat Curve command in `210001` (`03E8=0016` plus 12 unchanged words) is byte-for-byte identical to the `03E8/count13` state image exported at the start of the successful `090550` rejoin snapshot.
-
-### Strong conclusions
-1. Reference `0708/count6` is a multi-purpose control/mailbox page, not just a command-pending boolean. `0709` carries the proven one-shot command-pending discriminator, while `070A..070D` participate in endpoint lifecycle/synchronization state.
-2. The genuine reference write path is a **controller-initiated pull model**: the external endpoint advertises pending/lifecycle state in the mailbox, and the controller then fetches a full desired-state image (`03E8/count13`) rather than accepting an arbitrary master write to a settings register.
-3. The local XTR `0730/count8` return bank should therefore not be searched primarily for a literal Heat Curve value. Architecturally, an XTR-native mailbox may instead contain status/dirty/session selectors that cause a second controller-initiated settings transaction. This is an architectural hypothesis only; EXP233's warning against direct field-position homology remains in force.
-4. No new active write/response target is justified. There is still no genuine XTR `0730/count8` response image.
-
-### Hypotheses / unknowns
-- `070C` is plausibly a bitmask/group/capability field: observed values `077F` and `0080` are complementary within `07FF`, but this is not proven and `070C=0000` also occurs during synchronization.
-- `070D=7 -> 6` may encode a rejoin/init phase, protocol state, or generation indicator; exact semantics are unknown.
-- The local XTR `071C/0730` FC17 exchange may be a newer combined bidirectional service/session primitive analogous at an architectural level to the reference `0708` mailbox, but wire-level equivalence is not established.
-
-### Direction before EXP238
-Perform no active `0730` response. Before running EXP238, finish the offline mailbox state-machine table over all genuine DCM captures: correlate every `0708` response image with the adjacent FC16 page cursor and startup/runtime phase. Use the result to define what behavioral signature an XTR-native mailbox should produce. EXP238 remains the next prepared physical-bus experiment if the offline audit does not yield a stronger XTR-specific target.
-
-## Authoritative current state — 2026-09-27 EXP237 PREPARED
-
-- Current experiment: **EXP237 — PREPARED / PASSIVE LOCAL-UI INGRESS TRACE**.
-- **Hypothesis:** the physical Thermia Heat Curve mutation is accepted upstream of the proven controller -> `0x0F FC16 03E8/count14` export; if the physical-panel ingress crosses the observed RS485 segment, a reversible frame/event should appear before the first `03E8` export in both `A -> B` and `B -> A`.
-- **Only experimental variable:** physical Heat Curve `baseline -> baseline+1 -> baseline`; no other heat-pump setting is changed.
-- Source YAML is the exact RX-only EXP225 build. Obsolete EXP225 cold-boot/FC17 experiment code was removed. Known-good production entities/parsing remain intact.
-- EXP237 remains **RX-only**: GPIO17 TX is not configured, GPIO21 DE remains LOW, and all Home Assistant controls are Configuration-category trace markers only. No restart, ACK, response, probe, scan, semantic write or room-sensor emulation is performed.
-- The experiment adds bounded raw trace windows and extends the passive parser only to recognise plausible local panel/service traffic (`0x01`, `0x03`, `0x05`, `0xC8` and common Modbus FC01/02/05/06/08/0F/16) so such frames are not discarded before offline analysis.
-- Procedure: 10 s untouched baseline; marker **before** physical Heat Curve +1 then 20 s trace; marker **before** exact restore then 20 s trace; end experiment and analyse full log.
-- Success criterion: a CRC-valid frame/field that (a) appears before the first `03E8` export, (b) changes reproducibly on `+1`, and (c) reverses on restore.
-- Important negative criterion: if both transitions show no reversible pre-`03E8` frame on this RS485 segment, panel->controller semantic ingress is likely internal or outside this observed bus, and write research should pivot accordingly.
-- YAML syntax was parsed successfully offline. Full ESPHome C++ compilation was not available in this runtime.
-
----
-
-## Authoritative current state — 2026-09-27 after EXP236A/EXP236B
-
-- Last completed experiment: **EXP236B — COMPLETE / OFFLINE CROSS-SETTING WRITE-PATH REFINEMENT**.
-- Current experiment: **none running**. No ESP TX, heat-pump restart, setting mutation, YAML change or room-sensor emulation was performed in EXP236A/EXP236B.
-- **EXP236A — cross-setting outbound-sync generality:** compared three locally proven physical-UI settings paths:
-  - Heat Curve: physical UI change reactivates controller-originated `0x0F FC16 03E8/count14`; `03E8` follows the curve value.
-  - Activate Cooling: physical UI toggle changes the native `0x0F` cooling page at `0442`; `0442` is proven `0=OFF / 1=ON`.
-  - Operation Mode: physical `AUTO -> COMPRESSOR -> AUTO` changes only `0553: 1 -> 2 -> 1` within the local `0546/count20` system page.
-- **Strong conclusion from EXP236A:** controller-originated `0x0F FC16` is a **general controller-owned configuration/state export layer across multiple unrelated settings families**, not a Heat-Curve-specific special case. This materially strengthens EXP236's conclusion that seeing the changed value in a `0x0F FC16` page does not identify the semantic ingress.
-- **EXP236B — page-family / causality refinement:** the three physical-UI settings land in distinct page families (`03E8`, `0442`, `0546`), while EXP135/136 showed that DHW START and COMFORT/ECO do not modify the recurrent `03E8..03F5` page. This supports page-specific serialization after an upstream mutation rather than one universal writable settings block.
-- **Strong conclusion from EXP236B:** tomorrow's trace should key on the **first bus event before the page-specific FC16 export**, not on the export page itself. If the same preceding slave/function pattern appears for both Heat Curve and Operation Mode, that would be strong evidence for a common panel-to-controller ingress path.
-- **Important unknown:** the current archive does not prove that the physical control panel's semantic input is visible on this exact RS485 segment. If no reversible pre-export frame exists in a high-resolution trace, the panel may mutate controller state internally and only the resulting `0x0F FC16` serialization may be exposed on this bus.
-- **Tomorrow's reserved experiment remains EXP237 — passive local-UI ingress trace.** Start with Heat Curve `A -> B -> A`; if timing/logging quality is good, repeat the same passive method with Operation Mode as a second discriminator. No ESP TX.
-- **Safety:** no new active write target is approved. `0x0F FC16` remains outbound/state-export for control purposes; `0730` remains secondary/unknown; no AFCA or direct-setting write experiments resume without new evidence.
-
----
