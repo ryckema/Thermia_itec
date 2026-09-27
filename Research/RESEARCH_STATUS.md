@@ -1,5 +1,32 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-27 — EXP257 PREPARED / NOT RUN
+
+- Last completed experiment: **EXP256 — COMPLETE / ACTIVE STRONG POSITIVE**.
+- Current prepared experiment: **EXP257 — one-shot R1 + one exact `03E8/count14` ACK + next-stage capture**.
+- Full genuine iTec Eco 5 gateway capture has now been analysed.
+- The external reference proves the successful sync prefix twice:
+
+```text
+FC17 approval response
+  -> FC16 03E8/count14
+  -> ACK
+  -> FC16 03FC/count11
+  -> ACK
+  -> FC16 0410/count22
+  -> ...
+```
+
+Therefore the primary EXP257 discriminator is now **`03FC/count11`** immediately after our one `03E8/count14` ACK. EXP257 remains bounded: it will capture that first different block and **will not ACK it**.
+
+The full Eco 5 capture also shows the ordered initial synchronization chain continuing through the 0x03E8..0x07D0 FC16 pages and then entering the `0708/count6` mailbox/runtime phase. This strengthens the interpretation of EXP256: the XTR R1 replay reached the same first native synchronization stage as the genuine Eco 5 Online flow.
+
+Known active-test side effect remains reproducible: incomplete Online/Link participation can produce DHW-side `0` and later `COMM. ERR ONLINE/LINK`; recovery is one normal controller reboot.
+
+**EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.**
+
+---
+
 ## Current status after EXP256
 
 **EXP256 is COMPLETE / ACTIVE STRONG POSITIVE.**
