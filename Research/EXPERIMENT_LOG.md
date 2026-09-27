@@ -2,6 +2,18 @@
 
 Last updated: 2026-09-27
 
+## EXP259 — exact `0410/count22` ACK then next-stage capture — PREPARED / NOT RUN
+
+**Hypothesis:** after the locally proven prefix `R1 -> 03E8/14 ACK -> 03FC/11 ACK -> 0410/22`, one exact standard FC16 ACK to `0410/count22` should advance the XTR controller to a different block. The genuine Eco 5 reference predicts `042E/count15`.
+
+**Only new active variable:** one ACK frame `0F1004100016401C` for exact slave `0x0F` FC16 `start=0410`, `count=22`, `bytecount=44`, request length `53`. The ACK carries no register-value payload.
+
+**Safety:** R1, `03E8` ACK and `03FC` ACK retain the existing guards. The new `0410` ACK is one-shot, latch-before-DE, allowed only on the first exact post-`03FC`-ACK `0410/22` within 5 s with clean parser/drop counters and no approval/03E8/03FC retry or unexpected peer. After that, capture-only: no `042E` ACK, no later FC16 ACK, no FC03/mailbox response. Reboot controller after summary.
+
+**Expected positive discriminator:** first post-`0410`-ACK block is `042E/count15`. Any other different FC16/FC03 is still recorded as a protocol result.
+
+---
+
 ## EXP258 — exact `03FC/count11` ACK then next-stage capture — COMPLETE / STRONG POSITIVE
 
 **Hypothesis:** after the locally proven `R1 -> 03E8/count14 ACK -> 03FC/count11`, one exact standard ACK to `03FC/count11` should advance the XTR to a different block. Genuine Eco 5 predicts `0410/count22`.
@@ -986,15 +998,3 @@ Two attempts transmitted the intended exact request:
 `0F 03 07 08 00 06 44 50`.
 
 However both runs logged `NO_RESPONSE_2S` approximately 8–10 ms after `FC03_TX`.
-
-Root cause:
-`phase_ms` was calculated while still in phase 1. The code then transmitted, changed to phase 2, and continued in the same interval invocation; the stale phase-1 elapsed time (~10 s) immediately satisfied the phase-2 `>=2 s` timeout.
-
-Therefore:
-- no real 2 s response window was observed;
-- "no response" is not a valid protocol result;
-- the Online-side-master hypothesis remains open.
-
-Second run additionally showed two CRC-resync warnings shortly after TX, but because the experiment had already terminated incorrectly these are not yet interpretable.
-
-Next: EXP147 = exact same read request with corrected response-window timing only.
