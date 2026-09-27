@@ -1,5 +1,73 @@
 # THERMIA PROJECT STATE
 
+## Authoritative current state — 2026-09-27 — EXP259 COMPLETE / STRONG POSITIVE
+
+- Last completed experiment: **EXP259 — COMPLETE / STRONG POSITIVE**.
+- **EXP239 remains OPEN.**
+- **EXP238 remains PARKED / NOT RUN.**
+- No next experiment is prepared yet.
+
+### EXP259 hypothesis
+
+After the locally proven chain `R1 -> 03E8/count14 ACK -> 03FC/count11 ACK -> 0410/count22`, send exactly one standard FC16 ACK for the first exact `0410/count22` block, then capture the first different FC16/FC03 stage without answering it. The genuine Eco 5 reference predicted `042E/count15`.
+
+### EXP259 observed result
+
+Observed sequence:
+- BUS_RETURN
+- first approval at +1283 ms
+- R1 sent once
+- `03E8/count14` at +138 ms after R1; ACKed once
+- `03FC/count11` at +682 ms after 03E8 ACK; ACKed once
+- `0410/count22` at +1498 ms after 03FC ACK; ACKed once
+- `042E/count15` at +696 ms after 0410 ACK
+- `042E` was **not** acknowledged
+
+Exact first different request:
+`0F10042E000F1E000100010000000AFFF60005001E0000002D0000000000000000000000003A99`
+
+Decoded header:
+- slave `0x0F`
+- FC16
+- start `0x042E`
+- count `15`
+- bytecount `30`
+
+Payload words:
+`0001 0001 0000 000A FFF6 0005 001E 0000 002D 0000 0000 0000 0000 0000 0000`
+
+Safety/integrity summary:
+- R1 used: 1
+- 03E8 ACK: 1
+- 03FC ACK: 1
+- 0410 ACK: 1
+- approval retries after R1: 0
+- 03E8 retries after ACK: 0
+- 03FC retries after ACK: 0
+- 0410 retries after ACK: 0
+- unexpected peer frames: 0
+- post-return parser resync delta: 0
+- post-return RX-drop delta: 0
+- DE LOW
+- no FC03/mailbox response
+- no ACK beyond `0410`
+
+### Strong conclusion
+
+The local XTR now reproduces the genuine Eco 5 ordered Online/Link synchronization prefix through four consecutive FC16 pages:
+
+`approval response -> 03E8/14 -> ACK -> 03FC/11 -> ACK -> 0410/22 -> ACK -> 042E/15`
+
+This is the third consecutive bounded positive progression after EXP256–258 and strongly supports that the replayed R1 enters the native Online/Link synchronization state machine.
+
+Full Online/Link establishment remains unproven because `042E` and all later blocks/mailbox traffic were deliberately left unanswered.
+
+### UI / recovery
+
+The EXP259 log itself does not report the front-panel UI. As with EXP252/256/258, an incomplete approved session may again lead to DHW-side `0` and/or `COMM. ERR ONLINE/LINK`; exact EXP259 UI outcome awaits user confirmation. Perform one normal Thermia-controller reboot after this run.
+
+---
+
 ## Authoritative current state — 2026-09-27 — EXP258 COMPLETE / EXP259 PREPARED / NOT RUN
 
 - Last completed experiment: **EXP258 — COMPLETE / STRONG POSITIVE**.
@@ -930,70 +998,3 @@ has been correlated with the final bus trace.
 - Last completed experiment: **EXP247 — COMPLETE / OFFLINE: natural XTR `071C/0730` disappearance is proven, but exact timeout is not recoverable from the current right-censored captures**.
 - Current experiment: **none running**.
 - **EXP239 remains OPEN** pending the external genuine iTec Eco 5 Online raw capture.
-- **EXP238 remains PARKED / NOT RUN.**
-- EXP247 made no bus interaction and changed no production functionality.
-- EXP221 proves the target is still active at ~197.999 s after Bus Healthy (47th exact target), with normal ~4.276 s cadence; the experiment ends only 0.600 s later.
-- The same Thermia power cycle remains continuous until EXP222 is armed at 22:39:28.826, ~1599.592 s after that Bus Healthy transition. During the next ~419.3 s before the next deliberate Thermia power-off, the EXP222 logger sees 237 native `04A6` FC16 frames, 119 `085F` FC16 frames and 59 `0x06` polls, but **zero** `071C/0730` targets.
-- Therefore, on that passive boot, the target natural stop occurred somewhere between ~198 s and ~1600 s after Bus Healthy. The exact point is hidden by a target-logging gap.
-- EXP71 and EXP71B independently show that experiment software timeouts do not stop the controller target stream; targets continue after those software timeout markers.
-- EXP222 and EXP225 are also right-censored: their last target occurs less than one normal retry interval before each experiment ends.
-- After target disappearance the XTR continues ordinary native traffic; no FC03/0708 Online mailbox state appears.
-- Do **not** describe 200 s as the controller timeout. It is only EXP221's observation-window boundary.
-- No active `0730` response is approved.
-- If exact timeout becomes important, the next appropriate live experiment is a single **RX-only >=30 min cold-boot target logger** that records until >=3 missed expected target intervals prove the natural stop.
-
-
-## Authoritative current state — 2026-09-27 after EXP246
-
-- Last completed experiment: **EXP246 — COMPLETE / OFFLINE POSITIVE: local XTR `071C..0723` is a redundantly encoded calendar/clock service record with no unexplained per-frame entropy**.
-- Current experiment: **none running**.
-- **EXP239 remains OPEN** pending the external genuine iTec Eco 5 raw capture.
-- **EXP238 remains PARKED / NOT RUN.**
-- EXP246 made no bus interaction and changed no production functionality.
-- Input corpus remained the 129 exact local XTR requests recovered by EXP245.
-- Proven dynamic fields:
-  - byte0 = year-2000;
-  - byte1 = hour;
-  - byte3 = 2*second;
-  - byte6 = byte3>>2 = floor(second/2);
-  - byte9 = day-of-month;
-  - byte11 = 4*minute;
-  - byte15 = 2*byte3 = 4*second.
-- Therefore all apparent second-bearing fields are deterministic redundancy, not independent session material.
-- New strong structural observation: bytes4/5 are always `F9 06` and are exact bitwise complements. In September, the low nibble of `F9` equals month 9 and `06 = 0x0F-9`. Candidate encoding: `byte4=0xF0|month`, `byte5=~byte4`.
-- Byte13 is always `0x1E=30`, matching September's 30 days. This is a strong days-in-month hypothesis, not yet cross-month proven.
-- A candidate complete calendar generator using those two hypotheses reproduces 129/129 frames exactly.
-- Remaining invariant bytes `45, AC, DC, C5, 00, 8F` are currently best treated as format/signature markers; exact semantics unknown.
-- No local payload byte remains with independent random/session/checksum/MAC-like variation.
-- Controller-vs-logger lead rises from ~201 s on Sep22 to ~206.35 s on Sep26, consistent with ~1.24 s/day (~14.3 ppm) relative RTC drift if the logger timebase is stable.
-- Externally reported Eco 5 values fail the local RTC signature (1/13 and 0/13 structural checks), reinforcing a genuinely different payload regime.
-- No active `0730` reply is approved.
-- Next preferred offline experiment: **EXP247 — boot approval retry-window / timeout reconstruction from full raw logs**.
-
-
-## Authoritative current state — 2026-09-27 after EXP245
-
-- Last completed experiment: **EXP245 — COMPLETE / OFFLINE STRONG NEGATIVE FOR A LOCAL RTC->CHALLENGE MODE TRANSITION IN THE EXISTING CORPUS**.
-- Current experiment: **none running**.
-- **EXP239 remains OPEN** pending Piotrek's full genuine iTec Eco 5 Online raw capture.
-- **EXP238 remains PARKED / NOT RUN.**
-- EXP245 made **no new bus interaction**: no restart, no RS485 TX, no ACK, no FC17 response, no setting change and no YAML/Home Assistant change.
-- EXP245 directly re-parsed all 129 exact local XTR `0x0F FC17 read 0730/count8 + write 071C/count8` frames previously identified across EXP71, EXP71B, EXP221, EXP222 and EXP225.
-- **129/129** local payloads exactly match the XTR RTC/service encoder established by EXP226; **0/129** show an Eco-5-like high-entropy challenge regime and **0/129** are exact retries.
-- The exact target is an early boot/recovery scheduler slot:
-  - EXP221: first target ~1.219 s after `Bus Healthy -> ON`;
-  - EXP222: ~1.179 s;
-  - EXP225: ~1.095 s.
-- Where both slots are explicitly logged, the target follows the immediately preceding `0x06 FC17 AFC8/12 -> AFDC/5` poll by ~0.24–0.28 s median.
-- RTC-mode targets are observed with preceding `AFDC` values `0x0000`, `0x0010` and `0x0020`.
-- Historical EXP71B already tested an active 0x06 zero responder and reached `TRUE_BOOTSTATE_CONFIRMED` (`A80E=0x28`, `AFDC=0x10`, fast/served 0x06 participation); 18 target frames after that state still use the RTC encoder.
-- Historical EXP222 ACKed six allow-listed `0x0F FC16` state-export pages; the target remained RTC encoded and the controller still produced no FC03/0708 mailbox.
-- Therefore **A80E/AFDC promotion, 0x06 responder presence/served cadence, and partial FC16 acknowledgement are not sufficient selectors for an RTC -> challenge transition**.
-- EXP224 remains the steady-runtime contrast: zero exact target transactions while ordinary native `03E8` traffic was present. The family is boot/recovery gated, but the exact natural disappearance time is not established.
-- Cross-model interpretation:
-  - local XTR M / no Online endpoint: deterministic RTC/service payload regime;
-  - externally reported genuine Eco 5 + Online: high-entropy, retryable challenge-like regime.
-- The simple state-dependent-mode hypothesis is now weaker. Stronger current alternatives are **model/firmware/profile-specific encoding** or an **XTR-specific multi-stage approval prerequisite** absent from current captures.
-- No active `0730` response is approved. Do not replay the published Eco 5 responses against the XTR RTC payload.
-- Preferred next evidence: Piotrek raw Eco 5 capture (finish EXP239) or an externally sourced genuine XTR/iTec Online `0730` response. If unavailable, next offline-only candidate is **EXP246 — XTR RTC/service encoder reconstruction**.
-
