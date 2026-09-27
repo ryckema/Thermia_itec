@@ -1,3 +1,28 @@
+## Current experiment status — EXP264 COMPLETE / STRONG POSITIVE WITH CAPTURE AMBIGUITY
+
+Hypothesis: continue the proven Online/Link synchronization tail by ACKing exact `06EA/7 -> 06F1/3 -> 06F4/19`, then stop transmitting and capture the first later frame.
+
+Observed:
+- `06EA/7` appeared and was ACKed once.
+- `06F1/3` appeared next and was ACKed once.
+- `06F4/19` appeared next and was ACKed once.
+- The first later FC16 was `085F/5`, only 107 ms after the `06F4` ACK.
+- `085F/5` is already known as recurrent passive/background traffic, so this does **not** establish `085F/5` as the next synchronization stage.
+- No mailbox response was sent.
+- Parser resync count incremented once at controller return (`CRC resync at 0x06 0x17`) before the post-return experimental chain; RX drops remained 0.
+- No stage retry or approval retry occurred in the serviced chain.
+
+Strong conclusion:
+- The local XTR accepts the exact tail `06EA/7 -> ACK -> 06F1/3 -> ACK -> 06F4/19 -> ACK`.
+- EXP264's capture rule was too broad to identify the next meaningful sync stage because a known recurrent `085F/5` background frame arrived first.
+
+Next-test requirement:
+- Preserve the proven chain.
+- After `06F4/19`, ignore known recurrent/background FC16 families for discovery purposes (at minimum `085F/5`; `04A6/13` remains context-sensitive), while still logging them.
+- Capture the first non-background FC16 or FC03, especially any `0708/count6` mailbox poll, without answering it.
+
+Recovery: one normal Thermia-controller reboot after the incomplete session.
+
 ## Authoritative current state — 2026-09-27 — EXP263 COMPLETE / STRONG POSITIVE
 
 ## EXP264 — PREPARED / NOT RUN
@@ -973,27 +998,3 @@ has been correlated with the final bus trace.
   - test payload `R1 = 1691 A5F3 F8E8 D587 3892 4416 E8E6 A3D5`;
   - R1 belongs externally to `C1 = 63CE FB32 C6F4 1382 0879 9237 0CAC EEBA`;
   - local XTR input is an RTC/service image and does not match C1, so this is deliberately a
-    mismatched cross-profile oracle test.
-- Possible effects before test:
-  - likely rejection / retries continue;
-  - possible retry suppression or approval/session state change;
-  - possible partial DCM sync;
-  - persistent service/binding side effects unknown.
-- Fail-closed guards require:
-  - explicit HA arm;
-  - real cold-boot bus gap and return;
-  - first exact approval request only;
-  - proven local RTC/service serializer;
-  - input must not equal C1;
-  - `A80E=0000`, `A80F=0005`;
-  - no peer FC17 response;
-  - no post-BUS_RETURN parser resync or RX drop before TX.
-- TX latch closes before driver enable. There is exactly one `write_array()` path in the YAML.
-- After R1, no further Thermia response is emitted: no retry, FC16 ACK, mailbox response or
-  desired-state page response.
-- GPIO17 TX is enabled only for EXP252. GPIO21 DE defaults LOW and is returned LOW after the frame,
-  abort and final summary.
-- **EXP239 remains OPEN.**
-- **EXP238 remains PARKED / NOT RUN.**
-- Do not run a second active response value in the same boot.
-
