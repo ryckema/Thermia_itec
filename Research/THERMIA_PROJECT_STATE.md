@@ -1,3 +1,36 @@
+# EXP269 — COMPLETE / NEGATIVE FOR SINGLE 0080/0006 PHASE-MATCH RESPONSE
+
+**Hypothesis:** the first post-`06F4` `FC03 0708/count6` on the XTR would progress to `FC16 07D0/19` if answered once with the exact Eco5 phase-matched response `0000 0000 0000 0000 0080 0006`.
+
+**Observed facts**
+- Full proven approval/sync prefix reproduced through `06F4/19`.
+- First exact `0708/6` arrived +1.566 s after the `06F4` ACK.
+- Exactly one response was transmitted: `0F030C0000000000000000008000069C9E`.
+- No `07D0/19` appeared.
+- `0708/6` repeated after ~4.43 s and continued repeatedly during the 30 s RX-only window.
+- Final summary: `responses_sent=1 mailbox_requests=8 ignored_bg=15 resync_postreturn=0 drop_postreturn=0 DE=LOW`.
+- Recurrent `085F/5` remained the only observed post-`06F4` FC16 family.
+- A80E again changed `0008 -> 0028`, and AFDC later reported `32`.
+- User observed a visible display/UI change described as “the middle of the 0 is now filled”; exact UI element/semantic meaning is not yet identified.
+
+**Strong conclusions**
+- The Eco5 `0080/0006` mailbox response is **not sufficient by itself** on the XTR to trigger `07D0/19`.
+- The mailbox path remains electrically/protocol-valid and stable; the negative result is not explained by parser or RX-drop faults.
+- The missing condition lies before or alongside the mailbox payload itself: likely controller/session state, model-specific mailbox semantics, or an additional prerequisite from the Eco5 trace.
+
+**Hypotheses**
+- The visible UI change may indicate that `0080/0006` changed an internal state despite not triggering `07D0`; this requires direct UI identification before assigning meaning.
+- The Eco5 first-mailbox payload may only be effective when another state established earlier in the genuine Online session is present.
+- `071C/0730` replay may unlock only a subset of the genuine Online state machine.
+
+**Unknowns**
+- Exact meaning of the newly observed filled-center display symbol.
+- Which pre-`0708` Eco5 state differs from the XTR replayed session.
+- Whether `07D0` is gated by a second mailbox transaction, an FC17/DCM state, or another controller-side condition.
+
+**Current experiment state:** EXP269 COMPLETE / NEGATIVE. Next experiment not yet assigned.
+
+---
 # EXP269 — PREPARED / NOT RUN — phase-matched post-06F4 mailbox response
 
 **Hypothesis:** the XTR failed to progress after EXP268 because the reused `0001/0000` mailbox payload was not the correct payload for the first post-`06F4` phase. In the matching Eco5 raw capture the first exact `FC03 0708/count6` after `06F4/19` is answered with `0F030C0000000000000000008000069C9E` (words `0000 0000 0000 0000 0080 0006`), followed about 0.7 s later by `FC16 07D0/count19`.
