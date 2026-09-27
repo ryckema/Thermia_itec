@@ -1,4 +1,4 @@
-## Current experiment status — EXP264 COMPLETE / STRONG POSITIVE WITH CAPTURE AMBIGUITY
+## Current experiment status — EXP265 COMPLETE / STRONG POSITIVE — LOCAL 0708/6 MAILBOX REQUEST CONFIRMED
 
 Hypothesis: continue the proven Online/Link synchronization tail by ACKing exact `06EA/7 -> 06F1/3 -> 06F4/19`, then stop transmitting and capture the first later frame.
 
