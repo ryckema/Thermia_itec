@@ -1,5 +1,12 @@
 # THERMIA PROTOCOL FINDINGS
 
+## EXP261 target — bounded continuation after EXP260
+
+EXP260 validates batching already-proven genuine Eco 5 FC16 synchronization pages. The next bounded continuation is `046A/18 -> 047E/19 -> 0492/11`, each with a standard one-shot FC16 ACK. The first different post-0492 frame is capture-only.
+
+Genuine Eco 5 reference order places `04A6/count13` next, but prior capture analysis also classifies `04A6/13` as a recurrent passive family overlaid on synchronization. Therefore EXP261 does not use the presence or absence of `04A6` alone as a hard protocol success/failure criterion. No broad ACKing and no `0708` response are authorized by this experiment.
+
+
 ## EXP260 finding — bounded batch reproduces the next three genuine sync transitions
 
 Local XTR evidence now proves the ordered post-approval prefix through `046A/count18`:
@@ -991,10 +998,3 @@ Semantics of the 0662 block remain OPEN.
 A single manually gated ACK to `0662/count33` stops the controller's repeated retransmission of that block.
 
 No next FC16 stage or FC03 request is visible in the following ~11 s of the supplied log. This makes `0662/count33` a candidate phase boundary/terminal sync stage, but that interpretation remains HYPOTHESIS until longer post-ACK observation is captured.
-
-
-## EXP142 prepared — 0x0662/count33 promoted to known ACK target
-
-`0662/count33` is promoted from a manually approved EXP141 candidate to an exact static ACK target because:
-- it repeated stably;
-- it was manually approved;
