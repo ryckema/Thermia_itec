@@ -1,5 +1,49 @@
 # THERMIA PROTOCOL FINDINGS
 
+Last updated: 2026-09-27 after EXP257
+
+## EXP257 — local XTR reproduces genuine Eco 5 `03E8 -> 03FC` synchronization transition
+
+EXP257 adds the first local XTR proof of the next acknowledged post-approval transition.
+
+Observed sequence:
+
+```text
+0x0F FC17 approval request
+  -> one replayed R1
+  -> FC16 03E8/count14
+  -> one standard FC16 ACK
+  -> FC16 03FC/count11
+  -> no further ACK
+```
+
+Timing in EXP257:
+- approval request: +1285 ms after BUS_RETURN;
+- `03E8/count14`: +130 ms after R1;
+- `03FC/count11`: +691 ms after the one `03E8` ACK.
+
+Exact `03FC` request:
+
+`0F1003FC000B160028000A0037000000000000000200120028001E003C369E`
+
+Payload words:
+
+`0028 000A 0037 0000 0000 0000 0002 0012 0028 001E 003C`
+
+The experiment deliberately did **not** ACK `03FC`.
+
+**Strong protocol conclusion:** the local XTR now matches the genuine Eco 5 Online/DCM synchronization prefix through two post-approval stages:
+
+`approval response -> 03E8/count14 -> ACK -> 03FC/count11`
+
+The genuine Eco 5 reference proves this same transition in two independent successful approval cycles and then shows:
+
+`03FC/count11 -> ACK -> 0410/count22`.
+
+This materially strengthens the cross-model architectural link. It does not yet prove that the local XTR will follow the complete Eco 5 synchronization chain or reach the `0708/count6` mailbox/runtime phase.
+
+No semantic register write was performed in EXP257: the only new active frame was a standard FC16 acknowledgement echoing address/count and carrying no register-value payload.
+
 Last updated: 2026-09-27 after EXP256 + full external Eco 5 capture refinement
 
 ## EXP256 — R1 crosses approval boundary into native 03E8 synchronization
@@ -954,46 +998,3 @@ A clean 300 s passive profile produced:
 - 0x0F FC03: 0
 - 0x0F FC16 writes: 280
 - 0x0F FC16 ACKs: 0
-- 0x06 FC17 requests: 69
-- parser/drop deltas: 0/0
-
-This establishes a strong topology difference between the local no-Online setup and the genuine Online capture.
-
-The repeated ~254 ms 0x06 FC17 -> 0x0F FC16 `04A6/count13` timing is highly stable and likely scheduler-related, but semantic causation remains unproven.
-
-Next protocol work should identify the owner/presence mechanism behind A5/A4 and the genuine 0x0F FC03 responder before any new semantic write attempt.
-
-
-## EXP149 prepared — direct A5 ownership discriminator
-
-The genuine Online capture repeatedly polls A5 with:
-`A5 03 0000 0012`
-and receives 36 data bytes.
-
-EXP148 showed A5/A4 are completely absent locally over 300 s.
-
-EXP149 now asks the smallest ownership question possible:
-does the local no-Online topology answer one exact genuine A5 read?
-
-A negative result would strongly support A5 as an endpoint created/owned by genuine Online/DCM hardware rather than the heat-pump controller.
-
-
-## EXP149 — exact genuine A5 FC03 read is unanswered locally
-
-Stimulus:
-`A5 03 0000 0012`
-
-Observed:
-No response during a clean 2.016 s window.
-
-Combined evidence:
-- EXP148: A5/A4 absent spontaneously for 300 s.
-- EXP149: A5 also does not answer when directly queried.
-
-Protocol implication:
-A5 is strongly indicated to be an externally owned/created endpoint associated with genuine Online/DCM hardware or session state.
-
-Do not continue arbitrary A5 register probing. The next useful discriminator is ownership/presence sequencing from the genuine Online capture.
-
-
-## EXP150 prepared — efficient staged role-emulation bootstrap test
