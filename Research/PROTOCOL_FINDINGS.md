@@ -1,3 +1,11 @@
+## EXP262 — accelerated chain proof through 055A/count33
+
+EXP262 establishes the following local ordered Online/Link path after the already-proven prefix: `04A6/13 -> 04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10 -> 0532/18 -> 0546/20 -> 055A/33`. The first eight pages were ACKed exactly once; `055A/33` was captured only. This matches the genuine Eco 5 ordering and validates larger bounded ACK batches.
+
+Important refinement: `04A6/13` is recurrent elsewhere on the bus, but in EXP262 it was ACKed only in the exact post-`0492` sync phase, after which the expected ordered chain continued. Context therefore remains essential; address alone does not identify a sync-stage occurrence.
+
+The known incomplete-session failure (`DHW-side 0` / `COMM. ERR ONLINE/LINK`) remains a session-completion hypothesis, not a proven causal mechanism. `0708/count6` has not yet been serviced locally.
+
 # THERMIA PROTOCOL FINDINGS
 
 ## EXP262 accelerated-batch target
@@ -989,11 +997,3 @@ ACK only `05FF/count33` as the one new variable; do not answer the next new FC16
 
 
 ## EXP141 prepared — human-gated sequence walking
-
-Transport evidence from EXP137–EXP140 is now strong enough to replace one-reflash-per-block with a bounded interactive walker.
-
-Static exact ACK set adds the newly proven `05FF/count33`.
-All later unknown FC16 shapes require:
-- >=3 exact start/count repetitions;
-- explicit HA ARM action;
-- ACK only on the next exact request.
