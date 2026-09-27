@@ -1,6 +1,31 @@
 # THERMIA PROTOCOL FINDINGS
 
-Last updated: 2026-09-27 after EXP257
+Last updated: 2026-09-27 after EXP257 + external Eco 5 follow-up
+
+
+## External Eco 5 endpoint behavior refined after EXP257
+
+The complete raw capture confirms the cold-start approval stream is startup-bounded rather than a steady-state feature in the observed Eco 5 sessions: first approval requests occur about 1.2 s after bus return, while an already-running steady-state segment with the gateway connected has no `071C/0730` traffic. Therefore steady-state absence on another model is not evidence that its cold-start stream is absent.
+
+Two genuine successful sessions provide the same transfer prefix:
+
+`approval response -> 03E8/14 -> ACK -> 03FC/11 -> ACK -> 0410/22`
+
+This is now locally matched by EXP257 through `03FC/11`.
+
+`04A6/13` and `085F/5` should remain classified as recurrent/passive families that can be interleaved with the transfer. Their ACK timing is phase-dependent across the two external power-ups, so they are not established approval preconditions and should not be promoted into the invariant ordered sync chain.
+
+The genuine endpoint begins answering `0708/count6` while FC16 synchronization is still underway. The raw repeated idle response is:
+
+`0F 03 0C 0000 0000 0000 0000 0001 0000 <CRC>`
+
+=> six words: `0000 0000 0000 0000 0001 0000`.
+
+A public comment wrote the fifth word as `0100`; this is not what the raw frame contains under standard Modbus big-endian register ordering. Preserve the raw value `0001` unless later evidence establishes a deliberate byte-swapped semantic representation.
+
+Later fifth-word values in the same session descend through `03DC` (988), 984, 976, 908, 896, 768, 512, then 0. The sequence is factual; "pending synchronization item counter" is only a hypothesis.
+
+The known local `COMM. ERR ONLINE/LINK` after partial participation is compatible with a session-service timeout, but that causal interpretation remains a hypothesis until a sufficiently serviced local session avoids the alarm.
 
 ## EXP257 — local XTR reproduces genuine Eco 5 `03E8 -> 03FC` synchronization transition
 
@@ -973,28 +998,3 @@ The genuine Online environment likely provides additional topology/session state
 
 
 ### EXP147 repeatability
-A second corrected-timing run again produced no response to:
-`0F 03 0708 0006`
-over a genuine ~2.24 s response window.
-
-The direct-master-read negative is therefore reproducible, strengthening the need to identify the missing Online/DCM topology or session prerequisite before further FC03 address probing.
-
-
-## EXP148 prepared — topology before more protocol stimulation
-
-After two reproducible EXP147 negatives, the project stops probing additional 0x0F FC03 addresses.
-
-EXP148 passively profiles the logical endpoints that distinguish the genuine Online capture:
-A5, A4, 0x0F, and 0x06.
-
-The goal is to determine whether the missing prerequisite is a topology/session layer rather than another register/address detail.
-
-
-## EXP148 — A5/A4 absent locally for 300 s; 0x0F FC03 absent despite active FC16
-
-A clean 300 s passive profile produced:
-- A5 FC03: 0
-- A4 FC03: 0
-- 0x0F FC03: 0
-- 0x0F FC16 writes: 280
-- 0x0F FC16 ACKs: 0
