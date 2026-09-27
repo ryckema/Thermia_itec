@@ -1,3 +1,19 @@
+## EXP267 finding — repeated 0708 idle service persists after three responses
+
+Local XTR now confirms the sequence:
+
+`... -> 06F4/19 ACK -> 0708/6 -> idle response -> 0708/6 -> idle response -> 0708/6 -> idle response -> 0708/6`
+
+The idle response in all three serviced polls was the genuine Eco5 frame `0F030C0000000000000000010000001C88` (words `0000 0000 0000 0000 0001 0000`). A fourth exact `0708/6` appeared ~4.18 s after the third response and was not answered. No different meaningful FC03/FC16 appeared before that fourth request; recurrent `085F/5` remained background. Parser/RX integrity stayed clean.
+
+**Protocol implication:** three repeated `0001` idle responses are not a mailbox-completion sequence. The stable ~4.2 s repetition is increasingly consistent with a persistent idle mailbox poll. Do not escalate by inventing later fifth-word values from the genuine capture; those values may encode runtime state/content rather than a countdown.
+
+## EXP268 target — passive observation after bounded mailbox service
+
+Preserve all proven active traffic through exactly three idle mailbox responses, then stop TX and continue RX-only for 30 s. Repeated `0708/6` is logged but not answered. Discovery focuses on any new non-background FC16/FC03, especially genuine Eco5 later families `07D0/19, 07E4/17, 07F8/17, 080C/18, 0820/18, 0834/18, 0848/23, 0864/4`. This is an observation-window experiment, not authorization to ACK those families.
+
+---
+
 ## EXP267 target — bounded repeated mailbox service
 
 EXP266 locally proved that one idle response to `0708/6` does not complete the mailbox phase: exact `0708/6` repeated ~4.18 s later while parser resync and RX drops remained zero. EXP267 therefore tests repeated servicing with the same genuine Eco5 idle frame, bounded to three responses. This does **not** establish that `0001` is a completion token or that indefinite polling should be answered; progression remains unknown until observed locally.
