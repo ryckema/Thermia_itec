@@ -1,5 +1,32 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status after EXP256
+
+**EXP256 is COMPLETE / ACTIVE STRONG POSITIVE.**
+
+Hypothesis: replay the already-tested one-shot Eco 5 R1 response and classify the complete local post-R1 FC16/FC03 traffic.
+
+Observed:
+- first local approval request at +1245 ms after BUS_RETURN;
+- exactly one R1 response sent; approval retries after TX = 0;
+- FC16 total = 390, FC16 ACK = 0;
+- complete FC16 census: `04BA/count22` x1 before R1, then `03E8/count14` x389;
+- `04A6/count13` x0 and `085F/count5` x0;
+- no `0708/count6` or other FC03 phase;
+- first `03E8/count14` arrived 124 ms after R1 and was retransmitted through the full 7-minute window because no endpoint ACK was supplied;
+- DHW/tank-side literal `0` reappeared;
+- VERSION screen did not change;
+- after the run the controller again raised **`COMM. ERR ONLINE/LINK`**, exactly reproducing EXP252.
+
+Strong conclusion: R1 advances the local XTR across the `071C/0730` approval/retry boundary into the native acknowledged `0x0F` synchronization state machine, whose first observed stage is `03E8/count14`. Without the expected FC16 ACK the controller stalls on that block. Full Online/Link session establishment is not yet proven.
+
+The previous EXP255/EXP252 numerical hypothesis that R1 merely suppresses `085F/count5` is rejected.
+
+Safety: the alarm side effect is reproducible and recoverable by a normal controller reboot based on the previous R1 run. Do not continue the ACK chain broadly. The next active discriminator should ACK only the exact already-proven `03E8/count14` after one-shot R1, then observe the first next block without ACKing it.
+
+**EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.**
+
+---
 
 ## Current status after EXP250 / before EXP251
 
