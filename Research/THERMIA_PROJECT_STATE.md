@@ -1,5 +1,61 @@
 # THERMIA PROJECT STATE
 
+## Authoritative current state — 2026-09-27 — EXP261 COMPLETE / STRONG POSITIVE
+
+- Last completed experiment: **EXP261 — COMPLETE / STRONG POSITIVE**.
+- No next experiment is prepared yet.
+- **EXP239 remains OPEN.**
+- **EXP238 remains PARKED / NOT RUN.**
+
+### EXP261 hypothesis
+
+Continue the proven local Online/Link prefix using a bounded three-block batch:
+`046A/count18 -> ACK -> 047E/count19 -> ACK -> 0492/count11 -> ACK`,
+then capture the first different FC16/FC03 stage without answering it.
+
+The genuine Eco 5 reference commonly predicts `04A6/count13` next. Because `04A6/13` is also a recurrent passive family, this was treated as a prediction rather than a strict success requirement.
+
+### EXP261 observed result
+
+The complete observed sequence was:
+
+`R1 -> 03E8/14 ACK -> 03FC/11 ACK -> 0410/22 ACK -> 042E/15 ACK -> 0442/13 ACK -> 0456/12 ACK -> 046A/18 ACK -> 047E/19 ACK -> 0492/11 ACK -> 04A6/13`
+
+Key timings:
+- first approval: +1245 ms after BUS_RETURN;
+- 046A/18: +1433 ms after 0456 ACK;
+- 047E/19: +722 ms after 046A ACK;
+- 0492/11: +1480 ms after 047E ACK;
+- first post-0492 frame: `04A6/count13`, +576 ms after the 0492 ACK.
+
+Exact captured post-0492 request:
+`0F1004A6000D1A0000000000000000000000000000000000000000402000000000CA9A`
+
+It was not acknowledged.
+
+Integrity:
+- all planned one-shot ACKs through 0492 were used exactly once;
+- no stage retries;
+- no approval retry after R1;
+- no unexpected peer FC17 / FC16 ACK;
+- no post-return parser-resync or RX-drop delta in the experiment summary;
+- DE returned LOW.
+
+### Strong conclusion
+
+EXP261 extends the local XTR match with the genuine Eco 5 Online/Link synchronization chain through `0492/count11`, and the first next block is exactly `04A6/count13`.
+
+The bounded-batch method remains valid and materially reduces required controller restarts while preserving a clear fail-closed boundary.
+
+Full Online/Link establishment remains unproven because `04A6` and all downstream pages/mailbox traffic remain unanswered.
+
+### Side effects / recovery
+
+Front-panel side effects for this specific EXP261 run have not yet been reported. Prior incomplete sessions repeatedly produced DHW-side `0` and `COMM. ERR ONLINE/LINK`. Continue to recover with one normal Thermia-controller reboot after summary.
+
+---
+
+
 ## Authoritative current state — 2026-09-27 — EXP260 COMPLETE / EXP261 PREPARED / NOT RUN
 
 - Last completed experiment: **EXP260 — COMPLETE / STRONG POSITIVE**.
@@ -942,59 +998,3 @@ has been correlated with the final bus trace.
   Hamming-distance comparison.
 - Experimental controls remain under Home Assistant Configuration and logs retain the red/brown
   convention.
-- **EXP239 remains OPEN.**
-- **EXP238 remains PARKED / NOT RUN.**
-- No active `0730` response is approved.
-- Do not move to an active one-shot oracle test until EXP251 has completed cleanly and been analysed.
-
-
-## Authoritative current state — 2026-09-27 — EXP250 COMPLETE / OFFLINE
-
-- Last completed experiment: **EXP250 — COMPLETE / OFFLINE 0730 RESPONSE-STRUCTURE CLASSIFICATION**.
-- Hypothesis tested: the two externally reported genuine Eco 5 `0730..0737` responses behave more
-  like one opaque 128-bit approval/authenticator value than eight independent status/control words.
-- Across the two available genuine response blocks:
-  - all 8/8 16-bit word positions change;
-  - no response word position is fixed;
-  - no common small Thermia status/control constants appear;
-  - C->R Hamming distances are 65/128 and 62/128;
-  - R1->R2 Hamming distance is 68/128.
-- **Strong conclusion:** for emulator design, `0730..0737` should currently be treated as one opaque
-  16-byte response blob. There is no evidence-backed per-word semantic map.
-- This does not prove a specific cryptographic primitive and does not prove XTR M uses the same
-  response function as the reported Eco 5.
-- Safety consequence: the result weakens the 'eight independent flags' interpretation but does not
-  make arbitrary replay safe. Persistent session/binding side effects remain unknown.
-- No Thermia TX occurred in EXP250. Production functionality is unchanged.
-- **EXP249 remains the last completed live-bus experiment.**
-- **EXP239 remains OPEN.**
-- **EXP238 remains PARKED / NOT RUN.**
-- Preferred next step: build **EXP251 shadow DCM emulator/oracle harness** with TX disabled by default.
-  Any later active one-shot `0730` replay requires explicit approval and must use only one response in
-  one boot with immediate TX hard-disable afterward.
-
-
-## Authoritative current state — 2026-09-27 — EXP249 COMPLETE / VALID PASSIVE POSITIVE
-
-- Last completed experiment: **EXP249 — COMPLETE / VALID PASSIVE POSITIVE**.
-- EXP249 repeated EXP248's RX-only cold-boot natural-stop trace with only one changed variable: a second controller cold boot.
-- EXP249 result:
-  - first target **+1.283 s** after BUS_RETURN;
-  - **63 targets**;
-  - median cadence **4293 ms**;
-  - last target **+266.821 s**;
-  - final monitored state `A80E=0028 A80F=000A AFDC=0010`;
-  - `SUMMARY CONFIRMED_STOP` after **80.974 s** final target silence;
-  - 87 observed 0x06 polls;
-  - `false_stops=0`, `resync_delta=0`, `drop_delta=0`.
-- EXP248 comparison:
-  - first target was also +1.283 s;
-  - target count was also 63;
-  - last target was +267.123 s;
-  - last-target difference is only **302 ms**;
-  - final monitored state is identical;
-  - meaningful early A80E/A80F/AFDC state transitions reproduce within **11 ms**.
-- **Strong conclusion:** the unanswered local XTR `071C/0730` startup/service lifecycle is highly deterministic across repeated cold boots.
-- A ~270 s fixed deadline remains the leading practical model, but a fixed 63-request budget is still equally compatible because cadence and phase are also nearly identical.
-- Do **not** claim that 270.000 s is proven or that the mechanism is definitively time-based.
-- No active `0730` response was sent, derived or approved.
