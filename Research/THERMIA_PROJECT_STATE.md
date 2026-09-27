@@ -1,5 +1,86 @@
 # THERMIA PROJECT STATE
 
+## Authoritative current state — 2026-09-27 — EXP251 PREPARED / NOT RUN
+
+- Last completed experiment: **EXP250 — COMPLETE / OFFLINE / NO TX**.
+- Last completed live-bus experiment: **EXP249 — COMPLETE / VALID PASSIVE POSITIVE**.
+- Current prepared experiment: **EXP251 — SHADOW DCM / APPROVAL HARNESS — PREPARED / NOT RUN**.
+- **EXP239 remains OPEN** pending stronger genuine Online challenge/response evidence.
+- **EXP238 remains PARKED / NOT RUN.**
+- No active `0730` response is approved.
+
+### EXP249 — repeatability of the natural approval/service cutoff
+
+A second independent RX-only controller cold boot reproduced EXP248 with very high precision:
+
+```text
+                 EXP248        EXP249
+first target     +1.283 s      +1.283 s
+target count     63            63
+median cadence   4.298 s       4.293 s
+last target      +267.123 s    +266.821 s
+final state      0028/000A/0010 identical
+confirmed stop   yes           yes
+```
+
+The final-target difference is only **302 ms**. Meaningful early A80E/A80F/AFDC transitions reproduced within about **11 ms**.
+
+**Strong conclusion:** the unanswered local XTR `071C/0730` startup/service lifecycle is highly deterministic across cold boots.
+
+A ~270 s service deadline remains a strong working model, but a fixed **63-request budget** is still compatible because first-target phase and retry cadence are also nearly identical.
+
+### EXP250 — offline `0730..0737` response-structure classification
+
+The two externally reported genuine Eco 5 responses are:
+
+```text
+R1 1691 A5F3 F8E8 D587 3892 4416 E8E6 A3D5
+R2 FD63 6CCD 0F92 1D83 FF23 2A1A 2413 B372
+```
+
+Across the two samples:
+- all 8/8 16-bit word positions change;
+- no response-word position is fixed;
+- no common small Thermia status/control constants appear;
+- challenge→response Hamming distances are 65/128 and 62/128;
+- R1→R2 Hamming distance is 68/128.
+
+**Strong conclusion:** for emulator design, `0730..0737` should currently be treated as one **opaque 16-byte approval/authenticator blob**, not as eight independently mapped status/control words.
+
+This does **not** prove AES, CMAC, or any other specific primitive, and it does not prove that the XTR M uses the same transform as the reported Eco 5.
+
+### EXP251 — prepared shadow DCM harness
+
+EXP251 implements the known lifecycle as a **classification-only shadow state machine**:
+
+```text
+WAIT_APPROVAL
+    ↓
+071C observed
+    ↓
+opaque 0730 response hook = UNRESOLVED
+    ↓
+FC16 sync classifier
+    ↓
+0708 mailbox classifier
+    ↓
+desired-state page classifier
+```
+
+Safety:
+- GPIO17 TX absent;
+- GPIO21 DE forced LOW;
+- no ACK or FC17 response;
+- no `0730` candidate stored for transmission;
+- no scan, setting mutation, or room-sensor emulation;
+- genuine Eco 5 response bytes are not present in the EXP251 YAML.
+
+The harness recognizes exact local approval requests, local RTC/service decoding, peer FC17 16-byte candidates, 0x0F FC16 request/ACK shapes, exact 0708 mailbox polls, other FC03 page requests, and A80E/A80F/AFDC context.
+
+Preferred next action: run EXP251 once and return the full log from ARM through `SUMMARY SHADOW_COMPLETE`.
+
+
+
 
 ## Authoritative current state — 2026-09-27 after EXP248
 

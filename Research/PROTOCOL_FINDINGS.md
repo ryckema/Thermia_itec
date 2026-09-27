@@ -2422,3 +2422,42 @@ In particular:
 
 The next safe discriminator is **EXP249**, a second identical RX-only cold boot to test repeatability of the ~267 s / 63-target stop.
 
+---
+
+## 2026-09-27 — EXP249 finding: natural XTR approval/service cutoff is highly repeatable
+
+Two complete RX-only cold boots reproduce the local XTR `071C/0730` service retry lifecycle:
+
+```text
+                 EXP248        EXP249
+first target     1.283 s       1.283 s
+target count     63            63
+median cadence   4.298 s       4.293 s
+last target      267.123 s     266.821 s
+final state      0028/000A/0010 identical
+confirmed stop   yes           yes
+```
+
+The final-target difference is only **302 ms** over a ~267 s interval. Early monitored state transitions reproduce within ~11 ms.
+
+**Protocol consequence:** the unanswered startup/service retry state is deterministic enough to use the ~267 s cutoff as a precise probe point.
+
+A ~270 s deadline remains plausible, but a fixed 63-attempt budget is not distinguishable from it with these two phase-aligned runs.
+
+## 2026-09-27 — EXP250 finding: `0730..0737` behaves like one opaque 128-bit response
+
+The two externally reported genuine Eco 5 responses are:
+
+```text
+1691 A5F3 F8E8 D587 3892 4416 E8E6 A3D5
+FD63 6CCD 0F92 1D83 FF23 2A1A 2413 B372
+```
+
+All 8/8 word positions change between the two samples, no position is fixed, and none of the observed words matches the common small/status constants seen elsewhere in the Thermia protocol.
+
+Together with the measured 62–65 bit challenge→response diffusion and 68/128 response inter-sample Hamming distance, the safest implementation model is an **opaque 16-byte approval/authenticator blob**, not an eight-field status page.
+
+This is not proof of any specific cryptographic primitive and does not prove that the XTR M uses the same transform as the reported Eco 5.
+
+**Safety consequence:** this weakens the "eight independent flags" interpretation but does not make arbitrary replay safe. No active `0730` response is approved by this finding alone.
+

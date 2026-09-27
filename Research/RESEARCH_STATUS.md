@@ -1,6 +1,99 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
 
+## Current status after EXP250 / before EXP251
+
+The project has now reduced the native-write problem to a much narrower boundary.
+
+### Deterministic local XTR approval/service lifecycle
+
+EXP248 and EXP249 independently reproduce the same unanswered local XTR startup/service sequence:
+
+```text
+BUS_RETURN
+  ↓ +1.283 s
+first 071C/0730 request
+  ↓
+~4.29 s cadence
+  ↓
+63rd request
+  ↓
+last request at ~267 s
+  ↓
+next normal slot would be around ~271 s
+  ↓
+no further 071C/0730 requests
+```
+
+EXP248 last target: +267.123 s.  
+EXP249 last target: +266.821 s.
+
+The two runs differ by only 302 ms at the final request, and monitored early controller-state transitions reproduce within about 11 ms.
+
+The practical model is therefore a **highly deterministic startup/service retry mechanism**. Current evidence cannot yet distinguish a ~270 s timer from a fixed 63-request budget.
+
+### Current interpretation of 071C and 0730
+
+The common FC17 contract is:
+
+```text
+slave 0x0F
+write 071C/count8   controller-owned input bank
+read  0730/count8   external/service-owned return bank
+```
+
+For the local XTR M with no genuine Online endpoint, `071C..0723` is a deterministic redundant RTC/calendar service record.
+
+For the externally reported genuine iTec Eco 5 + Online case, the 16-byte controller value is high-entropy and retryable.
+
+The two available genuine Eco 5 return values at `0730..0737` change diffusely across all eight 16-bit words. No word-level status map is supported.
+
+**Current emulator rule:** treat `0730..0737` as one opaque 16-byte approval/authenticator response.
+
+### EXP251 — shadow DCM harness
+
+EXP251 is prepared but not yet run. It implements the known lifecycle as a receive-only classifier:
+
+```text
+WAIT_APPROVAL
+   ↓
+071C observed
+   ↓
+0730 hook = unresolved / TX disabled
+   ↓
+classify FC16 sync activity
+   ↓
+classify 0708 mailbox activity
+   ↓
+classify desired-state page reads
+```
+
+It also logs local RTC/service decoding, Hamming distance to the two external Eco 5 source challenges, unexpected peer FC17 16-byte responses, FC16 ACKs, exact 0708 mailbox requests, and A80E/A80F/AFDC context.
+
+EXP251 physically cannot answer the controller: GPIO17 TX is absent and DE remains LOW.
+
+### Current blocker
+
+The main unresolved boundary is now:
+
+```text
+XTR 071C[16 bytes]
+        ↓
+unknown approval/response function
+        ↓
+0730[16 bytes]
+        ↓
+successful Online/DCM synchronization?
+```
+
+The downstream mailbox/write architecture is much better understood than this approval step.
+
+No active replay or guessed `0730` response is currently approved.
+
+---
+
+
+
 ## Current status after EXP248 — local XTR retry window measured
 
 The research focus remains native Thermia Online/DCM-compatible write access, but the relationship between the local XTR M and the externally reported genuine iTec Eco 5 Online behavior is now more precise.

@@ -2779,3 +2779,94 @@ Attempt 2:
 
 **Next:** EXP249 passive repeatability run using the same instrumentation and one additional cold boot. No TX.
 
+---
+
+## EXP249 — Passive 071C/0730 stop repeatability trace — COMPLETE / VALID PASSIVE POSITIVE
+
+**Hypothesis:** EXP248's natural stop is governed by a repeatable startup/service mechanism.
+
+**Observed facts**
+- first target: +1.283 s;
+- target count: 63;
+- median cadence: 4.293 s;
+- last target: +266.821 s;
+- final state: `A80E=0028 A80F=000A AFDC=0010`;
+- confirmed final silence: 80.974 s;
+- 0x06 polls: 87;
+- false stops: 0;
+- parser resync delta: 0;
+- RX drop delta: 0.
+
+**Comparison with EXP248**
+- first-target timing: identical (+1.283 s);
+- target count: identical (63);
+- last-target timing differs by only -302 ms;
+- monitored final state: identical;
+- meaningful early A80E/A80F/AFDC transitions reproduce within ~11 ms.
+
+**Strong conclusions**
+1. The local unanswered `071C/0730` lifecycle is highly deterministic across cold boots.
+2. The natural stop is reproducible in both absolute timing and request count.
+3. A80E/A80F/AFDC do not expose the stop trigger.
+4. There is no retry backoff.
+
+**Hypotheses**
+- ~270 s deadline remains a strong timing model.
+- fixed 63-request budget remains equally compatible with the two runs.
+- a hidden deterministic service-state condition remains possible.
+
+**Negative result:** repeatability alone does not distinguish timer from retry counter.
+
+---
+
+## EXP250 — Offline 0730..0737 response-structure classification — COMPLETE / NO TX
+
+**Hypothesis:** the two genuine Eco 5 `0730..0737` blocks are better modeled as one opaque 128-bit response than as eight independent status/control words.
+
+**Observed facts**
+- R1 = `1691 A5F3 F8E8 D587 3892 4416 E8E6 A3D5`
+- R2 = `FD63 6CCD 0F92 1D83 FF23 2A1A 2413 B372`
+- all 8/8 response word positions differ;
+- no response word position is fixed;
+- no common small Thermia status/control constants occur;
+- C1→R1 Hamming distance = 65/128;
+- C2→R2 Hamming distance = 62/128;
+- R1→R2 Hamming distance = 68/128.
+
+**Strong conclusion:** treat `0730..0737` as one opaque 16-byte approval/response blob for emulator design.
+
+**Hypotheses:** keyed/nonlinear authenticator remains compatible; tightly packed or obfuscated structure is not excluded.
+
+**Unknowns:** exact algorithm/key/state, installation specificity, determinism for repeated challenge, and whether XTR M shares the Eco 5 response function.
+
+**Negative result:** no safe word-level `0730` field can be extracted from the two pairs.
+
+**Safety:** offline only; no TX.
+
+---
+
+## EXP251 — Shadow DCM / approval harness — PREPARED / NOT RUN
+
+**Hypothesis:** the known iTec Online/DCM lifecycle can be represented locally with one opaque unresolved `071C -> 0730` response hook while the rest of the controller/gateway traffic is classified in a shadow state machine.
+
+**Only experimental change:** EXP249 retry-window instrumentation is replaced by shadow DCM lifecycle classification. Known-good production functionality is preserved.
+
+**Classifier scope**
+- exact local approval request;
+- 071C RTC/service decode;
+- Hamming distance to the two reported Eco 5 source challenges;
+- peer FC17 16-byte candidate response;
+- 0x0F FC16 request / peer ACK;
+- exact 0x0F FC03 0708 mailbox;
+- other 0x0F FC03 page reads;
+- A80E/A80F/AFDC and 0x06 context.
+
+**Safety**
+- no TX pin;
+- DE forced LOW;
+- no ACK/response/scan/write;
+- no room-sensor emulation;
+- genuine Eco 5 response values are not stored in the YAML.
+
+**Status:** PREPARED / NOT RUN.
+
