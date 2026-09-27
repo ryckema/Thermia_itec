@@ -1,3 +1,7 @@
+## EXP267 target — bounded repeated mailbox service
+
+EXP266 locally proved that one idle response to `0708/6` does not complete the mailbox phase: exact `0708/6` repeated ~4.18 s later while parser resync and RX drops remained zero. EXP267 therefore tests repeated servicing with the same genuine Eco5 idle frame, bounded to three responses. This does **not** establish that `0001` is a completion token or that indefinite polling should be answered; progression remains unknown until observed locally.
+
 ## EXP266 protocol finding — local 0708 repeat after one idle response
 
 Locally confirmed sequence:
@@ -993,8 +997,3 @@ Observed local XTR progression:
 
 Combined with prior experiments:
 `03E8/14 -> ACK -> 0410/22 -> ACK -> 042E/15 -> ACK -> 04A6/13 -> ACK -> 04BA/22`.
-
-New locally proven block:
-`0x04BA..0x04CF` (count 22; decimal 1210..1231).
-
-Persistence:
