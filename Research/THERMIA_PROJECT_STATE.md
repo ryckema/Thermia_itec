@@ -1,3 +1,18 @@
+## Authoritative current state — 2026-09-27 — EXP262 COMPLETE / STRONG POSITIVE
+
+### EXP262 result
+Hypothesis: accelerate the proven Online/Link synchronization by ACKing eight additional genuine Eco 5 FC16 pages in exact order after the locally proven prefix, then stop and capture the next different frame.
+
+Observed: EXP262 reproduced the full ordered chain through `0546/count20` and then captured exact `055A/count33` +637 ms later. The new accelerated block was `04A6/13 -> ACK -> 04BA/22 -> ACK -> 04D8/27 -> ACK -> 04F6/14 -> ACK -> 050A/19 -> ACK -> 051E/10 -> ACK -> 0532/18 -> ACK -> 0546/20 -> ACK -> 055A/33`. `055A` was deliberately not ACKed.
+
+Integrity: one approval, no approval retry after R1, no stage retry in the acknowledged chain, parser resync count remained 0 and RX buffer drops remained 0. Existing production functionality was not intentionally changed.
+
+Strong conclusion: the accelerated multi-page strategy is valid at least through `0546/count20`; the local XTR matches the genuine Eco 5 synchronization order through `055A/count33`. Full Online/Link establishment remains unproven.
+
+Unknowns: the behavior after ACKing `055A/count33`, the exact point at which the `0708/count6` mailbox appears locally, and whether completing enough of the session prevents the known DHW-side `0` / `COMM. ERR ONLINE/LINK` failure state.
+
+Safety/recovery: current session remains deliberately incomplete; perform one normal Thermia-controller reboot before another active experiment. No next experiment prepared yet. EXP239 OPEN. EXP238 PARKED / NOT RUN.
+
 # THERMIA PROJECT STATE
 
 ## Authoritative current state — 2026-09-27 — EXP261 COMPLETE / EXP262 PREPARED
@@ -983,17 +998,3 @@ has been correlated with the final bus trace.
   - no peer FC16 ACK;
   - no `0x0F FC03 0708/count6` mailbox request;
   - STOP_CANDIDATE after **20.044 s** approval silence while ordinary bus traffic remained alive;
-  - one parser resync exactly at bus return; RX drops remained zero.
-- **Material model change:** EXP248/249 had ~4.29 s median cadence and final requests at ~267 s,
-  while EXP251 has a ~4.178 s median cadence and final request at **261.347 s**, yet all three runs
-  still stop after exactly **63 requests**.
-- A simple fixed ~270 s deadline from BUS_RETURN is therefore materially weakened.
-- **Leading hypothesis is now a fixed 63-attempt retry budget**, with total retry-window duration
-  determined by actual scheduler/bus cadence.
-- At EXP251 cadence, nominal request 64 would be due around **+265.525 s** and request 65
-  around **+269.703 s**, both before +270 s.
-- No active `0730` response was sent, derived or approved.
-- Formal EXP251 completion still requires the missing 60 s post-STOP_CANDIDATE tail /
-  `SUMMARY SHADOW_COMPLETE`.
-- **EXP239 remains OPEN.**
-- **EXP238 remains PARKED / NOT RUN.**
