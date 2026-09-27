@@ -2383,3 +2383,166 @@ No genuine response image was recovered. Therefore no active FC17 responder is j
 **Next**
 
 EXP233 should remain offline and build a formal cross-role FC17 bank-schema map (`0x0A`, `0x04`, `0x05`, `0x06`, `0x0F`), comparing read/write counts, offsets, known request/feedback fields and lifecycle timing. The goal is to determine whether response field-position homology can narrow `0730..0737` enough to justify a bounded active test.
+
+---
+
+## EXP233 — Offline FC17 page-schema analysis — COMPLETE / STRUCTURAL POSITIVE, FIELD-HOMOLOGY NEGATIVE
+
+**Hypothesis**
+
+The repeated Thermia FC17 +0x14 read/write-bank spacing might also imply common request/feedback field positions and thereby constrain one or more XTR 0730..0737 words.
+
+**Observed facts**
+
+The same 20-register page stride exists across multiple roles, including 0x02, 0x04, 0x05, 0x06, 0x0A and the XTR 0x0F 071C -> 0730 pair. Known semantic fields do not occupy one universal relative position: room-sensor command, accessory transport strobe and version metadata all use different locations/feedback paths.
+
+**Strong conclusion**
+
++0x14 is a generic FC17 bank/page convention, not evidence that 0730 word positions share semantics with 0708, AFCA or B3B1. Eight zero words are not proven neutral. No active 0730 response approved.
+
+**Negative result**
+
+Reject field-position copying and all-zero 0730 synthesis.
+
+---
+
+## EXP234 — Offline service-page archaeology — COMPLETE / NEGATIVE IN ACCESSIBLE INDEXED CORPUS
+
+**Hypothesis**
+
+Named schemas or genuine response data for decimal pages 1800/1820/1840 (0708/071C/0730) may exist in available maps, source artifacts or repositories.
+
+**Observed facts**
+
+No named XTR schema, field labels or genuine 0x0F FC17 0730/count8 response were recovered from the accessible indexed corpus. The then-available Part9 raw-byte path was inaccessible.
+
+**Strong conclusion**
+
+The indexed corpus did not supply an evidence-backed 0730 response image.
+
+**Negative result**
+
+No TX justified.
+
+---
+
+## EXP235 — Offline topology-transferability audit — COMPLETE
+
+**Hypothesis**
+
+The genuine ATEC/DHP-AQ DCM scheduler may be directly reproducible on the local XTR.
+
+**Observed facts**
+
+Reference traffic continuously uses 0x04, A5 and 0x0F FC03. The local XTR runtime uses 0x1E and lacks that scheduler family. The 0x02 fingerprints also differ in active read span and A811/A812 values.
+
+**Strong conclusion**
+
+The reference DCM path remains valuable architecture evidence, but it is not a wire-identical local implementation target.
+
+---
+
+## EXP236 / EXP236A / EXP236B — Local UI causality and cross-setting export audit — COMPLETE
+
+**Hypothesis**
+
+The controller-originated 0x0F FC16 page carrying a changed setting may be the semantic ingress itself.
+
+**Observed facts**
+
+- Heat Curve physical UI changes are exported in 03E8.
+- Activate Cooling physical UI changes are exported in 0442.
+- Operation Mode AUTO -> COMPRESSOR -> AUTO changes 0553 from 1 -> 2 -> 1 inside 0546/count20.
+- EXP177 had already shown that replaying a native-looking 03E8 image toward 0x0F does not create the Heat Curve semantic change.
+
+**Strong conclusion**
+
+0x0F FC16 is a broader controller-owned configuration/state serialization layer. The semantic mutation occurs upstream of these exports.
+
+**Negative result**
+
+Do not use page-specific FC16 mirror writes as the primary local write ingress.
+
+---
+
+## EXP237 — Passive Heat Curve UI ingress trace — COMPLETE / VALID BOUNDED NEGATIVE
+
+**Hypothesis**
+
+A physical Heat Curve 36 -> 37 -> 36 change produces a reversible bus event before the first target-valued 03E8 export if semantic ingress crosses the monitored RS485 segment.
+
+**Observed facts**
+
+- Target 03E8=37 appeared ~2.4 s after the +1 marker.
+- The first target 03E8=36 restore appeared ~4.8 s after the restore marker; an earlier 03E8 frame still contained stale 37.
+- The recognized pre-target frames were routine known traffic.
+- Parser resync/drop counters remained zero.
+- The EXP237 parser explicitly whitelisted common function codes, so proprietary/unknown-function bytes could have been dropped before frame-level logging.
+
+**Strong conclusion**
+
+No distinct reversible Heat Curve ingress event was found in the parser-recognized standard traffic before controller export.
+
+**Method correction**
+
+Target-value-aware transition detection is required; the first page after a UI marker may be stale.
+
+**Unknown**
+
+Raw UART activity outside the parser's function-code whitelist remains unexcluded.
+
+---
+
+## 2026-09-27 — Genuine DCM mailbox/rejoin re-audit — OFFLINE
+
+Across the four genuine captures, 54 exact 0x0F FC03 0708/count6 polls were identified. Thirty-eight have valid responses and sixteen early rejoin polls are unanswered.
+
+Observed state classes include:
+
+- normal runtime: 070C=077F, 070D=0006;
+- rejoin/transition: 070A=7FFF, 070B=FFFF, 070C=0080, 070D=0007;
+- other snapshot phases with 070C=0000 or 0080 and 070D=0006.
+
+Both and only the two observed 0709=0001 responses are followed immediately by controller FC03 03E8/count13 desired-state reads. The next 0708 poll clears 0709 again.
+
+In the 090550 rejoin capture the first successful 0708 response is followed ~69 ms later by a large ordered 0x0F FC16 state snapshot. Regular 0708 polling pauses during that long snapshot and resumes afterward with the normal idle image.
+
+Strong conclusions:
+
+1. 0709 is a proven command-pending discriminator in the reference DCM architecture.
+2. 0708 is a multi-purpose mailbox/lifecycle page.
+3. 070C=0080 is not simply "snapshot active".
+4. Desired-state and controller state export can use the same serialized page representation; direction/ownership is essential.
+5. For XTR 0730, status/session/dirty-selector semantics are now a stronger architectural hypothesis than "the changed setting value lives directly in this eight-word bank". No word-level transfer is justified.
+
+---
+
+## EXP234B — Offline raw-binary completion of EXP234 — COMPLETE / NEGATIVE FOR XTR 0730 SERIALIZER IN LINK CC HOST
+
+**Hypothesis**
+
+The raw Danfoss Link CC 2.7.42 firmware may contain the missing local DCM03 -> Thermia serializer or named 0708/071C/0730 service-page constants.
+
+**Method**
+
+Read-only extraction of the original Windows CE ccimage.bin, including managed DHP/regulation assemblies and native HECTArch.dll. Exact constants and CLR method ownership were audited.
+
+**Observed facts**
+
+- ParameterCache.dll contains the real abstract DHP stack and parameter IDs including 0x030A OperationMode, 0x4402 HeatCurve and 0x4414 IntegrationMode.
+- ParameterCache/Regulation code contains no service-page implementation for 071C/0730.
+- The apparent 0708 constants in RegulationEngine map to ordinary decimal-1800 constructor/timing values.
+- Full-ROM ownership mapping places remaining exact 071C/0730 constants in unrelated UI/framework code.
+- HECTArch exposes HE/Z-Wave ServiceBind/ServiceSetGet/HESetGetReqRsp functionality and no identifiable local Thermia 0708/071C/0730 serializer.
+
+**Strong conclusion**
+
+The audited Link CC host stack stops at the abstract DHP -> HE/Z-Wave boundary. The missing XTR local-service translation belongs to another component, most plausibly Thermia Connect/DCM-side firmware or the heat-pump Gateway/controller.
+
+**Negative result**
+
+Do not spend an active experiment on guessed 0730 values derived from Link CC.
+
+**Current continuation point**
+
+Last completed bus experiment remains EXP237. EXP238 is PREPARED / NOT RUN and is temporarily parked while the DCM-replacement/software-artifact line is pursued.

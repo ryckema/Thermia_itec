@@ -16,7 +16,35 @@ The main goals are:
 
 ---
 
-## Current status after EXP232
+
+## Current status after EXP237 / DCM re-audit / EXP234B
+
+The project is currently split into two tightly related lines:
+
+1. **Passive local-ingress tracing.** EXP237 completed a Heat Curve 36 -> 37 -> 36 trace. The changed value is clearly exported by controller-originated 0x0F FC16 03E8 traffic, but no distinct reversible ingress event was found in the parser-recognized standard traffic before that export. EXP238 is prepared as an independent Operation Mode AUTO -> COMPRESSOR -> AUTO trace, but has not been run.
+2. **DCM/Connect replacement research.** Re-analysis of genuine DCM traffic proves 0709 as a one-shot command-pending discriminator and shows 0708 to be a broader mailbox/lifecycle page. The local XTR's 0730/count8 return bank remains the strongest unknown service-ingress candidate, but no genuine idle image or word semantics are known.
+
+### What changed since EXP232
+
+- EXP233: the +0x14 FC17 spacing is a generic page convention; field positions cannot be copied between roles.
+- EXP234: no indexed schema or genuine XTR 0730/count8 response was found.
+- EXP235: older ATEC/DHP-AQ Online/DCM traffic is architecturally related but not wire-identical to XTR runtime.
+- EXP236/236A/236B: 0x0F FC16 is a general controller-owned state/configuration export layer across Heat Curve, cooling and operation mode.
+- EXP237: no distinct reversible Heat Curve ingress event was visible in recognized standard traffic before the outbound mirror.
+- DCM re-audit: 0708 also carries rejoin/lifecycle state; 070C=0080 is not simply a snapshot-active bit; desired-state and state-export pages can share the same representation.
+- EXP234B: raw Link CC 2.7.42 firmware contains the DHP application/HE transport boundary but not the local Thermia 071C/0730 serializer.
+
+### Current safety boundary
+
+No active 0730 response is approved. Do not send eight zeros, echo 071C, transfer the 0709 word position, brute-force fields, or restart AFCA timing variants without new evidence.
+
+### Highest-value next evidence
+
+A Thermia Connect/DCM03 firmware/update image, an XTR Gateway/controller firmware image, or one genuine XTR 0x0F FC17 0730/count8 response would materially reduce the remaining uncertainty.
+
+---
+
+## Historical status after EXP232
 
 The project is again focused on the main goal: **safe native write access** to the Thermia iTec XTR M without broad writes, guessed register values, room-sensor emulation, or unnecessary controller restarts.
 

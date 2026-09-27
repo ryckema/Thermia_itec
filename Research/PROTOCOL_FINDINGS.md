@@ -2143,3 +2143,94 @@ The direction matters: `0730..0737` is genuinely read by the controller, so it i
 - Treat XTR `0730..0737` as a high-value, generation-specific **candidate ingress bank**, not yet a proven command mailbox.
 - Do not synthesize an FC17 reply from zeros, an echo, RTC inversion, or another slave's layout. The corpus does not establish a safe neutral response.
 - The next useful work is cross-role FC17 schema analysis or acquisition of a genuine XTR/Connect/Online response, not an invented active packet.
+
+---
+
+## 2026-09-27 — DCM replacement / XTR 0730 research update
+
+### Generic FC17 page structure
+
+EXP233 confirms that Thermia commonly separates FC17 role banks by 0x14 registers. The XTR service region 0708 -> 071C -> 0730 is therefore strongly structured as consecutive 20-register service pages. The spacing does **not** prove common field semantics. Known roles place semantic request, transport and metadata fields at different offsets.
+
+Consequences:
+
+- 0730..0737 is real controller-ingress data by FC17 direction.
+- No specific 0730 word is yet mapped.
+- Eight zero words are not an evidence-backed idle image.
+- Do not copy 0708 word positions, room-sensor request positions or AFCA semantics into 0730.
+
+### Reference DCM mailbox state machine
+
+The genuine DCM corpus now supports a stronger state-machine model:
+
+~~~text
+controller -> FC03 0708/count6
+DCM        -> mailbox/lifecycle/status image
+
+if 0709 == 1:
+    controller -> FC03 03E8/count13
+    DCM        -> full desired-state image
+    next 0708 poll clears 0709
+~~~
+
+Across the available command capture, both and only the observed 0709=1 replies trigger the 03E8 desired-state fetch.
+
+0708 is broader than a command flag. During rejoin, a first successful image of:
+
+~~~text
+0000,0000,7FFF,FFFF,0080,0007
+~~~
+
+is followed about 69 ms later by the controller beginning a large ordered FC16 state snapshot. Later idle operation uses:
+
+~~~text
+0000,0000,0000,0000,077F,0006
+~~~
+
+Other captures show 070C=0080 or 0000 while snapshot traffic continues, so 070C=0080 is not a simple boolean "snapshot active" flag.
+
+The command desired-state image at 03E8/count13 is byte-for-byte identical to a controller FC16 state image observed in a rejoin capture. The representation can therefore be shared while direction and ownership define semantics.
+
+### Local XTR implication
+
+The local XTR cold-boot/recovery FC17 pair remains:
+
+~~~text
+slave 0x0F
+read  0730/count8
+write 071C/count8
+~~~
+
+Most of 071C..0723 is decoded as transformed controller RTC/calendar data. 0730..0737 remains unknown.
+
+The improved reference architecture changes the search heuristic: a genuine XTR 0730 response may be primarily a service/session/status/dirty-selector image that causes a subsequent controller-initiated transaction. It should not be assumed to contain the requested Heat Curve value directly.
+
+This is an architectural analogy only. No 0708 word index or literal value is transferable to 0730 without XTR-specific evidence.
+
+### Local UI causality
+
+Physical UI changes on the XTR are exported by controller-originated 0x0F FC16 pages:
+
+- Heat Curve -> 03E8 family;
+- Activate Cooling -> 0442 family;
+- Operation Mode -> 0553 inside 0546/count20.
+
+Directly replaying the Heat Curve 03E8 image toward 0x0F did not create the semantic mutation. These pages are therefore treated as controller-owned state/configuration serialization, not the primary local command ingress.
+
+EXP237 found no distinct reversible Heat Curve ingress event in the parser-recognized standard traffic before the first target-valued export. This negative is bounded by the parser whitelist; raw UART bytes were not exhaustively classified.
+
+### Raw Link CC firmware boundary — EXP234B
+
+Direct Windows CE binary extraction of Danfoss Link CC 2.7.42 recovered the expected application stack:
+
+~~~text
+DHP ParameterID/value
+    -> ParameterCache / SyncParameters
+    -> HE Set/Get / ServiceBind
+    -> HECTArch / Z-Wave
+    -> [missing DCM03 / Connect local Thermia translator]
+~~~
+
+Real DHP parameter constants such as 0x030A, 0x4402 and 0x4414 are present, but no identifiable XTR 071C/0730 response builder or service-page serializer exists in the audited host stack. Apparent 0708 constants in RegulationEngine are ordinary decimal-1800 timing/configuration values.
+
+**Current protocol consequence:** the highest-value software artifacts are a Thermia Connect/DCM03 firmware/update image or the XTR Gateway/controller implementation of the opposite side of 071C/0730. No active 0730 response is approved.

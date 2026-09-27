@@ -3672,3 +3672,27 @@ Current direction:
 Prioritize identifying the earliest prerequisite that makes A5/service topology exist before DCM `0x0F` readiness: persistent binding, commissioning/configuration state, model/firmware capability, or an earlier service-discovery event. Do not continue blind FC16 ACK-chain expansion.
 
 Current experiment: **EXP222 COMPLETE / IMPORTANT NEGATIVE**.
+
+---
+
+## Authoritative current state — 2026-09-27 after EXP237 / DCM re-audit / EXP234B
+
+- **Last completed bus experiment:** EXP237 — COMPLETE / VALID PASSIVE NEGATIVE FOR VISIBLE HEAT-CURVE UI INGRESS ON THE MONITORED RS485 SEGMENT.
+- **Current prepared experiment:** EXP238 — PREPARED / PASSIVE OPERATION-MODE UI INGRESS TRACE. It has **not** been run and is temporarily parked while the DCM-replacement line is investigated offline.
+- EXP233 established that Thermia FC17 read/write banks commonly use a fixed +0x14 / 20-register page stride. This does **not** justify copying field positions between roles. The XTR service pages 0708 / 071C / 0730 are structurally related pages, but no individual 0730..0737 word has an evidence-backed semantic assignment.
+- EXP234 searched the accessible indexed corpus for decimal/hex service pages 1800/1820/1840 = 0708/071C/0730 and found no named XTR schema or genuine 0730/count8 response. This was a negative for the indexed corpus.
+- EXP235 confirmed that the genuine ATEC/DHP-AQ Online/DCM reference topology is architecturally useful but not wire-identical to the local XTR. The reference continuously uses 0x04 + A5 + 0x0F FC03; the XTR runtime uses 0x1E and lacks that scheduler family.
+- EXP236 and EXP236A/B established that controller-originated 0x0F FC16 pages are a general state/configuration export layer. Physical UI changes are reflected in separate page families: Heat Curve in 03E8, Activate Cooling in 0442, and Operation Mode at 0553 inside 0546/count20. Replaying a native-looking 03E8 image toward 0x0F did not produce the semantic Heat Curve change.
+- EXP237 traced a physical Heat Curve 36 -> 37 -> 36 change passively. The target-valued 03E8 export appeared after the UI action, but no distinct reversible ingress event was found in the parser-recognized traffic before that export. This negative is bounded by the EXP237 parser's function-code whitelist; raw UART bytes were not yet exhaustively logged.
+- Re-audit of the four genuine Online/DCM captures sharpened the older architecture:
+  - 0709=0001 is an exact observed one-shot command-pending discriminator: both and only the observed 0709=1 replies are immediately followed by controller FC03 03E8/count13 desired-state reads.
+  - 0708/count6 is a multi-purpose mailbox/lifecycle page, not only a command flag.
+  - During a genuine rejoin, the first successful 0708 response can contain 070A=7FFF, 070B=FFFF, 070C=0080, 070D=0007 and is followed within ~69 ms by a controller FC16 snapshot sequence.
+  - 070C=0080 is not simply a boolean "snapshot active" flag; later snapshot traffic can continue after 070C returns to zero.
+  - A desired-state 03E8/count13 image from the command capture is byte-for-byte identical to the corresponding 03E8 state image exported by the controller in a rejoin capture. Direction/ownership therefore matters critically.
+- **Architectural consequence for local XTR 0730:** do not search primarily for a literal Heat Curve value in 0730..0737. The stronger analogy is a service/session/status/dirty-selector image that may trigger a subsequent controller-initiated transaction. This is an architectural hypothesis only; word positions from 0708 must not be transferred.
+- **EXP234B raw-binary completion:** the original Danfoss Link CC 2.7.42 Windows CE firmware was parsed directly. ParameterCache.dll contains the abstract DHP application layer and real parameter IDs such as 0x030A OperationMode, 0x4402 HeatCurve and 0x4414 IntegrationMode, while HECTArch.dll exposes the HE/Z-Wave ServiceBind/SetGet boundary. No identifiable XTR 071C/0730 serializer or response builder is present in the audited host stack. The missing translation therefore belongs to another layer/device, most plausibly Thermia Connect/DCM-side firmware or the heat-pump Gateway/controller implementation.
+- **No active 0730 response is approved.** Eight zero words, echoing 071C, copying a reference-mailbox field position, or brute-forcing 0730 words remain unsupported.
+- Highest-value DCM-replacement research target: obtain or reverse-engineer a Thermia Connect/DCM03 firmware/update image or the corresponding XTR Gateway/controller-side service handler. Only after an evidence-backed 0730 candidate exists should the XTR be used as a tightly bounded protocol oracle.
+
+Safety remains unchanged: no room-sensor emulation path, no broad writes/scans, and no semantic TX without an evidence-backed target.
