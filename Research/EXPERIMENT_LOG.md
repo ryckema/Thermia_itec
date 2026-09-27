@@ -1,3 +1,26 @@
+## EXP268 — PREPARED / NOT RUN
+
+Hypothesis: after the three locally proven genuine Eco5 idle responses from EXP267, later meaningful Online/Link FC16/FC03 traffic may still appear even if all further `0708/6` polls are left unanswered. EXP268 keeps the proven prefix and the same max-three mailbox responses unchanged, then observes RX-only for 30 s. Fourth and later `0708/6` polls are capture-only. Known recurrent `085F/5` is ignored for discovery. No post-mailbox FC16 ACK and no new mailbox payload is authorized.
+
+## EXP267 — COMPLETE / NEGATIVE
+
+Hypothesis: up to three consecutive exact `FC03 0708/count6` polls require the same genuine Eco5 idle response before the controller progresses.
+
+Observed:
+- proven prefix through `06F4/19` completed again;
+- first `0708/6` arrived +1.561 s after `06F4` ACK;
+- response #1 sent: `0F030C0000000000000000010000001C88`;
+- response #2 sent after the repeated `0708/6`;
+- response #3 sent after the next repeated `0708/6`;
+- a fourth exact `0708/6` arrived ~4.18 s after response #3 and was deliberately not answered;
+- no different meaningful FC03/FC16 appeared before the fourth poll;
+- recurrent `085F/5` background traffic continued between mailbox polls;
+- parser resyncs remained 0 and RX drops remained 0 in the observed run.
+
+Conclusion: valid negative. Three identical genuine Eco5 idle mailbox responses do not cause immediate local XTR progression out of the observed `0708/6` polling phase. The repeated ~4.2 s cadence now looks more like normal ongoing mailbox service than a malformed-response retry.
+
+---
+
 ## EXP267 — PREPARED / NOT RUN
 
 Hypothesis: up to three consecutive exact `FC03 0708/count6` polls require the same genuine Eco5 idle response before the controller progresses. Only this repetition count changes from EXP266. Exact response: `0F030C0000000000000000010000001C88`. Max 3 TX; fourth poll is capture-only.
