@@ -3696,3 +3696,115 @@ Current experiment: **EXP222 COMPLETE / IMPORTANT NEGATIVE**.
 - Highest-value DCM-replacement research target: obtain or reverse-engineer a Thermia Connect/DCM03 firmware/update image or the corresponding XTR Gateway/controller-side service handler. Only after an evidence-backed 0730 candidate exists should the XTR be used as a tightly bounded protocol oracle.
 
 Safety remains unchanged: no room-sensor emulation path, no broad writes/scans, and no semantic TX without an evidence-backed target.
+
+
+---
+
+## Authoritative current state — 2026-09-27 after external iTec Eco 5 genuine Online capture
+
+A newly shared third-party capture from an **iTec Eco 5 with a genuine Thermia Online gateway** materially changes the XTR/DCM model. The raw log has not yet been independently reprocessed in this project, so the points below are recorded as **external observed evidence pending raw-log verification**, not as locally reproduced facts.
+
+### External capture design
+
+- 10,719 CRC-valid frames over 1482 s.
+- A/B/A sequence:
+  1. heat pump powered with genuine gateway attached;
+  2. heat pump powered without gateway;
+  3. heat pump powered with gateway attached again.
+- The capture owner permits sharing the raw log anonymously.
+
+### Major architecture result
+
+On this iTec Eco 5, the genuine gateway is **not** represented by slave 0x06 or 0x0A:
+
+- all 326 FC17 requests to 0x06 are unanswered;
+- all 325 FC17 requests to 0x0A are unanswered;
+- cadence is about 4.2 s;
+- no A5, A4 or 0x05 traffic appears.
+
+This strongly supports the view that A5/A4/0x05 belong to the older ATEC/DHP-AQ reference topology and are not required for the iTec Online path.
+
+### 071C/0730 is now the primary iTec Online session gate
+
+The controller repeatedly sends the existing iTec/XTR-style 0x0F FC17 exchange:
+
+~~~text
+read  0730/count8
+write 071C/count8
+~~~
+
+from power-on at about 4.2 s cadence.
+
+With a genuine gateway connected, the gateway takes roughly two minutes / about two gateway boot cycles before returning a valid eight-word response. After the first valid response:
+
+- the 071C/0730 exchange stops;
+- the controller begins acknowledging 0x0F FC16 writes;
+- the controller performs a full state dump over the 1000..1780 and 2000..2160 decimal regions;
+- the controller starts polling the FC03 mailbox at decimal 1800 / hex 0708.
+
+Without the gateway connected, none of that state-machine transition occurs; the controller continues ordinary unacknowledged 0x0F writes.
+
+**Strong conclusion:** the 071C/0730 exchange is not merely an incidental startup/service page. It is a gating handshake/session exchange for the genuine iTec Online state machine.
+
+### EXP226 RTC/calendar interpretation is downgraded / retracted as a general semantic model
+
+The external Eco 5 capture contains roughly 90 distinct 16-byte controller write images for 071C..0723 across two clock hours. According to the contributor, none match the previously proposed year/hour/day/minute transform, including words previously considered constant. One exact 16-byte controller image repeats about four seconds later during an unanswered exchange, consistent with a retry rather than a clock tick.
+
+Two supplied complete controller-challenge / gateway-response examples are:
+
+~~~text
+C 63cefb32c6f41382087992370caceeba
+R 1691a5f3f8e8d58738924416e8e6a3d5
+
+C 31fb59fc8fb1175cd89f904d06d92ea4
+R fd636ccd0f921d83ff232a1a2413b372
+~~~
+
+The prior local calendar fit must therefore **not** be used as a protocol constraint for 071C..0723. It may have been coincidental/context-specific. The strongest current hypothesis is that the 16-byte controller value and 16-byte gateway response form a challenge/response or session-authentication primitive. Cryptographic construction, keying and exact semantics are still unknown.
+
+### Mailbox architecture is now confirmed on iTec
+
+After the 071C/0730 gate succeeds, the iTec controller uses the same broad mailbox architecture previously seen in genuine ATEC/DHP-AQ captures:
+
+~~~text
+controller -> 0x0F FC03 0708/count6
+gateway    -> mailbox/status image
+pending selector in second mailbox word
+controller -> FC03 read of requested state page
+gateway    -> desired-state page
+controller applies change
+~~~
+
+External examples:
+
+- second mailbox word = 1 -> controller reads decimal 1000 / hex 03E8, count14; register/index 1012 changes 20 -> 30 and later back;
+- second mailbox word = 8 -> controller reads decimal 1070, count15; hot-water state changes from comfort/on state to off;
+- a setting changed on the physical display is exported by controller FC16 without involving the mailbox.
+
+This strongly confirms a directional split:
+- **app/gateway write:** mailbox selector -> controller-initiated FC03 desired-state read;
+- **physical display write:** internal/local mutation -> controller FC16 state export.
+
+### Current project consequence
+
+The DCM-replacement problem is now much narrower:
+
+1. reproduce the valid 16-byte response for the controller's 071C challenge;
+2. pass the Online/session gate;
+3. implement the already-understood 0708 mailbox and desired-state pages.
+
+EXP238 remains **PREPARED / NOT RUN** and is lower priority until the new Eco 5 raw capture has been obtained and the challenge/response relation has been analysed.
+
+### Immediate next target
+
+Obtain the contributor's raw Eco 5 log and timeline script and perform an offline challenge/response analysis:
+
+- enumerate every 071C challenge and 0730 response;
+- distinguish retries from fresh challenges;
+- test whether response is deterministic per challenge;
+- measure entropy and bit diffusion;
+- search for counters/session fields or simple transforms;
+- test candidate block-cipher/MAC structures only if supported by the corpus;
+- correlate first successful response with subsequent FC16 ACK/state-dump/mailbox transition.
+
+No active 0730 response is approved yet. Do not brute-force or synthesize arbitrary responses.

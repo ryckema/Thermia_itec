@@ -2546,3 +2546,71 @@ Do not spend an active experiment on guessed 0730 values derived from Link CC.
 **Current continuation point**
 
 Last completed bus experiment remains EXP237. EXP238 is PREPARED / NOT RUN and is temporarily parked while the DCM-replacement/software-artifact line is pursued.
+
+
+---
+
+## External reference evidence — genuine Thermia Online on iTec Eco 5 — MATERIAL ARCHITECTURAL UPDATE
+
+**Source status**
+
+Third-party capture described by piotrek_r. Raw log and timeline script are stated to be available on request but have not yet been ingested into this project. Treat the following as externally reported observations pending independent raw-log verification.
+
+**Capture**
+
+- 10,719 frames
+- all CRC valid
+- 1482 s
+- A/B/A sequence: gateway attached -> gateway absent -> gateway attached
+
+**Observed facts reported**
+
+1. Every FC17 request to 0x06 and 0x0A is unanswered through the full capture (326 and 325 requests respectively, ~4.2 s cadence).
+2. No A5, A4 or 0x05 traffic appears on this iTec.
+3. Controller repeatedly issues 0x0F FC17 read 0730/count8 + write 071C/count8 from power-on.
+4. With the gateway attached, the gateway eventually answers after roughly two minutes / two gateway boot cycles.
+5. After the first valid 0730 response:
+   - the FC17 071C/0730 exchange stops;
+   - controller begins acknowledging FC16;
+   - controller dumps full state over decimal 1000..1780 and 2000..2160;
+   - controller begins polling mailbox decimal 1800 / hex 0708.
+6. With gateway absent, the transition never occurs and ordinary 0x0F writes remain unacknowledged.
+7. Roughly 90 distinct controller 16-byte values were seen across two clock hours; they do not fit the project's prior RTC/calendar transform.
+8. One exact 16-byte controller value repeats about four seconds later as an unanswered retry.
+9. Two complete 16-byte controller/request -> gateway/response pairs were supplied:
+   - 63cefb32c6f41382087992370caceeba -> 1691a5f3f8e8d58738924416e8e6a3d5
+   - 31fb59fc8fb1175cd89f904d06d92ea4 -> fd636ccd0f921d83ff232a1a2413b372
+10. After successful session establishment, app-originated changes use the 0708 mailbox:
+   - mailbox second word 1 triggers FC03 decimal 1000 count14;
+   - mailbox second word 8 triggers FC03 decimal 1070 count15;
+   - physical-display changes are exported by controller FC16 without mailbox involvement.
+
+**Strong conclusions**
+
+- The 071C/0730 FC17 pair is a genuine iTec Online/session gate.
+- The older ATEC A5/A4/0x05 topology is not required for iTec Online operation.
+- The reference 0708 mailbox architecture is transferable to iTec **after** the 071C/0730 gate succeeds.
+- The prior EXP226 RTC/calendar interpretation of 071C..0723 is no longer supportable as a general semantic model and must not constrain future work.
+- DCM replacement can now be decomposed into two layers: first solve the 16-byte 071C->0730 handshake, then emulate the mailbox/desired-state service.
+
+**Hypotheses**
+
+- 071C write data is a challenge/session nonce and 0730 is a deterministic authenticated response.
+- The 16-byte block size and noise-like values are compatible with a block-cipher/MAC-style primitive, but this is not yet proven.
+- The second mailbox word may be a dirty-page/command bitmask because distinct values 1 and 8 select different desired-state page families.
+
+**Unknowns**
+
+- Exact handshake algorithm and key/material.
+- Whether identical challenges always produce identical responses.
+- Whether response depends on unit pairing/subscription history, gateway identity or installation-specific secret state.
+- Whether XTR M uses the identical challenge/response primitive as Eco 5.
+- Exact semantics of mailbox selector bits beyond the observed examples.
+
+**Negative/correction recorded**
+
+Do not use the old RTC/calendar transform to construct 071C/0730 responses. Do not brute-force 128-bit response data.
+
+**Next**
+
+Request and ingest the raw Eco 5 capture plus timeline script for offline challenge/response analysis before any new active TX experiment.

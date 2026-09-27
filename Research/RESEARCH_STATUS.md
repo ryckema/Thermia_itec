@@ -1,5 +1,24 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+
+## Current status after external genuine iTec Eco 5 Online capture
+
+A third-party iTec Eco 5 capture with a genuine Thermia Online gateway has produced the strongest DCM-replacement evidence so far.
+
+The main result is that the local XTR-style **0x0F FC17 071C/0730 exchange is the gate into the Online state machine**. With a genuine gateway attached, the controller repeats that exchange until a valid 16-byte gateway response is returned; then the exchange stops, controller FC16 synchronization becomes acknowledged, a full state dump occurs, and FC03 mailbox polling at decimal 1800 / hex 0708 begins. Without the gateway, that transition does not happen.
+
+This also corrects two earlier assumptions:
+
+- the prior RTC/calendar decoding of the 071C write image is no longer considered valid as a general protocol interpretation;
+- A5/A4/0x05 and 0x06 accessory responses are not required for iTec Online operation.
+
+The DCM replacement problem is therefore narrowed to **solving the 16-byte 071C challenge -> 0730 response**, after which the already-understood mailbox/desired-state architecture can be implemented.
+
+EXP238 remains PREPARED / NOT RUN. It is currently lower priority than obtaining and analysing the new Eco 5 raw log.
+
+---
+
+
 _Last updated: 2026-09-27_
 
 This document summarizes the reverse-engineering work performed so far on a **Thermia iTec XTR M + Total Compact** installation using an **ESP32-S3 / isolated RS485 interface** and Home Assistant.

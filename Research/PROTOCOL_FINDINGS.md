@@ -2234,3 +2234,91 @@ DHP ParameterID/value
 Real DHP parameter constants such as 0x030A, 0x4402 and 0x4414 are present, but no identifiable XTR 071C/0730 response builder or service-page serializer exists in the audited host stack. Apparent 0708 constants in RegulationEngine are ordinary decimal-1800 timing/configuration values.
 
 **Current protocol consequence:** the highest-value software artifacts are a Thermia Connect/DCM03 firmware/update image or the XTR Gateway/controller implementation of the opposite side of 071C/0730. No active 0730 response is approved.
+
+
+---
+
+## 2026-09-27 — Genuine iTec Eco 5 Online capture: 071C/0730 promoted to authenticated/session gate
+
+A newly shared genuine Online capture from an iTec Eco 5 materially resolves the relationship between the XTR-style FC17 service exchange and the older 0708 mailbox architecture.
+
+### iTec Online state-machine sequence
+
+Externally reported sequence:
+
+~~~text
+power-on
+  ↓
+controller repeatedly:
+0x0F FC17
+  read  0730/count8
+  write 071C/count8
+  ↓
+genuine gateway eventually returns 16-byte response
+  ↓
+071C/0730 polling stops
+  ↓
+controller starts ACKed 0x0F FC16 full-state synchronization
+  ↓
+controller polls 0x0F FC03 0708/count6 mailbox
+  ↓
+app-originated desired-state reads become available
+~~~
+
+When the gateway is physically absent, the gate never completes and the downstream Online state machine does not start.
+
+### 0x06 / 0x0A / A5 architecture correction
+
+On this genuine iTec Eco 5 Online installation:
+
+- 0x06 FC17 remains unanswered;
+- 0x0A FC17 remains unanswered;
+- A5, A4 and 0x05 are absent.
+
+Therefore these roles are not prerequisites for iTec Online gateway operation. A5/A4/0x05 should be treated as reference-platform-specific until independently observed on iTec.
+
+### 071C payload semantic correction
+
+The previous local interpretation of 071C..0723 as an encoded RTC/calendar block is contradicted by the external genuine-gateway capture and is withdrawn as a general protocol model.
+
+Reported challenge/response examples:
+
+~~~text
+63cefb32c6f41382087992370caceeba
+    -> 1691a5f3f8e8d58738924416e8e6a3d5
+
+31fb59fc8fb1175cd89f904d06d92ea4
+    -> fd636ccd0f921d83ff232a1a2413b372
+~~~
+
+Both sides are exactly 16 bytes / eight registers and appear noise-like. Roughly 90 controller values vary across the capture; one exact controller value repeats four seconds later during an unanswered exchange, consistent with retry behavior.
+
+**Strongest current hypothesis:** 071C is a controller challenge/session token and 0730 is a gateway response/authenticator. Do not yet label the primitive AES, CMAC or any other specific cryptographic algorithm.
+
+### iTec mailbox confirmation
+
+After the gate succeeds, mailbox behavior matches the older genuine DCM model:
+
+- second mailbox word value 1 triggers controller FC03 read of decimal 1000 / hex 03E8 count14;
+- second mailbox word value 8 triggers FC03 read of decimal 1070 count15;
+- the gateway supplies the desired-state page;
+- controller applies the change;
+- physical-display changes instead produce controller FC16 exports without mailbox involvement.
+
+This resolves a major uncertainty: the older 0708 -> desired-state architecture is relevant to iTec, but only **after** successful 071C/0730 session establishment.
+
+### Implementation consequence
+
+A minimal ESP-based iTec Online/DCM replacement now has a much clearer architecture:
+
+~~~text
+1. observe controller 071C 16-byte challenge
+2. compute valid 0730 16-byte response
+3. wait for controller to enter Online state and start mailbox polling
+4. answer 0708 mailbox in idle state
+5. when HA requests a change, assert the correct mailbox selector
+6. answer the controller's subsequent FC03 desired-state page read
+7. return mailbox to idle and reconcile controller FC16 state exports
+~~~
+
+The single dominant blocker is step 2: the 16-byte challenge/response function and its key/state.
