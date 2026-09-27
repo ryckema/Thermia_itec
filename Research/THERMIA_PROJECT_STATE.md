@@ -1,5 +1,86 @@
 # THERMIA PROJECT STATE
 
+## Authoritative current state — 2026-09-27 — EXP256 COMPLETE / EXP257 PREPARED / NOT RUN
+
+- Last completed experiment: **EXP256 — COMPLETE / ACTIVE STRONG POSITIVE**.
+- Current prepared experiment: **EXP257 — ONE-SHOT R1 + SINGLE `03E8/count14` ACK + NEXT-STAGE CAPTURE — PREPARED / NOT RUN**.
+- **EXP239 remains OPEN.**
+- **EXP238 remains PARKED / NOT RUN.**
+
+### EXP257 hypothesis
+
+EXP256 proved the sequence `071C/0730 approval -> one R1 -> approval retries stop -> FC16 03E8/count14 repeats`. EXP257 changes one variable only: after the same guarded one-shot R1, send **one standard FC16 ACK** to the first exact post-R1 `03E8/count14` request, then observe the first different FC16/FC03 stage without answering it.
+
+The complete genuine Eco 5 capture now makes `03FC/count11` the external-reference prediction for the immediate next stage after the `03E8/count14` ACK. Prior local EXP137 evidence still shows `0410/count22` later in progression; EXP257 does not require or ACK either block.
+
+### New active target and known effects
+
+- Required request: slave `0x0F`, FC16, start `0x03E8`, count `14`, bytecount `28`, length `37`.
+- Single ACK frame: `0F 10 03 E8 00 0E C0 93`.
+- The ACK echoes only address/count and contains **no register-value payload**.
+- CRC16 over `0F1003E8000E` is `0x93C0`, transmitted little-endian `C0 93`.
+- Genuine Eco 5 full capture shows `03E8/14 ACK -> 03FC/11 -> 0410/22` in two independent successful approval cycles.
+- EXP137 previously showed locally that ACKing exact `03E8/count14` reaches `0410/count22`, but did not prove there was no intervening `03FC/11`.
+- Possible side effect remains an incomplete Online/Link session with DHW-side `0` and later `COMM. ERR ONLINE/LINK`; recovery is one normal controller reboot.
+
+### EXP257 fail-closed boundary
+
+The `03E8` ACK is permitted only when R1 has already been sent once, there was no approval retry, the **first** post-R1 FC16 is exact `03E8/14/bytecount28/len37`, it arrives within 5 s of R1, parser/drop counters remain unchanged since BUS_RETURN, and no unexpected peer FC17/FC16 ACK was observed. The ACK latch closes before DE is enabled.
+
+After that one ACK:
+- no second `03E8` ACK;
+- no ACK for `03FC`, `0410`, or any other FC16;
+- no FC03/mailbox/desired-state response;
+- first different FC16 or any FC03 is captured and the experiment stops;
+- otherwise a 15 s post-ACK timeout records a negative result.
+
+### Run prerequisite and recovery
+
+Do not run EXP257 until the controller has recovered from EXP256: `COMM. ERR ONLINE/LINK` absent, DHW-side `0` cleared, then healthy normal traffic for at least 15 s. After EXP257 capture/summary, perform one normal controller reboot immediately.
+
+### Build validation
+
+- YAML syntax parsed successfully with ESPHome custom tags tolerated.
+- `${device_name}` and `${friendly_name}` are the only substitutions referenced and both are defined.
+- All 124 `id(...)` references have matching YAML `id:` definitions.
+- Only two DE-enable TX call sites exist: one R1 script and one exact `03E8` ACK script.
+- CRC-valid-frame bus-health bookkeeping is unchanged.
+- ESPHome compile was **not run** because the ESPHome CLI is not installed in the available environment.
+
+## External Eco 5 full-capture refinement — 2026-09-27 — BEFORE EXP257
+
+The complete genuine iTec Eco 5 gateway capture materially sharpens the expected post-approval state machine without changing the bounded EXP257 TX plan.
+
+Observed across the 1482.480 s capture:
+- 99 exact `0x0F FC17 read 0730/count8 + write 071C/count8` approval requests occurred in three retry windows: 29 requests (`184.661..303.554 s`), 41 requests (`394.976..565.004 s`), and 29 requests (`604.688..723.223 s`).
+- Median retry cadence in those windows is approximately 4.24 s / 4.26 s / 4.21 s.
+- 98/99 16-byte `071C` payloads are unique; one payload repeats once. Therefore the genuine Eco 5 challenge value is normally regenerated between retries rather than held constant.
+- Successful pair 1 is directly present in the raw capture: `C1=63CEFB32C6F41382087992370CACEEBA` -> `R1=1691A5F3F8E8D58738924416E8E6A3D5`.
+- Successful pair 2 is also directly present: `C2=31FB59FC8FB1175CD89F904D06D92EA4` -> `R2=FD636CCD0F921D83FF232A1A2413B372`.
+
+Both successful responses are followed by the same acknowledged sync prefix:
+
+```text
+FC17 response
+  -> +92 ms  FC16 03E8/count14
+  -> ACK 03E8/count14
+  -> FC16 03FC/count11
+  -> ACK 03FC/count11
+  -> FC16 0410/count22
+  -> ACK 0410/count22
+  -> ... broader ordered sync ...
+```
+
+Timing is highly reproducible:
+- R1 cycle: `03E8` at +92 ms, ACK at +137 ms, `03FC` at +510 ms, `0410` at +1.950 s.
+- R2 cycle: `03E8` at +92 ms, ACK at +122 ms, `03FC` at +536 ms, `0410` at +2.189 s.
+
+The first successful cycle then progresses through the ordered controller-export chain:
+
+`03E8/14 -> 03FC/11 -> 0410/22 -> 042E/15 -> 0442/13 -> 0456/12 -> 046A/18 -> 047E/19 -> 0492/11 -> 04A6/13 -> 04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10 -> 0532/18 -> 0546/20 -> 055A/33 -> 057B/33 -> 059C/33 -> 05BD/33 -> 05DE/33 -> 05FF/33 -> 0620/33 -> 0641/33 -> 0662/33 -> 0683/33 -> 06A4/33 -> 06C5/33 -> 06EA/7 -> 06F1/3 -> 06F4/19`, followed by `07D0/19` and the `0708/count6` mailbox/runtime phase.
+
+**EXP257 consequence:** the external Eco 5 reference now predicts `03FC/count11` as the immediate next block after the single `03E8/count14` ACK. Prior local EXP137 evidence still records that `0410/count22` appears after a `03E8` ACK, but did not establish that it is the first intervening block. EXP257 remains necessary to determine the local XTR ordering. Its active behavior does not need to broaden: ACK only `03E8` once, capture the first different block, and stop.
+
 ## Authoritative current state — 2026-09-27 — EXP256 COMPLETE / ACTIVE STRONG POSITIVE
 
 - Last completed experiment: **EXP256 — COMPLETE / ACTIVE STRONG POSITIVE**.
@@ -917,83 +998,3 @@ Perform no active `0730` response. Before running EXP238, finish the offline mai
 - **Safety:** no new active write target is approved. `0x0F FC16` remains outbound/state-export for control purposes; `0730` remains secondary/unknown; no AFCA or direct-setting write experiments resume without new evidence.
 
 ---
-
-## Authoritative current state — 2026-09-27 after EXP236
-
-- Last completed experiment: **EXP236 — COMPLETE / OFFLINE CAUSALITY AUDIT; LOCAL UI CHANGE IS THE BEST NEXT WRITE-INGRESS TRACE**.
-- Current experiment: **none running**. No ESP TX, heat-pump restart, setting mutation, YAML change or room-sensor emulation was performed in EXP234–236.
-- **EXP234 — offline decimal/service-page archaeology:** searched the accessible indexed Project/Library corpus and the relevant public Thermia repositories for decimal pages `1800`, `1820`, `1840`, hex `0708`, `071C`, `0730`, and the XTR FC17 shape. No named service-page schema, field labels or genuine `0730/count8` response was recovered. The archived `THERMIA_PART9_BUNDLE.zip` could not be raw-materialized in the current runtime, so this is a **negative for the accessible indexed corpus, not an exhaustive binary negative**.
-- **EXP235 — offline topology-transferability audit:** the genuine DCM/reference platform and the local XTR are now treated as architecturally related but **not wire-identical write targets**. Reference traffic continuously uses `0x04`, A5 and `0x0F FC03`; local XTR runtime uses `0x1E` and lacks that scheduler family. Reference `0x02` uses `A7F8/count13` with `A811/A812=000C/0500`; local XTR uses `A7F8/count15` with `A811/A812=FFFF/0000`. Therefore the proven reference `0708 -> 03E8` command path remains valuable protocol evidence, but is **downgraded from primary local implementation target to reference architecture**.
-- **EXP236 — offline local-UI causality audit:** EXP143 proved that a physical Heat Curve change on the XTR UI causes controller-originated `0x0F FC16 03E8/count14` synchronization, with word0 tracking the changed curve value. EXP177 proved that replaying the same native-looking `03E8/count14` image toward slave `0x0F` does not cause the semantic Heat Curve change. The strongest causal model is therefore: **the semantic mutation occurs upstream of the outbound `03E8` sync**; `03E8` is a consequence/state-export path, not the local command ingress itself.
-- **Main research direction changed:** stop treating `0730`/old DCM emulation as the primary write-access route. Keep it as a secondary architectural line. The highest-value next active/passive experiment is a full-bus local UI A/B/A trace that captures all slaves and function codes around the exact user input, looking for the event that precedes the first `03E8` sync.
-- **Tomorrow's preferred experiment: EXP237 — passive local-UI ingress trace.** Hypothesis: a Heat Curve `A -> B -> A` change on the physical panel produces a reversible bus event before the known outbound `03E8` mirror. Use a narrow pre/post window around exact UI marks, log all valid frames, make no ESP transmissions, and compare both transitions.
-- **Safety:** no new active write target is approved by EXP234–236. Do not synthesize `0730` responses, do not repeat direct `0x0F FC16 03E8` writes, and do not resume AFCA payload guessing without new evidence.
-
----
-
-
-
-## Authoritative current state — 2026-09-27 after EXP233
-
-- Last completed experiment: **EXP233 — COMPLETE / OFFLINE STRUCTURAL REFINEMENT + NEGATIVE FOR FIELD-POSITION HOMOLOGY**.
-- Current experiment: **none running**. Heat-pump restarts remain paused. EXP233 used only existing captures/project evidence and offline parsing; no ESP TX, setting change, YAML change or controller restart was performed.
-- **Hypothesis tested:** the repeated Thermia FC17 `+0x14` read/write-bank convention might extend beyond address spacing to field-position or request/feedback semantics, allowing one or more XTR `0730..0737` words to be constrained from known roles.
-- **New general FC17 bank result:** the `+0x14` hex spacing is exactly **+20 decimal registers** and is a generic Thermia FC17 page/bank stride, not an Online-specific signature. In the four genuine reference captures the recurring request schemas are:
-  - slave `0x02`: read `A7F8=43000/count13`, write `A80C=43020/count7` — 274 requests;
-  - slave `0x04`: read `ABE0=44000/count12`, write `ABF4=44020/count4` — 275 requests;
-  - slave `0x05`: read `AC12=44050/count12`, write `AC26=44070/count4` — 2 requests;
-  - slave `0x06`: read `AFC8=45000/count12`, write `AFDC=45020/count5` — 69 requests;
-  - slave `0x0A`: read `B3B0=46000/count3`, write `B3C4=46020/count3` — 31 requests.
-- The local XTR adds two important variants:
-  - slave `0x02` uses the same `43000 -> 43020` bank pair but a different read span (`count15` locally versus `count13` reference), proving the 20-register bank stride is independent of active payload length;
-  - slave `0x0F` cold-boot FC17 uses **write `071C=1820/count8`, read `0730=1840/count8`**, i.e. the same +20 page stride but with direction reversed relative to the other recurrent FC17 roles.
-- The nearby XTR/reference service bases normalize cleanly to **1800 / 1820 / 1840 decimal**:
-  - `0708 = 1800`;
-  - `071C = 1820`;
-  - `0730 = 1840`.
-  This strongly suggests three consecutive reserved 20-register service pages. It materially weakens any claim that the exact `0708 -> 071C -> 0730` spacing itself proves common command semantics.
-- **Field-position homology is not supported.** Known semantic ingress/control-like fields occupy different relative positions and use different feedback mechanisms:
-  - room sensor `0x0A`: read-bank word1 `B3B1` is a semantic setpoint request; accepted value is later reflected at paired write-bank word1 `B3C5`;
-  - accessory `0x06`: read-bank word2 `AFCA` is a transport REQ/data-valid strobe; its ACK appears outside the paired FC17 write bank at native `0x0F:0861`; read-bank word9 `AFD1` is version metadata.
-  - `0x02` and reference `0x04` read banks are dominated by state/telemetry-style values and provide no proven request-field position.
-  Therefore no relative index (word0/1/2/etc.) can be transferred safely to `0730..0737`.
-- **All-zero is not a universal neutral image.** On `0x0A`, a zero command field means “no request” but zeroing the whole bank would also report a false 0 °C room temperature. On `0x06`, a syntactically valid zero response changes presence/cadence and exposes `EXP 0.0`. Thus a response can be command-neutral yet still semantically active at role level.
-- **Lifecycle discriminator:** unlike the steady-runtime `0x02`, `0x04`, `0x06` and `0x0A` FC17 families, the local XTR `071C/0730` family is strongly boot/recovery gated. EXP224 observed zero exact frames during ordinary runtime, while EXP221/225 reproduced it after controller power-on. This makes `0730..0737` at least as plausible as startup/service/RTC-session return data as a general runtime command mailbox.
-- **Strong conclusion:** EXP233 does **not** narrow any individual `0730..0737` field enough for a safe active response. The strongest new interpretation is that `0730` belongs to a generic 20-register Thermia FC17 page framework, while its role-specific semantics remain unknown.
-- **Safety conclusion:** no active `0730` responder is justified. Do not infer `0731` from room-sensor word1, `0732` from accessory word2, or use eight zero words.
-- Preferred next experiment: **EXP234 — offline decimal-page / service-page archaeology**, searching all available firmware/maps/source material specifically for decimal register pages `1800`, `1820`, `1840` and neighboring 20-register page structures. The goal is to find role names, field labels, or a genuine XTR service response before any TX is reconsidered.
-
-## Authoritative current state — 2026-09-27 after EXP232
-
-- Last completed experiment: **EXP232 — COMPLETE / OFFLINE STRUCTURAL POSITIVE WITH IMPORTANT NEGATIVE: `0730..0737` is confirmed as an XTR external/service return bank, but no genuine response image is recoverable from the current corpus**.
-- Current experiment: **none running**. Heat-pump restarts remain paused. EXP232 used only existing project/library artifacts plus read-only source searches; no ESP TX, setting change, YAML change or controller restart was performed.
-- **Hypothesis tested:** the XTR-native `0x0F FC17 read 0730/count8 + write 071C/count8` return bank may be reconstructible or constrained from existing captures, archived code/artifacts, related FC17 interfaces and external project sources sufficiently to define a safe no-op response.
-- Exhaustive project/library search found **no genuine `0x0F FC17` count-8 response** for `0730..0737`. A normal FC17 count-8 response would be 21 bytes and begin `0F 17 10`; no such frame was found in the relevant EXP221/222/225 logs or the older EXP71/71B evidence. All locally observed `0730` requests remain unanswered because no external slave-0x0F service endpoint is present.
-- Read-only searches of the available external/reference artifacts also produced no `0730` payload: fclauson's `0F_register_value_map.xlsx`, `modbus_slave.py`, Discussion #143, and repository searches for `0730`, `071C`, decimal `1840`, and FC17 did not expose this XTR bank. This is a recorded negative result, not evidence that the bank is unused on genuine XTR accessories.
-- **New structural finding:** Thermia FC17 role interfaces repeatedly separate the slave-owned read bank from the controller-written bank by exactly `0x14` registers:
-  - room sensor `0x0A`: read `B3B0..B3B2`, write `B3C4..B3C6` (`+0x14`);
-  - accessory `0x06`: read `AFC8..AFD3`, write `AFDC..AFE0` (`+0x14`);
-  - genuine/reference `0x04`: read `ABE0/count12`, write `ABF4/count4` (`+0x14`);
-  - genuine/reference `0x05`: read `AC12/count12`, write `AC26/count4` (`+0x14`);
-  - local XTR `0x0F`: controller writes `071C..0723` and reads `0730..0737` (`+0x14`).
-- A second exact relation is now explicit: `0708 -> 071C -> 0730` are successive `+0x14` register-bank bases. The older ATEC/DCM command-header read happens at `0708`, while the XTR FC17 writes its RTC image at `071C` and reads the external bank at `0730`. This is strong architectural structure but **not proof that the three banks share field semantics or command encoding**.
-- EXP226 remains decisive for the XTR write half: most changing content in `071C..0723` is transformed RTC/calendar data. This materially downgrades EXP231's tentative idea that the whole `071C/0730` exchange might be a direct wire-equivalent of ATEC `0708`. The better model is an XTR service/role transaction with controller-owned service/RTC data written to one bank and external-device-owned data read back from the adjacent bank.
-- The return bank is nevertheless a **proven controller-ingress surface by transaction direction**: the controller explicitly requests `0730..0737` from slave `0x0F`. Cross-role evidence from the room-sensor FC17 path proves that Thermia FC17 read-bank words can carry semantic requests into the controller, but that does not identify any `0730` field.
-- **Safety conclusion:** no safe neutral/idle `0730..0737` response can be reconstructed. Zeros, an echo of `071C..0723`, an inverse RTC transform, or copied values from another FC17 role would all be guesses and are therefore not approved for an active responder test.
-- Write-access implication: `0730..0737` remains a high-value XTR-native controller-ingress candidate, but it is now classified as **external/service return bank with unknown semantics**, not as a proven command mailbox. The fully decoded ATEC `0708 -> 03E8` mailbox remains the strongest proven command architecture; XTR may use a different service serializer.
-- Preferred next experiment: **EXP233 — offline cross-role FC17 bank-schema analysis**, cataloguing the known `+0x14` bank pairs and semantic ingress/feedback conventions to test whether field-position homology can constrain `0730..0737` without guessing. If no stronger mapping emerges, further active work should wait for genuine XTR/Connect/Online response evidence rather than transmit an invented payload.
-
-## Authoritative current state — 2026-09-27 after EXP231
-
-- Last completed experiment: **EXP231 — COMPLETE / OFFLINE POSITIVE SCHEDULER-TOPOLOGY RECONSTRUCTION**.
-- Current experiment: **none running**. Heat-pump restarts remain paused; EXP231 used only existing captures and performed no bus TX or setting change.
-- Hypothesis tested: the genuine ATEC/DCM `0708/count6` command poll is part of a pre-existing controller-side service scheduler, and comparison with the local XTR may reveal a homologous XTR-native service slot that is more relevant to write access than forcing the ATEC scheduler.
-- Across the four genuine Online/DCM captures there are **54 exact `0x0F FC03 0708/count6` requests**. Every one occurs immediately after the same service-cycle context: a completed A5 `002E/count10` response precedes it by **0.262..0.394 s**, and the recurrent `0x06 FC17 AFC8/12 -> AFDC/5` poll precedes it by **0.110..0.236 s**. The normal inter-`0708` cadence is ~**4.2 s**.
-- In genuine DCM rejoin capture `090550`, the first `0708` request occurs at **0.987 s**, while the first successful `0x0F FC16` ACK does not occur until **66.860 s**. Sixteen `0708` polls are unanswered before the first `0708` response at **68.235 s**. Therefore `0x0F` endpoint readiness / FC16 ACK completion does **not** activate the scheduler; the scheduler is already running controller-side while the DCM endpoint is absent.
-- The visible trace does not contain the original scheduler-enable transition. Existing EXP172/173 evidence remains the best passive fingerprint: scheduler-enabled reference state uses controller `0x02 FC17 A7F8/count13` with `A811/A812=000C/0500`; local XTR uses count15 with `A811/A812=FFFF/0000`. These are correlates, not approved write targets.
-- New cross-platform structural finding: local XTR cold-boot service traffic has **72 exact `0x0F FC17 read 0730/count8 + write 071C/count8` requests** across EXP221+EXP222, with median cadence ~**4.25 s**. Every local FC17 request follows the local `0x06` poll; median delay is ~**0.247 s**. This occupies the same recurring post-`0x06` scheduler position that the ATEC/DCM topology uses for its `0708` mailbox poll, although the wire transaction is different.
-- EXP226 already proves the XTR FC17 write half `071C..0723` is predominantly controller RTC/date-time data. The **read half `0730..0737` remains unknown**. EXP231 therefore upgrades `0730..0737` to the highest-value **XTR-native command/service-mailbox candidate**, but does not assign field semantics or justify guessed responses.
-- Important refinement to EXP227: XTR `071C/0730 FC17` and ATEC `0708 FC03` remain **not wire-equivalent** and must not be treated as the same register protocol. The new evidence is scheduler-position/cadence homology only.
-- Write-access priority after EXP231: stop trying to make ordinary `0x0F` ACK completion create the ATEC `0708` scheduler. First reconstruct `0730..0737` response semantics from existing artifacts/captures; only after a safe neutral response image is evidence-backed should an active XTR FC17 responder be considered. No restart-based active test is proposed while the no-restart constraint remains.
-
-## Authoritative experiment state
