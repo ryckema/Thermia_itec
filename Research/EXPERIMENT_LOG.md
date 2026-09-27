@@ -1,3 +1,6 @@
+### EXP269 UI observation
+Post-test display photo confirms a visible change in the lower-right status area: user reports the center of the `0`/status glyph is now filled. Alarm remains active. Treat as a UI/state side effect only; semantic meaning unknown and not evidence of successful Online session completion.
+
 ## EXP269 — COMPLETE / NEGATIVE
 
 Hypothesis: one exact Eco5 phase-matched first post-`06F4` mailbox response `0000 0000 0000 0000 0080 0006` would cause the XTR to continue with `07D0/19`.
