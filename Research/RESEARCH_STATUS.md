@@ -13,6 +13,8 @@
 - No new GitHub files are created; existing Research files only.
 - EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.
 
+- EXP261 build-fix: corrected one missing closing brace in the FC16 stage chain before the FC03 handler; this caused the ESPHome C++ error "process_frame before deduction of auto". Also renamed the HA entity label to use Unicode fraction slash in "Online⁄DCM Context Raw AFDC" to remove the reserved-path warning. Experimental logic/targets unchanged.
+
 ## Current status — 2026-09-27 — EXP260 COMPLETE / STRONG POSITIVE
 
 - Last completed experiment: **EXP260 — COMPLETE / STRONG POSITIVE**.
