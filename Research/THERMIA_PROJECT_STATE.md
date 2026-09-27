@@ -1,5 +1,28 @@
 # THERMIA PROJECT STATE
 
+## Authoritative current state — 2026-09-27 — EXP261 COMPLETE / EXP262 PREPARED
+
+### EXP262 — accelerated 8-block sync batch — PREPARED / NOT RUN
+
+**Hypothesis**
+After the locally proven prefix through `0492/count11` and the locally captured next `04A6/count13`, acknowledge a bounded batch of eight exact controller-originated FC16 pages:
+`04A6/13 -> 04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10 -> 0532/18 -> 0546/20`.
+Then capture the first different FC16 or FC03 without answering it. Genuine Eco 5 predicts `055A/count33`.
+
+**New active targets and known basis**
+- `04A6/13`: locally observed immediately after the `0492` ACK in EXP261; also a recurrent genuine Eco 5 family, so context matters. A genuine gateway has ACKed this family in captured sessions.
+- `04BA/22`, `04D8/27`, `04F6/14`, `050A/19`, `051E/10`, `0532/18`, `0546/20`: all observed in the genuine Eco 5 successful synchronization traffic.
+- These are controller-originated FC16 export pages; the experiment sends only standard FC16 acknowledgements, not new register payload values. The known protocol effect is progression of the Online/Link session; direct application-setting effects are not established.
+- Known incomplete-session side effect remains DHW-side literal `0` and `COMM. ERR ONLINE/LINK`; recovery is one normal Thermia-controller reboot.
+
+**Fail-closed**
+- Existing proven prefix remains unchanged.
+- Each new page must be the first exact expected page, with exact count/bytecount/full length, within 5 s of the preceding ACK.
+- Any retry, unexpected FC16/FC03, peer FC17/ACK, or post-return parser/drop delta stops further TX.
+- After `0546/20` ACK: capture-only; no `055A` ACK and no mailbox response.
+- Maximum active TX: one R1 plus seventeen exact FC16 ACKs.
+
+
 ## Authoritative current state — 2026-09-27 — EXP261 COMPLETE / STRONG POSITIVE
 
 - Last completed experiment: **EXP261 — COMPLETE / STRONG POSITIVE**.
@@ -974,27 +997,3 @@ has been correlated with the final bus trace.
   `SUMMARY SHADOW_COMPLETE`.
 - **EXP239 remains OPEN.**
 - **EXP238 remains PARKED / NOT RUN.**
-
-
-## Authoritative current state — 2026-09-27 — EXP251 PREPARED / NOT RUN
-
-- Last completed experiment: **EXP250 — COMPLETE / OFFLINE / NO TX**.
-- Last completed live-bus experiment: **EXP249 — COMPLETE / VALID PASSIVE POSITIVE**.
-- Current prepared experiment: **EXP251 — SHADOW DCM / APPROVAL HARNESS — PREPARED / NOT RUN**.
-- EXP251 hypothesis: the iTec Online/DCM lifecycle can be implemented as a shadow state-machine with
-  one deliberately unresolved opaque 16-byte `071C -> 0730` response boundary.
-- Only experimental change: EXP249 retry-window instrumentation is replaced by lifecycle/classifier
-  instrumentation. Known-good production functionality is preserved.
-- EXP251 recognizes:
-  - exact `0x0F FC17 read0730/count8 + write071C/count8` approval requests;
-  - local XTR RTC/service consistency and reference-challenge Hamming distance;
-  - unexpected peer 16-byte FC17 responses;
-  - controller 0x0F FC16 requests and peer FC16 ACKs;
-  - exact `0x0F FC03 0708/count6` mailbox polls;
-  - other 0x0F FC03 page reads;
-  - A80E/A80F/AFDC and 0x06 context.
-- **No Thermia TX path exists in the EXP251 build:** GPIO17 TX is absent and GPIO21 DE is forced LOW.
-- No Eco 5 response bytes are stored in the YAML; only the two source challenge values are used for
-  Hamming-distance comparison.
-- Experimental controls remain under Home Assistant Configuration and logs retain the red/brown
-  convention.
