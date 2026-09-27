@@ -24,6 +24,13 @@ Last updated: 2026-09-27
 
 ---
 
+## EXP259 — UI side effect follow-up
+
+After the successful protocol result, the user confirmed the same visible side effects seen in earlier incomplete Online/Link sessions: DHW-side literal `0` and exact `COMM. ERR ONLINE/LINK`. This is a repeated positive observation, not a new protocol stage.
+
+Interpretation: the association between partial Online/Link servicing and the communication alarm is now reproducible across multiple active runs. The specific causal mechanism remains a hypothesis until a sufficiently complete session is shown to avoid the alarm. Recovery remains one normal controller reboot.
+
+
 ## EXP259 — exact `0410/count22` ACK then next-stage capture — PREPARED / NOT RUN
 
 **Hypothesis:** after the locally proven prefix `R1 -> 03E8/14 ACK -> 03FC/11 ACK -> 0410/22`, one exact standard FC16 ACK to `0410/count22` should advance the XTR controller to a different block. The genuine Eco 5 reference predicts `042E/count15`.
@@ -991,10 +998,3 @@ Observed:
 - parser/drop clean.
 
 Conclusion:
-The event-triggered Heat Curve update is a one-block ACK-gated update, not a replay of the long startup/snapshot chain.
-
-Negative result:
-ACKing the event-triggered 03E8 block does not itself trigger FC03 read-side behavior.
-
-Next:
-Investigate the missing Online-side trigger around the first genuine Online FC03 request instead of continuing FC16 chain-walking.
