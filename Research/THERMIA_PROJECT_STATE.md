@@ -1,5 +1,37 @@
 # THERMIA PROJECT STATE
 
+## Authoritative current state — 2026-09-27 — EXP259 COMPLETE / EXP260 PREPARED / NOT RUN
+
+- Last completed experiment: **EXP259 — COMPLETE / STRONG POSITIVE**.
+- EXP259 reproduced the genuine Eco 5 ordered prefix through `042E/count15`; user confirmed DHW-side `0` and `COMM. ERR ONLINE/LINK` again after the deliberately incomplete session.
+- Current prepared experiment: **EXP260 — bounded three-block sync batch — PREPARED / NOT RUN**.
+- **Hypothesis:** after the proven local prefix `R1 -> 03E8/14 ACK -> 03FC/11 ACK -> 0410/22 ACK -> 042E/15`, acknowledging the next three exact genuine-Eco5 blocks `042E/15`, `0442/13`, and `0456/12` in order will advance the XTR to `046A/count18`.
+- **Only new experimental variable family:** a bounded batch of three exact standard FC16 ACKs for those already-observed reference stages.
+- Maximum experimental TX: **7 frames** total: R1 + proven ACKs `03E8`, `03FC`, `0410` + new batch ACKs `042E`, `0442`, `0456`.
+- Fail-closed: every stage must be the first exact expected block, within 5 s, parser/drop clean, with no approval retry, previous-page retry, FC03, unexpected peer FC17, or unexpected peer FC16 ACK.
+- After the one `0456/count12` ACK, capture only. Genuine Eco 5 predicts `046A/count18`; **do not ACK `046A`**.
+- No FC03/mailbox response and no downstream full-chain emulation in EXP260.
+- Known side effect remains DHW-side `0` + `COMM. ERR ONLINE/LINK`; one normal controller reboot is required after summary.
+- Run only after the prior alarm and DHW-side `0` have cleared following recovery reboot.
+- **EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.**
+
+### EXP260 exact new ACK frames
+
+- `042E/count15`: `0F 10 04 2E 00 0F E0 1A` (CRC `0x1AE0`, wire `E0 1A`)
+- `0442/count13`: `0F 10 04 42 00 0D A1 C6` (CRC `0xC6A1`, wire `A1 C6`)
+- `0456/count12`: `0F 10 04 56 00 0C 20 02` (CRC `0x0220`, wire `20 02`)
+
+### Build validation
+
+- YAML syntax parsed successfully with ESPHome custom tags tolerated.
+- Only `${device_name}` and `${friendly_name}` are referenced and both are defined.
+- All YAML IDs are unique and every `id(...)` reference resolves.
+- Exactly seven UART TX / DE-enable paths exist.
+- CRC-valid-frame bus-health bookkeeping remains present.
+- ESPHome compile was **not run** because the ESPHome CLI is unavailable in this environment.
+
+---
+
 ## EXP259 UI side-effect confirmation — 2026-09-27
 
 - EXP259 is **COMPLETE / STRONG POSITIVE**.
@@ -966,35 +998,3 @@ has been correlated with the final bus trace.
 
 
 ## Authoritative current state — 2026-09-27 — EXP248 VALID STOP CANDIDATE / CONFIRMATION TAIL MISSING
-
-- Current experiment: **EXP248 — IN PROGRESS / VALID RX-ONLY RUN; natural-stop candidate observed, but the configured 60 s confirmation window is not fully present in the supplied log tail**.
-- Hypothesis remains: after one XTR controller cold boot with no genuine Online/DCM endpoint, exact `0x0F FC17 read 0730/count8 + write 071C/count8` retries for a finite startup/service window and then stops naturally.
-- First arm attempt at 14:55:38 auto-aborted correctly because no controller power-cycle / >=6 s bus gap occurred; it carries no protocol result.
-- Valid second attempt: bus gap detected at 14:57:53.961; `BUS_RETURN` at 14:58:01.042.
-- First target: `n=1`, `since_return=1283 ms`, state `A80E=0000 A80F=0005 AFDC=0000`.
-- Early state progression: `A80E 0000->0008` at 1761 ms, `A80E 0008->0028` at 2858 ms, `AFDC 0000->0010` at 5583 ms, `A80F 0005->000A` at 11278 ms. None stops the retry stream.
-- Target stream reaches **63 requests**. Last observed exact target is `n=63` at **267123 ms after BUS_RETURN** with `A80E=0028 A80F=000A AFDC=0010`; preceding cadence remains ~4.29 s with no slowdown/backoff.
-- The next expected target does not appear. EXP248 raises `STOP_CANDIDATE` after **20793 ms silence** while the ordinary bus remains active, with the same monitored state `A80E=0028 A80F=000A AFDC=0010`.
-- Supplied tail contains no `FALSE_STOP` and no further target; `EXP248 Last Target Age` reaches at least **53.5 s** while controller/0x06/outdoor traffic remains live. Parser remains clean (`resync=0`, `drops=0`).
-- **Important:** the experiment success criterion requires another 60 s after `STOP_CANDIDATE`. The supplied file ends about 33.7 s after that marker, therefore `SUMMARY CONFIRMED_STOP` is not present and EXP248 must not yet be marked COMPLETE.
-- Provisional strong interpretation: the local XTR retry stream appears to terminate abruptly at ~267.1 s (~4 min 27.1 s) after bus return, without a bus outage or visible A80E/A80F/AFDC transition. A fixed ~270 s timer or fixed retry budget is now a plausible hypothesis, not yet proven.
-- No active `0730` response was sent or approved. Production functionality is unchanged.
-- Minimal missing evidence: if available, provide only the log tail from about **15:03:22 through 15:03:50+**. A rerun is not needed if that tail still exists.
-
-
-## Authoritative current state — 2026-09-27 — EXP248 PREPARED / NOT RUN
-
-- Current experiment: **EXP248 — PREPARED / PASSIVE 071C/0730 NATURAL-STOP TRACE; not yet run**.
-- Hypothesis: after one XTR controller cold boot with no genuine Online/DCM endpoint, the exact `0x0F FC17 read 0730/count8 + write 071C/count8` service/approval slot retries for a finite window and then stops naturally; the immediate `A80E/A80F/AFDC` state around the final retry may identify the stop condition.
-- EXP247 established only a bound on one historical passive boot: target still active at ~198 s after Bus Healthy and already absent by ~1600 s. The exact stop lies inside a logging gap.
-- **Only experimental variable:** one controlled Thermia/controller cold boot. No heat-pump setting is changed.
-- EXP248 is fully RX-only: GPIO17 TX is not configured; GPIO21 DE remains LOW; no ACK, FC17 response, probe, scan, semantic write, room-sensor emulation or automated controller restart exists.
-- Home Assistant experimental controls are under Configuration: `EXP248 Arm RX-only Timeout Trace` and `EXP248 Abort`.
-- Guarding/measurement:
-  - ARM requires fresh bus traffic and >=15 s ESP uptime;
-  - after ARM, a genuine >=6 s bus gap must be observed within 60 s;
-  - first CRC-valid frame after that gap defines bus return;
-  - every exact 071C/0730 target is logged with 16-byte `W071C` image and current A80E/A80F/AFDC snapshot;
-  - >=20 s target silence is accepted as a stop candidate only while the rest of the bus remains live;
-  - EXP248 then requires another 60 s without a target before confirming the stop; any target reappearance cancels the candidate and is recorded as `FALSE_STOP`;
-  - hard observation ceiling is 35 min after bus return.
