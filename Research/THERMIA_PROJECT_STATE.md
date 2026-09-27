@@ -1,5 +1,50 @@
 # THERMIA PROJECT STATE
 
+
+## Authoritative current state — 2026-09-27 after EXP248
+
+- Last completed experiment: **EXP248 — COMPLETE / VALID PASSIVE POSITIVE**.
+- Current experiment: **none running**.
+- **EXP239 remains OPEN** pending full independent raw-log verification / additional genuine Online challenge-response evidence.
+- **EXP238 remains PARKED / NOT RUN.**
+- EXP248 was RX-only and changed no production functionality.
+- The local XTR `071C..0723` record is now proven across **129/129** recovered local frames to follow the XTR RTC/calendar service schema; it must not be generalized to the externally reported Eco 5 high-entropy regime.
+- EXP246 further reduces the local block to a redundant calendar/clock record: year/hour/day/minute plus deterministic second copies; `F9/06` is a strong September month/complement candidate and `001E` a strong month-length candidate.
+- EXP248 complete passive cold boot:
+  - BUS_RETURN 14:58:01.042;
+  - first target +1.283 s;
+  - **63 targets**;
+  - median cadence **4298 ms**;
+  - last target **+267.123 s**;
+  - final target state `A80E=0028 A80F=000A AFDC=0010`;
+  - STOP_CANDIDATE after 20.793 s target silence;
+  - SUMMARY CONFIRMED_STOP after **80.793 s** final silence;
+  - `false_stops=0`, `resync_delta=0`, `drop_delta=0`.
+- Ordinary bus traffic remains active after the final target. The `071C/0730` stream therefore has a real natural stop independent of bus loss.
+- No A80E/A80F/AFDC transition coincides with the stop and no cadence backoff is visible.
+- Leading timing hypothesis: approximately **270 s startup/service retry deadline**; the next normal target slot would be expected at about **271.421 s**. One repeatability run is required before treating 270 s as a protocol constant.
+- No active `0730` response has been sent, derived or approved.
+- DCM03 remains the highest-value classic firmware-recovery target; public field-update/package archaeology has not produced a DCM03 image.
+- Preferred next experiment: **EXP249 — passive repeatability of the natural-stop deadline**, same RX-only instrumentation, one additional cold boot.
+
+### Research progression since the previous GitHub state
+
+- EXP233: generic +0x14 FC17 role-bank stride; no field-position homology.
+- EXP234/234B: no indexed or Link-CC-host XTR 071C/0730 serializer recovered.
+- EXP235–237: local FC16 pages are controller-owned exports; passive Heat Curve ingress trace negative within recognized traffic.
+- EXP239: Eco 5 challenge/response analysis remains open; simple transforms and several direct crypto constructions excluded.
+- EXP240: DCM03 identified as best implementation-locus / firmware target.
+- EXP241: DCM 2.0.17 spans multiple classic Thermia profiles.
+- EXP242: no public DCM03 field-update package recovered.
+- EXP243: public hardware/MCU/debug archaeology negative and parked.
+- EXP244: local XTR 071C is deterministic RTC/service data, not high-entropy challenge data.
+- EXP245: 129/129 historical local frames preserve the RTC regime across tested controller/accessory states.
+- EXP246: local record reconstructed as redundant calendar/clock service data.
+- EXP247: natural retry stop proven historically but exact timing censored.
+- EXP248: complete passive stop trace measured at target 63 / +267.123 s.
+
+
+
 Last updated: 2026-09-27
 
 

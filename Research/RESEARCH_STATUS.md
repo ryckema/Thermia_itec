@@ -1,6 +1,78 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
 
+## Current status after EXP248 — local XTR retry window measured
+
+The research focus remains native Thermia Online/DCM-compatible write access, but the relationship between the local XTR M and the externally reported genuine iTec Eco 5 Online behavior is now more precise.
+
+### Main correction since the external Eco 5 report
+
+The local XTR `071C..0723` payload was re-audited across the complete available local corpus. The earlier RTC/calendar interpretation was **not** a coincidence on this XTR: it is reproducible across 129/129 local frames and can be reconstructed as a redundant calendar/clock service record. What must be rejected is only the assumption that this payload format is universal across all iTec/DCM states and models.
+
+At least two observed regimes must therefore be kept separate:
+
+```text
+local XTR M, no genuine Online endpoint
+    -> deterministic RTC/calendar-style 071C service record
+
+externally reported iTec Eco 5 + genuine Online
+    -> high-entropy, retryable 16-byte challenge-like 071C record
+```
+
+The common `0x0F FC17 read 0730/count8 + write 071C/count8` bank contract is real, but the payload serializer appears state/model/profile dependent.
+
+### EXP239–EXP243
+
+- **EXP239 remains OPEN.** Two genuine Eco 5 challenge/response pairs rule out fixed XOR, fixed add/subtract, fixed byte permutation + XOR, common unkeyed hashes, and several direct AES/CMAC key-search hypotheses. No algorithm or key is proven.
+- **EXP240** identifies DCM03 itself as the best firmware-recovery target for the classic direct DHP-AQ/iTec path. Official documentation shows the DCM03 RS485 connection directly to the DHP-AQ relay-board RJ45.
+- **EXP241** shows DCM version **2.0.17** across multiple classic profiles (Diplomat/Duo, ATEC/DHP-AQ, iTec/IQ), making it a high-value generic classic-DCM firmware target.
+- **EXP242** finds no public standalone DCM03 field-update package or obvious DCM03 payload inside the public Danfoss Link CC packages examined.
+- **EXP243** finds no usable public PCB/MCU/debug-interface identification and that hardware-archaeology line is parked.
+
+### EXP244–EXP246 — local XTR 071C structure resolved
+
+- **EXP244:** 104 directly re-parsed local XTR target frames are all unique, have no exact retry behavior, and all match the local RTC/service encoder. Consecutive payloads change only a few bits; this is not a fresh high-entropy nonce stream.
+- **EXP245:** the historical census expands this to **129/129** exact local frames across EXP71, EXP71B, EXP221, EXP222 and EXP225. No local RTC -> challenge transition is seen, including after A80E/AFDC promotion, active historical 0x06 participation, or partial `0x0F FC16` ACKs.
+- **EXP246:** the XTR block is best described as a **redundantly encoded calendar/clock service record**. Proven fields encode year, hour, day, minute and three deterministic second representations. `F9/06` is a strong month/complement candidate for September and `001E` a strong days-in-month candidate.
+
+### EXP247–EXP248 — unanswered retry window
+
+EXP247 proved that the target stream stops naturally but existing historical captures were right-censored.
+
+EXP248 then measured one complete passive cold boot:
+
+```text
+BUS_RETURN             14:58:01.042
+first target           +1.283 s
+target count           63
+median cadence         4.298 s
+last target            +267.123 s
+final state            A80E=0028 A80F=000A AFDC=0010
+STOP_CANDIDATE         after 20.793 s silence
+CONFIRMED_STOP         after 80.793 s final silence
+false stops            0
+parser resync delta    0
+RX-drop delta          0
+```
+
+Ordinary bus traffic continues after the final target, so this is a genuine natural stop of the `071C/0730` startup/service retry stream rather than bus loss. No visible A80E/A80F/AFDC edge coincides with the stop and there is no retry backoff.
+
+The leading timing hypothesis is an approximately **270 s startup/service deadline**: after the final request at 267.123 s, the next normal slot would have been expected around 271.421 s. This requires a repeatability run before being promoted to a protocol constant.
+
+### Current safety boundary
+
+No active `0730` response is approved. Do not replay the two Eco 5 responses against the local XTR RTC/service record and do not synthesize zero/echo/guessed values.
+
+### Next experiment
+
+**EXP249 — passive repeatability test of the ~270 s natural-stop deadline.**
+
+Use the same RX-only instrumentation and one additional identical cold boot. Compare first-target timing, target count, last-target timing, cadence and monitored state. No TX or response testing.
+
+---
+
+
+
 ## Current status after external genuine iTec Eco 5 Online capture
 
 A third-party iTec Eco 5 capture with a genuine Thermia Online gateway has produced the strongest DCM-replacement evidence so far.

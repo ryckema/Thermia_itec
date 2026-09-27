@@ -2322,3 +2322,103 @@ A minimal ESP-based iTec Online/DCM replacement now has a much clearer architect
 ~~~
 
 The single dominant blocker is step 2: the 16-byte challenge/response function and its key/state.
+
+---
+
+## 2026-09-27 — EXP239–EXP248 protocol consolidation
+
+### 071C/0730 must be treated as a role-bank contract with at least two payload regimes
+
+The common transaction is:
+
+```text
+slave 0x0F FC17
+read  0730/count8
+write 071C/count8
+```
+
+Current evidence supports at least two distinct observed encoders:
+
+```text
+local XTR M, no genuine Online endpoint
+    -> deterministic redundant RTC/calendar service record
+
+externally reported genuine iTec Eco 5 + Online
+    -> high-entropy retryable challenge-like 16-byte record
+```
+
+The local XTR interpretation is now based on 129/129 exact recovered frames. The external Eco 5 challenge-like behavior must remain separate pending full independent raw-log reprocessing.
+
+### Local XTR calendar/service record
+
+Across the local corpus, changing bytes are fully explained by date/time plus deterministic redundancy:
+- year-2000;
+- hour;
+- day-of-month;
+- 4x minute;
+- three related second encodings.
+
+`F9/06` is an exact complemented pair and a strong September month/complement candidate. `001E` is a strong September days-in-month candidate. Fixed bytes `45 AC DC C5 00 8F` remain format/signature candidates.
+
+There is no unexplained per-frame nonce/MAC-like entropy in the local 16-byte controller image.
+
+### Local state-transition negative
+
+A historical census shows 129/129 local frames remain in the RTC/service regime across tested states, including:
+- A80E/AFDC promotion;
+- active historical 0x06 zero-response participation;
+- partial 0x0F FC16 ACK participation.
+
+No local RTC -> Eco-5-like challenge transition is present in the known corpus.
+
+### Natural retry stop — EXP248
+
+A complete RX-only cold boot directly measures the unanswered target stream:
+
+```text
+first target       +1.283 s after BUS_RETURN
+target count       63
+median cadence     4.298 s
+last target        +267.123 s
+final state        A80E=0028 A80F=000A AFDC=0010
+confirmed silence  80.793 s
+false stops        0
+parser resync Δ    0
+RX drop Δ          0
+```
+
+The rest of the bus continues normally after the final target. Therefore target disappearance is a genuine service-state stop, not bus loss.
+
+No A80E/A80F/AFDC edge coincides with the stop and cadence does not back off.
+
+Leading hypothesis: approximately **270 s startup/service retry deadline**. With the measured cadence, the next request would normally fall near +271.421 s. Repeatability is still required before promoting this to a protocol constant.
+
+### External Eco 5 challenge/response analysis
+
+Two reported genuine pairs remain:
+
+```text
+63cefb32c6f41382087992370caceeba -> 1691a5f3f8e8d58738924416e8e6a3d5
+31fb59fc8fb1175cd89f904d06d92ea4 -> fd636ccd0f921d83ff232a1a2413b372
+```
+
+Simple linear/static transforms, common unkeyed hashes and several direct AES/CMAC key-search constructions have been excluded. No specific primitive or key is proven.
+
+### DCM03 firmware target
+
+Official topology evidence places DCM03 directly on the DHP-AQ/iTec-like RS485 path. Public profile evidence repeatedly reports DCM version **2.0.17** across multiple classic Thermia families.
+
+No public standalone DCM03 firmware/update package, service loader, readable MCU identity or debug interface has been recovered from the inspected public artifacts.
+
+### Safety consequence
+
+No active XTR `0730` response is approved.
+
+In particular:
+- do not replay the two Eco 5 responses against the local XTR RTC/service record;
+- do not use eight zeros;
+- do not echo 071C;
+- do not brute-force response words.
+
+The next safe discriminator is **EXP249**, a second identical RX-only cold boot to test repeatability of the ~267 s / 63-target stop.
+

@@ -2614,3 +2614,168 @@ Do not use the old RTC/calendar transform to construct 071C/0730 responses. Do n
 **Next**
 
 Request and ingest the raw Eco 5 capture plus timeline script for offline challenge/response analysis before any new active TX experiment.
+
+---
+
+## EXP239 — 071C -> 0730 challenge/response analysis — OPEN / OFFLINE
+
+**Hypothesis:** the externally reported genuine iTec Eco 5 `071C` 16-byte controller values and `0730` gateway values form a reproducible approval/session response.
+
+Observed genuine pairs:
+
+```text
+63cefb32c6f41382087992370caceeba -> 1691a5f3f8e8d58738924416e8e6a3d5
+31fb59fc8fb1175cd89f904d06d92ea4 -> fd636ccd0f921d83ff232a1a2413b372
+```
+
+Offline analysis rules out fixed XOR, fixed 128-bit add/subtract, fixed per-byte additive masks, fixed rotation+XOR, byte-permutation+fixed-mask families, and common unkeyed digest truncations. Direct AES-ECB/AES-CMAC tests using obvious keys and exhaustive contiguous 16/32-byte windows from the inspected Link CC images produced zero matches.
+
+**Strong conclusion:** the relation is non-trivial and compatible with a keyed/nonlinear construction, but no specific primitive is proven.
+
+**Negative result:** no arbitrary XTR `0730` response can be calculated from current evidence. No active response is approved.
+
+---
+
+## EXP240 — DCM03 implementation-locus / firmware-lineage archaeology — COMPLETE / OFFLINE
+
+**Hypothesis:** product topology can identify which device most likely implements the HP-facing approval function.
+
+Official DHP-AQ documentation shows DCM03 connected directly by RS485 to the heat-pump relay board. Older H/L/A systems use a separate Gateway card, so those topologies must not be conflated.
+
+**Strong conclusion:** for DHP-AQ/iTec-like direct topology, DCM03 itself is the primary firmware-recovery target for the HP-facing approval/session behavior.
+
+Product token anchors include DCM03 module `086L1602` and AQ kit `086L2382`. Public API/debug examples expose DCM version separately from heat-pump firmware, with `2.0.17` recurring.
+
+**Negative result:** no usable public MCU/debug-interface identification was recovered in this experiment.
+
+---
+
+## EXP241 — DCM03 version/profile census — COMPLETE / OFFLINE
+
+Public classic-profile fixtures show DCM **2.0.17** across materially different systems, including Diplomat/Duo, ATEC/DHP-AQ and iTec/IQ profiles.
+
+**Strong conclusion:** DCM03 2.0.17 is a generic multi-profile classic DCM firmware generation and is a high-value recovery target.
+
+This does not prove identical wire protocol, keying or secrets across all installations.
+
+---
+
+## EXP242 — DCM03 update-path / package archaeology — COMPLETE / OFFLINE NEGATIVE
+
+Public Danfoss Link CC packages and official update documentation were audited for a standalone DCM03 image or field-update path.
+
+The inspected manifests contain Link CC image, EEPROM, bootloader, Z-Wave and small auxiliary firmware payloads, but no identifiable DCM03 firmware image. Direct token searches for DCM03/version/product IDs were negative.
+
+**Strong conclusion:** no evidence-backed normal public end-user DCM03 firmware update path is known.
+
+**Negative result:** no DCM03 2.0.17 binary, updater or service loader recovered.
+
+---
+
+## EXP243 — DCM03 hardware/MCU/debug archaeology — COMPLETE / OFFLINE NEGATIVE / PARKED
+
+Public documentation confirms DCM03 identity/topology but did not yield a readable internal PCB photograph, MCU identification, schematic or credible debug/programming interface.
+
+**Negative result:** no actionable hardware debug path recovered. This line is parked to avoid drifting away from the direct protocol blocker.
+
+---
+
+## EXP244 — Local XTR 071C structure/recurrence analysis — COMPLETE / OFFLINE POSITIVE
+
+104 exact local XTR `0x0F FC17 read 0730/count8 + write 071C/count8` requests were directly re-parsed from EXP221/222/225.
+
+Observed:
+- 104/104 payloads unique;
+- zero exact retries;
+- ~4.26 s median cadence;
+- only a small subset of bytes changes between adjacent frames;
+- the prior local RTC/calendar encoder reconstructs 104/104 frames exactly.
+
+**Strong conclusion:** in the observed local XTR no-Online-endpoint state, `071C..0723` is deterministic RTC/service data, not a fresh high-entropy 128-bit challenge.
+
+The externally reported Eco 5 regime is structurally different. Do not generalize either interpretation across all models/states.
+
+---
+
+## EXP245 — Existing-capture 071C mode/precondition census — COMPLETE / OFFLINE STRONG NEGATIVE FOR LOCAL MODE TRANSITION
+
+The historical local corpus was expanded to **129 exact target frames** across EXP71, EXP71B, EXP221, EXP222 and EXP225.
+
+Observed:
+- 129/129 match the local RTC/service encoder;
+- 0/129 are challenge-like;
+- 0/129 are exact retries;
+- the RTC regime persists through tested A80E/AFDC promotion, an active historical 0x06 zero responder, and partial 0x0F FC16 ACK participation.
+
+**Strong conclusion:** ordinary tested local boot/accessory state progression does not switch the XTR from RTC mode to the externally reported Eco 5 challenge-like mode.
+
+---
+
+## EXP246 — XTR RTC/service encoder reconstruction — COMPLETE / OFFLINE POSITIVE
+
+The local 16-byte block is better described as a **redundantly encoded calendar/clock service record**.
+
+Proven dynamic structure includes:
+- year-2000;
+- hour;
+- day-of-month;
+- 4x minute;
+- three deterministic second encodings.
+
+`F9 06` is an exact complemented pair and is a strong September month/complement candidate. `001E` is a strong September days-in-month candidate. Those two roles remain cross-month hypotheses.
+
+**Strong conclusion:** there is no unexplained per-frame entropy inside the local 16-byte controller record.
+
+---
+
+## EXP247 — Boot approval retry-window / timeout reconstruction — COMPLETE / OFFLINE BOUNDED RESULT
+
+Historical captures prove the unanswered target stream eventually disappears naturally, but all dedicated target captures were right-censored.
+
+For the continuous passive EXP221 boot:
+- target still active after ~198 s;
+- target already absent by ~1600 s when later target-aware logging resumed on the same power cycle.
+
+**Negative result:** exact timeout could not be reconstructed from existing historical logs.
+
+This directly motivated a long RX-only capture.
+
+---
+
+## EXP248 — Passive 071C/0730 natural-stop trace — COMPLETE / VALID PASSIVE POSITIVE
+
+**Hypothesis:** the unanswered local XTR startup/service target stream retries for a finite window and then stops naturally.
+
+Attempt 1:
+- armed at 14:55:38.670;
+- no power-cycle occurred;
+- boot-gap guard auto-aborted after 60 s;
+- no protocol result; fail-closed control behaved correctly.
+
+Attempt 2:
+- ARM 14:57:25.491;
+- BUS_GAP 14:57:53.961;
+- BUS_RETURN 14:58:01.042;
+- first target +1.283 s;
+- **63 target requests**;
+- median cadence **4298 ms**;
+- last target **+267.123 s** with `A80E=0028 A80F=000A AFDC=0010`;
+- STOP_CANDIDATE after 20.793 s target silence;
+- SUMMARY CONFIRMED_STOP after **80.793 s** final silence;
+- `false_stops=0`, `resync_delta=0`, `drop_delta=0`;
+- 86 observed 0x06 polls.
+
+**Observed fact:** ordinary bus traffic remains active after the last target.
+
+**Strong conclusions:**
+1. the local XTR `071C/0730` startup/service stream has a genuine natural stop;
+2. the stop is not caused by bus loss;
+3. no visible A80E/A80F/AFDC edge coincides with the final request;
+4. there is no gradual retry backoff.
+
+**Hypothesis:** an approximately 270 s startup/service deadline is the leading timing model because the next normal target slot would have been expected around +271.421 s.
+
+**Unknown:** timer versus retry budget versus hidden internal state.
+
+**Next:** EXP249 passive repeatability run using the same instrumentation and one additional cold boot. No TX.
+
