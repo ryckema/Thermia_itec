@@ -1,10 +1,12 @@
-# EXP268 — PREPARED / NOT RUN — extended RX-only post-mailbox observation
+# EXP268 — PREPARED / NOT RUN — post-mailbox parallel runtime observation
 
-**Hypothesis:** EXP267 shows that three consecutive genuine Eco5 idle responses do not cause immediate progression; the XTR continues exact `FC03 0708/count6` polling on the same ~4.1–4.4 s cadence. The next safest discriminator is whether meaningful later Online/Link traffic appears anyway if mailbox service stops after the third response. EXP268 therefore preserves the complete proven prefix and the same three exact mailbox responses, then becomes RX-only for 30 s. Repeated `0708/6` polls are logged but never answered after response #3. Known recurrent `085F/5` is ignored as background for discovery purposes. Any new FC16/FC03 family, especially the genuine Eco5 later-sync families `07D0/19, 07E4/17, 07F8/17, 080C/18, 0820/18, 0834/18, 0848/23, 0864/4`, is capture-only.
+**Hypothesis:** EXP267 established that repeated exact `FC03 0708/count6` polling continues after three genuine Eco5 idle responses. External genuine Eco5 behavior indicates that `0708/6` is a periodic runtime mailbox poll and can coexist with later FC16 synchronization/runtime traffic. EXP268 changes only the post-third-response observation policy: reproduce the complete proven prefix and the same maximum three exact idle mailbox responses, then remain RX-only for 30 s. Fourth and later exact `0708/6` polls are logged as expected mailbox polling and do **not** terminate the experiment.
 
-Safety: no new write payloads, no fourth mailbox response, no post-mailbox FC16 ACK. Parser/RX-drop delta, approval retry or unexpected peer response remains fail-closed. This experiment changes only the observation policy after the third known mailbox response.
+The first different non-background FC16 or different FC03 ends the observation and is captured without response. Special-interest genuine Eco5 families are `07D0/19, 07E4/17, 07F8/17, 080C/18, 0820/18, 0834/18, 0848/23, 0864/4`. Recurrent `085F/5` and `04A6/13` remain background for discovery purposes.
 
-# EXP267 RESULT — COMPLETE / NEGATIVE FOR <=3-IDLE-RESPONSES PROGRESSION
+**Safety:** active traffic is unchanged from EXP267: proven R1/prefix ACK chain plus at most three exact `0708/6` responses using `0F030C0000000000000000010000001C88`. No fourth mailbox response, no post-mailbox FC16 ACK, no new payload values, no broad writes/scans. Parser/RX-drop delta, approval retry or unexpected peer response remains fail-closed. Recovery remains one normal Thermia-controller reboot after the incomplete session.
+
+# EXP267 RESULT# EXP267 RESULT — COMPLETE / NEGATIVE FOR <=3-IDLE-RESPONSES PROGRESSION
 
 **Hypothesis:** up to three consecutive exact `FC03 0708/count6` polls may require the same genuine Eco5 idle response before the controller progresses.
 
