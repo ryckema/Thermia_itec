@@ -1,5 +1,16 @@
 # THERMIA EXPERIMENT LOG
 
+## EXP261 — bounded `046A -> 047E -> 0492` continuation — PREPARED / NOT RUN
+
+**Hypothesis:** the local XTR continues to follow the genuine Eco 5 Online/Link FC16 sequence after EXP260. Preserve the complete proven prefix and ACK exactly three new expected stages: `046A/count18`, `047E/count19`, and `0492/count11`. Then capture the first different FC16/FC03 without answering it.
+
+**New ACKs:** `046A/18 -> 0F10046A00126006`; `047E/19 -> 0F10047E0013E1C2`; `0492/11 -> 0F100492000B203D`.
+
+**Primary prediction:** `04A6/count13` is the genuine Eco 5 next-page observation, but because `04A6/13` is also known as a recurrent passive family it is recorded as a prediction rather than a strict required success value.
+
+**Safety:** same cold-boot approval guard and proven prefix as EXP260; first-exact-stage-only, <=5 s between ACKs, no retries, parser/drop counters unchanged, no unexpected peer frames. After `0492` ACK, capture only. No FC03 response. Controller reboot after summary.
+
+
 ## EXP260 — bounded `042E -> 0442 -> 0456` ACK batch — COMPLETE / STRONG POSITIVE
 
 **Hypothesis:** after the locally proven prefix through `042E/count15`, ACK exactly `042E/15`, `0442/13`, and `0456/12` in order, then stop and capture the next different frame. Genuine Eco 5 predicts `046A/count18`.
@@ -987,13 +998,3 @@ Observed:
 
 Interpretation:
 The outstanding `03E8/count14` request from EXP143 persisted over reboot. Therefore EXP144's quiet-baseline prerequisite was invalid for the actual controller state and the intended hypothesis was not tested.
-
-Next:
-EXP145 resumes the pending event-triggered sequence directly; no new Heat Curve UI change.
-
-
-#### EXP144 attempts 2 and 3 — reproduced procedural abort
-Both additional attempts again saw only repeated `03E8/count14` with first word `0x0023` during baseline and both aborted after 29 FC16 requests / 30 s. No FC03 or real 0x0F responder appeared.
-
-This strengthens the conclusion that the outstanding event-triggered 03E8 retry state is persistent and must be ACKed before progression can resume.
-
