@@ -1,8 +1,27 @@
-## EXP268 — PREPARED / NOT RUN
+## EXP269 — PREPARED / NOT RUN
 
-Hypothesis: `FC03 0708/count6` is a persistent runtime mailbox poll and may coexist with later Online/Link FC16/runtime traffic. Preserve the full proven prefix and exactly the same maximum three genuine Eco5 idle responses as EXP267. After response #3, become RX-only for 30 s. Fourth and later exact `0708/6` polls are logged but are **not** treated as completion/failure. Capture the first different non-background FC16 or different FC03 without answering it. No post-mailbox FC16 ACK and no new mailbox payload is authorized.
+Hypothesis: because EXP268 stopped answering the persistent `0708/6` mailbox after response #3, later parallel runtime traffic may have been prevented or delayed. EXP269 changes only the maximum service count from 3 to 10 exact `0708/6` idle responses using the same genuine Eco5 frame `0F030C0000000000000000010000001C88`. Proven prefix and safety gates remain unchanged. After response #10, observe RX-only for 30 s. Any different non-background FC16 or different FC03 is capture-only; no post-mailbox FC16 ACK and no eleventh mailbox response.
 
-## EXP267 — COMPLETE## EXP267 — COMPLETE / NEGATIVE
+## EXP268 — COMPLETE / NEGATIVE
+
+Hypothesis: after three bounded idle mailbox responses, later FC16/runtime traffic may appear during 30 s RX-only even though `0708/6` continues polling.
+
+Observed:
+- proven prefix through `06F4/19` completed again;
+- one CRC resync occurred at BUS_RETURN, with post-return resync delta 0 and RX-drop delta 0 at summary;
+- first `0708/6` arrived +3.621 s after `06F4` ACK;
+- responses #1..#3 used the exact genuine Eco5 idle frame;
+- after response #3, 30 s RX-only completed;
+- mailbox requests reached 10 total, i.e. 7 more exact `0708/6` polls were observed unanswered;
+- 21 recurrent `085F/5` background frames were counted after `06F4`;
+- no different non-background FC16, no different FC03, and none of `07D0..0864` appeared;
+- DE LOW at summary.
+
+Conclusion: negative for the 30 s RX-only progression hypothesis. Persistent `0708/6` polling continues normally, but no later runtime family appeared while mailbox service was stopped after three replies.
+
+---
+
+## EXP267 — COMPLETE## EXP267 — COMPLETE## EXP267 — COMPLETE / NEGATIVE
 
 Hypothesis: up to three consecutive exact `FC03 0708/count6` polls require the same genuine Eco5 idle response before the controller progresses.
 
