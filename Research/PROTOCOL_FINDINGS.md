@@ -1,3 +1,17 @@
+## EXP263 finding — 055A..06C5 33-word sync run locally confirmed
+
+## EXP264 target — final small FC16 tail before mailbox/runtime observation
+
+EXP263 locally proved the ordered 12-block 33-word run `055A..06C5` and captured `06EA/count7` next. EXP264 therefore tests only the next genuine Eco 5 tail: `06EA/7 -> 06F1/3 -> 06F4/19`, using standard one-shot FC16 ACKs. After `06F4` it is capture-only; FC03, including `0708/count6`, is evidence only and receives no response.
+
+EXP263 locally confirmed the genuine Eco 5 FC16 sequence:
+055A/33 -> 057B/33 -> 059C/33 -> 05BD/33 -> 05DE/33 -> 05FF/33 ->
+0620/33 -> 0641/33 -> 0662/33 -> 0683/33 -> 06A4/33 -> 06C5/33 -> 06EA/7.
+
+All twelve 33-word blocks were ACKed exactly once and in order. 06EA/count7 arrived +475 ms after the 06C5 ACK and was not ACKed. The run remained parser/RX clean. This is strong evidence that the XTR and genuine Eco 5 share this synchronization segment.
+
+Do not generalize this into broad FC16 ACKing: only the exact known ordered stages are proven. Full Online/Link establishment, the later 06F1/06F4 stages, and local 0708 mailbox timing remain open.
+
 ## EXP262 — accelerated chain proof through 055A/count33
 
 EXP262 establishes the following local ordered Online/Link path after the already-proven prefix: `04A6/13 -> 04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10 -> 0532/18 -> 0546/20 -> 055A/33`. The first eight pages were ACKed exactly once; `055A/33` was captured only. This matches the genuine Eco 5 ordering and validates larger bounded ACK batches.
@@ -984,16 +998,3 @@ Observed local XTR progression:
 `04BA/count22 -> ACK -> 05FF/count33`.
 
 Combined proven sequence:
-`03E8/14 -> ACK -> 0410/22 -> ACK -> 042E/15 -> ACK -> 04A6/13 -> ACK -> 04BA/22 -> ACK -> 05FF/33`.
-
-New locally proven block:
-`0x05FF..0x061F` (count 33; decimal 1535..1567).
-
-Persistence:
-After EXP139 ended while waiting at `04BA`, EXP140 rebooted and immediately saw repeated `04BA/count22`, again confirming controller-side persistence of the transfer state.
-
-Next discriminator:
-ACK only `05FF/count33` as the one new variable; do not answer the next new FC16 shape or FC03 request.
-
-
-## EXP141 prepared — human-gated sequence walking
