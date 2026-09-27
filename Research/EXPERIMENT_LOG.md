@@ -1,5 +1,12 @@
 ## EXP269 — PREPARED / NOT RUN
 
+## ECO5 raw-log review after EXP268
+
+Direct raw-log comparison changes the interpretation of the next test. In Eco5 capture `090209`, the first mailbox after `06F4/19` is answered with words `0000 0000 0000 0000 0080 0006`, after which `07D0/19` follows ~0.7 s later. Later mailbox replies with fifth word 0 and sixth word `0006` are interleaved with `07E4/17, 07F8/17, 080C/18, 0820/18, 0834/18, 0848/23, 0864/4, 0870/17, 0884/60`.
+
+Therefore EXP269 as previously prepared (10 repetitions of `0001 0000`) is **SUPERSEDED / NOT RUN**. The next active experiment must test the exact phase-matched Eco5 first post-`06F4` response, not a larger count of the wrong payload.
+
+
 Hypothesis: because EXP268 stopped answering the persistent `0708/6` mailbox after response #3, later parallel runtime traffic may have been prevented or delayed. EXP269 changes only the maximum service count from 3 to 10 exact `0708/6` idle responses using the same genuine Eco5 frame `0F030C0000000000000000010000001C88`. Proven prefix and safety gates remain unchanged. After response #10, observe RX-only for 30 s. Any different non-background FC16 or different FC03 is capture-only; no post-mailbox FC16 ACK and no eleventh mailbox response.
 
 ## EXP268 — COMPLETE / NEGATIVE
