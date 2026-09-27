@@ -1,5 +1,27 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-27 — EXP257 COMPLETE / STRONG POSITIVE
+
+- Last completed experiment: **EXP257 — COMPLETE / STRONG POSITIVE**.
+- EXP257 reproduced the genuine Eco 5 post-approval transition locally:
+  `R1 -> 03E8/count14 -> one ACK -> 03FC/count11`.
+- First approval arrived +1285 ms after BUS_RETURN.
+- `03E8/count14` arrived +130 ms after R1.
+- `03FC/count11` arrived +691 ms after the single `03E8` ACK.
+- No `03FC` ACK was sent; no further downstream emulation occurred.
+- Summary integrity: approval retries after R1 0, same-03E8 retries after ACK 0, unexpected peer frames 0, post-return resync/drop deltas 0, DE LOW.
+- Full Online/Link establishment remains unproven.
+- No next experiment is yet prepared.
+- EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.
+
+This gives the local XTR the same synchronization prefix that the genuine Eco 5 capture proves twice:
+`approval response -> 03E8/14 -> ACK -> 03FC/11`.
+The external reference then continues with `03FC ACK -> 0410/22`.
+
+Known recovery rule remains: after incomplete Online/Link participation, perform one normal controller reboot.
+
+---
+
 ## Current status — 2026-09-27 — EXP257 PREPARED / NOT RUN
 
 - Last completed experiment: **EXP256 — COMPLETE / ACTIVE STRONG POSITIVE**.
