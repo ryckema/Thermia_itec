@@ -11,8 +11,9 @@
 #   should advance the controller to a subsequent FC16 or FC03 stage.
 # - Complete genuine Eco5 capture now predicts 03FC/count11 as the immediate
 #   next stage after the 03E8/count14 ACK. Prior local EXP137 had observed
-#   0410/count22 later after a 03E8 ACK. EXP257 does NOT assume either result:
-#   the first different post-ACK request is captured and NEVER acknowledged.
+#   0410/count22 later after a 03E8 ACK. EXP257 therefore treats 03FC/count11 as
+#   the primary positive discriminator, but any first different post-ACK request
+#   is captured and NEVER acknowledged.
 #
 # ACTIVE VALUE / PROVENANCE:
 # - Same externally reported genuine Eco5 R1 already used in EXP252 + EXP256:
@@ -997,4 +998,3 @@ uart:
                       bytes.size() == 37;
                     const bool is_first =
                       id(exp257_post_r1_fc16_count) == 1;
-                    const bool timely =
