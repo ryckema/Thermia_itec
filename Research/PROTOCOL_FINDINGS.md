@@ -1,6 +1,6 @@
 # THERMIA PROTOCOL FINDINGS
 
-Last updated: 2026-09-27 after EXP256
+Last updated: 2026-09-27 after EXP256 + full external Eco 5 capture refinement
 
 ## EXP256 — R1 crosses approval boundary into native 03E8 synchronization
 
