@@ -24,7 +24,7 @@
 # - Modbus RTU
 #
 # IMPORTANT:
-# - Public build: no experimental write/injection/emulation controls.
+# - Research build: passive mapping/logging only; no write/injection/emulation controls.
 # - RS485 is receive-only; GPIO17 TX is intentionally not configured.
 # - This build is passive/read-only and does not transmit Thermia Modbus frames.
 # - The complete known heating-settings block 0x0F:03E8..03F4 is persisted
@@ -2653,7 +2653,7 @@ sensor:
   # RAW MODBUS REGISTERS
   # All are diagnostic and disabled by default.
   # Source: 1=FC04 read, 2=FC10 Thermia write, 3=FC17 write part,
-  #         4=FC17 read response.
+  #         4=FC17 read response, 5=FC03 read response, 6=FC06 observed.
   # ===========================================================================
 
 binary_sensor:
