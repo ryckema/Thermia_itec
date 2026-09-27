@@ -1,13 +1,35 @@
 # THERMIA EXPERIMENT LOG
 
-## EXP260 — bounded 042E -> 0442 -> 0456 ACK batch — PREPARED / NOT RUN
+## EXP260 — bounded `042E -> 0442 -> 0456` ACK batch — COMPLETE / STRONG POSITIVE
 
-Hypothesis: continue the proven local Online/Link prefix with a bounded batch of three exact standard FC16 ACKs: 042E/count15, then 0442/count13, then 0456/count12. Genuine Eco 5 predicts 046A/count18 next.
+**Hypothesis:** after the locally proven prefix through `042E/count15`, ACK exactly `042E/15`, `0442/13`, and `0456/12` in order, then stop and capture the next different frame. Genuine Eco 5 predicts `046A/count18`.
 
-Safety: each new stage must be the first exact expected block within 5 s with clean parser/drop counters and no retries or unexpected peer frames. After the 0456 ACK, capture only; no 046A ACK and no FC03/mailbox response. Known incomplete-session recovery remains one normal controller reboot.
+**Observed facts:**
+- first approval request at +1284 ms after BUS_RETURN; R1 sent once;
+- `03E8/14` arrived +126 ms after R1 and was ACKed once;
+- `03FC/11` arrived +694 ms after the `03E8` ACK and was ACKed once;
+- `0410/22` arrived +1492 ms after the `03FC` ACK and was ACKed once;
+- `042E/15` arrived +695 ms after the `0410` ACK and was ACKed once;
+- `0442/13` arrived +1502 ms after the `042E` ACK and was ACKed once;
+- `0456/12` arrived +566 ms after the `0442` ACK and was ACKed once;
+- predicted `046A/count18` arrived +1473 ms after the `0456` ACK; it was captured and not ACKed.
+- summary: approval retries after R1=0; all stage retry counters=0; peer17=0; unexpected peer ACK=0; post-return resync/drop deltas=0; DE LOW.
 
+**UI side effect:** user reports the DHW-side literal `0` appeared again. No EXP260 `COMM. ERR ONLINE/LINK` confirmation yet. Recovery should be performed immediately after the summary rather than waiting for an alarm.
+
+**Strong conclusion:** the bounded batching strategy is validated locally through `046A/count18` and preserves the same ordered sequence as the genuine Eco 5 reference.
 
 Last updated: 2026-09-27
+
+## EXP260 — bounded `042E -> 0442 -> 0456` ACK batch — PREPARED / NOT RUN
+
+**Hypothesis:** continue the already-proven local Online/Link prefix in one bounded batch. After the proven EXP259 prefix, ACK exact `042E/count15`, then exact `0442/count13`, then exact `0456/count12`. The genuine Eco 5 reference predicts `046A/count18` next.
+
+**New active variable family:** three exact standard FC16 ACKs: `0F10042E000FE01A`, `0F100442000DA1C6`, `0F100456000C2002`. Each is one-shot and only allowed after the preceding exact stage.
+
+**Safety/stop rule:** any deviation, retry, FC03, unexpected peer response, parser/RX-drop delta, or >5 s missing expected stage stops the experiment immediately. After the `0456` ACK, capture the first different FC16/FC03 only; no `046A` ACK and no mailbox response.
+
+**Known recovery:** deliberately incomplete Online/Link sessions have repeatedly produced DHW-side `0` and `COMM. ERR ONLINE/LINK`; reboot controller once after the summary.
 
 ## EXP259 — ACK `0410/count22`, capture next stage — COMPLETE / STRONG POSITIVE
 
@@ -975,33 +997,3 @@ Both additional attempts again saw only repeated `03E8/count14` with first word 
 
 This strengthens the conclusion that the outstanding event-triggered 03E8 retry state is persistent and must be ACKed before progression can resume.
 
-
-### EXP145 — pending 0x03E8 sync to FC03 transition probe — PREPARED
-
-Hypothesis:
-Complete the persistent event-triggered controller->0x0F sync using only proven ACKs, then test specifically for the transition to `0x0F FC03` or another post-sync stage.
-
-No new Thermia UI change.
-
-Baseline:
-10 s, only repeated `03E8/count14`, minimum 3 requests.
-
-After ACKing known sequence:
-- first unknown FC16 => stop/no ACK;
-- first FC03 => stop/no response;
-- after ACK of `0662/count33`, all experiment TX stops and 120 s passive post-sync observation begins.
-
-A5/A4 FC03 requests are logged passively for comparison with the genuine Online capture.
-
-
-### EXP145 — pending 0x03E8 sync to FC03 transition probe — COMPLETE / IMPORTANT NEGATIVE
-
-Observed:
-- baseline: 10 exact `03E8/count14` retries, first word `0x0023`;
-- baseline accepted;
-- one ACK sent to the next `03E8/count14`;
-- retries stopped immediately;
-- for at least ~69 s afterward: no further 0x0F FC16, no 0x0F FC03, no A5/A4 FC03;
-- parser/drop clean.
-
-Conclusion:
