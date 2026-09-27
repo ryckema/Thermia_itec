@@ -1,3 +1,14 @@
+## EXP269 — PREPARED / NOT RUN — revised phase-matched mailbox test
+
+Hypothesis: the first post-`06F4` XTR mailbox must receive the same phase-specific payload seen in the matching Eco5 startup trace.
+
+Sequence: proven approval/sync prefix through `06F4/19` -> first exact `0708/6` -> send exactly once `0F030C0000000000000000008000069C9E` (words `0000 0000 0000 0000 0080 0006`) -> RX-only up to 30 s.
+
+Primary success criterion: capture `07D0/19`, with no ACK. Repeated `0708/6` is a negative/non-progress signal and receives no second response. No other new active traffic is introduced.
+
+The earlier EXP269 design using up to ten `0001/0000` replies remains SUPERSEDED / NOT RUN.
+
+---
 ## EXP269 — PREPARED / NOT RUN
 
 ## ECO5 raw-log review after EXP268
