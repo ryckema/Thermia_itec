@@ -1,3 +1,14 @@
+## EXP269 target — exact Eco5 phase-matched first mailbox response
+
+The next local protocol test is now fixed to the matching Eco5 post-`06F4` transition:
+
+`06F4/19 ACK -> FC03 0708/6 -> response 0000 0000 0000 0000 0080 0006 -> expect FC16 07D0/19`.
+
+The exact response frame is `0F030C0000000000000000008000069C9E`. It is sent once only. `07D0/19` is capture-only; no ACK. A repeated `0708/6` is not answered.
+
+This experiment tests phase-specific mailbox semantics, not persistence/retry count. The earlier 10x `0001/0000` EXP269 plan is superseded.
+
+---
 ## EXP268 finding — persistent mailbox confirmed; no 30 s RX-only runtime progression
 
 ## Eco5 raw-log correction — mailbox payload is phase-specific
