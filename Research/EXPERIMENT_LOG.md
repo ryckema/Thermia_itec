@@ -1,3 +1,18 @@
+## EXP266 — COMPLETE / PARTIAL POSITIVE
+
+Hypothesis: answer the first exact post-`06F4` `FC03 0708/count6` once with the genuine Eco5 idle mailbox frame `0F030C0000000000000000010000001C88`, then capture only.
+
+Result:
+- Proven prefix through `06F4/19` succeeded again.
+- Background `085F/5` ignored at +95 ms.
+- First `0708/6` at +1.561 s was answered exactly once with the genuine Eco5 idle response.
+- Same `0708/6` repeated +4.180 s after the response; no second response sent.
+- Parser resyncs 0; RX drops 0.
+
+Conclusion: one idle mailbox response is insufficient to complete the local mailbox phase. Negative result recorded.
+
+---
+
 ## EXP266 — PREPARED / NOT RUN
 
 **Hypothesis:** respond once to the first exact locally proven post-`06F4/19` mailbox request `FC03 0708/count6` using the genuine Eco5 idle response `0F030C0000000000000000010000001C88`, then observe RX-only.
@@ -983,18 +998,3 @@ Press `EXP141 ARM ACK Current Candidate Once` while the walker remains active.
 - next exact request received one `MANUAL_GATED` FC16 ACK.
 - log confirms `MANUAL_STAGE_ACKED stage=1 start=0662 count=33`.
 - repeated `0662` traffic then stopped.
-- no subsequent EXP141 FC16/FC03 event is present for at least ~11 s in the supplied continuation fragment.
-
-This is different from earlier stages, where the next FC16 block followed within ~0.5–1.6 s.
-Do not classify 0662 as terminal yet; continue observing until a new stage, FC03, or timeout summary appears.
-
-
-### EXP142 — post-0x0662 gated sequence walker — PREPARED
-
-Hypothesis:
-Automatic ACK of the locally proven `0662/count33` stage may expose the next post-sync behavior without requiring another manual gate for that already-tested block.
-
-Only new ACK target:
-- `0662/count33`.
-
-All later unknown FC16 stages remain human-gated after >=3 exact repetitions. FC03 is never answered.
