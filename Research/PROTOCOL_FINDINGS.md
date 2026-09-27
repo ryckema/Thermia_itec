@@ -1,5 +1,31 @@
 # THERMIA PROTOCOL FINDINGS
 
+Last updated: 2026-09-27 after EXP259
+
+## EXP259 — local ordered Online/Link sync confirmed through `042E/count15`
+
+EXP259 extends the bounded local XTR progression by exactly one ACK.
+
+Observed local sequence:
+`R1 -> 03E8/14 -> ACK -> 03FC/11 -> ACK -> 0410/22 -> ACK -> 042E/15`
+
+Timing:
+- approval: +1283 ms after BUS_RETURN;
+- `03E8`: +138 ms after R1;
+- `03FC`: +682 ms after `03E8` ACK;
+- `0410`: +1498 ms after `03FC` ACK;
+- `042E`: +696 ms after `0410` ACK.
+
+Exact `042E/count15` payload words:
+`0001 0001 0000 000A FFF6 0005 001E 0000 002D 0000 0000 0000 0000 0000 0000`.
+
+**Strong conclusion:** the local XTR follows the same genuine Eco 5 initial synchronization ordering at least through the first four ordered FC16 pages:
+`03E8/14 -> 03FC/11 -> 0410/22 -> 042E/15`.
+
+**Unknown:** whether all later Eco 5 pages and the `0708/count6` mailbox phase are identical on the XTR. Full Online/Link establishment is not yet proven.
+
+---
+
 Last updated: 2026-09-27 after EXP258
 
 ## EXP258 — XTR confirms third ordered Online/Link sync block
@@ -971,29 +997,3 @@ Post-0662 state is quiescent. EXP143 does not extend the ACK chain.
 Instead it tests whether a known user-level setting event (Heat Curve +1, then restore) triggers 0x0F communication after sync completion.
 
 The ESP remains receive-only for the entire experiment.
-
-
-## EXP143 — manual Heat Curve change re-triggers 0x0F FC16 synchronization
-
-Locally proven event trigger:
-A user-level Heat Curve change on the Thermia UI reactivates `0x0F FC16 @ 0x03E8 count14` after the post-0662 quiet state.
-
-Direct value evidence in controller->0x0F FC16 block 03E8:
-- Heat Curve 36 -> first word `0x0024`
-- Heat Curve 35 -> first word `0x0023`
-
-Thus, for this FC16 write-side block and this experiment, word `0x03E8` directly mirrors the Heat Curve setting as an unsigned integer.
-
-The controller repeats this block until ACKed.
-
-Important:
-Do not conflate this FC16 write-side representation with the values observed in genuine Online FC03 read responses. The two directions may represent different state/images or ownership domains.
-
-Implication:
-The quiet post-0662 state is event-reactivated by a settings change, giving a controlled way to restart the sync sequence without power cycling or reflashing.
-
-
-## EXP144 prepared — event-triggered known-sequence walk
-
-EXP143 established a controlled re-trigger:
-manual Heat Curve change -> `0x0F FC16 03E8/count14`.
