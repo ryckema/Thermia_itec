@@ -1,5 +1,39 @@
 # THERMIA PROJECT STATE
 
+## External Eco 5 follow-up after EXP257 — 2026-09-27
+
+The new public-comment analysis has been cross-checked against the full raw Eco 5 capture. It materially refines the reference behavior but does not change the EXP257 result.
+
+Observed from the raw capture:
+- three cold-start approval windows begin with the first `071C/0730` request at **+1.199 s, +1.202 s, and +1.210 s** after bus return; this matches the local XTR EXP248/249/256/257 ~+1.28 s startup phase closely;
+- with the genuine gateway attached, the two successful approval responses occur at **+120.153 s** and **+119.808 s** after bus return, after 29 challenge requests each;
+- the no-gateway middle run was power-cycled after only ~174 s, with 41 unanswered challenges through +171.230 s, so it cannot test the local ~267 s / 63-request natural stop;
+- the already-running steady-state segment before the first power-off contains no `071C/0730` traffic, so absence in steady-state captures does not prove a model lacks the cold-start approval stream;
+- only two answered challenges exist, so challenge-repeat determinism and response stability across power cycles remain **unknown**; the one duplicated challenge in the capture was unanswered.
+
+### Gateway behavior after approval
+
+The genuine Eco 5 endpoint ACKs the controller's FC16 transfer blocks and the stable prefix is:
+
+`03E8/14 -> ACK -> 03FC/11 -> ACK -> 0410/22 -> ACK -> 042E/15 -> ...`
+
+The broad controller-export sequence then continues through the known 0x03E8..0x0864 range. `04A6/13` and `085F/5` are recurrent passive families overlaid on that transfer; their ACK timing differs between power-ups and they are **not supported as approval preconditions**. Do not treat their interleaving position as a required ordered sync step.
+
+The first `0708/count6` mailbox poll occurs while the FC16 transfer is still in progress:
+- first successful power-up: **+158.393 s** after bus return; the first poll is unanswered, the next poll is answered;
+- second successful power-up: **+186.828 s** after bus return and is answered immediately.
+
+**Raw-frame correction:** the repeated post-approval idle mailbox response in the public capture is `0F 03 0C 0000 0000 0000 0000 0001 0000 ...`, i.e. six Modbus words `0000 0000 0000 0000 0001 0000`. A comment transcribed the fifth word as `0100`; the raw bytes support `0001` in standard Modbus register order.
+
+Later in the second successful session the fifth mailbox word is observed at `03DC` (988), then 984, 976, 908, 896, 768, 512, and finally 0. This is an **observed countdown-like sequence**. Interpreting it as pending sync-item count remains a hypothesis.
+
+### Next bounded candidate
+
+**EXP258 — candidate / NOT PREPARED.** Hypothesis: after the already-proven `R1 -> 03E8/14 ACK -> 03FC/11`, one exact standard ACK to the first local `03FC/count11` should advance the XTR to `0410/count22`, matching both successful genuine Eco 5 sessions. Stop on the first different block and do not ACK `0410`.
+
+Do **not** jump directly to ACKing the entire chain or answering `0708`; that would change multiple active variables at once and would lose the clean discriminator established by EXP256-257.
+
+
 ## Authoritative current state — 2026-09-27 — EXP257 COMPLETE / STRONG POSITIVE
 
 - Last completed experiment: **EXP257 — COMPLETE / STRONG POSITIVE**.
@@ -964,37 +998,3 @@ Last updated: 2026-09-27
 ## Authoritative current state — 2026-09-27 after EXP239 Phase A
 
 - **Current experiment:** **EXP239 — IN PROGRESS / OFFLINE 071C→0730 CHALLENGE-RESPONSE ANALYSIS**.
-- **EXP239 hypothesis:** controller words `071C..0723` form a 16-byte challenge/session token and gateway words `0730..0737` are a reproducible non-trivial response that gates entry into the iTec Online state machine.
-- **EXP238 status:** remains **PREPARED / NOT RUN** and is parked while EXP239 has priority.
-- **Experimental variable:** offline analysis only. No ESP YAML, Home Assistant control, Thermia-bus TX, ACK, response, setting mutation, restart, scan or room-sensor emulation was introduced.
-- **Available Phase-A corpus:** two published challenge/response pairs from the new genuine iTec Eco 5 Online capture. The full 10,719-frame raw log and contributor timeline script are not yet available locally.
-- **Observed Phase-A facts:**
-  - pair 1 challenge→response Hamming distance = `65/128` bits;
-  - pair 2 challenge→response Hamming distance = `62/128` bits;
-  - the two challenges differ in `55/128` bits and their responses differ in `68/128` bits;
-  - fixed XOR masks differ (`755f5ec13e1cc60530ebd621e44a4d6f` vs `cc98353180230adf27bcba5722ca9dd6`);
-  - fixed 128-bit add/subtract, fixed per-byte additive mask, fixed bit-rotation+XOR, and even fixed byte-permutation+XOR models are inconsistent with the two pairs;
-  - common unkeyed 128-bit digest/truncation checks do not reproduce the responses.
-- **Strong conclusion:** the two available pairs already rule out the simplest static transforms. The response relation is compatible with a non-linear keyed transform/MAC-style construction, but two pairs are insufficient to identify a named primitive.
-- **Protocol correction retained:** the former EXP226 RTC/calendar interpretation must not be used as a semantic constraint for `071C..0723`.
-- **Safety consequence:** there is still no evidence-backed response for an arbitrary new XTR challenge. No active `0730` response is approved and brute-force is prohibited.
-- **EXP239 completion blocker:** ingest the genuine Eco 5 raw capture, extract every attempt/retry/response across both gateway-connected boot cycles, then test determinism, retry behavior, boot-cycle dependence and post-handshake transition timing.
-- **Tooling prepared:** `exp239_extract_071c_0730.py` performs read-only CRC validation, exact FC17 handshake extraction, duplicate/retry classification, response timing, 0708 mailbox extraction and first post-handshake FC16/mailbox timing.
-
----
-
-## Authoritative current state — 2026-09-27 after EXP237 / DCM RE-AUDIT / EXP238 PREPARED
-
-- Last completed experiment: **EXP237 — COMPLETE / VALID PASSIVE NEGATIVE FOR VISIBLE HEAT-CURVE UI INGRESS ON THIS RS485 SEGMENT**.
-- Current experiment: **EXP238 — PREPARED / PASSIVE OPERATION-MODE UI INGRESS TRACE**.
-- **EXP237 hypothesis tested:** if the physical Heat Curve mutation traverses the observed RS485 segment before controller-owned `0x0F FC16 03E8/count14` serialization, a reversible frame/event should appear before the changed `03E8` export in both directions.
-- **Only EXP237 variable:** physical Heat Curve `36 -> 37 -> 36`; ESP remained RX-only throughout.
-- **Observed +1 transition:** after the marker, the first `03E8` frame carrying the new value appeared at +2418 ms with `03E8=37`. The 17 preceding raw frames were ordinary already-known `0x02`, `0x1E`, `0x14`, `0x0A`, and `0x0F:085F` traffic; no new slave/function/event appeared within EXP237's recognised parser set.
-- **Observed restore transition:** the first `03E8` after the restore marker was a stale cyclic `03E8=37` frame at +114 ms. The first export carrying the restored value `03E8=36` appeared at +4821 ms. The intervening traffic again consisted only of routine known frames; no reversible pre-export candidate appeared.
-- **Trace integrity:** final EXP237 summary: `total=420 baseline=86 plus=166 restore=168 S01=0 unusualFC=0 03E8=42 resync=0 drops=0`.
-- **Important logger refinement:** EXP237's `FIRST_03E8` marker is not a sufficient transition delimiter because a stale cyclic page can arrive immediately after a physical-change marker. Future UI-ingress traces must key on the first page carrying the **target value**, not merely the first page after the marker.
-- **Strong conclusion:** for Heat Curve, the semantic physical-UI ingress was **not visible as a distinct reversible Modbus frame/event within EXP237's recognised parser coverage before the controller-owned `03E8` state export**.
-- **Hypothesis:** the physical panel may mutate controller state internally or over a different/internal link, with this RS485 segment exposing only the resulting controller-owned serialization. This is not yet generalized to all UI settings from a single setting family, and EXP237's explicit slave-address filter leaves a residual unknown-address blind spot.
-- **EXP238 hypothesis:** repeat the same passive full-bus method with the independently proven Operation Mode path `AUTO -> COMPRESSOR -> AUTO`. If a common physical-panel ingress exists on this segment, a reversible pre-export event should precede the first `0546/count20` page carrying `0553=2` and then `0553=1`.
-- **EXP238 safety:** RX-only; GPIO17 TX absent; GPIO21 DE LOW; Configuration-category marker controls only; no ACK, response, probe, scan, write, restart or room-sensor emulation.
-- **EXP238 logger improvements:** target-value-aware detection ignores stale `0546` frames and records the true number of frames before the first `0553=2` / `0553=1` target export; standard Modbus unit IDs `0x00..0xF7` are accepted passively so an unexpected panel/service address is not discarded.
