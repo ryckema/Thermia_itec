@@ -1,5 +1,29 @@
 # THERMIA PROTOCOL FINDINGS
 
+## EXP262 accelerated-batch target
+
+EXP261 locally confirmed the ordered chain through `0492/count11`, with `04A6/count13` immediately next. EXP262 deliberately increases batch size while retaining exact sequencing and fail-closed checks. Target progression:
+`04A6/13 -> 04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10 -> 0532/18 -> 0546/20`, then capture-only. Genuine Eco 5 predicts `055A/count33` after this block.
+
+`04A6/13` remains context-sensitive because it is also recurrent passive traffic; EXP262 only ACKs it in phase 12 immediately after a successful `0492/count11` ACK. This does not establish every `04A6` occurrence as a synchronization page.
+
+
+## EXP261 result — ordered sync now proven through 0492
+
+EXP261 extended the local XTR Online/Link synchronization prefix using a bounded batch of exact standard FC16 ACKs:
+
+`046A/18 -> ACK -> 047E/19 -> ACK -> 0492/11 -> ACK -> 04A6/13`
+
+The post-0492 `04A6/count13` request arrived +576 ms after the 0492 ACK and was not acknowledged.
+
+This is important because `04A6/13` is also a recurrent passive family. EXP261 shows that, in the approved synchronization state, it can also occupy the expected ordered next position after `0492/11`. The observation does not make every passive `04A6` instance part of the sync chain; context remains necessary.
+
+The local chain is now directly demonstrated through:
+`03E8/14 -> 03FC/11 -> 0410/22 -> 042E/15 -> 0442/13 -> 0456/12 -> 046A/18 -> 047E/19 -> 0492/11 -> 04A6/13`.
+
+Full Online/Link establishment is still not proven because downstream pages and FC03/mailbox service remain unanswered.
+
+
 ## EXP261 target — bounded continuation after EXP260
 
 EXP260 validates batching already-proven genuine Eco 5 FC16 synchronization pages. The next bounded continuation is `046A/18 -> 047E/19 -> 0492/11`, each with a standard one-shot FC16 ACK. The first different post-0492 frame is capture-only.
@@ -973,28 +997,3 @@ All later unknown FC16 shapes require:
 - >=3 exact start/count repetitions;
 - explicit HA ARM action;
 - ACK only on the next exact request.
-
-No unknown block is acknowledged merely because it appears. Full payloads are logged. FC03 is detection-only and never answered.
-
-This preserves the evidence hierarchy: a newly discovered shape becomes an acknowledged experimental target only after repeated local observation plus explicit approval.
-
-
-## EXP141 partial result — 0x0662/count33 discovered and gated
-
-New locally proven stage:
-`0x0662..0x0682` (count 33; decimal 1634..1666).
-
-Observed progression:
-`05FF/count33 -> ACK -> 0662/count33`.
-
-The 0662 payload repeated identically and the EXP141 gate locked the candidate after 3 identical start/count requests. It was not automatically ACKed.
-
-This validates the interactive-walker method itself: unknown stages remain blocked until explicit HA approval.
-
-Semantics of the 0662 block remain OPEN.
-
-
-### 0x0662/count33 ACK behavior
-A single manually gated ACK to `0662/count33` stops the controller's repeated retransmission of that block.
-
-No next FC16 stage or FC03 request is visible in the following ~11 s of the supplied log. This makes `0662/count33` a candidate phase boundary/terminal sync stage, but that interpretation remains HYPOTHESIS until longer post-ACK observation is captured.
