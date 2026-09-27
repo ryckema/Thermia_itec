@@ -1,11 +1,24 @@
 # THERMIA PROTOCOL FINDINGS
 
-## EXP260 bounded-batch target
+## EXP260 finding — bounded batch reproduces the next three genuine sync transitions
 
-EXP256–259 locally reproduced the genuine Eco 5 Online/Link prefix through 042E/count15. EXP260 increases throughput while remaining fail-closed: ACK only exact 042E/15, 0442/13, and 0456/12 in order, then capture the first different stage. Genuine Eco 5 predicts 046A/count18. This does not authorize broad FC16 ACKing or any 0708 mailbox response.
+Local XTR evidence now proves the ordered post-approval prefix through `046A/count18`:
 
+`03E8/14 -> ACK -> 03FC/11 -> ACK -> 0410/22 -> ACK -> 042E/15 -> ACK -> 0442/13 -> ACK -> 0456/12 -> ACK -> 046A/18`
 
-Last updated: 2026-09-27 after EXP259
+The first three stages were proven incrementally in EXP257-259; EXP260 then safely batched the next three exact Eco 5 pages. There were no same-stage retries, unexpected peer responses, or post-return parser/drop errors. `046A/count18` was deliberately left unanswered.
+
+The recurring DHW-side literal `0` appeared again during/after this deliberately incomplete session. This supports the incomplete-session side-effect model, but the exact semantics of the UI `0` remain unknown.
+
+Protocol implication: small, pre-verified page batches are now evidence-backed as a practical way to progress the remaining genuine sync chain without one controller reboot per FC16 page. This does **not** authorize broad blind ACKing or FC03/mailbox emulation.
+
+Last updated: 2026-09-27 after EXP259 / EXP260 prepared
+
+## EXP260 bounded-batch protocol target
+
+EXP256–259 have now locally reproduced the same genuine Eco 5 ordered Online/Link prefix through `042E/count15`. Because four consecutive reference stages have matched, EXP260 deliberately increases throughput while remaining fail-closed: it ACKs only the next three exact known reference blocks `042E/15`, `0442/13`, `0456/12`, in that order, and then captures the first different stage. The external reference predicts `046A/count18`.
+
+This does **not** authorize broad FC16 ACKing or any `0708` mailbox response. A mailbox request at any point remains a capture-and-stop event in EXP260.
 
 ## EXP259 — local ordered Online/Link sync confirmed through `042E/count15`
 
@@ -32,6 +45,13 @@ Exact `042E/count15` payload words:
 ---
 
 Last updated: 2026-09-27 after EXP258
+
+## Reproducible incomplete-session UI failure mode — confirmed through EXP259
+
+Across multiple active approval/sync experiments, including EXP259, entering the native Online/Link state machine and then deliberately stopping before a complete endpoint session produces the same front-panel symptoms: DHW-side literal `0` and exact `COMM. ERR ONLINE/LINK`. One normal controller reboot restores normal operation.
+
+This strongly supports an incomplete-session timeout interpretation, but does not yet prove the exact causal point or required minimum service depth. A future sufficiently complete session that does not trigger the alarm would be the cleanest confirmation.
+
 
 ## EXP258 — XTR confirms third ordered Online/Link sync block
 
@@ -978,27 +998,3 @@ No next FC16 stage or FC03 request is visible in the following ~11 s of the supp
 `0662/count33` is promoted from a manually approved EXP141 candidate to an exact static ACK target because:
 - it repeated stably;
 - it was manually approved;
-- its standard FC16 ACK stopped the controller retry stream.
-
-EXP142 uses the same bounded gated walker for any later unknown stages and watches specifically for post-0662 FC16 or FC03 activity.
-
-Semantics of the 0662 payload remain OPEN.
-
-
-## EXP142 partial — post-0662 quiescent state persists across reboot
-
-After EXP141 manually ACKed `0662/count33`, EXP142 rebooted into a state with no slave-0x0F FC16 requests during the 30 s baseline and none during the following ~61 s active window.
-
-Implication:
-The acknowledged FC16 transfer state persists on the controller side beyond ESP reboot, and `0662/count33` is a strong candidate for the terminal block or phase boundary of the controller->0x0F startup/snapshot sequence.
-
-This does NOT yet prove that 0662 is the final protocol stage. Further 0x0F activity may be event-driven or may require an Online-side request/handshake.
-
-
-## EXP143 prepared — passive event trigger after completed FC16 sync
-
-Post-0662 state is quiescent. EXP143 does not extend the ACK chain.
-
-Instead it tests whether a known user-level setting event (Heat Curve +1, then restore) triggers 0x0F communication after sync completion.
-
-The ESP remains receive-only for the entire experiment.
