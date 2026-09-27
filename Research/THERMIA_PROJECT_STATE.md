@@ -1,3 +1,46 @@
+## Authoritative current state — 2026-09-27 — EXP263 COMPLETE / STRONG POSITIVE
+
+### EXP263 — accelerated 12-block 33-word batch — COMPLETE / STRONG POSITIVE
+
+Hypothesis:
+After the proven local prefix through 0546/count20, ACK the exact genuine Eco 5 33-word sequence
+055A, 057B, 059C, 05BD, 05DE, 05FF, 0620, 0641, 0662, 0683, 06A4, 06C5
+(all count=33), then stop TX and capture the first different FC16/FC03. Genuine Eco 5 predicts 06EA/count7.
+
+Observed:
+- Approval request arrived +1283 ms after controller return.
+- R1 sent exactly once.
+- Proven prefix through 0546/count20 reproduced cleanly.
+- Exact 33-word sequence observed and ACKed once each, in order:
+  055A -> 057B -> 059C -> 05BD -> 05DE -> 05FF -> 0620 -> 0641 -> 0662 -> 0683 -> 06A4 -> 06C5.
+- First different post-06C5 frame was exact 06EA/count7, +475 ms after the 06C5 ACK:
+  RAW=0F1006EA00070E000A00200017001B0009001A0006F81A
+- 06EA was deliberately NOT ACKed.
+- Parser resyncs since boot remained 0 after the run and RX buffer drops remained 0.
+- No approval retry after R1 and no stage retry was observed in the captured chain.
+- DE returned LOW after each TX.
+
+Strong conclusions:
+- Local XTR follows the genuine Eco 5 Online/Link synchronization chain through the full 055A..06C5 sequence of twelve 33-register FC16 blocks.
+- Genuine Eco 5 prediction 06EA/count7 is now locally confirmed immediately after 06C5.
+- Accelerated multi-page batching remains valid for this already-known sync sequence.
+- Full Online/Link establishment is still NOT proven.
+
+Hypotheses:
+- The recurring DHW-side literal 0 / COMM. ERR ONLINE/LINK remains consistent with an approved but incompletely serviced Online/Link session timing out.
+- Completing the remaining 06EA/06F1/06F4 phase may move the session closer to runtime/mailbox behavior, but this is not yet proven locally.
+
+Unknowns:
+- Local behavior after ACKing 06EA/count7.
+- Whether 06F1/count3 and 06F4/count19 follow locally exactly as in the Eco 5 capture.
+- Where the first local 0708/count6 mailbox poll appears relative to later sync pages.
+- Whether a sufficiently complete session prevents the DHW-side 0 and COMM. ERR ONLINE/LINK side effects.
+
+Safety / recovery:
+- One normal Thermia-controller reboot after the incomplete EXP263 session.
+- No next experiment prepared yet.
+- EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.
+
 ## Authoritative current state — 2026-09-27 — EXP262 COMPLETE / STRONG POSITIVE
 
 ### EXP262 result
@@ -955,46 +998,3 @@ has been correlated with the final bus trace.
   - final target-free silence: **80.044 s**;
   - peer FC17 16-byte responses: **0**;
   - controller FC16 requests: **424**;
-  - peer FC16 ACKs: **0**;
-  - `0x0F FC03 0708/count6` mailbox requests: **0**;
-  - other FC03 page requests: **0**;
-  - 0x06 polls: **87**;
-  - final state: `A80E=0028 A80F=000A AFDC=0010`;
-  - false stops: **0**;
-  - parser resync delta: **1** at the boot-return edge;
-  - RX drop delta: **0**;
-  - TX: **DISABLED**.
-- Comparison across complete cold boots:
-  - EXP248: 63 requests, median 4.298 s, last +267.123 s;
-  - EXP249: 63 requests, median 4.293 s, last +266.821 s;
-  - EXP251: 63 requests, median 4.178 s, last +261.347 s.
-- **Material protocol conclusion:** a simple fixed ~270 s deadline is now weakened. The **fixed
-  63-attempt retry-budget model is the leading explanation** because the count remains invariant
-  while cadence and total elapsed window change.
-- At EXP251 cadence, nominal attempts 64 and 65 would fall at approximately +265.525 s and +269.703 s,
-  both before +270 s, yet neither occurs.
-- Ordinary controller FC16 requests are present without any approval response, peer FC16 ACK, or
-  0708 mailbox. Therefore controller-originated FC16 traffic alone is not evidence of Online/DCM approval.
-- No active `0730` response was sent, derived or approved.
-- **EXP239 remains OPEN.**
-- **EXP238 remains PARKED / NOT RUN.**
-- Do not spend another live experiment on retry timing unless new evidence requires it.
-- Candidate next step: one-shot active approval-oracle test using a single known external Eco 5
-  response, but only after explicit approval because `0730..0737` remains semantically opaque.
-
-
-## Authoritative current state — 2026-09-27 — EXP251 VALID STOP CANDIDATE / FINAL CONFIRMATION PENDING
-
-- Last completed experiment: **EXP250 — COMPLETE / OFFLINE / NO TX**.
-- Last completed live-bus experiment: **EXP249 — COMPLETE / VALID PASSIVE POSITIVE**.
-- Current experiment: **EXP251 — VALID RX-ONLY RUN / STOP CANDIDATE OBSERVED / NOT YET FORMALLY COMPLETE**.
-- EXP251 observed:
-  - first approval request **+1.287 s** after BUS_RETURN;
-  - **63 approval requests**;
-  - median cadence **4178 ms**;
-  - last request **+261.347 s**;
-  - final monitored state `A80E=0028 A80F=000A AFDC=0010`;
-  - no peer FC17 16-byte response;
-  - no peer FC16 ACK;
-  - no `0x0F FC03 0708/count6` mailbox request;
-  - STOP_CANDIDATE after **20.044 s** approval silence while ordinary bus traffic remained alive;
