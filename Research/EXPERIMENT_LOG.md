@@ -1,3 +1,13 @@
+## EXP262 — accelerated 04A6..0546 ACK batch — COMPLETE / STRONG POSITIVE
+
+Hypothesis: after the proven prefix through `0492/11`, ACK exact `04A6/13`, `04BA/22`, `04D8/27`, `04F6/14`, `050A/19`, `051E/10`, `0532/18`, and `0546/20` in order, then capture the first different FC16/FC03 without answering it.
+
+Observed result: all eight new stages appeared in the predicted order and were ACKed exactly once. The first different frame after the `0546/20` ACK was exact `055A/count33`, +637 ms later, raw `0F10055A002142000000000000001F000C000000000000001F000C00000000000000000000001F000C000000000000001F000C00000000000000000000001F000C000000000000001FF26A`. No ACK was sent to `055A`.
+
+Negative/clean results: no approval retry after R1; no acknowledged-stage retries observed; parser resyncs remained 0; RX buffer drops remained 0.
+
+Conclusion: accelerated batching is confirmed workable through `0546/count20`, and the local XTR follows the genuine Eco 5 sync path through `055A/count33`. Full Online/Link remains unproven. Recovery: one normal controller reboot.
+
 # THERMIA EXPERIMENT LOG
 
 ## EXP262 — accelerated 04A6..0546 batch — PREPARED / NOT RUN
@@ -988,13 +998,3 @@ Observed:
 - after restoring Heat Curve, first payload word became `0x0023` while HA showed Heating Curve 35;
 - remaining 13 words stayed unchanged in the shown frames;
 - final summary:
-  `fc16=103 fc03Req=0 fc03Resp=0 fc16Ack=0 resyncDelta=0 dropDelta=0 DE_LOW`.
-
-Conclusion:
-A Heat Curve UI change re-triggers the 0x0F FC16 sync path at `03E8/count14`, and the first word of that FC16 payload directly tracks the Heat Curve value in this run.
-
-Negative:
-No FC03 was reached because `03E8/count14` was deliberately not ACKed.
-
-Next:
-EXP144 = same manual Heat Curve trigger, then ACK only already-proven sequence shapes and stop on the first unknown FC16 or FC03 discriminator.
