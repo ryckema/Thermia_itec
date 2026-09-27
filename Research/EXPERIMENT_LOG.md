@@ -4,6 +4,40 @@ Last updated: 2026-09-27
 
 This file is the canonical experiment record. The compact table below indexes the early experiment series; EXP100+ are documented in the detailed chronological sections that follow. Detailed YAML and raw logs remain the primary evidence.
 
+## EXP257 — One-shot R1 + single `03E8/count14` ACK + next-stage capture — COMPLETE / STRONG POSITIVE
+
+**Hypothesis:** after EXP256's one-shot R1 transition into `03E8/count14`, acknowledge exactly the first `03E8/count14` once and capture the first different downstream FC16/FC03 request without answering it. Full genuine Eco 5 capture predicted `03FC/count11`.
+
+**Observed facts:**
+- controller cold-restart gap detected and clean `BUS_RETURN`;
+- boot-only `04BA/count22` appeared at +316 ms after BUS_RETURN;
+- first approval request at **+1285 ms**, `W071C=1A154568F9061AACDC1BC564001E8FD0`;
+- exact R1 transmitted once; DE returned LOW;
+- first post-R1 FC16 was exact `03E8/count14`, **+130 ms after R1**;
+- exact standard ACK `0F1003E8000EC093` transmitted once; ACK latch closed before DE;
+- first different post-ACK request arrived **+691 ms after ACK** and was exact `03FC/count11`, bytecount 22, length 31;
+- raw `03FC` request: `0F1003FC000B160028000A0037000000000000000200120028001E003C369E`;
+- payload words: `0028 000A 0037 0000 0000 0000 0002 0012 0028 001E 003C`;
+- no ACK was sent to `03FC`;
+- summary: `r1=1 ack03e8=1 approvals=1 approval_after_r1=0 post_r1_fc16=1 same03e8_after_ack=0 peer17=0 unexpected_peer_ack=0 self_echo_r1=0 self_echo_ack=0 resync_postreturn=0 drop_postreturn=0 DE=LOW`.
+
+**Strong conclusions:**
+- EXP257 satisfies its positive criterion.
+- The XTR reproduces the genuine Eco 5 post-approval prefix `R -> 03E8/14 -> ACK -> 03FC/11`.
+- The `03E8` ACK is sufficient to advance the local XTR one synchronization block.
+- This substantially strengthens the interpretation that R1 enters the genuine Online/Link synchronization state machine rather than an unrelated failure state.
+- Full Online/Link establishment remains unproven because `03FC` and all later stages were intentionally not acknowledged.
+
+**Comparison with external reference:** the genuine Eco 5 capture proves twice that `03FC/count11` follows the acknowledged `03E8/count14`, and that acknowledged `03FC/count11` is followed by `0410/count22`. EXP257 reproduces the first of those transitions locally.
+
+**Unknowns:**
+- whether one exact ACK to local `03FC/count11` yields `0410/count22`;
+- whether the remainder of the XTR synchronization ordering matches the Eco 5 chain;
+- when `0708/count6` mailbox traffic starts locally;
+- UI side effect for this run, pending user report.
+
+**Safety/recovery:** no further ACKs were sent. One normal controller reboot is required after the incomplete session if not already performed.
+
 ## EXP256 — One-shot R1 + full post-R1 FC16/FC03 differential census — COMPLETE / ACTIVE STRONG POSITIVE
 
 **Hypothesis:** the already-tested R1 changes the local XTR native FC16 distribution; leading pre-run hypothesis was selective suppression of `085F/count5` while `04A6/count13` persisted.
@@ -963,38 +997,3 @@ This reproduces the first negative result. The summary printf-field defect remai
 
 
 ### EXP148 — passive Online topology and timing profiler — PREPARED
-
-Hypothesis:
-Missing A5/A4/session topology may be the reason local direct 0x0F FC03 reads do not answer.
-
-Run:
-300 s passive only.
-
-Logs and counts:
-A5/A4 FC03, 0x0F FC03/FC16, 0x06 FC17, plus inter-event timing buckets.
-
-No experiment TX is generated.
-
-
-### EXP148 — passive Online topology and timing profiler — COMPLETE / STRONG TOPOLOGY NEGATIVE
-
-Final 300 s summary:
-`A5req=0 A5resp=0 A4req=0 A4resp=0 0F03req=0 0F03resp=0 0F16write=280 0F16ack=0 06req=69 06resp=0 gaps_101_500=69 gaps_gt500=279 resyncDelta=0 dropDelta=0 DE_LOW`
-
-Interpretation:
-- A5/A4 absent for the full clean run.
-- No 0x0F FC03 activity despite heavy 0x0F FC16 activity.
-- 69/69 0x06 poll-related short gaps landed in 101–500 ms, consistent with the repeatedly observed ~254 ms 0x06 -> 0x0F 04A6 schedule.
-
-Conclusion:
-The no-Online local topology is missing an active logical/session layer present in the genuine Online capture. Continue with ownership/presence discrimination rather than more arbitrary FC03 register reads.
-
-
-### EXP149 — A5 0x0000 ownership probe — PREPARED
-
-Hypothesis:
-A5 may be an endpoint owned by the genuine Online/DCM hardware.
-
-Exact read-only stimulus copied from genuine Online:
-`A5 03 00 00 00 12 DC E3`
-(start 0x0000, count 18).
