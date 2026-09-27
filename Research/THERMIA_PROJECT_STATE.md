@@ -1,3 +1,11 @@
+# EXP267 — PREPARED / NOT RUN — bounded repeated 0708 mailbox responses
+
+**Hypothesis:** EXP266 proved that one genuine Eco5 idle response to local `FC03 0708/count6` is accepted without destabilising the bus, but the controller repeats the same request about 4.18 s later. EXP267 changes only one experimental variable: answer at most the first **three** exact post-`06F4` `0708/6` polls with the same genuine Eco5 idle response `0F030C0000000000000000010000001C88`. If repeated polling is normal mailbox servicing, the controller may transition to another FC03/FC16/runtime phase after repeated valid responses.
+
+Safety: proven prefix unchanged; only exact `0F 03 0708 0006` requests are answered. Response #1 must arrive within 30 s after `06F4`; responses #2/#3 must each arrive within 10 s of the previous response. Parser/RX-drop deltas, approval retry or unexpected peer FC17/ACK stop TX. The response counter advances before DE. Maximum 3 mailbox responses; no fourth response; no post-mailbox FC16 ACK. Known response words are `0000 0000 0000 0000 0001 0000`; effect observed in EXP266 was continued healthy traffic plus another `0708/6` poll, not session completion.
+
+Expected decisive outcomes: (a) a different FC03/FC16 after <=3 responses, supporting progression; (b) a fourth `0708/6`, showing repeated idle polling continues; or (c) timeout/integrity stop. Negative outcomes are recorded.
+
 # EXP266 RESULT — COMPLETE / PARTIAL POSITIVE
 
 **Hypothesis:** After the proven prefix through `06F4/19`, respond exactly once to local `FC03 0708/count6` with the genuine Eco5 idle mailbox response `0F030C0000000000000000010000001C88`, then remain RX-only.
@@ -990,11 +998,3 @@ EXP254 is fully RX-only and will establish:
   - `peer17=0`;
   - controller FC16 requests: **386**;
   - peer FC16 ACKs: **0**;
-  - `mailbox0708=0`;
-  - other FC03 page reads: **0**;
-  - parser resync after BUS_RETURN: **0**;
-  - RX drops after BUS_RETURN: **0**;
-  - DE returned LOW.
-- **Strong conclusion:** R1 is not simply ignored. It terminates/suppresses the local approval retry
-  state, but full DCM/Online approval is **not proven** because no downstream peer ACK/mailbox phase
-  appears.
