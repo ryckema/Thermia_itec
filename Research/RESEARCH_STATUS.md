@@ -1,5 +1,18 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-27 — EXP259 COMPLETE / STRONG POSITIVE
+
+- Last completed experiment: **EXP259 — COMPLETE / STRONG POSITIVE**.
+- Local XTR now reproduces the genuine Eco 5 ordered Online/Link prefix through four FC16 pages:
+  `R1 -> 03E8/14 -> ACK -> 03FC/11 -> ACK -> 0410/22 -> ACK -> 042E/15`.
+- `042E/count15` appeared +696 ms after the one exact `0410/count22` ACK and was not acknowledged.
+- No approval retry, no 03E8 retry, no 03FC retry, no 0410 retry, no unexpected peer frame, no post-return resync/drop delta; DE LOW at summary.
+- Full Online/Link establishment remains unproven.
+- EXP259 front-panel side effect has not yet been reported.
+- No next experiment is prepared yet.
+- Recovery after EXP259: one normal Thermia-controller reboot.
+- EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.
+
 ## Current status — 2026-09-27 — EXP258 COMPLETE / EXP259 PREPARED
 
 - Last completed experiment: **EXP258 — COMPLETE / STRONG POSITIVE**.
