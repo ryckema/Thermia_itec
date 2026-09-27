@@ -1,3 +1,22 @@
+## EXP269 — COMPLETE / NEGATIVE
+
+Hypothesis: one exact Eco5 phase-matched first post-`06F4` mailbox response `0000 0000 0000 0000 0080 0006` would cause the XTR to continue with `07D0/19`.
+
+Observed:
+- proven prefix through `06F4/19` completed cleanly;
+- first `0708/6` at +1.566 s;
+- one exact `0080/0006` response sent;
+- no `07D0/19`;
+- repeated `0708/6` began ~4.43 s later and continued;
+- 30 s RX-only completed;
+- summary: `responses_sent=1 mailbox_requests=8 ignored_bg=15 resync_postreturn=0 drop_postreturn=0 DE=LOW`;
+- only recurrent post-`06F4` FC16 family was `085F/5`;
+- A80E moved `0008 -> 0028`, AFDC to `32`;
+- user reports a visible UI change (“middle of the 0 is now filled”), semantic meaning unknown.
+
+Conclusion: valid negative. The phase-matched Eco5 `0080/0006` response is not sufficient on its own to reproduce the Eco5 `07D0` transition.
+
+---
 ## EXP269 — PREPARED / NOT RUN — revised phase-matched mailbox test
 
 Hypothesis: the first post-`06F4` XTR mailbox must receive the same phase-specific payload seen in the matching Eco5 startup trace.
