@@ -1,5 +1,19 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-27 — EXP258 COMPLETE / STRONG POSITIVE
+
+- Last completed experiment: **EXP258 — COMPLETE / STRONG POSITIVE**.
+- Local XTR now reproduces the genuine Eco 5 ordered Online/Link prefix through three FC16 pages:
+  `R1 -> 03E8/14 -> ACK -> 03FC/11 -> ACK -> 0410/22`.
+- `0410/count22` appeared +1501 ms after the one exact `03FC/count11` ACK and was not acknowledged.
+- No approval retry, no 03E8 retry, no 03FC retry, no unexpected peer frame, no post-return resync/drop delta; DE LOW at summary.
+- The DHW-side literal `0` and exact `COMM. ERR ONLINE/LINK` alarm appeared again.
+- This strengthens, but does not prove, the hypothesis that the alarm is caused by an approved but incompletely serviced Online/Link session.
+- Full Online/Link establishment remains unproven.
+- No next experiment is yet prepared.
+- Recovery after EXP258: one normal Thermia-controller reboot.
+- EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.
+
 ## Current status — 2026-09-27 — EXP257 COMPLETE / EXP258 PREPARED
 
 - Last completed experiment: **EXP257 — COMPLETE / STRONG POSITIVE**.
