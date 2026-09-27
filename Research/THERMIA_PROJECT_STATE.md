@@ -1,3 +1,17 @@
+# EXP266 — PREPARED / NOT RUN — ONE-SHOT 0708 MAILBOX RESPONSE
+
+**Hypothesis:** after the locally proven sync tail `06EA/7 -> 06F1/3 -> 06F4/19`, the first exact `FC03 0708/count6` mailbox request can be answered once with the genuine Eco5 idle response `0F030C0000000000000000010000001C88` (words `0000 0000 0000 0000 0001 0000`), causing the XTR M to advance into the next Online/Link runtime phase.
+
+**Only new active variable:** one exact response to first post-06F4 `FC03 0708/count6`. No other FC03 is answered; no second 0708 response; no post-mailbox FC16 ACK.
+
+**Safety gate:** phase 24 after exact 06F4 ACK; first exact 0708/6; <=30 s; parser/drop clean; no approval retry; no unexpected peer FC17/FC16 ACK; latch closed before DE. After the one response the test is RX-only and captures the first non-background FC16 or any FC03. Known recurrent `085F/5` and `04A6/13` are logged and ignored.
+
+**Known possible effect:** may advance Online/Link runtime synchronization. **Unknowns:** local acceptance, next runtime frame, controller/UI state, whether DHW `0` / `COMM. ERR ONLINE/LINK` disappear.
+
+**Prepared YAML:** `thermia_itec_xtr_m_waveshare_exp266.yaml`.
+
+---
+
 ## Current experiment status — EXP265 COMPLETE / STRONG POSITIVE — LOCAL 0708/6 MAILBOX REQUEST CONFIRMED
 
 Hypothesis: continue the proven Online/Link synchronization tail by ACKing exact `06EA/7 -> 06F1/3 -> 06F4/19`, then stop transmitting and capture the first later frame.
@@ -984,17 +998,3 @@ service indicator remains plausible.
 
 Do not perform another active response test before the EXP252 run is complete and the display state
 has been correlated with the final bus trace.
-
-
-## Authoritative current state — 2026-09-27 — EXP252 PREPARED / NOT RUN
-
-- Last completed experiment: **EXP251 — COMPLETE / VALID RX-ONLY POSITIVE**.
-- Current prepared experiment: **EXP252 — ONE-SHOT 0730 APPROVAL ORACLE (Eco 5 R1) — PREPARED / NOT RUN**.
-- EXP252 hypothesis: one externally reported genuine Eco 5 response, returned exactly once to the
-  first local XTR approval request, will either be rejected with retries continuing or measurably
-  alter the controller approval/session state.
-- New active response target:
-  - controller FC17 reads `0x0730..0x0737`;
-  - test payload `R1 = 1691 A5F3 F8E8 D587 3892 4416 E8E6 A3D5`;
-  - R1 belongs externally to `C1 = 63CE FB32 C6F4 1382 0879 9237 0CAC EEBA`;
-  - local XTR input is an RTC/service image and does not match C1, so this is deliberately a
