@@ -1,3 +1,17 @@
+## EXP266 protocol finding — local 0708 repeat after one idle response
+
+Locally confirmed sequence:
+`... -> 06EA/7 -> 06F1/3 -> 06F4/19 -> 085F/5 background -> FC03 0708/6 -> response 0F030C0000000000000000010000001C88 -> FC03 0708/6 repeat after ~4.18 s`
+
+This proves:
+- local XTR accepts the mailbox response electrically/protocol-wise far enough to keep the bus/session alive;
+- one response does not terminate the mailbox polling phase;
+- repeated `0708/6` polling is now locally observed after the first response, matching the repeated mailbox behavior in the genuine Eco5 capture qualitatively.
+
+Do not infer yet that repeated identical responses are sufficient; that remains the next hypothesis to test.
+
+---
+
 ## EXP266 target — locally confirmed 0708 mailbox, genuine Eco5 idle response
 
 - EXP265 locally confirmed `FC03 0708/count6` as the first meaningful post-sync mailbox request after `06F4/19`, with `085F/5` appearing first as recurrent background traffic.
@@ -984,16 +998,3 @@ New locally proven block:
 `0x04BA..0x04CF` (count 22; decimal 1210..1231).
 
 Persistence:
-After EXP138 ended while waiting at `042E`, EXP139 rebooted and immediately saw repeated `042E/count15`, again proving controller-side persistence of the transfer state.
-
-Nuance:
-`04A6/count13` had been observed before in passive XTR traffic and was already in the whitelist. Its appearance 0.52 s after the 042E ACK and the immediate transition to 04BA after its ACK strongly place it in the current transfer path, but exclusive sequence ownership remains unproven.
-
-Next discriminator:
-ACK only `04BA/count22` as the one new variable; do not answer the next new FC16 shape or FC03 request.
-
-
-## EXP140 prepared discriminator — ACK 0x04BA/count22
-
-Locally proven progression before EXP140:
-`03E8/14 -> ACK -> 0410/22 -> ACK -> 042E/15 -> ACK -> 04A6/13 -> ACK -> 04BA/22`.
