@@ -1,5 +1,16 @@
 ## Authoritative current state — 2026-09-27 — EXP263 COMPLETE / STRONG POSITIVE
 
+## EXP264 — PREPARED / NOT RUN
+
+**Hypothesis:** after the locally proven Online/Link synchronization prefix through `06C5/count33`, the XTR will continue with the genuine Eco 5 tail `06EA/count7 -> 06F1/count3 -> 06F4/count19`. EXP264 ACKs only those three exact frames, in order, with <=5 s timing and clean parser/drop state, then becomes capture-only. Any FC03 is never answered; if `0708/count6` appears after the `06F4` ACK it is captured as mailbox evidence only.
+
+**New TX frames:**
+- `06EA/7` ACK: `0F1006EA0007A199`
+- `06F1/3` ACK: `0F1006F10003D05D`
+- `06F4/19` ACK: `0F1006F40013C190`
+
+**Safety:** complete proven prefix unchanged; no broad ACKing, no FC03 response, no mailbox response, no TX after `06F4`; any retry/unexpected frame/parser-drop delta stops fail-closed. Known incomplete-session DHW `0` / `COMM. ERR ONLINE/LINK` side effect remains recoverable by one normal controller reboot.
+
 ### EXP263 — accelerated 12-block 33-word batch — COMPLETE / STRONG POSITIVE
 
 Hypothesis:
@@ -986,15 +997,3 @@ has been correlated with the final bus trace.
 - **EXP238 remains PARKED / NOT RUN.**
 - Do not run a second active response value in the same boot.
 
-
-## Authoritative current state — 2026-09-27 — EXP251 COMPLETE / VALID RX-ONLY POSITIVE
-
-- Last completed experiment: **EXP251 — COMPLETE / VALID RX-ONLY POSITIVE**.
-- EXP251 final summary:
-  - approval requests: **63**;
-  - first request: **+1.287 s** after BUS_RETURN;
-  - median cadence: **4.178 s**;
-  - last request: **+261.347 s**;
-  - final target-free silence: **80.044 s**;
-  - peer FC17 16-byte responses: **0**;
-  - controller FC16 requests: **424**;
