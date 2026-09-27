@@ -1,5 +1,18 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-27 — EXP263 COMPLETE / EXP264 PREPARED
+
+- Last completed experiment: **EXP263 — COMPLETE / STRONG POSITIVE**.
+- Current prepared experiment: **EXP264 — end-of-bulk sync tail — PREPARED / NOT RUN**.
+- Proven local prefix reaches `06EA/count7`.
+- EXP264 ACKs exactly `06EA/7 -> 06F1/3 -> 06F4/19` once each, in order.
+- After `06F4/19` ACK, capture-only. FC03 is never answered; `0708/count6` is specially logged if it appears.
+- No broad FC16 ACKing and no mailbox response.
+- Any retry, unexpected frame, parser/drop delta, approval retry, peer FC17/ACK or >5 s stage timeout stops fail-closed.
+- Known incomplete-session side effect remains DHW-side `0` / `COMM. ERR ONLINE/LINK`; one normal controller reboot after summary.
+- No new GitHub files are created; existing Research files only.
+- EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.
+
 ## Current status — 2026-09-27 — EXP261 COMPLETE / EXP262 PREPARED
 
 - Last completed experiment: **EXP261 — COMPLETE / STRONG POSITIVE**.
