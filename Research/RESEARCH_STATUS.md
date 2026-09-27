@@ -1,5 +1,20 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-27 — EXP261 COMPLETE / EXP262 PREPARED
+
+- Last completed experiment: **EXP261 — COMPLETE / STRONG POSITIVE**.
+- Current prepared experiment: **EXP262 — accelerated 8-block batch — PREPARED / NOT RUN**.
+- Proven local prefix reaches `0492/count11`, with `04A6/count13` captured immediately next in EXP261.
+- EXP262 adds exact one-shot ACKs for:
+  `04A6/13 -> 04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10 -> 0532/18 -> 0546/20`.
+- After the `0546/20` ACK, capture only; genuine Eco 5 predicts `055A/count33`.
+- `04A6/13` is context-sensitive recurrent traffic; EXP262 ACKs it only in the exact post-`0492` phase proven locally.
+- No `055A` ACK, no later FC16 ACK and no FC03/mailbox response.
+- Every new stage is exact, first-only, <=5 s, parser/drop clean and fail-closed.
+- Known incomplete-session side effect remains DHW-side `0` / `COMM. ERR ONLINE/LINK`; one normal controller reboot after summary.
+- No new GitHub files are created; existing Research files only.
+- EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.
+
 ## Current status — 2026-09-27 — EXP260 COMPLETE / EXP261 PREPARED
 
 - Last completed experiment: **EXP260 — COMPLETE / STRONG POSITIVE**.
