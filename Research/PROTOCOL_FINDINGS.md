@@ -1,5 +1,18 @@
 ## EXP268 finding — persistent mailbox confirmed; no 30 s RX-only runtime progression
 
+## Eco5 raw-log correction — mailbox payload is phase-specific
+
+Raw Eco5 capture evidence now directly shows:
+- post-`06F4/19` first `0708/6` response can be `0000 0000 0000 0000 0080 0006`;
+- `07D0/19` follows about 0.7 s later;
+- later `0708/6` replies with `... 0000 0006` coexist with continued FC16 pages;
+- later pages include `07E4/17, 07F8/17, 080C/18, 0820/18, 0834/18, 0848/23, 0864/4, 0870/17, 0884/60`.
+
+A separate Eco5 capture shows a response `0000 0000 7FFF FFFF 0080 0007` followed almost immediately by a new FC16 synchronization beginning at `03E8/13`. This proves mailbox response words are semantically active and context-dependent.
+
+**Do not treat `0001 0000` as a universal idle response.** Its previous occurrence is valid evidence only for the context in which it was captured. Post-`06F4` local progression should now be tested against the exact phase-matched Eco5 payload instead of increasing repetition count.
+
+
 Local XTR now confirms that `FC03 0708/count6` persists for at least 30 s after three valid idle mailbox responses are followed by silence. EXP268 observed 10 total mailbox polls: the first three were answered with `0F030C0000000000000000010000001C88`, while seven later polls were left unanswered. The cadence remained approximately ~4.2 s. During the same post-third-response observation, recurrent `085F/5` continued (21 post-`06F4` background frames), but no different non-background FC16/FC03 and no `07D0..0864` family appeared.
 
 Integrity caveat: one parser resync occurred exactly at controller BUS_RETURN before the experimental post-return baseline. Final experimental deltas were `resync_postreturn=0`, `drop_postreturn=0`; therefore the negative result is not explained by a later parser/RX integrity failure.
