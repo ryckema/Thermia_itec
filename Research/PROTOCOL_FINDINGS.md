@@ -1,4 +1,10 @@
-## EXP267 finding — repeated 0708 idle service persists after three responses
+## EXP268 target — persistent 0708 mailbox + parallel runtime observation
+
+EXP267 locally showed that exact `0708/6` keeps returning after three genuine Eco5 idle responses. This is now treated as expected persistent mailbox polling, not as a handshake that must terminate. EXP268 therefore preserves the proven active chain and the same three bounded idle responses, then observes RX-only for 30 s. Further `0708/6` polls are logged and ignored for experiment-completion purposes.
+
+Discovery targets the first different non-background FC16/FC03, especially genuine Eco5 later families `07D0/19, 07E4/17, 07F8/17, 080C/18, 0820/18, 0834/18, 0848/23, 0864/4`. None of those families is ACKed in EXP268. Recurrent `085F/5` and `04A6/13` remain background.
+
+## EXP267 finding## EXP267 finding — repeated 0708 idle service persists after three responses
 
 Local XTR now confirms the sequence:
 
