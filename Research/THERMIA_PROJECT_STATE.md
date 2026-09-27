@@ -1,5 +1,48 @@
 # THERMIA PROJECT STATE
 
+## Authoritative current state — 2026-09-27 — EXP258 COMPLETE / EXP259 PREPARED / NOT RUN
+
+- Last completed experiment: **EXP258 — COMPLETE / STRONG POSITIVE**.
+- Current prepared experiment: **EXP259 — R1 + exact `03E8/count14` ACK + exact `03FC/count11` ACK + exact `0410/count22` ACK + next-stage capture — PREPARED / NOT RUN**.
+- **EXP239 remains OPEN.**
+- **EXP238 remains PARKED / NOT RUN.**
+
+### EXP259 hypothesis
+
+EXP258 locally proved the ordered prefix `R1 -> 03E8/14 ACK -> 03FC/11 ACK -> 0410/22`. EXP259 changes one active variable only: acknowledge that already-proven exact `0410/count22` request once, then capture the first different FC16/FC03 stage without answering it. The genuine Eco 5 reference predicts `042E/count15` next.
+
+### Exact new active target
+
+- Required request: slave `0x0F`, FC16, start `0x0410`, count `22` (`0x0016`), bytecount `44` (`0x2C`), full request length `53` bytes.
+- Exact standard FC16 ACK: `0F 10 04 10 00 16 40 1C`.
+- CRC16 over `0F1004100016` is `0x1C40`, transmitted little-endian `40 1C`.
+- The ACK carries no register-value payload; it echoes only start/count.
+
+### EXP259 fail-closed boundary
+
+Maximum experimental TX is four frames: one R1, one exact `03E8/14` ACK, one exact `03FC/11` ACK and one exact `0410/22` ACK. The new `0410` ACK is allowed only after the proven prefix, only when the first post-`03FC`-ACK FC16 is exact `0410/22`, within 5 s, with unchanged parser/drop counters, no approval/03E8/03FC retry, and no unexpected peer frame. All one-shot latches close before DE is enabled.
+
+After the one `0410` ACK:
+- no second `0410` ACK;
+- no ACK of `042E` or any later FC16;
+- no FC03/mailbox response;
+- first different FC16 or any FC03 is captured and the experiment stops;
+- 15 s timeout if only `0410` retries continue.
+
+Known reproducible side effect remains the DHW-side `0` plus `COMM. ERR ONLINE/LINK` after an incomplete approved Online/Link session. **Do not run EXP259 until one normal controller reboot has cleared both after EXP258.** After EXP259 summary, reboot the Thermia controller once again.
+
+### Build validation
+
+- YAML syntax parsed successfully with ESPHome custom tags tolerated.
+- `${device_name}` and `${friendly_name}` are the only substitutions referenced and both are defined.
+- All 138 YAML IDs are unique and all `id(...)` references resolve.
+- Exactly four DE-enable / UART TX call sites exist: R1, `03E8` ACK, `03FC` ACK, `0410` ACK.
+- CRC-valid-frame bus-health bookkeeping is unchanged.
+- ESPHome compile was **not run** because the ESPHome CLI is not installed in the available environment.
+
+---
+
+
 ## Authoritative current state — 2026-09-27 — EXP258 COMPLETE / STRONG POSITIVE
 
 - Last completed experiment: **EXP258 — COMPLETE / STRONG POSITIVE**.
@@ -954,47 +997,3 @@ has been correlated with the final bus trace.
 - No active `0730` response is approved. Do not replay the published Eco 5 responses against the XTR RTC payload.
 - Preferred next evidence: Piotrek raw Eco 5 capture (finish EXP239) or an externally sourced genuine XTR/iTec Online `0730` response. If unavailable, next offline-only candidate is **EXP246 — XTR RTC/service encoder reconstruction**.
 
-
-## Authoritative current state — 2026-09-27 after EXP244
-
-- Last completed experiment: **EXP244 — COMPLETE / OFFLINE POSITIVE: local XTR `071C..0723` is a deterministic RTC-derived service image, not a high-entropy challenge in the observed no-Online-endpoint state.**
-- Current experiment: **none running**.
-- Next preferred experiment: **EXP245 — offline existing-capture `071C/0730` mode/precondition census**.
-- **EXP239 remains OPEN** pending Piotrek's full genuine iTec Eco 5 Online raw capture; its externally reported challenge/response evidence must be kept distinct from the locally observed XTR RTC payload regime.
-- **EXP238 remains PARKED / NOT RUN.**
-- Production functionality is unchanged. EXP244 was offline only: no heat-pump restart, no RS485 TX, no FC17 response, no ACK, no scan, no Home Assistant/YAML change.
-
-### EXP244 key result
-
-EXP244 directly re-parsed 104 locally recorded exact XTR requests:
-- EXP221: 47
-- EXP222: 25
-- EXP225: 32
-
-All 104 payloads are unique; no exact retry occurred. The local FC17 cadence remains about 4.26 s. The previously identified RTC model reproduces all 104 payloads exactly:
-
-```text
-071C = (year_since_2000 << 8) | hour
-071D = 0x4500 | (2 * second)
-071E = 0xF906
-071F = (floor(second/2) << 8) | 0xAC
-0720 = 0xDC00 | day_of_month
-0721 = 0xC500 | (4 * minute)
-0722 = 0x001E
-0723 = 0x8F00 | (4 * second)
-```
-
-On the same-day Sep-26 corpus only 5 of the 16 payload bytes vary; successive 128-bit payloads differ by a median of only 6 bits (range 2..18). This is incompatible with treating the local observed XTR payload as a fresh high-entropy 128-bit challenge.
-
-The two externally reported Eco 5 controller values are structurally very different:
-- they differ from each other by 55/128 bits;
-- neither matches any of the 11 byte positions that remain constant throughout the local Sep-26 XTR corpus;
-- the external report describes exact challenge retries after no answer, while no such retry occurs in the local XTR corpus.
-
-### Strong architectural refinement
-
-Do **not** generalize either payload interpretation across all states/models.
-
-Safest current role naming:
-
-```text
