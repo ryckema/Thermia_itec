@@ -1,3 +1,15 @@
+## EXP269 finding — Eco5 0080/0006 alone does not unlock 07D0 on XTR
+
+Local XTR sequence:
+`... -> 06F4/19 ACK -> 0708/6 -> response 0000 0000 0000 0000 0080 0006 -> repeated 0708/6`.
+
+The exact response was sent once and the ESP then remained RX-only for 30 s. No `07D0/19` appeared; `0708/6` repeated on the normal ~4.2–4.4 s cadence. Final integrity deltas were clean: `resync_postreturn=0`, `drop_postreturn=0`, DE LOW.
+
+**Protocol implication:** matching the Eco5 first mailbox payload is not sufficient by itself. The Eco5 transition to `07D0` depends on additional state/context not yet reproduced locally.
+
+A visible user-interface change was reported immediately after this experiment (“middle of the 0 is now filled”). Treat this only as a potentially relevant state indicator until the exact screen/icon is identified.
+
+---
 ## EXP269 target — exact Eco5 phase-matched first mailbox response
 
 The next local protocol test is now fixed to the matching Eco5 post-`06F4` transition:
