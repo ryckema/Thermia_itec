@@ -1,5 +1,18 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-27 — EXP260 COMPLETE / EXP261 PREPARED
+
+- Last completed experiment: **EXP260 — COMPLETE / STRONG POSITIVE**.
+- Current prepared experiment: **EXP261 — bounded continuation through 046A/18, 047E/19 and 0492/11 — PREPARED / NOT RUN**.
+- Proven local prefix now reaches `046A/count18`.
+- EXP261 adds exactly three one-shot ACKs: `046A/18`, `047E/19`, `0492/11`.
+- Genuine Eco 5 commonly shows `04A6/count13` next, but because `04A6/13` is also a recurrent passive family, EXP261 treats it as a prediction rather than a strict success requirement.
+- After `0492` ACK: capture only. No `04A6` ACK, no later FC16 ACK, no FC03/mailbox response.
+- Any retry, unexpected peer frame, parser/RX-drop delta or >5 s stage timeout stops fail-closed.
+- Known incomplete-session side effect remains DHW-side `0` and possibly `COMM. ERR ONLINE/LINK`; reboot controller after summary.
+- No new GitHub files are created; existing Research files only.
+- EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.
+
 ## Current status — 2026-09-27 — EXP260 COMPLETE / STRONG POSITIVE
 
 - Last completed experiment: **EXP260 — COMPLETE / STRONG POSITIVE**.
