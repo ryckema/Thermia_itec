@@ -1,5 +1,17 @@
 # THERMIA PROJECT STATE
 
+## EXP259 UI side-effect confirmation — 2026-09-27
+
+- EXP259 is **COMPLETE / STRONG POSITIVE**.
+- User confirmed the same front-panel side effects again after the incomplete active Online/Link session:
+  - DHW-side literal `0`;
+  - exact alarm `COMM. ERR ONLINE/LINK`.
+- This repeats the EXP252/EXP256 failure mode while the controller is progressively serviced farther into the genuine Online/Link FC16 sync chain.
+- Strong conclusion: the visible side effect is reproducibly associated with entering the Online/Link session and then leaving it incompletely serviced.
+- Hypothesis, still not formally proven: the alarm is the controller timing out an approved but incompletely serviced Online/Link session.
+- Recovery remains one normal Thermia-controller reboot before any further active test.
+- To keep the remaining reboot count practical, future experiments may acknowledge small, pre-verified batches of the genuine Eco 5 FC16 sequence, with fail-closed stop on the first unexpected block. Do not jump directly to full-chain/mailbox emulation.
+
 ## Authoritative current state — 2026-09-27 — EXP259 COMPLETE / STRONG POSITIVE
 
 - Last completed experiment: **EXP259 — COMPLETE / STRONG POSITIVE**.
@@ -986,15 +998,3 @@ has been correlated with the final bus trace.
   - >=20 s target silence is accepted as a stop candidate only while the rest of the bus remains live;
   - EXP248 then requires another 60 s without a target before confirming the stop; any target reappearance cancels the candidate and is recorded as `FALSE_STOP`;
   - hard observation ceiling is 35 min after bus return.
-- Success criterion: `SUMMARY CONFIRMED_STOP` with >=3 target frames, clean parser counters, a final target time and a 60 s target-free confirmation window while ordinary bus traffic remains alive.
-- Stop/inconclusive criteria: no >=6 s boot gap within 60 s of ARM, fewer than 3 target frames, parser/buffer corruption, or `SUMMARY CENSORED_35MIN`.
-- **EXP239 remains OPEN** pending the external genuine iTec Eco 5 raw capture.
-- **EXP238 remains PARKED / NOT RUN.**
-- No active `0730` response is approved.
-
-
-## Authoritative current state — 2026-09-27 after EXP247
-
-- Last completed experiment: **EXP247 — COMPLETE / OFFLINE: natural XTR `071C/0730` disappearance is proven, but exact timeout is not recoverable from the current right-censored captures**.
-- Current experiment: **none running**.
-- **EXP239 remains OPEN** pending the external genuine iTec Eco 5 Online raw capture.
