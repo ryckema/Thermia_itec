@@ -1,5 +1,18 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-27 — EXP257 COMPLETE / external Eco 5 follow-up verified
+
+- Last completed experiment: **EXP257 — COMPLETE / STRONG POSITIVE**.
+- No new local experiment has run since EXP257.
+- Full Eco 5 raw-log follow-up confirms cold-start approval begins ~1.2 s after bus return, while steady state can contain no 071C/0730 traffic.
+- Two successful genuine gateway sessions respond after ~120 s / 29 challenges and then follow the same prefix already reproduced locally: `03E8/14 -> ACK -> 03FC/11 -> ACK -> 0410/22`.
+- `04A6/13` and `085F/5` remain recurrent passive families overlaid on the transfer; they are not established approval preconditions.
+- Genuine `0708/count6` mailbox polling begins while FC16 transfer is still active.
+- Raw idle mailbox response is six words `0000 0000 0000 0000 0001 0000`; a public comment's `0100` fifth word is a byte-order/transcription mismatch relative to the raw frame.
+- Later mailbox fifth-word values descend from `03DC` (988) through 984, 976, 908, 896, 768, 512 to 0; semantic meaning remains unknown.
+- **EXP258 is only a candidate / NOT PREPARED:** one exact `03FC/count11` ACK after the proven EXP257 prefix, then capture the first next block; Eco 5 predicts `0410/count22`.
+- Do not broaden yet to full-chain ACKs or mailbox emulation.
+
 ## Current status — 2026-09-27 — EXP257 COMPLETE / STRONG POSITIVE
 
 - Last completed experiment: **EXP257 — COMPLETE / STRONG POSITIVE**.
