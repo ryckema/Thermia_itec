@@ -1,3 +1,7 @@
+## EXP267 — PREPARED / NOT RUN
+
+Hypothesis: up to three consecutive exact `FC03 0708/count6` polls require the same genuine Eco5 idle response before the controller progresses. Only this repetition count changes from EXP266. Exact response: `0F030C0000000000000000010000001C88`. Max 3 TX; fourth poll is capture-only.
+
 ## EXP266 — COMPLETE / PARTIAL POSITIVE
 
 Hypothesis: answer the first exact post-`06F4` `FC03 0708/count6` once with the genuine Eco5 idle mailbox frame `0F030C0000000000000000010000001C88`, then capture only.
@@ -994,7 +998,3 @@ Press `EXP141 ARM ACK Current Candidate Once` while the walker remains active.
 
 
 #### EXP141 continuation — 0662/33 ACKed
-- `ARM_OK` accepted the locked `0662/count33` candidate.
-- next exact request received one `MANUAL_GATED` FC16 ACK.
-- log confirms `MANUAL_STAGE_ACKED stage=1 start=0662 count=33`.
-- repeated `0662` traffic then stopped.
