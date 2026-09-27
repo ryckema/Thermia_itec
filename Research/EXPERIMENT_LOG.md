@@ -1,3 +1,18 @@
+## EXP264 — 06EA/06F1/06F4 tail — COMPLETE / STRONG POSITIVE WITH CAPTURE AMBIGUITY
+
+Hypothesis: ACK exact `06EA/7`, `06F1/3`, `06F4/19` in order after the proven prefix, then capture only.
+
+Observed:
+- `06EA/7` ACKed once.
+- `06F1/3` followed and was ACKed once.
+- `06F4/19` followed and was ACKed once.
+- First post-`06F4` frame: `085F/5`, +107 ms, not ACKed.
+- `085F/5` is a previously established recurrent passive/background family; therefore this is a capture artifact/overlay, not proof of the next ordered sync stage.
+- One CRC resync occurred at bus return before the experiment chain; RX drops 0.
+- No approval retry, no stage retry, no peer FC17/ACK anomaly.
+
+Result: strong positive for the three tail ACKs; inconclusive for the next meaningful stage because the first-frame capture policy stopped on known background traffic.
+
 ## EXP263 — accelerated 12-block 33-word batch — COMPLETE / STRONG POSITIVE
 
 ## EXP264 — end-of-bulk sync tail — PREPARED / NOT RUN
@@ -983,18 +998,3 @@ Observed:
 - 30 s baseline completed with `fc16Seen=0`.
 - Active phase began with `fc16Seen=0 known=0 unknown=0`.
 - For ~61 s of active observation in the supplied log there was no slave-0x0F FC16 or FC03 traffic.
-- normal bus traffic continued; parser resyncs and RX drops remained zero.
-
-Conclusion:
-The controller does not retransmit `0662/count33` after the EXP141 ACK and reboot. The post-0662 state therefore persists on the Thermia side and the FC16 sync stream is currently quiescent.
-
-This is an important negative result, not a walker failure.
-
-
-### EXP143 — passive post-sync Heat Curve trigger probe — PREPARED
-
-Hypothesis:
-A manual +1 Heat Curve change and restore may trigger the otherwise quiescent post-0662 0x0F path.
-
-Only variable:
-Heat Curve on the Thermia UI, current -> current+1 -> original.
