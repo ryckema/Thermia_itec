@@ -1,3 +1,28 @@
+## 2026-09-28 — bidirectional 0x0F page-cache model / EXP270 PREPARED
+
+New cross-capture analysis materially refines the likely Online write architecture.
+
+### Observed 0708 -> FC03 read-side trigger
+In `thermia_capture_20260924_210001`, two `FC03 0708/count6` responses have word1=`0001`. Both are followed within ~39–41 ms by a controller-originated `FC03 03E8/count13` read from slave 0x0F. The returned 13-word page differs between the two events only at `03E8` (`0017 -> 0016`). Other 0708 responses in the same capture with word1=0 are not immediately followed by that 03E8 read.
+
+The `03E8` page is the known heating-settings family. A separate genuine DCM capture shows the controller sending the same 13-word image in the opposite direction with `FC16 03E8/count13`.
+
+**Strong architectural conclusion:** slave 0x0F behaves like a bidirectional page cache/interface. Controller -> gateway data moves by FC16 writes; gateway -> controller desired/config data can move by controller-initiated FC03 reads. This is a much better fit than a second-master write model.
+
+**Current write-path hypothesis:** a gateway advertises pending desired/config data through the 0708 control/status words (word1 is the leading candidate for the 03E8 page), after which the controller reads the page from 0x0F and decides whether/how to apply it. This is not yet proven on the XTR M and must not be treated as an authorized semantic write path until a bounded local test confirms application and authoritative echo.
+
+### EXP270 — PREPARED / NOT RUN
+
+**Hypothesis:** the local XTR stalls after `06F4/19` because the pending exact all-zero `085F/count5` transaction is ordered session traffic and must be ACKed. EXP268/269 both saw it after 06F4 and deliberately ignored it; successful Eco5 sessions ACK it before first 07D0 whenever it is still pending.
+
+**Only new active variable versus EXP269:** ACK the first exact controller-originated all-zero `085F/count5` once with standard FC16 response `0F10085F00053356`.
+
+The proven R1 + FC16 chain through 06F4 remains unchanged. If `0708/6` occurs after the 085F ACK before 07D0, preserve the same single EXP269 phase-matched response `0000 0000 0000 0000 0080 0006`; no second mailbox response is allowed. Primary success is controller-originated `07D0/count19`, which is capture-only and never ACKed in EXP270.
+
+Safety remains fail-closed: exact all-zero 085F shape only, one 085F ACK maximum, no broad writes/scans, parser/drop and peer-response guards retained. Experimental controls remain under Configuration with red/brown trace markers.
+
+**Authoritative current experiment: EXP270 PREPARED / NOT RUN.**
+
 ## 2026-09-28 — community HMAC-SHA256 serial-number hypothesis
 
 A community post proposed that the 16-byte 071C/0730 response may be the first 128 bits of HMAC-SHA256(challenge, serial-number-string). The example claimed:
