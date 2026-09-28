@@ -1,3 +1,18 @@
+## Protocol finding — 085F/5 is likely queue-ordered session traffic
+
+Based on the new Eco5 capture interpretation, `0F FC16 085F/count5` all-zero traffic should no longer be categorized as ignorable background during Online session establishment.
+
+Observed pattern from successful sessions:
+- if `085F` has already been ACKed, `07D0` may follow `06F4` within ~0.1 s;
+- if not, `085F` appears immediately after `06F4`, the controller waits for its ACK, and only then proceeds to `07D0`.
+
+This provides a strong candidate explanation for our local stall after `06F4`: prior experiments deliberately ignored `085F`.
+
+Separately, the repeatable Eco5 mailbox sequence after first sync is:
+`0100/0000 idle` -> `4000 8000 010B 0000` -> `FFFF 867F 03DF 0000` -> second full synchronization.
+
+Challenge/response remains unresolved; six unique pairs are now available, with ~30–60 ms reply latency and no simple bytewise relation observed.
+
 ## New Eco5 evidence — 07D0 is not mailbox-unlocked in the successful session
 
 A new genuine Eco5 capture shows the successful ordered sequence:
