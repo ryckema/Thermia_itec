@@ -1,3 +1,17 @@
+## 2026-09-28 — deeper full-log analysis of second Eco5 capture
+
+Four power cycles were parsed. Successful challenge replies occurred either around +10 s (request #3) or around +120 s (request #29), but first 03E8 ACK always began around +118.5..120.3 s after bus return. The fast-approval sessions contained 102 repeated unacked 03E8 frames over ~108 s before normal FC16 service began.
+
+085F is now the strongest immediate local clue. In the two sessions where it was still pending after 06F4:
+- S2: 06F4 ACK 590.919 -> 085F ACK 590.996 -> 0708 idle 592.311 -> 07D0 592.930.
+- S3: 06F4 ACK 888.765 -> 085F ACK 889.309 -> 0708 idle 892.978 -> 07D0 893.603.
+
+In sessions where 085F had already been ACKed shortly before approval, 07D0 followed 06F4 directly in ~78 ms.
+
+Mailbox raw-word correction: the normal idle response is 0000 0000 0000 0000 **0100** 0000. After initial idle replies, the stable script proceeds through 4000/8000/010B and then FFFF/867F/03DF. The 03DF response triggers a new 03E8 within 62–94 ms in all four sessions.
+
+Likely EXP270: reuse EXP268, change only exact 085F/5 handling from ignore to ACK once, retain normal idle 0708 behavior, capture 07D0 without ACK.
+
 ## 2026-09-28 — peer analysis of second Eco5 capture
 
 Material new evidence:
