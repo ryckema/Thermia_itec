@@ -1,3 +1,23 @@
+## New Eco5 evidence — 07D0 is not mailbox-unlocked in the successful session
+
+A new genuine Eco5 capture shows the successful ordered sequence:
+`071C/0730 challenge -> 16-byte response -> 03E8 -> ... -> 06F4 -> 07D0 -> 07E4 -> 0708/6 idle response -> 07F8 -> ...`.
+
+At the first clean successful session in this capture:
+- `06F4` ACK at 348.304 s;
+- `07D0/19` begins at 348.382 s;
+- first subsequent `0708/6` is not until 351.914 s.
+
+Therefore the first `07D0` is not caused by a post-`06F4` mailbox response in this session.
+
+The same capture contains four different successful `071C` challenges and four different 16-byte responses:
+- challenge `f721...1000` -> response `792f...4004`;
+- challenge `01bd...d1c2` -> response `826e...646f`;
+- challenge `1346...4ce7` -> response `623c...b049`;
+- challenge `755d...9333` -> response `9a7e...3fb9`.
+
+**Protocol implication:** `0730` approval is very likely a true challenge-response mechanism or otherwise challenge-bound. A fixed replay can trigger initial FC16 sync locally but cannot yet be assumed to create the same authenticated/session state as a genuine response.
+
 ### UI side effect after EXP269
 A visible lower-right display/status glyph changed after the single `0080/0006` response, while an alarm remained active. This supports the possibility that the mailbox response affected controller/UI state even though `07D0/19` did not follow. Do not map the glyph to a protocol bit yet.
 
