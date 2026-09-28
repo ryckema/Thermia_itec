@@ -1,3 +1,21 @@
+## 2026-09-28 — offline architecture analysis before EXP270
+
+Cross-capture comparison found a likely reverse-direction settings mechanism on slave 0x0F. In the 20260924 genuine DCM capture, the only two shown `0708/count6` replies with word1=`0001` are followed ~39–41 ms later by controller `FC03 03E8/count13` reads. The DCM returns a complete settings page; between the two events only the first word changes `0017 -> 0016`. A separate genuine DCM capture shows the same 13-word page image being written controller -> DCM via `FC16 03E8/count13`.
+
+Interpretation: FC16 likely synchronizes authoritative/current pages controller -> gateway, while FC03 can fetch desired/config pages gateway -> controller. Word1 of 0708 is a strong candidate pending-page/desired-data signal for the 03E8 family. Application semantics remain unproven locally.
+
+## EXP270 — PREPARED / NOT RUN — exact all-zero 085F ACK gate
+
+**Hypothesis:** first `07D0/count19` is blocked locally because exact all-zero `085F/count5` after `06F4` was wrongly ignored in EXP268/269.
+
+Controlled change from EXP269:
+- ACK the first exact all-zero `085F/count5` once using `0F10085F00053356`.
+- Keep the entire proven pre-06F4 sequence unchanged.
+- If 0708 occurs after that ACK before 07D0, use the same single EXP269 `0080/0006` response once only.
+- Capture first `07D0/count19` without ACK and terminate.
+
+Negative criteria are also explicit: 0708 before the 085F gate, non-zero 085F payload, 085F ACK safety refusal, repeated 085F without 07D0, timeout after 085F ACK, or 30 s RX-only after the preserved mailbox response with no 07D0.
+
 ## 2026-09-28 — deeper full-log analysis of second Eco5 capture
 
 Four power cycles were parsed. Successful challenge replies occurred either around +10 s (request #3) or around +120 s (request #29), but first 03E8 ACK always began around +118.5..120.3 s after bus return. The fast-approval sessions contained 102 repeated unacked 03E8 frames over ~108 s before normal FC16 service began.
