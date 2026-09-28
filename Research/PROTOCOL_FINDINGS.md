@@ -1,3 +1,17 @@
+## Deep Eco5 capture findings: service readiness, 085F gate, mailbox byte order
+
+1. **Challenge service and FC16 service are distinct phases.** Successful 071C/0730 replies can occur at ~10 s or ~120 s after bus return, while first 03E8 ACK clusters tightly near 118.5–120.3 s. Fast sessions tolerate 102 repeated unacked 03E8 requests.
+
+2. **085F/5 is a likely ordered gate.** In delayed cases:
+   `06F4 ACK -> 085F/5 ACK -> 0708 idle -> 07D0`.
+   When 085F was already ACKed, `06F4 ACK -> 07D0` can occur in ~78 ms.
+
+3. **Normal idle mailbox frame, raw Modbus words:** `0000 0000 0000 0000 0100 0000`. Earlier notes calling the fifth raw word `0001` were a byte-order interpretation error. The exact raw frame remains `0F030C0000000000000000010000001C88`.
+
+4. **Deterministic post-sync mailbox script:** idle `...0100 0000` -> `0000 0000 4000 8000 010B 0000` -> `0000 0000 FFFF 867F 03DF 0000`. The 03DF trigger is followed by a fresh 03E8 in 62–94 ms in all four new sessions.
+
+This materially raises confidence that local failure after 06F4 is caused by ignoring 085F rather than by choosing the wrong first mailbox payload.
+
 ## Protocol finding — 085F/5 is likely queue-ordered session traffic
 
 Based on the new Eco5 capture interpretation, `0F FC16 085F/count5` all-zero traffic should no longer be categorized as ignorable background during Online session establishment.
