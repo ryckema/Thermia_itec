@@ -1,3 +1,7 @@
+## 071C/0730 candidate algorithm — HMAC-SHA256 hypothesis is unverified
+
+Community-proposed formula: first 16 bytes of HMAC-SHA256 with serial number as key and 16-byte challenge as message. The literal example does not reproduce the claimed response, so no protocol conclusion can be drawn yet. Preserve as a candidate only.
+
 ## Deep Eco5 capture findings: service readiness, 085F gate, mailbox byte order
 
 1. **Challenge service and FC16 service are distinct phases.** Successful 071C/0730 replies can occur at ~10 s or ~120 s after bus return, while first 03E8 ACK clusters tightly near 118.5–120.3 s. Fast sessions tolerate 102 repeated unacked 03E8 requests.
