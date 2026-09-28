@@ -1,3 +1,25 @@
+## 0x0F bidirectional page-cache finding — 0708 word1 likely advertises reverse settings data
+
+A genuine DCM capture provides a strong causal pattern:
+- normal controller poll: `FC03 0708/count6`;
+- DCM response with word1=`0001`;
+- ~39–41 ms later controller issues `FC03 03E8/count13` to slave 0x0F;
+- DCM serves the complete 03E8 settings page.
+
+This occurs twice in the capture. The returned pages differ only at `03E8` (`0017 -> 0016`). The 03E8 family is already mapped as the heating-settings block on the XTR platform.
+
+A separate genuine DCM capture contains the same 13-word page image in the opposite direction as controller-originated `FC16 03E8/count13`.
+
+**Strong conclusion:** 0x0F supports bidirectional page synchronization: controller -> gateway by FC16, and gateway -> controller by controller-initiated FC03. This explains why direct second-master FC16 writes were a poor model for Online control.
+
+**Strong hypothesis:** 0708 word1 is a pending/desired-data signal that prompts the controller to fetch the 03E8 page. It is not yet proven whether word1 is exclusively a boolean 03E8 flag, an index/state counter, or part of a wider pending-page descriptor.
+
+**Write-access implication:** the likely native control path is to maintain a gateway-side cached settings page, alter only a known desired field, advertise pending data via the appropriate 0708 status, allow the Thermia controller to read the page, and then verify an authoritative controller-side echo. Do not implement this semantic write until local session completion and a bounded page-read test prove the behavior on the XTR M.
+
+## EXP270 protocol target — exact 085F prerequisite
+
+EXP268/269 both ignored the exact all-zero `FC16 085F/count5` appearing after `06F4`. Successful Eco5 sessions ACK this transaction before first `07D0` whenever it is pending. EXP270 therefore changes only that gate: one exact standard ACK `0F10085F00053356`, then observe. If 0708 intervenes, preserve the same single EXP269 `0080/0006` reply so the new discriminator remains the 085F ACK rather than a mailbox payload change.
+
 ## 071C/0730 candidate algorithm — HMAC-SHA256 hypothesis is unverified
 
 Community-proposed formula: first 16 bytes of HMAC-SHA256 with serial number as key and 16-byte challenge as message. The literal example does not reproduce the claimed response, so no protocol conclusion can be drawn yet. Preserve as a candidate only.
