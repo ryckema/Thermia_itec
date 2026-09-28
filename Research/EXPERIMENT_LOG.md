@@ -1,7 +1,3 @@
-## 2026-09-28 — community HMAC proposal checked
-
-A proposed `HMAC-SHA256(serial-as-key, challenge)`, truncated to 16 bytes, does not reproduce the published example when using the literal key string shown in the post. Marked UNVERIFIED. Await actual Eco5 serial/key material before further targeted testing.
-
 ## 2026-09-28 — deeper full-log analysis of second Eco5 capture
 
 Four power cycles were parsed. Successful challenge replies occurred either around +10 s (request #3) or around +120 s (request #29), but first 03E8 ACK always began around +118.5..120.3 s after bus return. The fast-approval sessions contained 102 repeated unacked 03E8 frames over ~108 s before normal FC16 service began.
