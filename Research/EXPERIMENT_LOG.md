@@ -1,3 +1,14 @@
+## 2026-09-28 — peer analysis of second Eco5 capture
+
+Material new evidence:
+- `085F/5` is likely ordered session traffic, not background chatter; in observed successful transitions it is ACKed before first `07D0`.
+- If `085F` is already ACKed earlier, `07D0` can follow `06F4` almost immediately; if pending, controller emits `085F` after `06F4`, waits for ACK, then emits `07D0`.
+- Post-first-sync mailbox script appears identical across five complete Eco5 sessions, ending in `FFFF 867F 03DF 0000`, which is followed by a second full sync.
+- Challenge approval timing and first FC16 ACK timing are decoupled; first FC16 ACK appears ~118 s after bus return in all cited sessions even when challenge approval occurs much earlier.
+- Six challenge/response pairs now available; no simple XOR/difference relation identified.
+
+Next experimental focus should be the `085F` queue prerequisite before any further mailbox-payload exploration.
+
 ## 2026-09-28 — external Eco5 capture review (no new local experiment)
 
 Major result from new genuine Eco5 gateway capture:
