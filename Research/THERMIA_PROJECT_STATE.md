@@ -1,3 +1,53 @@
+# 2026-09-29 — EXP270 COMPLETE / POSITIVE — 085F confirmed as XTR runtime gate
+
+**Authoritative current state:** EXP270 COMPLETE / POSITIVE. EXP271 is NEXT / NOT YET PREPARED.
+
+## EXP270 hypothesis
+The XTR M stalled after the proven initial Online/Link synchronization through `06F4/19` because the pending exact all-zero `085F/count5` transaction is ordered session traffic and must be ACKed before the controller will enter the runtime-page family.
+
+## Controlled change
+Relative to EXP269, the same fixed `0730` replay, the same proven FC16 chain through `06F4`, and the same single mailbox response `0000 0000 0000 0000 0080 0006` were retained. The only material new active variable was:
+
+- ACK the first exact controller-originated all-zero `085F/count5` once with `0F10085F00053356`.
+
+`07D0/19` remained capture-only and was not ACKed.
+
+## Observed result
+The run was clean and reached the target:
+
+`BUS_RETURN -> 071C -> fixed R1 replay -> 03E8 ... 06F4 -> 085F/5 all-zero -> ACK 085F -> 0708/6 -> 0080/0006 response -> 07D0/19`.
+
+Key timing from the local XTR run:
+- `06F4` ACK executed at 00:48:06.727.
+- exact all-zero `085F/5` arrived ~45 ms later.
+- `085F` ACK executed at 00:48:06.808.
+- first `0708/6` arrived ~1.48 s after the 085F ACK.
+- the same single EXP269 mailbox response `0F030C0000000000000000008000069C9E` was sent.
+- `07D0/19` arrived ~509 ms after that mailbox response and ~2.05 s after the 085F ACK.
+- experiment stopped on `SUCCESS_07D0_AFTER_085F_ACK`; `07D0` was not ACKed.
+- parser/RX integrity remained clean for the controlled sequence.
+
+## Strong conclusions
+1. **The exact all-zero `085F/count5` is locally confirmed on the XTR M as an ordered prerequisite/gate for progression to the first `07D0/19` runtime page.**
+2. The earlier classification of post-`06F4` `085F` as ignorable background was wrong for this phase.
+3. EXP269 and EXP270 form a useful A/B pair:
+   - EXP269: same `0080/0006` mailbox response, no 085F ACK -> no 07D0.
+   - EXP270: same mailbox response, one exact 085F ACK -> 07D0.
+   Therefore the new discriminator is the 085F ACK, not a new mailbox payload.
+4. A fixed `0730` response that does not match the current `071C` challenge is sufficient on this XTR to traverse the complete initial config sync and reach the first runtime page. This does **not** prove the challenge mechanism is absent or unvalidated; it only proves fixed replay suffices this far.
+
+## Hypotheses / unknowns
+- `07D0` is likely the next ordered runtime gate and may require a standard one-shot FC16 ACK before `07E4` appears.
+- The semantic difference between the local `0080/0006` mailbox response and the genuine Eco5 cold-start `0100/0000` response remains unresolved; EXP270 proves only that `0080/0006` does not block the first 07D0 once 085F is satisfied.
+- It remains unknown whether fixed `0730` replay is sufficient through full steady state and later reverse-direction settings reads/writes.
+
+## Next experiment — EXP271
+**Hypothesis:** after the now-proven path reaches the first exact `07D0/count19`, ACKing that page exactly once will advance the controller to `07E4/count17`.
+
+Only new active variable: one standard ACK for the first exact `07D0/19`. `07E4` must be capture-only in EXP271. No new mailbox values, no semantic settings writes, and no broad runtime-page ACKing.
+
+---
+
 ## 2026-09-28 — bidirectional 0x0F page-cache model / EXP270 PREPARED
 
 New cross-capture analysis materially refines the likely Online write architecture.
