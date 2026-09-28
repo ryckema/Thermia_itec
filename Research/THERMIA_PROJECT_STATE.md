@@ -1,3 +1,21 @@
+## 2026-09-28 — piotrek_r second-capture interpretation materially refines next step
+
+New peer analysis of `itec_eco5_gateway_20260928.log` adds two important corrections:
+
+1. `085F/5` must no longer be treated as harmless background during session establishment. Across the cited Eco5/ATEC transitions it is ACKed before first `07D0`; when pending after `06F4`, the controller sends `085F`, waits for its ACK, then proceeds to `07D0`. This suggests queue/ordering semantics.
+
+2. The post-first-sync mailbox script is highly repeatable across complete Eco5 sessions. Sequence reported:
+   - several idle responses `0000 0000 0000 0000 0100 0000`;
+   - then `0000 0000 4000 8000 010B 0000`;
+   - then `0000 0000 FFFF 867F 03DF 0000`.
+   The last pattern is followed by a second full synchronization within ~0.06–0.11 s in all observed complete sessions.
+
+Timing evidence further separates challenge approval from session service: challenge response may occur ~10 s or ~120 s after bus return, yet first FC16 ACK clusters around ~118 s after bus return. Long unacked repetition of `03E8/14` can persist for nearly two minutes without breaking the session.
+
+Challenge/response remains unresolved. Six observed responses are all different and no simple XOR/difference relation was found. Reply latency (~30–60 ms) strongly favors local computation or a non-challenge-dependent lookup/token mechanism. Fixed replay working locally therefore remains relevant but does not prove equivalence with a genuine session.
+
+**Implication for next local experiment:** before inventing new mailbox values, test the newly recognized queue prerequisite by ACKing the exact pending `085F/5` after `06F4` if it appears, while keeping all other post-`06F4` traffic capture-only. This is a narrower and better-supported hypothesis than further mailbox variation.
+
 ## 2026-09-28 external Eco5 capture — major correction to post-06F4 interpretation
 
 New raw capture `itec_eco5_gateway_20260928.log` materially changes the interpretation of EXP269.
