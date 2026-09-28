@@ -1,3 +1,15 @@
+## 2026-09-28 — community HMAC-SHA256 serial-number hypothesis
+
+A community post proposed that the 16-byte 071C/0730 response may be the first 128 bits of HMAC-SHA256(challenge, serial-number-string). The example claimed:
+
+challenge `01bd6eba71bff920128ab44bae2537eb`
+key `******24190327`
+expected response `826ed2acbc1b3db93adec93c53087a53`.
+
+Independent calculation of HMAC-SHA256 using the literal ASCII key `******24190327` does **not** reproduce that response; it yields a different prefix. Therefore the example as written is not yet verified and must not be treated as a confirmed algorithm.
+
+The hypothesis remains worth testing once the real Eco5 serial number/key encoding is known, because six genuine challenge/response pairs are available. Test variants should be limited and evidence-driven: exact serial string, possible model prefixes/suffixes, zero-padding, ASCII vs BCD/binary, and full-vs-truncated HMAC comparison. Do not perform broad brute-force key search.
+
 ## 2026-09-28 — deeper analysis of itec_eco5_gateway_20260928.log
 
 Direct full-log parsing confirms four power-cycle sessions beginning after bus gaps at approximately 193.555, 438.000, 734.310 and 974.803 s. All four ultimately establish a working gateway session.
