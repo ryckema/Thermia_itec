@@ -1,3 +1,41 @@
+# 2026-09-29 — XTR locally proves 085F as ordered gate to runtime
+
+EXP270 provides the first active XTR proof of the transition from the initial 0x0F configuration synchronization into the runtime-page family.
+
+Observed local sequence:
+
+`... -> 06EA/7 -> ACK -> 06F1/3 -> ACK -> 06F4/19 -> ACK -> 085F/5 all-zero -> ACK -> 0708/6 -> one 0080/0006 response -> 07D0/19`.
+
+The first `07D0/19` was deliberately not ACKed.
+
+## Strong protocol conclusion
+The exact all-zero `085F/count5` is **not** ignorable background in this phase. It is an ordered queue/session item whose ACK is required before the local XTR M progresses to the first `07D0` runtime page.
+
+This conclusion is strengthened by the EXP269/EXP270 A/B comparison:
+- EXP269 used the same one-shot `0708` response `0000 0000 0000 0000 0080 0006` but did not ACK 085F -> no 07D0.
+- EXP270 added one exact 085F ACK while preserving that mailbox response -> 07D0 appeared.
+
+Therefore the 085F ACK, rather than a new mailbox payload, is the demonstrated causal discriminator.
+
+## Challenge replay boundary
+EXP270 received a new 16-byte 071C challenge but still transmitted the same historical fixed 0730/R1 response. Despite this mismatch, the XTR completed the entire initial config-page export through 06F4, accepted the 085F gate, and emitted 07D0.
+
+Protocol implication: fixed replay is sufficient to reach at least the first runtime page on this XTR. This does not establish that the genuine challenge-response algorithm is irrelevant, nor that later steady-state/write operations will accept the same partial approval state.
+
+## Mailbox nuance
+Genuine Eco5 cold-start sessions can use raw word5/state `0100` before first runtime progression, while EXP270 reached 07D0 after the retained EXP269 response with `0080/0006`. Therefore:
+- 085F ordering is now locally proven;
+- exact mailbox-state equivalence is **not** proven;
+- do not collapse `0100/0000` and `0080/0006` into one semantic state.
+
+## Next bounded protocol test
+EXP271 target:
+`07D0/19 -> one exact standard FC16 ACK -> capture 07E4/17`.
+
+No ACK of 07E4 in EXP271. No broad runtime servicing and no semantic settings write.
+
+---
+
 ## 0x0F bidirectional page-cache finding — 0708 word1 likely advertises reverse settings data
 
 A genuine DCM capture provides a strong causal pattern:
