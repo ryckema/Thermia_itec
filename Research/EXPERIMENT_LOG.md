@@ -1,3 +1,47 @@
+# 2026-09-29 — EXP270 COMPLETE / POSITIVE — exact 085F ACK unlocks 07D0
+
+## Hypothesis
+The pending exact all-zero `FC16 085F/count5` after the initial synchronization is an ordered gate. ACKing it once should allow the XTR M to continue from the proven `06F4` tail into the first runtime page `07D0/count19`.
+
+## Controlled variable
+EXP270 intentionally preserved the EXP269 fixed replay and post-`06F4` mailbox behavior. The only material new active action was a one-shot standard ACK of the first exact all-zero `085F/5`.
+
+## Timeline / observed facts
+- BUS_GAP and BUS_RETURN detected normally.
+- New local approval challenge:
+  `1A004508F90602ACDC1DC5CC001E8F10`.
+- The same fixed R1 replay used in prior experiments was sent:
+  `0F17101691A5F3F8E8D58738924416E8E6A3D5E227`.
+- The complete known FC16 prefix proceeded successfully:
+  `03E8 -> 03FC -> 0410 -> 042E -> 0442 -> 0456 -> 046A -> 047E -> 0492 -> 04A6 -> 04BA -> 04D8 -> 04F6 -> 050A -> 051E -> 0532 -> 0546 -> 055A -> 057B -> 059C -> 05BD -> 05DE -> 05FF -> 0620 -> 0641 -> 0662 -> 0683 -> 06A4 -> 06C5 -> 06EA -> 06F1 -> 06F4`.
+- `06F4` ACK executed at 00:48:06.727.
+- exact all-zero `085F/count5` arrived immediately afterwards and was ACKed exactly once with `0F10085F00053356`.
+- first `0708/count6` then arrived; EXP270 returned the same single EXP269 response:
+  `0F030C0000000000000000008000069C9E`.
+- first `07D0/count19` arrived 509 ms later.
+- firmware logged `SUCCESS_07D0_AFTER_085F_ACK`.
+- `07D0` was deliberately not ACKed.
+- no broad writes/scans were performed.
+
+## Comparison with EXP269
+EXP269 used the same single `0080/0006` mailbox response but deliberately ignored the post-`06F4` `085F/5`; no `07D0` followed. EXP270 retained that mailbox response and added one exact 085F ACK; `07D0` appeared.
+
+## Strong conclusion
+**EXP270 is positive. The exact all-zero 085F/5 is locally confirmed as an ordered XTR M gate required for progression to the first runtime page.**
+
+## Additional finding
+The current 071C challenge differed from the historical challenge corresponding to the replayed R1 frame, yet the controller accepted enough of the session to complete the initial config export and reach `07D0`. Fixed 0730 replay is therefore sufficient at least through this stage; genuine challenge-response semantics remain unresolved.
+
+## Negative/limited findings
+- EXP270 does not prove that `0080/0006` is the correct genuine cold-start mailbox state; genuine Eco5 evidence also shows `0100/0000` in this phase.
+- EXP270 does not prove full Online/Link session completion or steady-state operation.
+- No runtime page beyond `07D0` was tested because 07D0 was intentionally left unACKed.
+
+## Next
+EXP271 should change one variable only: ACK first exact `07D0/19` once, then capture first `07E4/17` without ACK.
+
+---
+
 ## 2026-09-28 — offline architecture analysis before EXP270
 
 Cross-capture comparison found a likely reverse-direction settings mechanism on slave 0x0F. In the 20260924 genuine DCM capture, the only two shown `0708/count6` replies with word1=`0001` are followed ~39–41 ms later by controller `FC03 03E8/count13` reads. The DCM returns a complete settings page; between the two events only the first word changes `0017 -> 0016`. A separate genuine DCM capture shows the same 13-word page image being written controller -> DCM via `FC16 03E8/count13`.
