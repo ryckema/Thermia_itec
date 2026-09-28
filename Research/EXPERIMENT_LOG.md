@@ -1,3 +1,15 @@
+## 2026-09-28 — external Eco5 capture review (no new local experiment)
+
+Major result from new genuine Eco5 gateway capture:
+- successful dynamic `071C/0730` response is followed by `03E8 -> ... -> 06F4`;
+- `07D0/19` follows `06F4/19` directly (~78 ms) before the next `0708/6` mailbox poll;
+- therefore EXP269 tested the wrong causal hypothesis: mailbox payload `0080/0006` is not required to unlock the first `07D0` in this successful session;
+- later `0708/6` idle replies (`0001/0000`) are interleaved with `07E4, 07F8, 080C, 0820, 0834, 0848, 0864, 0870, 0884`.
+
+The capture also provides four distinct successful `071C` challenge -> 16-byte response pairs. Responses differ with the challenge, strongly supporting a dynamic challenge-response mechanism.
+
+Project implication: next work should target the approval/session mechanism rather than additional mailbox-payload variants.
+
 ### EXP269 UI observation
 Post-test display photo confirms a visible change in the lower-right status area: user reports the center of the `0`/status glyph is now filled. Alarm remains active. Treat as a UI/state side effect only; semantic meaning unknown and not evidence of successful Online session completion.
 
