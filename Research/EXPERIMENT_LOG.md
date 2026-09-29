@@ -1,3 +1,73 @@
+# EXP290 — COMPLETE / POSITIVE — reverse 03E8 semantic write changes controller-visible Room Setpoint
+
+**Date:** 2026-09-29
+
+**Hypothesis:** after EXP289 proved acceptance of an unchanged reverse `03E8/14` page, changing only locally mapped `03F4` by +1 in the same-session cached page should be semantically applied by the controller.
+
+**Baseline:** EXP289 COMPLETE / POSITIVE.
+
+**Controlled change:** only `03F4` changed, from current-session cached raw value `22` to `23`. All other 13 words were unchanged. Safety gate required original 15..24 and compressor stopped.
+
+**Observed:**
+- current-session `03E8/14` cache captured before the write;
+- post-`07E4` `0708/6` answered with `w1=0001`;
+- `FC03 03E8/14` arrived 98 ms later;
+- reverse page response sent with only `03F4 22->23`;
+- first next FC16 was normal runtime `07F8/17` 680 ms later;
+- about two seconds later the live `Room Setpoint` sensor reported `23 °C`;
+- RX buffer drops remained 0;
+- one parser resync occurred at controller bus return before the active transfer.
+
+**Result:** COMPLETE / POSITIVE for controller-visible semantic application. The experiment did not capture an authoritative `FC16 03E8/14` target echo, so that narrower confirmation remains OPEN.
+
+**Do not rewrite this as full round-trip proof:** transport + semantic application are locally demonstrated; authoritative FC16 echo and independent room-sensor-path confirmation are still pending.
+
+---
+
+# EXP289 — COMPLETE / POSITIVE — unchanged reverse 03E8/14 page accepted
+
+**Date:** 2026-09-29
+
+**Hypothesis:** after the EXP288-proven reverse pull, return the exact current-session cached `03E8/14` page unchanged and test whether the controller accepts it.
+
+**Controlled change from EXP288:** respond once to exact `FC03 03E8/14` with the same 28 payload bytes previously captured from the session's own `FC16 03E8/14`.
+
+**Observed:**
+- `0708 w1=0001` again caused `FC03 03E8/14` after 98 ms;
+- exact unchanged current-session page was returned once;
+- controller continued with `FC16 07F8/17` 680 ms later;
+- no immediate retry/reject flow.
+
+**Result:** COMPLETE / POSITIVE. Reverse-page response transport acceptance is locally proven.
+
+---
+
+# EXP288 — COMPLETE / POSITIVE — 0708 w1 bit0 triggers local reverse 03E8 pull
+
+**Date:** 2026-09-29
+
+**Hypothesis:** change only post-`07E4` 0708 `w1` from `0000` to `0001`; controller should request heating/settings page `03E8`.
+
+**Controlled change from EXP287:** response changed from `0000 0000 0000 0000 0000 0006` to `0000 0001 0000 0000 0000 0006`.
+
+**Observed:** 98–99 ms after the probe response, local controller sent `FC03 03E8/count14`. Firmware's original matcher expected count13 from genuine capture evidence and therefore labelled the run inconclusive, but the protocol observation itself is positive and locally specific: this XTR uses count14.
+
+**Result:** COMPLETE / POSITIVE for the core hypothesis. `0708 w1 bit0` locally triggers reverse `03E8/14`.
+
+---
+
+# EXP287 — COMPLETE / INCONCLUSIVE — direct 0870 after 0864 exposes second conditional runtime branch
+
+**Date:** 2026-09-29
+
+**Hypothesis:** after cycle-2 `0848 -> 0708`, accept either optional `085F/5 -> ACK -> 0864/4` or direct `0864/4`, then continue the previously assumed `0864 -> 0708 -> 0870` tail.
+
+**Observed:** direct `0864/4` was accepted and ACKed, but controller then emitted direct `0870/17` without the expected intervening `0708`. Firmware stopped fail-closed.
+
+**Result:** COMPLETE / INCONCLUSIVE overall; positive sub-result that direct 0864 branch is valid. Strong conclusion: post-`0864` 0708 is conditional/state-dependent.
+
+---
+
 # THERMIA EXPERIMENT LOG
 
 # 2026-09-29 — EXP286 COMPLETE / INCONCLUSIVE — second full runtime loop hits direct 0864 branch
