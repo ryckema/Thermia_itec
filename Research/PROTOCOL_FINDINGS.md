@@ -1,3 +1,92 @@
+# 2026-09-29 — EXP298–312 retained-session recovery and branch-aware runtime findings
+
+## PROVEN / locally confirmed
+
+- The XTR M Online/DCM runtime is **not a rigid linear chain**. Retained-session recovery can re-enter known runtime at different branch points.
+- Exact `0662/33` is an ACK-gated controller-to-DCM transfer stage on this XTR M. EXP305 re-confirmed the older EXP141 result.
+- Exact `085F/5` carrying words `0000 0000 0800 0000 0000` is ACK-sensitive. One standard ACK can move the controller to the all-zero `085F/5` state.
+- The third word of that frame is register `0861`, value `0x0800`. This makes `0861=0x0800` a locally confirmed session/retry-state discriminator, but **not** a decoded semantic flag.
+- Exact all-zero `085F/5` is also ACK-gated in the tested retained-session path. A single standard ACK can advance the controller to known runtime traffic.
+- `0864/4`, `0870/17` and `0884/60` each accept the standard FC16 address/count ACK and can advance the local controller to another known runtime stage.
+- EXP307 locally proved: `all-zero 085F ACK -> 0708 -> 0864/4`.
+- EXP308 locally proved: `0864/4 ACK -> 0708 -> 0870/17`.
+- EXP310 locally proved: `0870/17 ACK -> 0708 -> 0884/60`.
+- EXP312 locally proved: `0884/60 ACK -> 0708 -> 07D0/19`.
+- In those bounded transition tests the intervening `0708` was deliberately left NO_TX, yet the next known FC16 stage still appeared. Therefore an **immediate** `0708` response is not required for these short scheduler transitions.
+- EXP309 showed direct `0870/17` after the post-`085F` branch with no preceding `0864/4`.
+- EXP311 and EXP312 showed direct `0884/60` after the post-`085F` branch with no preceding `0864/4` or `0870/17`.
+- Controller retained state can survive ESP reboot/OTA. ESP restart does not reset the Thermia controller session state.
+- `0884/60` payload data can change between repeated frames while the start/count remain fixed. Qualification must therefore use frame shape/state context rather than assuming a fixed payload.
+
+## Current locally supported retained-session graph
+
+The retained-session recovery evidence now supports at least:
+
+`0662/33 --ACK--> retained scheduler`
+
+`085F(0800) --ACK--> all-zero 085F`
+
+`all-zero 085F --ACK--> branch-aware runtime`
+
+From that branch, locally observed valid paths include:
+- `0708 -> 0864`;
+- direct `0870`;
+- `0708 -> 0870`;
+- direct `0884`;
+- `0708 -> 0884`.
+
+Locally tested ACK transitions then reconnect to the normal runtime loop:
+- `0864 ACK -> [0708] -> 0870`;
+- `0870 ACK -> [0708] -> 0884`;
+- `0884 ACK -> [0708] -> 07D0`.
+
+The brackets above mean that `0708` was observed in the tested causal sequence but its response was intentionally omitted; this notation does **not** claim that `0708` is globally optional for all Online/DCM purposes.
+
+## STRONGLY SUPPORTED
+
+- The controller appears to maintain a **session-liveness/watchdog** model rather than judging health from one isolated ACK. EXP299 and EXP305 produced temporary visible progress/clearing, while lack of sustained service later returned to recovery/retry behavior.
+- The most useful emulator architecture is a state/event graph with a set of allowed next events, not a single exact next-register pointer.
+- `0708` remains a synchronization/mailbox descriptor. Its immediate response can be unnecessary for short FC16-to-FC16 progression, but it may still matter to long-lived session health, reverse-page advertisement or other state synchronization.
+- Fresh approval is not guaranteed after an ESP restart while the Thermia controller remains powered. The controller can remain in a retained runtime/recovery state instead.
+
+## HYPOTHESIS
+
+- A branch-aware retained-session recovery handler that reaches any known normal runtime node can likely hand off to the already proven EXP296/297 steady-state runtime responder and restore sustained Online/Link health without rebooting the Thermia controller.
+- `0861=0x0800` likely marks a retry/recovery or pending-session condition, but the exact semantics are unknown.
+- The exact liveness timer may be on the order of minutes, but current alarm timing is observational and context-dependent; no timer value is proven.
+
+## OPEN / UNKNOWN
+
+- Exact semantic meaning of `0861=0x0800`.
+- Exact conditions that select direct `0864`, direct `0870`, direct `0884`, or an intervening `0708`.
+- Exact long-term role of `0708` and minimum response cadence required for durable health.
+- Exact session-liveness/watchdog interval.
+- Whether branch-aware retained recovery can sustain multiple complete EXP296/297 runtime cycles without controller reboot.
+- Semantics of runtime pages `0864`, `0870`, `0884` and the changing fields inside `0884`.
+- Runtime `04A6/13` semantics and native ACK policy.
+- Genuine `071C/0730` challenge-response algorithm.
+- Multi-hour/overnight stability and rare/fault-state behavior.
+
+## DISPROVEN / SUPERSEDED
+
+- **SUPERSEDED:** `0848/23` is a universal retained-session re-entry anchor. EXP300/301 showed retained states centered on `085F(0800)` and `0708` without `0848`.
+- **SUPERSEDED:** `0864/4` must precede `0870/17`. EXP309 observed direct `0870`.
+- **SUPERSEDED:** `0870/17` must precede `0884/60`. EXP311/312 observed direct `0884`.
+- **SUPERSEDED:** ESP reboot/OTA can be treated as protocol rollback. EXP303 showed the controller can retain the changed session state across ESP restart.
+
+## Safety interpretation
+
+- Standard FC16 ACKs acknowledge only slave/function/start/count; they do not inject the FC16 payload values.
+- Even so, every new ACK target remains an explicit experimental action and must stay exact-shape/state gated.
+- Do not broad-ACK unknown FC16 traffic.
+- `0834/18` remains capture-only/unsupported locally.
+- Runtime `04A6/13` remains capture-only until separately tested.
+- Retained-session experiments should not include semantic setting writes.
+- Unexpected `0x0F` traffic remains capture-only/fail-closed unless its branch is explicitly predeclared from local evidence.
+- Do not assume ESP reboot restores controller state.
+
+---
+
 # 2026-09-29 — EXP291–297 runtime, state-transition and recovery findings
 
 ## PROVEN / locally confirmed
