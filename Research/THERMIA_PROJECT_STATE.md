@@ -1,3 +1,102 @@
+# 2026-09-29 — EXP290 COMPLETE / POSITIVE — first locally applied native reverse-page setting change
+
+**Authoritative current state:** EXP290 COMPLETE / POSITIVE for semantic application of one controlled setting change through the native Online/DCM reverse-page path. Authoritative FC16 echo confirmation is still OPEN. No EXP291 result exists; EXP291 is not yet prepared/run in canonical state.
+
+## Last completed experiment — EXP290
+**Hypothesis:** after EXP289 proved that the local XTR accepts an unchanged reverse `03E8/14` page, change exactly one known word in that same current-session page — `03F4`, locally mapped as the Room Setpoint mirror — from the cached value `22` to `23`, then observe whether the controller applies it.
+
+### Controlled change from EXP289
+All EXP289 transport behavior was preserved:
+`0708 w1=0001 -> controller FC03 03E8/14 -> gateway page response`.
+
+Only one payload word changed:
+- `03F4: 22 -> 23`
+- all other `03E8/14` words were copied unchanged from the current-session FC16 cache;
+- compressor had to be stopped and the original value had to be within the bounded 15..24 guard.
+
+No other setting/register was modified.
+
+## EXP290 observed result
+The local controller requested `FC03 03E8/14` 98 ms after the `0708 w1=0001` response. The emulator returned the current-session `03E8/14` page with only `03F4 22->23`.
+
+The first subsequent 0x0F transfer was the normal runtime `FC16 07F8/17` 680 ms later, so the bounded experiment itself did not capture an authoritative `FC16 03E8/14` echo.
+
+However, roughly two seconds later the live ESPHome/Home Assistant `Room Setpoint` sensor changed to `23 °C`, exactly matching the injected target. No RX buffer drops occurred. One parser resync was logged at controller bus return before the active sequence; the write path itself completed and normal bus traffic continued.
+
+### Status interpretation
+- **COMPLETE / POSITIVE** for controller-visible semantic application of the reverse-page `03F4` change.
+- **OPEN** for authoritative controller `FC16 03E8/14` echo of the changed value.
+- The `Room Setpoint = 23 °C` observation is not yet an independent room-sensor-path confirmation; EXP291 should explicitly observe the slave-0x0A/B3C5 room-sensor path as a second confirmation channel.
+
+## Immediately preceding experiments
+### EXP289 — COMPLETE / POSITIVE
+After `0708 w1=0001` triggered local `FC03 03E8/14`, the emulator returned the exact current-session cached `03E8/14` payload unchanged. The controller accepted it and continued normally with `FC16 07F8/17` 680 ms later. This locally proved reverse-page transport acceptance.
+
+### EXP288 — COMPLETE / POSITIVE
+Changing only `0708 w1` from `0000` to `0001` caused the local XTR to issue `FC03 03E8/count14` about 98–99 ms later. This locally proved that `0708 w1 bit0` can advertise/request the reverse pull of page `03E8`.
+
+### EXP287 — COMPLETE / INCONCLUSIVE
+The second runtime cycle accepted the evidence-backed branch through direct `0864/4`, but then the controller emitted direct `0870/17` instead of the experiment's mandatory post-`0864` `0708`. The experiment stopped fail-closed. This proved that post-`0864` `0708` is also conditional/state-dependent.
+
+## Current protocol model
+### Reverse/native settings path — now locally demonstrated
+`0708 response advertises desired page -> controller FC03 pulls page -> emulator returns page -> controller applies at least one known changed setting`.
+
+Locally demonstrated chain:
+`FC03 0708/6 -> response w1=0001 -> FC03 03E8/14 -> reverse 03E8 page response -> controller-visible Room Setpoint changes 22->23`.
+
+Transport and semantic application are now locally demonstrated on this XTR M. The remaining confirmation gap is an authoritative controller-originated FC16 echo of the modified `03E8/14` page.
+
+### Runtime scheduler model
+Genuine XTR captures and local experiments show at least two valid branch shapes around `085F/0864/0870`:
+- `0848 -> 0864 -> 0708 -> 0870`
+- `0848 -> 085F -> 0708 -> 0864 -> 0870`
+
+Local EXP287 additionally observed direct `0864 -> 0870`. Therefore `085F` and placement of `0708` are state-dependent; 0708 must not be treated as a fixed mandatory separator.
+
+### 0708 words
+- `w1 bit0`: **PROVEN / locally confirmed** to trigger reverse `03E8/14` pull.
+- `w2/w3`: **STRONGLY SUPPORTED** configuration-page request/selection bitmap.
+- `w4`: **STRONGLY SUPPORTED** runtime-page bitmap/scheduler field, exact semantics still open.
+- `w0`, `w5`: OPEN.
+
+## Locally proven findings
+- Full initial configuration synchronization through `06F4` is reproducible.
+- Fixed historical R1 replay remains sufficient to enter the tested runtime/reverse-page path, though the genuine challenge algorithm is unresolved.
+- `085F` is conditional/state-dependent in steady-state runtime.
+- `0708 w1=0001` locally causes `FC03 03E8/14`.
+- The XTR accepts a same-session unchanged reverse `03E8/14` page.
+- A reverse `03E8/14` page with exactly one controlled change `03F4 22->23` changes the controller-visible Room Setpoint to `23 °C`.
+
+## Important unknowns
+- Authoritative controller FC16 echo timing/conditions after a reverse semantic write.
+- Whether slave `0x0A:B3C5` independently confirms the same changed room setpoint on this XTR after the native reverse-page write.
+- Exact semantics of 0708 `w0`, `w4`, `w5`.
+- Exact scheduling/latching rules for runtime page bits and conditional `085F`.
+- Genuine `071C/0730` challenge-response algorithm.
+- Long-running production stability of continuous DCM emulation across operating-state changes.
+
+## Next experiment
+**EXP291 — NOT YET PREPARED / NOT RUN.**
+
+Highest-value next test:
+repeat the exact bounded EXP290 `03F4 +1` semantic write path, but remain RX-only long enough to seek **two confirmation channels**:
+1. authoritative controller-originated `FC16 03E8/14` with target value at `03F4`;
+2. independent room-sensor-side confirmation through the locally observed slave-`0x0A` setpoint propagation path, specifically `B3C5` if present in the expected frame.
+
+No second semantic value should be changed. No automatic rollback write should be added unless explicitly made a separate controlled action.
+
+## Safety constraints
+- Exact stage/order/count/CRC checks remain mandatory.
+- Reverse page must be based on the current-session `03E8/14` image.
+- Only one already mapped word may change per semantic experiment.
+- Keep bounded value guards and compressor-stop guard.
+- After the semantic response, prefer RX-only observation.
+- Unexpected FC03/FC16 ordering/shape remains capture-only/fail-closed.
+- No broad register writes/scans or speculative unknown targets.
+
+---
+
 # 2026-09-29 — EXP286 COMPLETE / INCONCLUSIVE — steady-state runtime loop confirmed with conditional 085F branch
 
 **Authoritative current state:** EXP286 COMPLETE / INCONCLUSIVE. No next live experiment is currently prepared.
