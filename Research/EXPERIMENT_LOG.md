@@ -1,3 +1,161 @@
+# EXP296 — COMPLETE / POSITIVE — direct post-080C 0820 branch survives real operation-state changes
+
+**Date:** 2026-09-29
+
+**Hypothesis:** after EXP295 locally observed `080C/18 -> direct 0820/18`, allow exactly that additional branch while preserving all prior proven runtime handling. Runtime `04A6/13` remains capture-only / NO_TX.
+
+**Baseline:** EXP295 COMPLETE / INCONCLUSIVE overall, with positive target result for `07E4 -> direct 07F8`.
+
+**Controlled change from EXP295:** after valid `080C/18` ACK, allow either:
+- `FC03 0708/6 -> existing runtime 0708 response -> 0820/18`, or
+- direct `FC16 0820/18` using the existing proven address/count ACK.
+
+No other protocol response was changed. No semantic write. Runtime `04A6/13` remained NO_TX.
+
+**Observed:**
+- normal startup/approval/config sync completed and steady-state began;
+- first `DIRECT_POST_080C_0820_ACCEPTED` occurred at steady-state age ~94 s;
+- the direct branch was accepted repeatedly, reaching count **11** in the supplied capture;
+- `DIRECT_POST_07E4_07F8_ACCEPTED` also repeated, reaching count **12** near the end;
+- `DIRECT_POST_0884_07D0_ACCEPTED` reached count **11**;
+- runtime reached at least **16 cycles** and **159 serviced runtime events**;
+- steady-state service age reached ~**329.8 s**;
+- no `ABORT_FAIL_CLOSED` occurred in the supplied capture;
+- RX buffer drops remained 0;
+- parser resync count remained at the single controller-BUS_RETURN resync established before steady-state.
+
+Operational transitions survived during the active session:
+- user reported **Blocked -> Normal -> Enhanced -> Normal** SG progression;
+- the log explicitly records Normal -> Enhanced -> Normal;
+- controller context changed to `A80C=0041` and the current local decoder reported **DHW / high temperature**;
+- `DHW Active` became ON and the compressor started;
+- runtime continued afterwards without fail-closed termination.
+
+Runtime `04A6/13` remained unanswered throughout:
+- capture count reached **225**;
+- payload-change count reached **2**;
+- one change coincided with entry into the DHW/high-temperature context and a later change with return from that context;
+- normal runtime progression continued while these frames were ignored.
+
+**Run-criterion note:** the original plan requested five minutes after the first direct post-080C marker. The supplied capture contains about 235 s after the first marker, not a literal five minutes. The user explicitly confirmed EXP296 as **COMPLETE / POSITIVE** after reviewing that the target branch repeated many times and multiple operation-state changes were survived.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+**Strong conclusion:** `080C -> [optional 0708] -> 0820` is locally confirmed. Together with EXP294/295, the runtime is demonstrably state/branch driven rather than one fixed sequence.
+
+---
+
+# EXP295 — COMPLETE / INCONCLUSIVE — direct post-07E4 07F8 accepted; next missing branch is direct post-080C 0820
+
+**Date:** 2026-09-29
+
+**Hypothesis:** during an operation-state transition, the `0708/6` mailbox after `07E4/17` can be omitted and `07F8/17` may follow directly.
+
+**Baseline:** EXP294 COMPLETE / INCONCLUSIVE overall, with positive target result for direct post-`0884` `07D0`.
+
+**Controlled change from EXP294:** after `07E4/17` ACK, allow either `0708/6` or direct `07F8/17`. Runtime `04A6/13` remained capture-only / NO_TX.
+
+**Observed:**
+- `0884 -> direct 07D0` was again accepted successfully;
+- `07E4 -> direct 07F8` occurred and was accepted with `DIRECT_POST_07E4_07F8_ACCEPTED n=1`;
+- `080C/18` then arrived and was ACKed normally;
+- instead of the then-required `0708/6`, the controller sent direct `0820/18`;
+- firmware stopped fail-closed on that newly observed branch;
+- runtime `04A6/13` continued to repeat unchanged before the stop.
+
+**Result:** **COMPLETE / INCONCLUSIVE overall**, with a **positive target result** proving `07E4 -> [optional 0708] -> 07F8` locally.
+
+---
+
+# EXP294 — COMPLETE / INCONCLUSIVE — direct post-0884 07D0 accepted; next missing branch is direct post-07E4 07F8
+
+**Date:** 2026-09-29
+
+**Hypothesis:** during an operation-state transition, the final `0708/6` after `0884/60` can be omitted and the controller may return directly to `07D0/19`.
+
+**Baseline:** EXP293 COMPLETE / POSITIVE for stable steady-state operation.
+
+**Controlled change from EXP293:** after `0884/60` ACK, allow either `0708/6 -> 07D0/19` or direct `07D0/19`. Runtime `04A6/13` remained capture-only / NO_TX.
+
+**Observed:**
+- transition-related runtime `04A6/13` began repeating;
+- `0884 -> direct 07D0` occurred and was successfully accepted/ACKed;
+- runtime advanced to `07E4/17`;
+- controller then sent direct `07F8/17` without the then-required `0708/6`;
+- firmware stopped fail-closed on that newly observed branch.
+
+**Result:** **COMPLETE / INCONCLUSIVE overall**, with a **positive target result** proving `0884 -> [optional 0708] -> 07D0` locally.
+
+---
+
+# EXP293 — COMPLETE / POSITIVE — continuous steady-state runtime remains alarm-free for ~30 minutes
+
+**Date:** 2026-09-29
+
+**Hypothesis:** if the known-good startup/runtime responder continues indefinitely instead of deliberately stopping after ~4 minutes, the Online/Link communication alarm should remain absent during stable operation.
+
+**Baseline:** EXP292 COMPLETE / POSITIVE.
+
+**Controlled change from EXP292:** remove the automatic clean stop/RX-only phase and continue the already proven runtime graph indefinitely. No protocol payload/register change and no semantic write.
+
+**Observed:**
+- startup and runtime entered normally;
+- the 15-minute marker was reached at ~900.1 s with 43 cycles, 590 runtime events, 625 TX, 0 unexpected events and clean experimental parser/drop deltas;
+- the supplied log continued to roughly 30 minutes of steady-state service, reaching at least 84 cycles;
+- known conditional branches, including optional post-`0870` `0708`, were serviced;
+- no fail-closed termination was present in the captured steady-state run;
+- user explicitly confirmed **no `COMM. ERR ONLINE/LINK` alarm** during that run.
+
+A later operation-state-change observation showed that this result must not be generalized to all state transitions: the then-current rigid handler could still fail when the controller omitted additional `0708` mailbox positions.
+
+**Result:** **COMPLETE / POSITIVE for stable steady-state scope.**
+
+---
+
+# EXP292 — COMPLETE / POSITIVE — optional post-0870 0708 branch locally supported
+
+**Date:** 2026-09-29
+
+**Hypothesis:** after `0870/17` ACK, accept either direct `0884/60` or an intervening `FC03 0708/6`, matching genuine XTR/DCM capture evidence.
+
+**Baseline:** EXP291 COMPLETE / INCONCLUSIVE.
+
+**Controlled change from EXP291:** add only the evidence-backed post-`0870` optional `0708/6` branch. No semantic writes; reverse `03E8` remained disabled/capture-only.
+
+**Observed:**
+- startup and full runtime completed normally;
+- the post-`0870` `0708` branch was exercised locally and serviced;
+- continuous service lasted **256.276 s**;
+- final counters: **12 cycles**, **169 runtime events**, **204 TX**, **0 unexpected events**;
+- experimental resync/drop deltas remained 0;
+- TX then stopped deliberately at a clean loop boundary and controller traffic continued RX-only for ~180 s;
+- user reported the exact Online/Link communication error appeared shortly after the deliberate stop, with exact delay not precisely timed.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+---
+
+# EXP291 — COMPLETE / INCONCLUSIVE — strict continuity run exposes optional post-0870 mailbox branch
+
+**Date:** 2026-09-29
+
+**Hypothesis:** with semantic writes disabled and only the then-known runtime paths serviced, continuous known-good runtime should remain active long enough to compare alarm behavior before and after a deliberate stop.
+
+**Baseline:** EXP290 COMPLETE / POSITIVE for the separate reverse-page semantic write path; continuity test itself used no semantic write.
+
+**Controlled change:** strict runtime state machine, no `0708 w1=1`, no reverse `03E8` page, no setting change. Planned ~4 minutes active service followed by clean stop and RX-only observation.
+
+**Observed:**
+- startup and first full runtime cycle succeeded;
+- second cycle progressed through `0848 -> 0708 -> direct 0864 -> direct 0870`;
+- after `0870`, controller emitted `FC03 0708/6`;
+- handler at that point allowed only `0884`, so it intentionally failed closed after ~38 s of steady-state service;
+- genuine XTR/DCM capture evidence independently contains `0870 ACK -> FC03 0708 -> runtime response -> 0884`.
+
+**Result:** **COMPLETE / INCONCLUSIVE.** The intended alarm discriminator was not completed, but the run exposed a valid runtime branch needed by the emulator.
+
+---
+
 # EXP290 — COMPLETE / POSITIVE — reverse 03E8 semantic write changes controller-visible Room Setpoint
 
 **Date:** 2026-09-29
