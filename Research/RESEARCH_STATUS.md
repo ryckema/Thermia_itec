@@ -1,5 +1,20 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-29 — EXP272 COMPLETE / EXP273 NEXT
+
+- Last completed experiment: **EXP272 — COMPLETE / POSITIVE**.
+- EXP271 is also **COMPLETE / POSITIVE**.
+- Current proven local runtime progression:
+  `06F4/19 ACK -> 085F/5 ACK -> early 0708 service -> 07D0/19 ACK -> 07E4/17 ACK -> post-07E4 FC03 0708/6`.
+- EXP271 proved `07D0 ACK -> 07E4/17`; observed delay was 2159 ms.
+- EXP272 proved `07E4 ACK -> FC03 0708/6`; observed delay was 1457 ms.
+- EXP272 did **not** answer that post-07E4 mailbox poll and did not ACK any later runtime page.
+- Parser resync and RX-drop counters remained clean in both runs.
+- Cross-capture analysis now strongly supports 0708 word2/word3 as a 32-bit FC16 page-request bitmap; word4 as a runtime bitmap remains a hypothesis.
+- **EXP273 is NEXT / NOT YET PREPARED:** preserve EXP272 and answer only the post-07E4 0708 once with the matching genuine response `0000 0000 0000 0000 0000 0006`, then capture `07F8/count17` without ACK.
+- No semantic settings write, broad mailbox service, scan or uncontrolled runtime ACKing is authorized by the current evidence.
+- EXP239 remains OPEN. EXP238 remains PARKED / NOT RUN.
+
 ## Current status — 2026-09-27 — EXP264 COMPLETE / EXP265 PREPARED
 
 - Last completed experiment: **EXP264 — COMPLETE / STRONG POSITIVE**.
