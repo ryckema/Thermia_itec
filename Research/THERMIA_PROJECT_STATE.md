@@ -1,50 +1,78 @@
-# 2026-09-29 — EXP270 COMPLETE / POSITIVE — 085F confirmed as XTR runtime gate
+# 2026-09-29 — EXP272 COMPLETE / POSITIVE — runtime path proven through post-07E4 0708
 
-**Authoritative current state:** EXP270 COMPLETE / POSITIVE. EXP271 is NEXT / NOT YET PREPARED.
+**Authoritative current state:** EXP272 COMPLETE / POSITIVE. EXP273 is NEXT / NOT YET PREPARED.
 
-## EXP270 hypothesis
-The XTR M stalled after the proven initial Online/Link synchronization through `06F4/19` because the pending exact all-zero `085F/count5` transaction is ordered session traffic and must be ACKed before the controller will enter the runtime-page family.
+## Last completed experiment — EXP272
+**Hypothesis:** after the EXP271-proven transition `07D0/count19 -> ACK -> 07E4/count17`, ACKing the first exact `07E4/count17` once should advance the local XTR M to the next native mailbox poll `FC03 0708/count6`.
 
-## Controlled change
-Relative to EXP269, the same fixed `0730` replay, the same proven FC16 chain through `06F4`, and the same single mailbox response `0000 0000 0000 0000 0080 0006` were retained. The only material new active variable was:
+### Controlled change from EXP271
+All previously proven behavior was retained unchanged:
+- fixed historical `0730`/R1 replay;
+- exact ordered FC16 synchronization through `06F4/19`;
+- one exact ACK of the first all-zero `085F/count5`;
+- the same one-shot early mailbox response `0000 0000 0000 0000 0080 0006`;
+- one exact ACK of first `07D0/count19`.
 
-- ACK the first exact controller-originated all-zero `085F/count5` once with `0F10085F00053356`.
+The only new active variable was:
+- ACK the first exact `07E4/count17` once with `0F1007E400114068`.
 
-`07D0/19` remained capture-only and was not ACKed.
+The following `0708/count6` was capture-only and received no response.
 
-## Observed result
-The run was clean and reached the target:
+## EXP272 observed result
+The local XTR reproduced the full controlled chain cleanly:
 
-`BUS_RETURN -> 071C -> fixed R1 replay -> 03E8 ... 06F4 -> 085F/5 all-zero -> ACK 085F -> 0708/6 -> 0080/0006 response -> 07D0/19`.
+`BUS_RETURN -> 071C -> fixed R1 -> 03E8 ... 06F4 -> 085F/5 ACK -> early 0708/6 -> 0080/0006 response -> 07D0/19 ACK -> 07E4/17 ACK -> post-07E4 FC03 0708/6`.
 
-Key timing from the local XTR run:
-- `06F4` ACK executed at 00:48:06.727.
-- exact all-zero `085F/5` arrived ~45 ms later.
-- `085F` ACK executed at 00:48:06.808.
-- first `0708/6` arrived ~1.48 s after the 085F ACK.
-- the same single EXP269 mailbox response `0F030C0000000000000000008000069C9E` was sent.
-- `07D0/19` arrived ~509 ms after that mailbox response and ~2.05 s after the 085F ACK.
-- experiment stopped on `SUCCESS_07D0_AFTER_085F_ACK`; `07D0` was not ACKed.
-- parser/RX integrity remained clean for the controlled sequence.
+Key timing:
+- `07D0/19` ACK executed at 09:37:56.434.
+- `07E4/17` arrived ~2.08 s later and was ACKed once; TX execution logged at 09:37:58.534.
+- exact post-`07E4` `FC03 0708/count6` arrived ~1.46 s after the `07E4` ACK.
+- firmware terminated on `SUCCESS_0708_AFTER_07E4_ACK`.
+- the post-`07E4` 0708 request was not answered.
+- parser resync and RX-buffer-drop counters remained zero.
 
-## Strong conclusions
-1. **The exact all-zero `085F/count5` is locally confirmed on the XTR M as an ordered prerequisite/gate for progression to the first `07D0/19` runtime page.**
-2. The earlier classification of post-`06F4` `085F` as ignorable background was wrong for this phase.
-3. EXP269 and EXP270 form a useful A/B pair:
-   - EXP269: same `0080/0006` mailbox response, no 085F ACK -> no 07D0.
-   - EXP270: same mailbox response, one exact 085F ACK -> 07D0.
-   Therefore the new discriminator is the 085F ACK, not a new mailbox payload.
-4. A fixed `0730` response that does not match the current `071C` challenge is sufficient on this XTR to traverse the complete initial config sync and reach the first runtime page. This does **not** prove the challenge mechanism is absent or unvalidated; it only proves fixed replay suffices this far.
+## EXP271 result retained
+EXP271 is COMPLETE / POSITIVE. It changed only one active variable relative to EXP270: one exact standard ACK of first `07D0/count19` with `0F1007D000138067`. Exact `07E4/count17` appeared 2159 ms later and was captured without ACK. This locally proved `07D0` as the next ordered runtime gate.
 
-## Hypotheses / unknowns
-- `07D0` is likely the next ordered runtime gate and may require a standard one-shot FC16 ACK before `07E4` appears.
-- The semantic difference between the local `0080/0006` mailbox response and the genuine Eco5 cold-start `0100/0000` response remains unresolved; EXP270 proves only that `0080/0006` does not block the first 07D0 once 085F is satisfied.
-- It remains unknown whether fixed `0730` replay is sufficient through full steady state and later reverse-direction settings reads/writes.
+## Locally proven protocol progression
+The XTR M now locally confirms these ordered session/runtime gates:
 
-## Next experiment — EXP271
-**Hypothesis:** after the now-proven path reaches the first exact `07D0/count19`, ACKing that page exactly once will advance the controller to `07E4/count17`.
+`... -> 06F4/19 ACK -> 085F/5 all-zero ACK -> early 0708/6 service -> 07D0/19 ACK -> 07E4/17 ACK -> post-07E4 FC03 0708/6`.
 
-Only new active variable: one standard ACK for the first exact `07D0/19`. `07E4` must be capture-only in EXP271. No new mailbox values, no semantic settings writes, and no broad runtime-page ACKing.
+This proves:
+1. exact all-zero `085F/count5` is an ordered gate in this phase;
+2. `07D0/count19` requires a standard ACK to progress to `07E4/count17`;
+3. `07E4/count17` requires a standard ACK to progress to the next `0708/count6` mailbox poll.
+
+It does **not** yet prove the correct response payload for that post-`07E4` mailbox poll, nor the local transition to `07F8/count17`.
+
+## Strongly supported cross-capture model
+New genuine-capture comparison strongly supports `0708` as a bidirectional synchronization descriptor rather than a simple idle mailbox:
+- `word1=0001` is followed ~39–41 ms later by controller `FC03 03E8/count13`, after which the gateway serves the heating/settings page.
+- `word2` and `word3` behave as a 32-bit request bitmap for controller->gateway FC16 page export. Multiple sparse and dense bitmap values predict the exact subsequent page families.
+- `word4` is a strong candidate runtime-page bitmap, but this remains a hypothesis rather than a locally proven semantic mapping.
+
+## Important unknowns
+- Exact semantics and correct local response value for the post-`07E4` `0708/count6`.
+- Whether the genuine matching response `0000 0000 0000 0000 0000 0006` is sufficient locally to advance to `07F8/count17`.
+- Exact semantics of 0708 word0, word4 and word5.
+- Whether fixed historical `0730` replay remains sufficient through full steady-state operation and reverse-direction desired-state reads.
+- Genuine `071C/0730` challenge-response algorithm remains unresolved.
+
+## Next experiment — EXP273
+**Status: NEXT / NOT YET PREPARED.**
+
+**Hypothesis:** after the now-proven `07E4 ACK -> post-07E4 FC03 0708/count6` transition, answer only that post-`07E4` 0708 once with the phase-matched genuine-capture response `0000 0000 0000 0000 0000 0006` (raw frame `0F030C0000000000000000000000069D76`), then capture the first exact `07F8/count17`.
+
+Only that one post-`07E4` 0708 response may be the new active variable. `07F8` must remain capture-only. No later runtime ACKs, no semantic settings writes, no broad mailbox service and no scans.
+
+## Safety constraints
+- Exact stage/order matching remains mandatory.
+- One-shot ACK/response latches close before DE is raised.
+- DE returns LOW immediately after every permitted frame.
+- Unexpected FC03/FC16 families, duplicate completed-stage requests, parser resync/drop deltas or peer-response anomalies remain fail-closed stops.
+- No semantic register values are injected by standard FC16 address/count ACKs.
+- Any future desired-state/page-read experiment must remain separate from runtime-session completion experiments.
 
 ---
 
