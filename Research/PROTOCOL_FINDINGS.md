@@ -1,3 +1,40 @@
+# 2026-09-29 — reverse Online/DCM write path locally demonstrated through semantic application
+
+## PROVEN / locally confirmed
+- `0708 w1 bit0 = 1` can cause the XTR M controller to issue `FC03 03E8/count14`.
+- The XTR accepts a reverse `03E8/14` page response built from the exact current-session controller export.
+- An unchanged reverse page is accepted and normal runtime traffic continues.
+- In EXP290, changing **only** `03F4` in the same-session reverse page from raw `22` to `23` caused the controller-visible `Room Setpoint` to report `23 °C` shortly afterwards.
+- Therefore the native reverse-page path is not only transport-capable; it can semantically apply at least this one locally mapped setting.
+
+## STRONGLY SUPPORTED
+- Slave `0x0F` is a bidirectional Online/DCM page interface:
+  - controller -> gateway/cache via FC16 exports;
+  - gateway desired/config -> controller via 0708 advertisement followed by controller FC03 pull.
+- `0708 w2/w3` form a configuration-page selection/request bitmap.
+- `0708 w4` behaves as a runtime-page scheduler/selection bitmap, though exact timing/latching semantics remain open.
+- Runtime `085F` and the placement of `0708` around `0864` are state-dependent rather than fixed.
+
+## OPEN / UNKNOWN
+- Authoritative FC16 `03E8/14` echo of the changed `03F4` target after semantic application.
+- Independent room-sensor-side confirmation through slave `0x0A` / `B3C5` after the reverse-page write.
+- Exact meaning of 0708 `w0`, `w4`, `w5`.
+- Exact queue/latch rules that govern conditional `085F` and position of `0708`.
+- Genuine `071C/0730` challenge-response algorithm.
+
+## Runtime branch refinement from genuine XTR captures + EXP287
+Evidence-backed variants include:
+- `0848 -> 0864 -> 0708 -> 0870`
+- `0848 -> 085F -> 0708 -> 0864 -> 0870`
+- local EXP287 additionally observed `0864 -> 0870` directly.
+
+Do not model 0708 as a universally mandatory separator after 0864.
+
+## Safety interpretation
+EXP290 is the first local semantic setting change through the native reverse-page path. This does **not** authorize arbitrary page/register modification. Continue one mapped word at a time, from a same-session page cache, with bounded guards and RX-only observation after the semantic response.
+
+---
+
 # 2026-09-29 — Runtime loop locally closed; 085F is conditional/state-dependent
 
 ## PROVEN / locally confirmed — complete XTR M runtime loop
