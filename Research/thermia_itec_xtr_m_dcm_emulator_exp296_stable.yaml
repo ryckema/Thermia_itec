@@ -1,0 +1,4071 @@
+# =============================================================================
+# THERMIA iTec XTR M - EXP296 OPERATIONAL TRANSITION: OPTIONAL POST-080C MAILBOX
+# Status: PREPARED / NOT RUN
+# Date: 2026-09-29
+#
+# EXPERIMENT 296 / HYPOTHESIS
+# The Online/DCM steady-state runtime can omit the usual FC03 0708/6 mailbox
+# poll after FC16 080C/18 during an operational state change. In that branch,
+# FC16 0820/18 may follow 080C directly and should receive the already-proven
+# normal FC16 address/count ACK.
+#
+# BASELINE / RESULT
+# EXP295 is the baseline and is COMPLETE / INCONCLUSIVE overall, with a positive
+# result for its controlled branch change:
+# - steady-state entered normally and reached 8 runtime cycles / 101 serviced
+#   runtime events before fail-closed;
+# - direct 0884/60 -> 07D0/19 was exercised once and accepted successfully;
+# - direct 07E4/17 -> 07F8/17 was exercised once and accepted successfully,
+#   locally proving that the post-07E4 0708 mailbox poll is optional;
+# - after that direct branch, 080C/18 was ACKed and the controller then sent
+#   direct 0820/18 without the expected 0708;
+# - EXP295 correctly failed closed on that new branch;
+# - runtime 04A6/13 appeared 14 times with an unchanged payload and remained
+#   capture-only / NO_TX as intended;
+# - parser resync delta=0 and RX drops delta=0 at the fail-closed point;
+# - no alarm marker was recorded in the supplied EXP295 log, so visual alarm
+#   timing for that run remains unknown.
+#
+# EXACT CONTROLLED ACTIVE CHANGE VS EXP295
+# ONE evidence-driven scheduler change only:
+# - after an accepted runtime 080C/18, allow EITHER:
+#     A) FC03 0708/6 -> exact proven runtime 0708 response -> 0820/18, OR
+#     B) direct FC16 0820/18 -> normal proven FC16 address/count ACK.
+# - no other runtime response, payload, page, register or write action changes.
+#
+# PASSIVE DIAGNOSTIC CHANGE (NO protocol effect)
+# - add an explicit counter/log marker for direct post-080C 0820 branch hits.
+# - retain EXP295-derived diagnostics for direct post-0884 07D0,
+#   direct post-07E4 07F8, and runtime 04A6/13.
+# - runtime 04A6/13 remains CAPTURE-ONLY / NO_TX in EXP296.
+#
+# ACTIVE FRAME / REGISTER SAFETY NOTE
+# New scheduler target: slave 0x0F FC16 start 0820 count 18.
+# - known current transition payload from EXP295 at the fail-closed point:
+#   00D2 00D8 00CD 0110 00C8 00C4 011F 00BE 0000 0000 0000 0000
+#   0000 07D0 0010 0081 0048 0000;
+# - source: locally observed XTR runtime plus genuine Online/DCM capture evidence;
+# - expected effect of EXP296: only acknowledge the already-observed direct
+#   080C->0820 sequence and continue into the existing 0848 stage;
+# - plausible unintended effect: accepting 0820 in a context not yet understood;
+# - rollback: fail-closed/manual Abort, DE forced LOW; normal Thermia-controller
+#   reboot if COMM. ERR ONLINE/LINK persists.
+# This is still only a standard FC16 address/count ACK; EXP296 injects no values.
+#
+# ACTIVE FRAMES / REGISTERS
+# No new transmitted frame type or payload is introduced.
+# EXP296 reuses only already-proven actions from EXP295:
+# - fixed historical R1 after exact 071C/0730 approval;
+# - standard FC16 address/count ACKs for the already-whitelisted startup/config
+#   and runtime family, including the already-proven 0820/18 ACK;
+# - startup FC03 0708/6 response: 0000 0000 0000 0000 0080 0006;
+# - runtime FC03 0708/6 response: 0000 0000 0000 0000 0000 0006.
+# 0708 w1 remains 0000. FC03 03E8 remains forbidden.
+#
+# 04A6 SAFETY NOTE
+# Address/page: 04A6, count 13. It is a known Thermia configuration page from
+# startup/config sync and appears repeatedly during some operational transitions.
+# EXP296 does NOT ACK, modify or interpret runtime 04A6. It remains capture-only
+# so this experiment isolates the post-080C scheduler branch.
+#
+# SAFETY / FAIL-CLOSED
+# - NO semantic setting write; NO 03F4 modification; NO reverse-page response.
+# - strict CRC/slave/function/address/count/bytecount/length validation remains.
+# - only already-local/genuine-evidenced runtime branches are actively serviced.
+# - 0834 remains capture-only / unsupported for active ACK.
+# - runtime 04A6/13 remains capture-only / NO_TX.
+# - slave 0x0A remains passive monitor-only.
+# - unexpected active-session events, runtime stall, parser resync delta or
+#   RX-drop delta abort TX immediately and force GPIO21/DE LOW.
+#
+# SUCCESS / NEGATIVE / INCONCLUSIVE / ABORT
+# SUCCESS: an operational transition exercises direct 080C->0820, EXP296 ACKs
+# it, normal runtime continues through 0848 and later stages, and the session
+# remains active without COMM. ERR ONLINE/LINK for at least 5 further minutes /
+# several further cycles, with unexpected=0 and no parser/RX integrity delta.
+# NEGATIVE: direct 080C->0820 is serviced correctly but COMM. ERR ONLINE/LINK
+# still appears while EXP296 remains actively responding. Mark it immediately;
+# unanswered runtime 04A6/13 then becomes a stronger follow-up discriminator.
+# INCONCLUSIVE: the target branch is not exercised, a different unsupported
+# branch appears, the controller resets/re-authenticates, transport integrity
+# changes, or visual alarm timing is uncertain.
+# ABORT: any fail-closed guard fires. Capture the log before recovery/re-arm.
+#
+# RUN / RECOVERY
+# 1) Arm EXP296 and reboot the Thermia controller once for a clean session.
+# 2) Wait for stable runtime, then cause/allow ONE normal operational transition.
+#    Do not treat SG as special; heating/cooling/DHW/compressor/other normal
+#    transitions are equally valid observation triggers.
+# 3) If an alarm appears, press EXP296 Mark Alarm Visible immediately.
+# 4) If fail-closed occurs, return the log before re-arming. If COMM. ERR remains,
+#    use one normal Thermia-controller reboot for recovery.
+#
+# IMPORTANT: EXP296 remains PREPARED / NOT RUN until a real user result/log exists.
+# =============================================================================
+
+substitutions:
+  device_name: "thermia-itec-xtr-m"
+  friendly_name: "Thermia iTec XTR M"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  on_boot:
+    - priority: -100
+      then:
+        - delay: 1s
+        - lambda: |-
+            // Restore cached settings only after this device has previously
+            // observed a genuine Thermia 0x0F FC10 03E8..03F5 frame.
+            if (id(thermia_settings_cache_valid)) {
+              id(thermia_heating_curve)->publish_state(id(thermia_heating_curve_saved));
+              id(thermia_heating_min)->publish_state(id(thermia_heating_min_saved));
+              id(thermia_heating_max)->publish_state(id(thermia_heating_max_saved));
+              id(thermia_curve_plus5)->publish_state(id(thermia_curve_plus5_saved));
+              id(thermia_curve_zero)->publish_state(id(thermia_curve_zero_saved));
+              id(thermia_curve_minus5)->publish_state(id(thermia_curve_minus5_saved));
+              id(thermia_heating_stop)->publish_state(id(thermia_heating_stop_saved));
+              id(thermia_reduced_temperature)->publish_state(id(thermia_reduced_temperature_saved));
+              id(thermia_room_factor)->publish_state(id(thermia_room_factor_saved));
+              id(thermia_room_setpoint_mirror)->publish_state(id(thermia_room_setpoint_mirror_saved));
+
+              ESP_LOGI(
+                "thermia_persist",
+                "Restored validated settings cache: curve=%.0f min=%.0f max=%.0f corr=[%.0f,%.0f,%.0f] stop=%.0f reduced=%.0f room_factor=%.0f room_setpoint=%.0f",
+                id(thermia_heating_curve_saved),
+                id(thermia_heating_min_saved),
+                id(thermia_heating_max_saved),
+                id(thermia_curve_plus5_saved),
+                id(thermia_curve_zero_saved),
+                id(thermia_curve_minus5_saved),
+                id(thermia_heating_stop_saved),
+                id(thermia_reduced_temperature_saved),
+                id(thermia_room_factor_saved),
+                id(thermia_room_setpoint_mirror_saved)
+              );
+            } else {
+              ESP_LOGI(
+                "thermia_persist",
+                "No validated settings cache yet; waiting for a live 0x0F FC10 03E8..03F5 frame."
+              );
+            }
+
+esp32:
+  variant: esp32s3
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+
+# ESP32-S3R8 provides 8 MB octal PSRAM. Explicit PSRAM configuration is
+# required by current ESPHome releases for ESP32-S3.
+psram:
+  mode: octal
+  speed: 80MHz
+
+# Batch preference writes. The persisted Thermia settings change rarely.
+preferences:
+  flash_write_interval: 1min
+
+api:
+  encryption:
+    key: !secret thermia_api_encryption_key
+  # Do not reboot merely because Home Assistant/API is temporarily unreachable.
+  reboot_timeout: 0s
+
+ota:
+  - platform: esphome
+    password: !secret thermia_ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # This controller is continuously powered: prefer reliability over Wi-Fi power saving.
+  power_save_mode: none
+
+  # Keep a network-stack recovery watchdog, but make it much less aggressive
+  # than the ESPHome default. No access-point BSSID is hard-coded.
+  reboot_timeout: 30min
+
+  ap:
+    ssid: "Thermia Fallback Hotspot"
+    password: !secret thermia_fallback_password
+
+captive_portal:
+
+
+# Publish reset/heap/loop diagnostics so Wi-Fi loss can be separated from
+# brownouts, watchdog resets, API loss and parser/resource problems.
+debug:
+  update_interval: 30s
+
+
+# =============================================================================
+# LOGGING
+# =============================================================================
+
+logger:
+  # Production logging stays quiet; EXP296 trace markers are emitted at WARN.
+  level: WARN
+  baud_rate: 0
+  logs:
+    thermia: WARN
+    thermia_persist: WARN
+    thermia_exp296: WARN
+
+
+
+# =============================================================================
+# THERMIA UART
+#
+# Confirmed bus settings: 9600 baud, 8E1, Modbus RTU CRC16.
+#
+# Waveshare ESP32-S3-RS485-CAN:
+# - GPIO18 = RX
+# - GPIO17 = TX (EXP296: guarded Online/DCM startup + steady-state transition responder)
+# - GPIO21 = DE/direction; LOW except during a guarded experiment TX frame.
+#
+# EXP296 is receive-only except inside the explicitly whitelisted startup/runtime responses below.
+# No semantic reverse-page response is permitted in this experiment.
+# =============================================================================
+
+# =============================================================================
+# WAVESHARE RS485 DIRECTION
+# =============================================================================
+
+# SP3485 DE and /RE are controlled by GPIO21 on this board.
+# ALWAYS_OFF => GPIO21 LOW => receiver enabled, driver disabled at boot.
+# EXP296 may raise it only inside the guarded transmit scripts.
+# This switch is internal and is not exposed to Home Assistant.
+switch:
+  - platform: gpio
+    id: waveshare_rs485_direction
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin:
+      number: GPIO21
+      inverted: false
+
+
+# =============================================================================
+# BUS HEALTH
+# =============================================================================
+
+globals:
+  - id: thermia_last_valid_frame_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  # Runtime-only parser / freshness diagnostics. These are intentionally
+  # not persisted; they describe the current ESP boot only.
+  - id: thermia_valid_frame_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+
+  # ==========================================================================
+  # EXP296 - transport/session state (application state is kept separate)
+  # session_state:
+  #   0 idle
+  #   1 armed / waiting controller bus gap+return
+  #   2 waiting first exact 071C/0730 approval request
+  #   3 ordered initial FC16 config synchronization
+  #   4 waiting locally proven post-config all-zero 085F/5
+  #   5 waiting startup FC03 0708/6
+  #   6 steady-state runtime responder active
+  #   9 aborted/faulted / TX disabled
+  # ==========================================================================
+  - id: exp296_armed
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: exp296_session_state
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+
+  # Runtime event allow-mask; bits are internal scheduler events, not protocol
+  # semantics. They merely make the responder fail-closed by declaring exactly
+  # which already-evidenced event(s) may be actively serviced next.
+  - id: exp296_runtime_allowed
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+  # 0708 context: 0 none, 1 after 07E4, 2 after 080C, 3 after 0848,
+  # 4 optional after 085F, 5 optional after 0864, 6 optional after 0884,
+  # 7 optional after 0870 before 0884.
+  - id: exp296_mailbox_context
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_config_index
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_arm_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_last_frame_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_bus_return_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_last_progress_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_r1_tx_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_steady_start_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+
+  - id: exp296_resync_at_return
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_drop_at_return
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_approval_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_tx_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_runtime_events
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_runtime_cycles
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+
+  # EXP296 transition-branch diagnostics. These are passive counters/timestamps
+  # and never authorize a transmit action by themselves.
+  - id: exp296_direct_post0884_07d0_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_direct_post07e4_07f8_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_direct_post080c_0820_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_runtime_04a6_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_runtime_04a6_payload_changes
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_runtime_04a6_first_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_runtime_04a6_last_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_runtime_04a6_payload
+    type: std::array<uint8_t, 26>
+    restore_value: no
+
+  - id: exp296_runtime_04a6_payload_valid
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: exp296_unexpected_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_room_sensor_frames
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_last_b3c5
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_last_b3c5_valid
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: exp296_a80e
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_a80f
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_a80e_known
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: exp296_a80f_known
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: exp296_last_a80c_block
+    type: std::array<uint16_t, 7>
+    restore_value: no
+
+  - id: exp296_last_a80c_block_valid
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  # Application/page-cache state. EXP296 may populate this from a controller
+  # FC16 export, but it never mutates or serves this page back to the controller.
+  - id: exp296_03e8_page_cache
+    type: std::array<uint8_t, 28>
+    restore_value: no
+
+  - id: exp296_03e8_page_cache_valid
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  # Last experiment TX metadata, used only to suppress a possible local echo and
+  # to detect an unexpected second responder on slave 0x0F.
+  # kind: 0 none, 1 R1, 2 FC16 ACK, 3 startup 0708 response, 4 runtime 0708 response.
+  - id: exp296_last_tx_kind
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_last_tx_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_last_ack_start
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: exp296_last_ack_count
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+  # Human alarm observation marker. The exact COMM. ERR ONLINE/LINK status
+  # register is not yet mapped, so display observation is explicitly marked
+  # without inventing a bus semantic.
+  - id: exp296_alarm_seen_during_service
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: exp296_alarm_last_mark_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  # EXP296 uses the session_state + runtime_allowed event model above.
+  - id: thermia_parser_resync_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: thermia_rx_buffer_drop_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: thermia_last_s02_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: thermia_last_s06_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: thermia_last_s0a_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: thermia_last_s1e_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: thermia_settings_live_since_boot
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: thermia_compressor_state_initialized
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: thermia_compressor_last_running
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: thermia_compressor_start_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: thermia_compressor_run_start_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  # Persisted copies of the known 0x0F heating/settings block.
+  # Values are never published after a fresh install until cache_valid has
+  # been set by a genuine live Thermia settings frame.
+  - id: thermia_settings_cache_valid
+    type: bool
+    restore_value: yes
+    initial_value: 'false'
+
+  - id: thermia_heating_curve_saved
+    type: float
+    restore_value: yes
+    initial_value: '35.0'
+
+  - id: thermia_heating_min_saved
+    type: float
+    restore_value: yes
+    initial_value: '20.0'
+
+  - id: thermia_heating_max_saved
+    type: float
+    restore_value: yes
+    initial_value: '40.0'
+
+  - id: thermia_curve_plus5_saved
+    type: float
+    restore_value: yes
+    initial_value: '0.0'
+
+  - id: thermia_curve_zero_saved
+    type: float
+    restore_value: yes
+    initial_value: '0.0'
+
+  - id: thermia_curve_minus5_saved
+    type: float
+    restore_value: yes
+    initial_value: '0.0'
+
+  - id: thermia_heating_stop_saved
+    type: float
+    restore_value: yes
+    initial_value: '20.0'
+
+  - id: thermia_reduced_temperature_saved
+    type: float
+    restore_value: yes
+    initial_value: '20.0'
+
+  - id: thermia_room_factor_saved
+    type: float
+    restore_value: yes
+    initial_value: '2.0'
+
+  - id: thermia_room_setpoint_mirror_saved
+    type: float
+    restore_value: yes
+    initial_value: '22.0'
+
+
+uart:
+  id: thermia_uart
+
+  tx_pin:
+    number: GPIO17
+    inverted: false
+
+  rx_pin:
+    number: GPIO18
+    inverted: false
+
+  baud_rate: 9600
+  data_bits: 8
+  parity: EVEN
+  stop_bits: 1
+
+  rx_buffer_size: 2048
+
+  # Prevent ESP-IDF from splitting Modbus RTU frames into ~7-byte chunks.
+  rx_full_threshold: 120
+  rx_timeout: 2
+
+  debug:
+    direction: RX
+    dummy_receiver: true
+    debug_prefix: "[THERMIA] "
+
+    after:
+      timeout: 5ms
+
+    sequence:
+      - lambda: |-
+
+          // Robust Modbus RTU stream assembler. ESPHome may split long
+          // frames across callbacks, so retain bytes until structure + CRC
+          // prove a complete frame. Multiple frames per callback are OK.
+          static std::vector<uint8_t> pending;
+          if (pending.capacity() == 0) {
+            pending.reserve(512);
+          }
+          pending.insert(pending.end(), bytes.begin(), bytes.end());
+
+          if (pending.size() > 4096) {
+            ESP_LOGW(
+              "thermia",
+              "RX stream buffer exceeded 4096 bytes; clearing buffer to recover."
+            );
+            id(thermia_rx_buffer_drop_count)++;
+            pending.clear();
+            return;
+          }
+
+          auto stream_crc16 = [](const uint8_t *data, size_t len) -> uint16_t {
+            uint16_t crc = 0xFFFF;
+            for (size_t i = 0; i < len; i++) {
+              crc ^= data[i];
+              for (uint8_t bit = 0; bit < 8; bit++)
+                crc = (crc & 1) ? ((crc >> 1) ^ 0xA001) : (crc >> 1);
+            }
+            return crc;
+          };
+
+          auto valid_crc = [&](size_t len) -> bool {
+            if (len < 5 || pending.size() < len) return false;
+            uint16_t got = uint16_t(pending[len-2]) | (uint16_t(pending[len-1]) << 8);
+            return stream_crc16(pending.data(), len - 2) == got;
+          };
+
+          auto known_slave = [](uint8_t s) -> bool {
+            // Broad passive recognizer inherited from the latest known-good RX-only base.
+            // This only affects frame parsing/logging; no TX path exists.
+            return s == 0x01 || s == 0x02 || s == 0x03 || s == 0x04 ||
+                   s == 0x05 || s == 0x06 || s == 0x0A || s == 0x0F ||
+                   s == 0x14 || s == 0x1E || s == 0xA4 || s == 0xA5 ||
+                   s == 0xC8;
+          };
+
+          auto process_frame = [&](const std::vector<uint8_t> &bytes) {
+              // ===============================================================
+              // THERMIA ITEC LEGACY PASSIVE MODBUS RTU DECODER
+              // ===============================================================
+
+              if (bytes.size() < 5) {
+                ESP_LOGW(
+                  "thermia",
+                  "Chunk too short for Modbus RTU: %u bytes",
+                  (unsigned) bytes.size()
+                );
+                return;
+              }
+
+
+              // ===============================================================
+              // HELPERS
+              // ===============================================================
+
+              auto crc16_modbus =
+                [](const uint8_t *data, size_t len) -> uint16_t {
+
+                  uint16_t crc = 0xFFFF;
+
+                  for (size_t i = 0; i < len; i++) {
+
+                    crc ^= data[i];
+
+                    for (uint8_t bit = 0; bit < 8; bit++) {
+
+                      if (crc & 0x0001) {
+                        crc = (crc >> 1) ^ 0xA001;
+                      } else {
+                        crc >>= 1;
+                      }
+                    }
+                  }
+
+                  return crc;
+                };
+
+
+              auto u16 =
+                [](const std::vector<uint8_t> &b, size_t pos) -> uint16_t {
+
+                  return
+                    (uint16_t(b[pos]) << 8) |
+                    uint16_t(b[pos + 1]);
+                };
+
+
+              auto s16 =
+                [](const std::vector<uint8_t> &b, size_t pos) -> int16_t {
+
+                  return int16_t(
+                    (uint16_t(b[pos]) << 8) |
+                    uint16_t(b[pos + 1])
+                  );
+                };
+
+
+              // ===============================================================
+              // CHANGE-ONLY PUBLISH HELPERS
+              //
+              // The Thermia bus repeats many identical values every second.
+              // Only forwarding actual changes keeps the ESPHome native API
+              // queue small and prevents Home Assistant entities going
+              // temporarily unavailable under heavy bus traffic.
+              // ===============================================================
+
+              auto publish_float_if_changed =
+                [](auto *sensor, float value, float epsilon = 0.001f) {
+                  if (!sensor->has_state() ||
+                      isnan(sensor->state) ||
+                      fabsf(sensor->state - value) >= epsilon) {
+                    sensor->publish_state(value);
+                  }
+                };
+
+              auto publish_bool_if_changed =
+                [](auto *sensor, bool value) {
+                  if (!sensor->has_state() || sensor->state != value) {
+                    sensor->publish_state(value);
+                  }
+                };
+
+              auto publish_text_if_changed =
+                [](auto *sensor, const char *value) {
+                  if (!sensor->has_state() || sensor->state != value) {
+                    sensor->publish_state(value);
+                  }
+                };
+
+
+              // ===============================================================
+              // CRC VALIDATION
+              // ===============================================================
+
+              const uint16_t received_crc =
+                uint16_t(bytes[bytes.size() - 2]) |
+                (uint16_t(bytes[bytes.size() - 1]) << 8);
+
+              const uint16_t calculated_crc =
+                crc16_modbus(
+                  bytes.data(),
+                  bytes.size() - 2
+                );
+
+
+              if (received_crc != calculated_crc) {
+
+                ESP_LOGW(
+                  "thermia",
+                  "CRC FAIL (%u bytes): received=0x%04X calculated=0x%04X",
+                  (unsigned) bytes.size(),
+                  received_crc,
+                  calculated_crc
+                );
+
+                return;
+              }
+
+
+              const uint8_t slave = bytes[0];
+              const uint8_t fc = bytes[1];
+
+              const uint32_t now_ms = millis();
+              id(thermia_last_valid_frame_ms) = now_ms;
+              id(thermia_valid_frame_count)++;
+              if (slave == 0x02) id(thermia_last_s02_ms) = now_ms;
+              if (slave == 0x06) id(thermia_last_s06_ms) = now_ms;
+              if (slave == 0x0A) id(thermia_last_s0a_ms) = now_ms;
+              if (slave == 0x1E) id(thermia_last_s1e_ms) = now_ms;
+              publish_bool_if_changed(id(thermia_bus_healthy), true);
+
+              ESP_LOGD(
+                "thermia",
+                "CRC OK: slave=0x%02X function=0x%02X length=%u",
+                slave,
+                fc,
+                (unsigned) bytes.size()
+              );
+
+              // ===============================================================
+              // ===============================================================
+              // EXP296 - OPERATIONAL STATE-TRANSITION ONLINE/DCM RUNTIME TEST
+              //
+              // Transport/session state is separate from application/page-cache state.
+              // EXP296 never advertises w1=0001 and never responds to FC03 03E8.
+              // ===============================================================
+              if (id(exp296_armed)) {
+                const uint32_t exp296_now = millis();
+
+                auto exp296_hex = [](const std::vector<uint8_t> &f, char *out, size_t cap) {
+                  static const char h[] = "0123456789ABCDEF";
+                  if (cap == 0) return;
+                  size_t p = 0;
+                  for (size_t i = 0; i < f.size() && (p + 2) < cap; i++) {
+                    out[p++] = h[(f[i] >> 4) & 0x0F];
+                    out[p++] = h[f[i] & 0x0F];
+                  }
+                  out[p] = '\0';
+                };
+
+                auto exp296_publish_counts = [&]() {
+                  id(thermia_exp296_tx_count)->publish_state(float(id(exp296_tx_count)));
+                  id(thermia_exp296_runtime_cycles)->publish_state(float(id(exp296_runtime_cycles)));
+                  id(thermia_exp296_runtime_events)->publish_state(float(id(exp296_runtime_events)));
+                  id(thermia_exp296_unexpected_count)->publish_state(float(id(exp296_unexpected_count)));
+                  id(thermia_exp296_room_sensor_frames)->publish_state(float(id(exp296_room_sensor_frames)));
+                  id(thermia_exp296_allowed_mask)->publish_state(float(id(exp296_runtime_allowed)));
+                };
+
+                auto exp296_set_runtime = [&](uint16_t allowed, uint8_t mailbox_ctx, const char *label) {
+                  id(exp296_runtime_allowed) = allowed;
+                  id(exp296_mailbox_context) = mailbox_ctx;
+                  id(exp296_last_progress_ms) = exp296_now;
+                  id(thermia_exp296_runtime_state)->publish_state(label);
+                  id(thermia_exp296_allowed_mask)->publish_state(float(allowed));
+                };
+
+                auto exp296_fault = [&](const char *reason, const std::vector<uint8_t> *f) {
+                  if (id(exp296_session_state) == 9 || id(exp296_session_state) == 8) return;
+                  id(exp296_unexpected_count)++;
+                  id(exp296_runtime_allowed) = 0;
+                  id(exp296_mailbox_context) = 0;
+                  id(exp296_session_state) = 9;
+                  id(exp296_armed) = false;
+                  id(waveshare_rs485_direction).turn_off();
+                  id(thermia_exp296_active)->publish_state(false);
+                  id(thermia_exp296_status)->publish_state("ABORTED / fail-closed / return log");
+                  id(thermia_exp296_runtime_state)->publish_state("TX disabled");
+                  id(thermia_exp296_last_event)->publish_state(reason);
+                  exp296_publish_counts();
+                  if (f != nullptr) {
+                    char raw[600]; exp296_hex(*f, raw, sizeof(raw));
+                    ESP_LOGE("thermia_exp296",
+                      "\033[31m[EXP296] ===== ABORT_FAIL_CLOSED reason=%s state=%u allowed=0x%04X RAW=%s DE=LOW =====\033[0m",
+                      reason, unsigned(id(exp296_session_state)), unsigned(id(exp296_runtime_allowed)), raw);
+                  } else {
+                    ESP_LOGE("thermia_exp296",
+                      "\033[31m[EXP296] ===== ABORT_FAIL_CLOSED reason=%s DE=LOW =====\033[0m", reason);
+                  }
+                };
+
+                // Detect the controller reboot gap only while explicitly armed.
+                const uint32_t previous_frame_ms = id(exp296_last_frame_ms);
+                const uint32_t gap_ms = previous_frame_ms ? (exp296_now - previous_frame_ms) : 0;
+                id(exp296_last_frame_ms) = exp296_now;
+                if (id(exp296_session_state) == 1 && previous_frame_ms != 0 && gap_ms >= 5000UL) {
+                  id(exp296_session_state) = 2;
+                  id(exp296_bus_return_ms) = exp296_now;
+                  id(exp296_last_progress_ms) = exp296_now;
+                  id(exp296_resync_at_return) = id(thermia_parser_resync_count);
+                  id(exp296_drop_at_return) = id(thermia_rx_buffer_drop_count);
+                  id(exp296_a80e_known) = false;
+                  id(exp296_a80f_known) = false;
+                  id(exp296_last_a80c_block_valid) = false;
+                  id(thermia_exp296_status)->publish_state("BUS returned / waiting exact 071C/0730 approval");
+                  id(thermia_exp296_runtime_state)->publish_state("startup approval");
+                  ESP_LOGE("thermia_exp296",
+                    "\033[31m[EXP296] ===== BUS_RETURN gap=%ums t_since_arm=%ums baseline_resync=%u baseline_drop=%u =====\033[0m",
+                    unsigned(gap_ms), unsigned(exp296_now-id(exp296_arm_ms)),
+                    unsigned(id(exp296_resync_at_return)), unsigned(id(exp296_drop_at_return)));
+                }
+
+                // Possible local self-echo suppression. Anything response-shaped outside
+                // this narrow post-TX window is treated as a peer/collision condition.
+                const bool echo_window = id(exp296_last_tx_ms) != 0 &&
+                                         (exp296_now - id(exp296_last_tx_ms)) <= 120UL;
+                if (echo_window && slave == 0x0F) {
+                  if (id(exp296_last_tx_kind) == 1 && fc == 0x17 && bytes.size() == 21 &&
+                      bytes[2] == 0x10) {
+                    ESP_LOGW("thermia_exp296", "\033[38;5;130m[EXP296] R1_SELF_ECHO ignored\033[0m");
+                    return;
+                  }
+                  if (id(exp296_last_tx_kind) == 2 && fc == 0x10 && bytes.size() == 8 &&
+                      u16(bytes,2) == id(exp296_last_ack_start) &&
+                      u16(bytes,4) == id(exp296_last_ack_count)) {
+                    ESP_LOGW("thermia_exp296",
+                      "\033[38;5;130m[EXP296] ACK_SELF_ECHO start=%04X count=%u ignored\033[0m",
+                      unsigned(u16(bytes,2)), unsigned(u16(bytes,4)));
+                    return;
+                  }
+                  if ((id(exp296_last_tx_kind) == 3 || id(exp296_last_tx_kind) == 4) &&
+                      fc == 0x03 && bytes.size() == 17 && bytes[2] == 0x0C) {
+                    ESP_LOGW("thermia_exp296", "\033[38;5;130m[EXP296] 0708_RESPONSE_SELF_ECHO ignored\033[0m");
+                    return;
+                  }
+                }
+
+                // Any independent slave-0x0F response while we are emulating it is a
+                // collision/peer condition. Stop TX rather than compete on the bus.
+                if (slave == 0x0F && id(exp296_session_state) >= 2 && id(exp296_session_state) <= 6) {
+                  const bool peer_fc16_ack = fc == 0x10 && bytes.size() == 8;
+                  const bool peer_fc17_rsp = fc == 0x17 && bytes.size() == 21 && bytes[2] == 0x10;
+                  const bool peer_fc03_rsp = fc == 0x03 && bytes.size() == 17 && bytes[2] == 0x0C;
+                  if (peer_fc16_ack || peer_fc17_rsp || peer_fc03_rsp) {
+                    exp296_fault("unexpected peer/slave-0x0F response", &bytes);
+                    return;
+                  }
+                }
+
+                // Controller state snapshot used by the already-proven R1 safety guard.
+                // Also log the full changing A80C..A812 image for alarm/status correlation.
+                if (slave == 0x02 && fc == 0x17 && bytes.size() == 27 &&
+                    u16(bytes,2) == 0xA7F8 && u16(bytes,4) == 0x000F &&
+                    u16(bytes,6) == 0xA80C && u16(bytes,8) == 0x0007 &&
+                    bytes[10] == 0x0E) {
+                  bool changed = !id(exp296_last_a80c_block_valid);
+                  for (int i = 0; i < 7; i++) {
+                    const uint16_t v = u16(bytes, 11 + i*2);
+                    if (!id(exp296_last_a80c_block_valid) || id(exp296_last_a80c_block)[i] != v) changed = true;
+                    id(exp296_last_a80c_block)[i] = v;
+                  }
+                  id(exp296_last_a80c_block_valid) = true;
+                  const uint16_t a80c = u16(bytes,11);
+                  const uint16_t a80e = u16(bytes,15);
+                  const uint16_t a80f = u16(bytes,17);
+                  id(exp296_a80e) = a80e; id(exp296_a80e_known) = true;
+                  id(exp296_a80f) = a80f; id(exp296_a80f_known) = true;
+                  if (changed) {
+                    char raw[120]; exp296_hex(bytes, raw, sizeof(raw));
+                    char marker[96];
+                    snprintf(marker,sizeof(marker),"controller A80C=%04X A80E=%04X A80F=%04X",
+                             unsigned(a80c),unsigned(a80e),unsigned(a80f));
+                    id(thermia_exp296_last_transition)->publish_state(marker);
+                    ESP_LOGW("thermia_exp296",
+                      "\033[38;5;130m[EXP296] TRANSITION_CTRL A80C=%04X A80E=%04X A80F=%04X RAW=%s\033[0m",
+                      unsigned(a80c), unsigned(a80e), unsigned(a80f), raw);
+                  }
+                }
+
+                // Room-sensor bus stays passive. Capture B3C5 changes as an independent                // status channel; EXP296 never impersonates or responds as slave 0x0A.
+                if (slave == 0x0A && fc == 0x17 && bytes.size() == 19 &&
+                    u16(bytes,2) == 0xB3B0 && u16(bytes,4) == 0x0003 &&
+                    u16(bytes,6) == 0xB3C4 && u16(bytes,8) == 0x0003 &&
+                    bytes[10] == 0x06) {
+                  id(exp296_room_sensor_frames)++;
+                  const uint16_t b3c5 = u16(bytes,13);
+                  if (!id(exp296_last_b3c5_valid) || b3c5 != id(exp296_last_b3c5)) {
+                    ESP_LOGW("thermia_exp296",
+                      "\033[38;5;130m[EXP296] ROOM_MONITOR B3C5 %s%u -> %u (passive only)\033[0m",
+                      id(exp296_last_b3c5_valid) ? "" : "initial ",
+                      unsigned(id(exp296_last_b3c5)), unsigned(b3c5));
+                    id(exp296_last_b3c5) = b3c5;
+                    id(exp296_last_b3c5_valid) = true;
+                    id(thermia_exp296_b3c5)->publish_state(float(b3c5));
+                  }
+                  id(thermia_exp296_room_sensor_frames)->publish_state(float(id(exp296_room_sensor_frames)));
+                }
+
+                // Exact approval/service request; preserve the already-exercised shape
+                // and controller-state guards. This is intentionally NOT claimed as a
+                // solved challenge algorithm: it is the known fixed historical replay.
+                if (slave == 0x0F && fc == 0x17 && bytes.size() == 29 &&
+                    u16(bytes,2) == 0x0730 && u16(bytes,4) == 0x0008 &&
+                    u16(bytes,6) == 0x071C && u16(bytes,8) == 0x0008 &&
+                    bytes[10] == 0x10 && id(exp296_bus_return_ms) != 0) {
+                  id(exp296_approval_count)++;
+                  const uint8_t *p = &bytes[11];
+                  char wbuf[33]; static const char hx[] = "0123456789ABCDEF";
+                  for (int i=0;i<16;i++) { wbuf[i*2]=hx[(p[i]>>4)&0x0F]; wbuf[i*2+1]=hx[p[i]&0x0F]; }
+                  wbuf[32]='\0';
+                  id(thermia_exp296_last_071c)->publish_state(wbuf);
+
+                  const bool sec_even = (p[3] & 0x01) == 0;
+                  const uint8_t sec = p[3] / 2;
+                  const bool shape_ok = sec_even && p[2] == 0x45 &&
+                    p[5] == uint8_t(~p[4]) && p[6] == uint8_t(sec/2) &&
+                    p[7] == 0xAC && p[8] == 0xDC && p[10] == 0xC5 &&
+                    (p[11] % 4) == 0 && p[12] == 0x00 && p[14] == 0x8F &&
+                    p[15] == uint8_t(4*sec);
+                  static const uint8_t eco_c1[16] = {
+                    0x63,0xCE,0xFB,0x32,0xC6,0xF4,0x13,0x82,
+                    0x08,0x79,0x92,0x37,0x0C,0xAC,0xEE,0xBA
+                  };
+                  bool equals_c1=true;
+                  for (int i=0;i<16;i++) if (p[i]!=eco_c1[i]) equals_c1=false;
+
+                  ESP_LOGW("thermia_exp296",
+                    "\033[38;5;130m[EXP296] APPROVAL_REQ n=%u W071C=%s shape=%u state=%u A80E=%04X A80F=%04X\033[0m",
+                    unsigned(id(exp296_approval_count)), wbuf, unsigned(shape_ok),
+                    unsigned(id(exp296_session_state)), unsigned(id(exp296_a80e)), unsigned(id(exp296_a80f)));
+
+                  if (id(exp296_session_state) == 2 && id(exp296_approval_count) == 1) {
+                    const bool state_ok = id(exp296_a80e_known) && id(exp296_a80e)==0x0000 &&
+                                          id(exp296_a80f_known) && id(exp296_a80f)==0x0005;
+                    const bool clean = id(thermia_parser_resync_count)==id(exp296_resync_at_return) &&
+                                       id(thermia_rx_buffer_drop_count)==id(exp296_drop_at_return);
+                    if (!shape_ok || equals_c1 || !state_ok || !clean) {
+                      exp296_fault("R1 safety guard refused", &bytes);
+                      return;
+                    }
+                    id(exp296_session_state)=3;
+                    id(exp296_config_index)=0;
+                    id(exp296_r1_tx_ms)=exp296_now;
+                    id(exp296_last_progress_ms)=exp296_now;
+                    id(exp296_last_tx_kind)=1;
+                    id(exp296_last_tx_ms)=exp296_now;
+                    id(exp296_tx_count)++;
+                    id(thermia_exp296_tx_count)->publish_state(float(id(exp296_tx_count)));
+                    id(thermia_exp296_status)->publish_state("R1 sent / ordered config sync");
+                    id(thermia_exp296_runtime_state)->publish_state("initial config sync");
+                    ESP_LOGE("thermia_exp296",
+                      "\033[31m[EXP296] ===== R1_TX_INTENT fixed historical R1; latch closed before DE =====\033[0m");
+                    id(exp296_send_r1_once).execute();
+                  } else if (id(exp296_session_state) >= 3 && id(exp296_session_state) <= 6) {
+                    exp296_fault("approval/re-authentication repeated during active session", &bytes);
+                    return;
+                  }
+                }
+
+                // Capture all controller-facing 0x0F FC03/FC16 request traffic while
+                // the experiment is running. No semantic labels are invented here.
+                if (slave == 0x0F && (fc == 0x03 || fc == 0x10) && bytes.size() >= 8) {
+                  char raw[600]; exp296_hex(bytes, raw, sizeof(raw));
+                  ESP_LOGW("thermia_exp296",
+                    "\033[38;5;130m[EXP296] 0F_CAPTURE state=%u fc=%02X RAW=%s\033[0m",
+                    unsigned(id(exp296_session_state)), unsigned(fc), raw);
+                }
+
+                // Ordered initial controller->gateway FC16 synchronization. This table
+                // consists only of locally acknowledged XTR M shapes from EXP257-264/270.
+                if (slave == 0x0F && fc == 0x10 && bytes.size() >= 9 && id(exp296_session_state) == 3) {
+                  static const uint16_t cfg_start[] = {
+                    0x03E8,0x03FC,0x0410,0x042E,0x0442,0x0456,0x046A,0x047E,
+                    0x0492,0x04A6,0x04BA,0x04D8,0x04F6,0x050A,0x051E,0x0532,
+                    0x0546,0x055A,0x057B,0x059C,0x05BD,0x05DE,0x05FF,0x0620,
+                    0x0641,0x0662,0x0683,0x06A4,0x06C5,0x06EA,0x06F1,0x06F4
+                  };
+                  static const uint16_t cfg_count[] = {
+                    14,11,22,15,13,12,18,19,11,13,22,27,14,19,10,18,
+                    20,33,33,33,33,33,33,33,33,33,33,33,33,7,3,19
+                  };
+                  const uint16_t st=u16(bytes,2), ct=u16(bytes,4);
+                  const uint8_t bc=bytes[6];
+                  const bool shape = bc == ct*2 && bytes.size() == size_t(9+bc);
+                  const uint8_t idx=id(exp296_config_index);
+
+                  // Known recurrent 085F before config completion remains capture-only.
+                  if (st==0x085F && ct==5) {
+                    ESP_LOGW("thermia_exp296",
+                      "\033[38;5;130m[EXP296] pre-config-complete 085F/5 capture-only; no ACK\033[0m");
+                  } else if (idx < 32 && shape && st==cfg_start[idx] && ct==cfg_count[idx]) {
+                    if (idx==0) {
+                      for (int i=0;i<28;i++) id(exp296_03e8_page_cache)[i]=bytes[7+i];
+                      id(exp296_03e8_page_cache_valid)=true;
+                      id(thermia_exp296_cache_valid)->publish_state(true);
+                      ESP_LOGW("thermia_exp296",
+                        "\033[38;5;130m[EXP296] 03E8/14 current-session cache captured; READ-ONLY cache, never served in EXP296\033[0m");
+                    }
+                    id(exp296_config_index)=idx+1;  // latch before DE
+                    id(exp296_last_progress_ms)=exp296_now;
+                    id(exp296_last_ack_start)=st; id(exp296_last_ack_count)=ct;
+                    id(exp296_last_tx_kind)=2; id(exp296_last_tx_ms)=exp296_now;
+                    id(exp296_tx_count)++;
+                    id(thermia_exp296_tx_count)->publish_state(float(id(exp296_tx_count)));
+                    ESP_LOGE("thermia_exp296",
+                      "\033[31m[EXP296] CFG_ACK_TX idx=%u/32 start=%04X count=%u; address/count ACK only\033[0m",
+                      unsigned(idx+1), unsigned(st), unsigned(ct));
+                    id(exp296_send_fc16_ack).execute(int(st),int(ct));
+                    if (idx==31) {
+                      id(exp296_session_state)=4;
+                      id(thermia_exp296_status)->publish_state("config sync complete / waiting startup all-zero 085F/5");
+                      id(thermia_exp296_runtime_state)->publish_state("post-config 085F gate");
+                    }
+                  } else if (shape && idx < 32 && st >= 0x03E8 && st <= 0x06F4) {
+                    exp296_fault("out-of-order/unknown initial config page", &bytes);
+                    return;
+                  }
+                }
+
+                // Startup 085F gate: locally proven exact all-zero payload after 06F4.
+                if (slave==0x0F && fc==0x10 && id(exp296_session_state)==4 && bytes.size()>=9) {
+                  const uint16_t st=u16(bytes,2), ct=u16(bytes,4); const uint8_t bc=bytes[6];
+                  if (st==0x085F && ct==5 && bc==10 && bytes.size()==19) {
+                    bool all_zero=true; for (int i=0;i<10;i++) if (bytes[7+i]!=0) all_zero=false;
+                    if (!all_zero) { exp296_fault("startup 085F/5 payload not all-zero", &bytes); return; }
+                    id(exp296_session_state)=5;
+                    id(exp296_last_progress_ms)=exp296_now;
+                    id(exp296_last_ack_start)=st; id(exp296_last_ack_count)=ct;
+                    id(exp296_last_tx_kind)=2; id(exp296_last_tx_ms)=exp296_now;
+                    id(exp296_tx_count)++;
+                    id(thermia_exp296_tx_count)->publish_state(float(id(exp296_tx_count)));
+                    id(thermia_exp296_status)->publish_state("startup 085F ACK / waiting early 0708");
+                    ESP_LOGE("thermia_exp296",
+                      "\033[31m[EXP296] STARTUP_085F_ACK_TX start=085F count=5 all-zero\033[0m");
+                    id(exp296_send_fc16_ack).execute(int(st),int(ct));
+                  } else if ((st>=0x07D0 && st<=0x0884) || st==0x085F) {
+                    exp296_fault("unexpected startup runtime-family FC16 before 085F gate", &bytes);
+                    return;
+                  }
+                }
+
+                // FC03 0708 mailbox requests. Startup uses the locally preserved
+                // 0080/0006 response. All steady-state contexts use the locally proven
+                // 0000..0006 response and always keep w1=0000 (no reverse-page request).
+                if (slave==0x0F && fc==0x03 && bytes.size()==8) {
+                  const uint16_t st=u16(bytes,2), ct=u16(bytes,4);
+                  if (st==0x0708 && ct==6) {
+                    if (id(exp296_session_state)==5) {
+                      id(exp296_session_state)=6;
+                      id(exp296_last_progress_ms)=exp296_now;
+                      id(exp296_last_tx_kind)=3; id(exp296_last_tx_ms)=exp296_now;
+                      id(exp296_tx_count)++;
+                      id(thermia_exp296_tx_count)->publish_state(float(id(exp296_tx_count)));
+                      id(thermia_exp296_status)->publish_state("runtime entered / waiting 07D0");
+                      exp296_set_runtime(0x0001,0,"waiting 07D0/19");
+                      ESP_LOGE("thermia_exp296",
+                        "\033[31m[EXP296] STARTUP_0708_TX response=0000,0000,0000,0000,0080,0006; w1=0000\033[0m");
+                      id(exp296_send_startup_0708).execute();
+                    } else if (id(exp296_session_state)==6) {
+                      // EV_MAILBOX = bit 1 (0x0002)
+                      if ((id(exp296_runtime_allowed) & 0x0002) == 0) {
+                        exp296_fault("0708 arrived outside an evidence-backed runtime position", &bytes);
+                        return;
+                      }
+                      const uint8_t ctx=id(exp296_mailbox_context);
+                      id(exp296_runtime_events)++;
+                      id(exp296_last_tx_kind)=4; id(exp296_last_tx_ms)=exp296_now;
+                      id(exp296_tx_count)++;
+                      id(thermia_exp296_tx_count)->publish_state(float(id(exp296_tx_count)));
+                      id(thermia_exp296_runtime_events)->publish_state(float(id(exp296_runtime_events)));
+                      ESP_LOGE("thermia_exp296",
+                        "\033[31m[EXP296] RUNTIME_0708_TX ctx=%u response=0000,0000,0000,0000,0000,0006 w1=0000\033[0m",
+                        unsigned(ctx));
+                      id(exp296_send_runtime_0708).execute();
+
+                      if (ctx==1) exp296_set_runtime(0x0008,0,"waiting 07F8/17");
+                      else if (ctx==2) exp296_set_runtime(0x0020,0,"waiting 0820/18");
+                      else if (ctx==3) exp296_set_runtime(0x0180,0,"post-0848 branch: 085F/5 OR direct 0864/4");
+                      else if (ctx==4) exp296_set_runtime(0x0100,0,"waiting 0864/4 after optional post-085F 0708");
+                      else if (ctx==5) exp296_set_runtime(0x0400,0,"waiting 0870/17 after optional post-0864 0708");
+                      else if (ctx==7) exp296_set_runtime(0x0800,0,"waiting 0884/60 after optional post-0870 0708");
+                      else if (ctx==6) {
+                        // Existing post-0884 mailbox path: once 0708 has occurred,
+                        // only the normal returned 07D0/19 is expected next.
+                        exp296_set_runtime(0x0001,0,"waiting returned 07D0/19");
+                      } else {
+                        exp296_fault("invalid internal 0708 context", &bytes);
+                        return;
+                      }
+                    }
+                  } else if (st==0x03E8) {
+                    // Semantic/application route is explicitly disabled in EXP296.
+                    if (id(exp296_session_state)>=5 && id(exp296_session_state)<=6) {
+                      exp296_fault("FC03 03E8 reverse-page pull observed; semantic response forbidden in EXP296", &bytes);
+                      return;
+                    }
+                  }
+                }
+
+                // EXP296 passive runtime 04A6/13 transition instrumentation.
+                // This path NEVER transmits and NEVER advances runtime state.
+                if (slave==0x0F && fc==0x10 && id(exp296_session_state)==6 && bytes.size()>=9 &&
+                    u16(bytes,2)==0x04A6 && u16(bytes,4)==13) {
+                  const uint8_t bc=bytes[6];
+                  const bool shape=(bc==26 && bytes.size()==35);
+                  id(exp296_runtime_04a6_count)++;
+                  if (id(exp296_runtime_04a6_first_ms)==0) id(exp296_runtime_04a6_first_ms)=exp296_now;
+                  id(exp296_runtime_04a6_last_ms)=exp296_now;
+
+                  bool payload_changed=false;
+                  if (shape) {
+                    if (id(exp296_runtime_04a6_payload_valid)) {
+                      for (int i=0;i<26;i++) {
+                        if (id(exp296_runtime_04a6_payload)[i] != bytes[7+i]) { payload_changed=true; break; }
+                      }
+                    }
+                    if (payload_changed) id(exp296_runtime_04a6_payload_changes)++;
+                    for (int i=0;i<26;i++) id(exp296_runtime_04a6_payload)[i]=bytes[7+i];
+                    id(exp296_runtime_04a6_payload_valid)=true;
+                  }
+
+                  id(thermia_exp296_runtime_04a6_count)->publish_state(float(id(exp296_runtime_04a6_count)));
+                  id(thermia_exp296_runtime_04a6_payload_changes)->publish_state(float(id(exp296_runtime_04a6_payload_changes)));
+                  if (id(exp296_steady_start_ms)!=0) {
+                    id(thermia_exp296_runtime_04a6_first_age)->publish_state(
+                      float(id(exp296_runtime_04a6_first_ms)-id(exp296_steady_start_ms))/1000.0f);
+                    id(thermia_exp296_runtime_04a6_last_age)->publish_state(
+                      float(id(exp296_runtime_04a6_last_ms)-id(exp296_steady_start_ms))/1000.0f);
+                  }
+                  char raw04a6[120]; exp296_hex(bytes,raw04a6,sizeof(raw04a6));
+                  ESP_LOGW("thermia_exp296",
+                    "\033[38;5;130m[EXP296] RUNTIME_04A6_CAPTURE_ONLY n=%u shape=%u payload_changed=%u changes=%u NO_TX RAW=%s\033[0m",
+                    unsigned(id(exp296_runtime_04a6_count)), unsigned(shape), unsigned(payload_changed),
+                    unsigned(id(exp296_runtime_04a6_payload_changes)), raw04a6);
+                }
+
+                // Steady-state FC16 event responder. Event bits:
+                // 0x0001 07D0, 0x0002 mailbox, 0x0004 07E4, 0x0008 07F8,
+                // 0x0010 080C, 0x0020 0820, 0x0040 0848, 0x0080 085F,
+                // 0x0100 0864, 0x0400 0870, 0x0800 0884.
+                if (slave==0x0F && fc==0x10 && bytes.size()>=9 && id(exp296_session_state)==6) {
+                  const uint16_t st=u16(bytes,2), ct=u16(bytes,4); const uint8_t bc=bytes[6];
+                  const bool shape = bc==ct*2 && bytes.size()==size_t(9+bc);
+                  uint16_t bit=0; bool known=false; bool supported=true;
+                  if (st==0x07D0 && ct==19) {bit=0x0001;known=true;}
+                  else if (st==0x07E4 && ct==17) {bit=0x0004;known=true;}
+                  else if (st==0x07F8 && ct==17) {bit=0x0008;known=true;}
+                  else if (st==0x080C && ct==18) {bit=0x0010;known=true;}
+                  else if (st==0x0820 && ct==18) {bit=0x0020;known=true;}
+                  else if (st==0x0834 && ct==18) {known=true;supported=false;}
+                  else if (st==0x0848 && ct==23) {bit=0x0040;known=true;}
+                  else if (st==0x085F && ct==5) {bit=0x0080;known=true;}
+                  else if (st==0x0864 && ct==4) {bit=0x0100;known=true;}
+                  else if (st==0x0870 && ct==17) {bit=0x0400;known=true;}
+                  else if (st==0x0884 && ct==60) {bit=0x0800;known=true;}
+
+                  if (known) {
+                    if (!shape) { exp296_fault("known runtime FC16 has invalid count/bytecount/length", &bytes); return; }
+                    if (!supported) { exp296_fault("0834 is genuine-capture-only; no local XTR ACK authorized in EXP296", &bytes); return; }
+                    if ((id(exp296_runtime_allowed)&bit)==0) {
+                      exp296_fault("known runtime FC16 arrived outside allowed event set", &bytes); return;
+                    }
+
+                    const uint16_t allowed_before=id(exp296_runtime_allowed);
+                    id(exp296_runtime_events)++;
+                    id(exp296_last_ack_start)=st; id(exp296_last_ack_count)=ct;
+                    id(exp296_last_tx_kind)=2; id(exp296_last_tx_ms)=exp296_now;
+                    id(exp296_tx_count)++;
+                    id(exp296_last_progress_ms)=exp296_now;
+                    id(thermia_exp296_tx_count)->publish_state(float(id(exp296_tx_count)));
+                    id(thermia_exp296_runtime_events)->publish_state(float(id(exp296_runtime_events)));
+                    ESP_LOGE("thermia_exp296",
+                      "\033[31m[EXP296] RUNTIME_ACK_TX start=%04X count=%u allowed_before=0x%04X\033[0m",
+                      unsigned(st), unsigned(ct), unsigned(allowed_before));
+                    id(exp296_send_fc16_ack).execute(int(st),int(ct));
+
+                    if (st==0x07D0) {
+                      // Only the post-0884 state allows both mailbox(0x0002) and
+                      // 07D0(0x0001). If 07D0 arrives while both bits were set,
+                      // the already-locally-proven direct 0884->07D0 branch was exercised.
+                      if ((allowed_before & 0x0003U) == 0x0003U) {
+                        id(exp296_direct_post0884_07d0_count)++;
+                        id(thermia_exp296_direct_post0884_07d0_count)->publish_state(
+                          float(id(exp296_direct_post0884_07d0_count)));
+                        id(thermia_exp296_last_event)->publish_state("direct post-0884 07D0 accepted");
+                        ESP_LOGE("thermia_exp296",
+                          "\033[31m[EXP296] ===== DIRECT_POST_0884_07D0_ACCEPTED n=%u; normal 07D0 ACK sent =====\033[0m",
+                          unsigned(id(exp296_direct_post0884_07d0_count)));
+                      }
+                      id(exp296_runtime_cycles)++;
+                      if (id(exp296_steady_start_ms)==0) {
+                        id(exp296_steady_start_ms)=exp296_now;
+                        ESP_LOGE("thermia_exp296",
+                          "\033[31m[EXP296] ===== STEADY_STATE_START first 07D0 ACK; steady-state age timer begins =====\033[0m");
+                      }
+                      id(thermia_exp296_runtime_cycles)->publish_state(float(id(exp296_runtime_cycles)));
+                      exp296_set_runtime(0x0004,0,"waiting 07E4/17");
+                    } else if (st==0x07E4) {
+                      // EXP294 locally observed 07E4 -> direct 07F8 during an
+                      // operational transition, while the normal 0708 path is
+                      // already locally proven. EXP296 allows exactly those two.
+                      exp296_set_runtime(0x000A,1,"after 07E4: optional 0708 OR direct 07F8/17");
+                    }
+                    else if (st==0x07F8) {
+                      // If both mailbox(0x0002) and 07F8(0x0008) were allowed,
+                      // this is the already-locally-proven direct post-07E4 branch.
+                      if ((allowed_before & 0x000AU) == 0x000AU) {
+                        id(exp296_direct_post07e4_07f8_count)++;
+                        id(thermia_exp296_direct_post07e4_07f8_count)->publish_state(
+                          float(id(exp296_direct_post07e4_07f8_count)));
+                        id(thermia_exp296_last_event)->publish_state("direct post-07E4 07F8 accepted");
+                        ESP_LOGE("thermia_exp296",
+                          "\033[31m[EXP296] ===== DIRECT_POST_07E4_07F8_ACCEPTED n=%u; normal 07F8 ACK sent =====\033[0m",
+                          unsigned(id(exp296_direct_post07e4_07f8_count)));
+                      }
+                      exp296_set_runtime(0x0010,0,"waiting 080C/18");
+                    }
+                    else if (st==0x080C) {
+                      // EXP295 locally observed 080C -> direct 0820 during an
+                      // operational transition, while the normal 0708 path is
+                      // already locally proven. EXP296 allows exactly those two.
+                      exp296_set_runtime(0x0022,2,"after 080C: optional 0708 OR direct 0820/18");
+                    }
+                    else if (st==0x0820) {
+                      // If both mailbox(0x0002) and 0820(0x0020) were allowed,
+                      // this is the new direct post-080C branch under test.
+                      if ((allowed_before & 0x0022U) == 0x0022U) {
+                        id(exp296_direct_post080c_0820_count)++;
+                        id(thermia_exp296_direct_post080c_0820_count)->publish_state(
+                          float(id(exp296_direct_post080c_0820_count)));
+                        id(thermia_exp296_last_event)->publish_state("direct post-080C 0820 accepted");
+                        ESP_LOGE("thermia_exp296",
+                          "\033[31m[EXP296] ===== DIRECT_POST_080C_0820_ACCEPTED n=%u; normal 0820 ACK sent =====\033[0m",
+                          unsigned(id(exp296_direct_post080c_0820_count)));
+                      }
+                      exp296_set_runtime(0x0040,0,"waiting 0848/23");
+                    }
+                    else if (st==0x0848) {
+                      // Combine the locally observed post-0848 0708 path with the
+                      // genuine-capture branches where 085F or 0864 can come first.
+                      exp296_set_runtime(0x0182,3,"after 0848: 0708 OR 085F OR direct 0864");
+                    }
+                    else if (st==0x085F) {
+                      // Local EXP280 supports direct 085F->0864. Genuine capture also
+                      // supports an intervening 0708. Both use already-proven actions.
+                      exp296_set_runtime(0x0102,4,"after 085F: optional 0708 OR direct 0864");
+                    } else if (st==0x0864) {
+                      // EXP287 locally proves direct 0864->0870; earlier local/genuine
+                      // evidence also permits 0864->0708->0870.
+                      exp296_set_runtime(0x0402,5,"after 0864: optional 0708 OR direct 0870");
+                    } else if (st==0x0870) {
+                      // EXP291 locally observed 0870 -> 0708 while waiting for 0884.
+                      // Genuine XTR/DCM capture 20260925_090209 proves that this
+                      // 0708 is answered with the already-proven runtime ...0006
+                      // response and is then followed by 0884. Direct 0870->0884
+                      // also remains evidence-backed, so both are allowed.
+                      exp296_set_runtime(0x0802,7,"after 0870: optional 0708 OR direct 0884");
+                    }
+                    else if (st==0x0884) exp296_set_runtime(0x0003,6,"after 0884: optional 0708 OR direct 07D0/19");
+                  }
+                }
+
+              }
+
+              // ===============================================================
+              // REQUEST CONTEXT
+              //
+              // Responses to FC04/FC17 do not contain the original register
+              // address. Remember the request so the response can be decoded.
+              // ===============================================================
+
+              static uint16_t fc04_start[256] = {};
+              static uint16_t fc04_count[256] = {};
+              static bool fc04_pending[256] = {};
+
+              static uint16_t fc17_start[256] = {};
+              static uint16_t fc17_count[256] = {};
+              static bool fc17_pending[256] = {};
+
+              // ===============================================================
+              // MAPPER STATE
+              // Change-only logging for selected register blocks.
+              // ===============================================================
+
+              static bool mapper_initialized = false;
+
+              static int16_t prev_a7f8_block[0x0F] = {};
+              static int16_t prev_a80c_block[0x07] = {};
+              static int16_t prev_b3b0_block[0x03] = {};
+              static int16_t prev_b3c4_block[0x03] = {};
+              static int16_t prev_03e8_block[0x0E] = {};
+              static int16_t prev_1e_fc04_block[0x16] = {};
+
+              auto log_change =
+                [&](const char *group,
+                    uint16_t address,
+                    int16_t old_value,
+                    int16_t new_value) {
+
+                  if (old_value == new_value) {
+                    return;
+                  }
+
+                  ESP_LOGI(
+                    "thermia_map",
+                    "%s 0x%04X: %d -> %d",
+                    group,
+                    address,
+                    old_value,
+                    new_value
+                  );
+                };
+
+
+              // ===============================================================
+              // MINIMAL AUXILIARY MAPPING
+              //
+              // The public build intentionally omits the generic reverse-
+              // engineering register database and its raw Home Assistant
+              // entities. Keep only the few useful auxiliary values that are
+              // sourced through generic_map_update call sites.
+              // ===============================================================
+
+              auto generic_map_update =
+                [&](uint8_t source,
+                    uint8_t slave_id,
+                    uint16_t address,
+                    int16_t value) {
+
+                  if (source == 3 && slave_id == 0x0A && address == 0xB3C4) {
+                    publish_float_if_changed(
+                      id(thermia_room_bus_outdoor_temperature),
+                      float(value),
+                      0.5f
+                    );
+                    return;
+                  }
+
+                  if (source == 3 && slave_id == 0x06 && address == 0xAFDC) {
+                    publish_float_if_changed(
+                      id(thermia_dcm_status_afdc),
+                      float(value),
+                      0.5f
+                    );
+                    return;
+                  }
+
+                  if (source == 3 && slave_id == 0x06 && address == 0xAFE0) {
+                    publish_float_if_changed(
+                      id(thermia_dcm_outdoor_temperature),
+                      float(value),
+                      0.5f
+                    );
+                    return;
+                  }
+                };
+
+
+              // FC04 REQUEST
+              // Read Input Registers
+              // ===============================================================
+
+              if (
+                fc == 0x04 &&
+                bytes.size() == 8
+              ) {
+
+                fc04_start[slave] =
+                  u16(bytes, 2);
+
+                fc04_count[slave] =
+                  u16(bytes, 4);
+
+                fc04_pending[slave] = true;
+
+                return;
+              }
+
+
+              // ===============================================================
+              // FC04 RESPONSE
+              // ===============================================================
+
+              if (
+                fc == 0x04 &&
+                fc04_pending[slave] &&
+                bytes.size() >= 5 &&
+                bytes.size() == size_t(bytes[2]) + 5
+              ) {
+
+                const uint16_t start =
+                  fc04_start[slave];
+
+                const uint16_t count =
+                  fc04_count[slave];
+
+                const uint8_t byte_count =
+                  bytes[2];
+
+
+                if (byte_count != count * 2) {
+
+                  fc04_pending[slave] = false;
+                  return;
+                }
+
+
+                auto reg_u =
+                  [&](uint16_t address) -> uint16_t {
+
+                    const size_t offset =
+                      size_t(address - start);
+
+                    const size_t pos =
+                      3 + offset * 2;
+
+                    return u16(bytes, pos);
+                  };
+
+
+                auto reg_s =
+                  [&](uint16_t address) -> int16_t {
+
+                    const size_t offset =
+                      size_t(address - start);
+
+                    const size_t pos =
+                      3 + offset * 2;
+
+                    return s16(bytes, pos);
+                  };
+
+
+                // Generic mapper: scan complete FC04 response block.
+                for (uint16_t i = 0; i < count; i++) {
+
+                  const uint16_t address =
+                    uint16_t(start + i);
+
+                  generic_map_update(
+                    1,
+                    slave,
+                    address,
+                    reg_s(address)
+                  );
+                }
+
+
+                // =============================================================
+                // SLAVE 0x1E
+                // Outdoor unit / compressor live data
+                //
+                // FC04 start 0x0000
+                //
+                // 0000 condenser inlet          x0.1 °C
+                // 0001 condenser outlet         x0.1 °C
+                // 0008 high pressure            x0.1 bar
+                // 000A requested temperature    x0.1 °C
+                // 000B compressor frequency     Hz
+                // 000D compressor current       x0.1 A
+                // 000E outdoor fan              rpm
+                // 0010 expansion valve          steps
+                // =============================================================
+
+                if (
+                  slave == 0x1E &&
+                  start == 0x0000 &&
+                  count >= 17
+                ) {
+
+                  // -----------------------------------------------------------
+                  // Mapper: slave 0x1E FC04 block 0x0000..0x0015
+                  // -----------------------------------------------------------
+
+                  if (count >= 0x16) {
+                    for (uint16_t addr = 0x0000; addr <= 0x0015; addr++) {
+                      const int16_t v = reg_s(addr);
+                      const size_t idx = size_t(addr);
+
+                      if (mapper_initialized) {
+                        log_change(
+                          "S1E_FC04",
+                          addr,
+                          prev_1e_fc04_block[idx],
+                          v
+                        );
+                      }
+
+                      prev_1e_fc04_block[idx] = v;
+                    }
+                  }
+
+                  const float condenser_in =
+                    float(reg_s(0x0000)) / 10.0f;
+
+                  const float condenser_out =
+                    float(reg_s(0x0001)) / 10.0f;
+
+                  const float refrigerant_temperature_1 =
+                    float(reg_s(0x0002)) / 10.0f;
+
+                  const float discharge_gas_temperature =
+                    float(reg_s(0x0003)) / 10.0f;
+
+                  const float refrigerant_temperature_2 =
+                    float(reg_s(0x0004)) / 10.0f;
+
+                  const float average_outdoor_temperature =
+                    float(reg_s(0x0005)) / 10.0f;
+
+                  const float compressor_temperature =
+                    float(reg_s(0x0006)) / 10.0f;
+
+                  const float high_pressure =
+                    float(reg_u(0x0008)) / 10.0f;
+
+                  const float target_temperature =
+                    float(reg_s(0x000A)) / 10.0f;
+
+                  const float compressor_frequency =
+                    float(reg_u(0x000B));
+
+                  const float compressor_current =
+                    float(reg_u(0x000D)) / 10.0f;
+
+                  const float fan_speed =
+                    float(reg_u(0x000E));
+
+                  const float valve_steps =
+                    float(reg_u(0x0010));
+
+
+                  if (
+                    condenser_in > -50.0f &&
+                    condenser_in < 150.0f
+                  ) {
+
+                    publish_float_if_changed(id(thermia_condenser_in), condenser_in, 0.05f);
+                  }
+
+
+                  if (
+                    condenser_out > -50.0f &&
+                    condenser_out < 150.0f
+                  ) {
+
+                    publish_float_if_changed(id(thermia_condenser_out), condenser_out, 0.05f);
+                  }
+
+
+                  if (
+                    condenser_in > -50.0f &&
+                    condenser_in < 150.0f &&
+                    condenser_out > -50.0f &&
+                    condenser_out < 150.0f
+                  ) {
+
+                    publish_float_if_changed(
+                      id(thermia_condenser_delta_t),
+                      condenser_out - condenser_in,
+                      0.05f
+                    );
+                  }
+
+
+                  if (refrigerant_temperature_1 > -80.0f &&
+                      refrigerant_temperature_1 < 200.0f) {
+                    publish_float_if_changed(id(thermia_refrigerant_temperature_1), refrigerant_temperature_1, 0.05f);
+                  }
+
+                  if (discharge_gas_temperature > -80.0f &&
+                      discharge_gas_temperature < 250.0f) {
+                    publish_float_if_changed(id(thermia_discharge_gas_temperature), discharge_gas_temperature, 0.05f);
+                  }
+
+                  if (refrigerant_temperature_2 > -80.0f &&
+                      refrigerant_temperature_2 < 200.0f) {
+                    publish_float_if_changed(id(thermia_refrigerant_temperature_2), refrigerant_temperature_2, 0.05f);
+                  }
+
+                  if (average_outdoor_temperature > -80.0f &&
+                      average_outdoor_temperature < 100.0f) {
+                    publish_float_if_changed(id(thermia_average_outdoor_temperature), average_outdoor_temperature, 0.05f);
+                  }
+
+                  if (compressor_temperature > -80.0f &&
+                      compressor_temperature < 200.0f) {
+                    publish_float_if_changed(id(thermia_compressor_temperature), compressor_temperature, 0.05f);
+                  }
+
+
+                  if (
+                    high_pressure >= 0.0f &&
+                    high_pressure < 100.0f
+                  ) {
+
+                    publish_float_if_changed(id(thermia_high_pressure), high_pressure, 0.05f);
+                  }
+
+
+                  if (
+                    target_temperature > -50.0f &&
+                    target_temperature < 150.0f
+                  ) {
+
+                    publish_float_if_changed(id(thermia_target_temperature), target_temperature, 0.05f);
+                  }
+
+
+                  if (
+                    compressor_frequency >= 0.0f &&
+                    compressor_frequency < 200.0f
+                  ) {
+
+                    publish_float_if_changed(id(thermia_compressor_frequency), compressor_frequency, 0.5f);
+                  }
+
+
+                  if (
+                    compressor_current >= 0.0f &&
+                    compressor_current < 100.0f
+                  ) {
+
+                    publish_float_if_changed(id(thermia_compressor_current), compressor_current, 0.05f);
+                  }
+
+
+                  if (
+                    fan_speed >= 0.0f &&
+                    fan_speed < 5000.0f
+                  ) {
+
+                    publish_float_if_changed(id(thermia_fan_speed), fan_speed, 1.0f);
+                  }
+
+
+                  if (
+                    valve_steps >= 0.0f &&
+                    valve_steps < 10000.0f
+                  ) {
+
+                    publish_float_if_changed(id(thermia_expansion_valve_steps), valve_steps, 1.0f);
+                  }
+
+
+                  const bool compressor_running = compressor_frequency > 0.0f;
+                  const bool compressor_starting =
+                    compressor_frequency > 0.0f && compressor_current < 0.2f;
+                  const bool fan_running = fan_speed > 0.0f;
+
+                  if (id(exp296_armed) && id(thermia_compressor_state_initialized) &&
+                      compressor_running != id(thermia_compressor_last_running)) {
+                    char marker[96];
+                    snprintf(marker,sizeof(marker),"compressor %s freq=%.1fHz current=%.1fA",
+                             compressor_running?"START":"STOP", compressor_frequency, compressor_current);
+                    id(thermia_exp296_last_transition)->publish_state(marker);
+                    ESP_LOGW("thermia_exp296",
+                      "\033[38;5;130m[EXP296] TRANSITION_COMPRESSOR %s freq=%.1fHz current=%.1fA\033[0m",
+                      compressor_running?"START":"STOP", compressor_frequency, compressor_current);
+                  }
+
+                  // Track real observed compressor 0 Hz -> >0 Hz transitions.
+                  // The counter is runtime-only and resets on ESP reboot. If the
+                  // ESP boots while the compressor is already running, that
+                  // in-progress run is not counted as a new start.
+                  if (!id(thermia_compressor_state_initialized)) {
+                    id(thermia_compressor_state_initialized) = true;
+                    id(thermia_compressor_last_running) = compressor_running;
+                    if (compressor_running) id(thermia_compressor_run_start_ms) = millis();
+                  } else {
+                    if (compressor_running && !id(thermia_compressor_last_running)) {
+                      id(thermia_compressor_start_count)++;
+                      id(thermia_compressor_run_start_ms) = millis();
+                    } else if (!compressor_running && id(thermia_compressor_last_running)) {
+                      id(thermia_compressor_run_start_ms) = 0;
+                    }
+                    id(thermia_compressor_last_running) = compressor_running;
+                  }
+
+                  publish_bool_if_changed(
+                    id(thermia_compressor_running),
+                    compressor_running
+                  );
+
+                  // Heuristic only: during the captured start sequence the
+                  // frequency rises before the current register leaves 0.0 A.
+                  // Useful diagnostically, but do not treat as a hard fault rule.
+                  publish_bool_if_changed(
+                    id(thermia_compressor_starting),
+                    compressor_starting
+                  );
+
+                  publish_bool_if_changed(
+                    id(thermia_outdoor_fan_running),
+                    fan_running
+                  );
+
+                  if (count > 0x0015) {
+                    const uint16_t operating_state = reg_u(0x0014);
+                    const uint16_t status_flags = reg_u(0x0015);
+
+                    // Status flag map from captured operation:
+                    //   0x0020 = heating context
+                    //   0x0040 = DHW / high-temperature context
+                    //   0x0080 = cooling context
+                    //   0x0200 = outdoor-unit run-enable acknowledged
+                    //
+                    // Observed examples:
+                    //   0x021 (33)  = heating context, run-enable inactive
+                    //   0x041 (65)  = DHW context, run-enable inactive
+                    //   0x081 (129) = cooling context, run-enable inactive
+                    //   0x221 (545) = heating + run-enable acknowledged
+                    //   0x241 (577) = DHW + run-enable acknowledged
+                    //   0x281 (641) = cooling + run-enable acknowledged
+                    const bool heating_context = (status_flags & 0x0020U) != 0;
+                    const bool dhw_context = (status_flags & 0x0040U) != 0;
+                    const bool cooling_context = (status_flags & 0x0080U) != 0;
+                    const bool run_enable_acknowledged = (status_flags & 0x0200U) != 0;
+
+                    const bool exp296_stage_changed =
+                      !id(thermia_outdoor_unit_operating_state_raw).has_state() ||
+                      int(id(thermia_outdoor_unit_operating_state_raw).state) != int(operating_state);
+                    const bool exp296_context_changed =
+                      !id(thermia_heating_context).has_state() ||
+                      id(thermia_heating_context).state != heating_context ||
+                      !id(thermia_dhw_context).has_state() ||
+                      id(thermia_dhw_context).state != dhw_context ||
+                      !id(thermia_cooling_context).has_state() ||
+                      id(thermia_cooling_context).state != cooling_context;
+                    if (id(exp296_armed) && (exp296_stage_changed || exp296_context_changed)) {
+                      char marker[112];
+                      snprintf(marker,sizeof(marker),"outdoor stage=%u flags=%04X H=%u D=%u C=%u",
+                               unsigned(operating_state),unsigned(status_flags),
+                               unsigned(heating_context),unsigned(dhw_context),unsigned(cooling_context));
+                      id(thermia_exp296_last_transition)->publish_state(marker);
+                      ESP_LOGW("thermia_exp296",
+                        "\033[38;5;130m[EXP296] TRANSITION_OUTDOOR stage=%u flags=%04X heating=%u dhw=%u cooling=%u run_ack=%u\033[0m",
+                        unsigned(operating_state),unsigned(status_flags),unsigned(heating_context),
+                        unsigned(dhw_context),unsigned(cooling_context),unsigned(run_enable_acknowledged));
+                    }
+
+                    publish_float_if_changed(
+                      id(thermia_outdoor_unit_operating_state_raw),
+                      float(operating_state),
+                      0.5f
+                    );
+
+                    publish_float_if_changed(
+                      id(thermia_outdoor_unit_status_flags),
+                      float(status_flags),
+                      0.5f
+                    );
+
+                    publish_bool_if_changed(id(thermia_heating_context), heating_context);
+                    publish_bool_if_changed(id(thermia_dhw_context), dhw_context);
+                    publish_bool_if_changed(id(thermia_cooling_context), cooling_context);
+
+                    // "Context" says which mode is selected/requested.
+                    //
+                    // "Active" requires:
+                    //   - matching mode context from 0015,
+                    //   - physical compressor operation (000B > 0 Hz),
+                    //   - FC10 0007 overall outdoor-unit cycle request,
+                    //   - FC10 0008 immediate outdoor-unit run enable.
+                    //
+                    // Requiring 0007 + 0008 avoids false mode-active states during
+                    // heating <-> DHW handovers and during autonomous recovery
+                    // sequences where the compressor can briefly run independently.
+                    const bool cycle_request_active =
+                      id(thermia_outdoor_unit_command_0007).has_state() &&
+                      id(thermia_outdoor_unit_command_0007).state;
+
+                    const bool run_enable_command_active =
+                      id(thermia_outdoor_unit_command_0008).has_state() &&
+                      id(thermia_outdoor_unit_command_0008).state;
+
+                    publish_bool_if_changed(
+                      id(thermia_heating_active),
+                      heating_context &&
+                      compressor_running &&
+                      cycle_request_active &&
+                      run_enable_command_active
+                    );
+                    publish_bool_if_changed(
+                      id(thermia_dhw_active),
+                      dhw_context &&
+                      compressor_running &&
+                      cycle_request_active &&
+                      run_enable_command_active
+                    );
+                    publish_bool_if_changed(
+                      id(thermia_cooling_active),
+                      cooling_context &&
+                      compressor_running &&
+                      cycle_request_active &&
+                      run_enable_command_active
+                    );
+
+                    // Keep the existing ESPHome id for compatibility, but give the
+                    // entity its corrected meaning in Home Assistant.
+                    publish_bool_if_changed(
+                      id(thermia_outdoor_unit_enabled),
+                      run_enable_acknowledged
+                    );
+
+                    // 0014 is an internal outdoor-unit sequence/state machine.
+                    // IMPORTANT: it is NOT a direct compressor-running indicator.
+                    // Physical compressor running remains FC04 000B > 0 Hz.
+                    //
+                    // Extended captures show:
+                    //   16 = idle
+                    //   18 = late shutdown / final transition (exact subfunction tentative)
+                    //   20 = recovery / autonomous outdoor-unit sequence (purpose tentative)
+                    //   24 = common transition / sequence stage
+                    //   25 = heating/DHW shutdown / fan-stop stage
+                    //   26 = cooling shutdown stage
+                    //   27 = cooling shutdown / fan-stop stage
+                    //   28 = heating/DHW transition/ramp; compressor may already run
+                    //   29 = heating/DHW established sequence; can persist after compressor stops
+                    //   30 = cooling transition/ramp; compressor may already run
+                    //   31 = cooling established sequence
+                    const char *unit_state = "Unknown";
+                    switch (operating_state) {
+                      case 16:
+                        unit_state = "Idle";
+                        break;
+                      case 18:
+                        unit_state = "Late shutdown / final transition";
+                        break;
+                      case 20:
+                        unit_state = "Recovery / autonomous sequence";
+                        break;
+                      case 24:
+                        unit_state = "Transition / sequence";
+                        break;
+                      case 25:
+                        unit_state = "Heating/DHW shutdown / fan stop";
+                        break;
+                      case 26:
+                        unit_state = "Cooling shutdown stage 2";
+                        break;
+                      case 27:
+                        unit_state = "Cooling shutdown / fan stop";
+                        break;
+                      case 28:
+                        unit_state = "Heating/DHW transition / ramp";
+                        break;
+                      case 29:
+                        unit_state = "Heating/DHW established sequence";
+                        break;
+                      case 30:
+                        unit_state = "Cooling transition / ramp";
+                        break;
+                      case 31:
+                        unit_state = "Cooling established sequence";
+                        break;
+                      default:
+                        unit_state = "Unknown";
+                        break;
+                    }
+
+                    publish_text_if_changed(
+                      id(thermia_outdoor_unit_state),
+                      unit_state
+                    );
+
+                    const char *status_mode = "Unknown";
+                    if (cooling_context) {
+                      status_mode = "Cooling";
+                    } else if (dhw_context) {
+                      status_mode = "DHW / high temperature";
+                    } else if (heating_context) {
+                      status_mode = "Heating";
+                    }
+
+                    publish_text_if_changed(
+                      id(thermia_operating_mode),
+                      status_mode
+                    );                  }
+                }
+
+
+                fc04_pending[slave] = false;
+                return;
+              }
+
+
+              // ===============================================================
+              // FC10
+              // Write Multiple Registers
+              //
+              // These frames are transmitted BY THERMIA.
+              // The ESP only listens.
+              // ===============================================================
+
+              if (
+                fc == 0x10 &&
+                bytes.size() >= 9
+              ) {
+
+                const uint16_t start =
+                  u16(bytes, 2);
+
+                const uint16_t count =
+                  u16(bytes, 4);
+
+                const uint8_t byte_count =
+                  bytes[6];
+
+
+                if (
+                  bytes.size() !=
+                  size_t(byte_count) + 9
+                ) {
+
+                  return;
+                }
+
+
+                if (
+                  byte_count !=
+                  count * 2
+                ) {
+
+                  return;
+                }
+
+
+                auto reg_s =
+                  [&](uint16_t address) -> int16_t {
+
+                    const size_t offset =
+                      size_t(address - start);
+
+                    const size_t pos =
+                      7 + offset * 2;
+
+                    return s16(bytes, pos);
+                  };
+
+
+                // Generic mapper: scan complete FC10 write block.
+                for (uint16_t i = 0; i < count; i++) {
+
+                  const uint16_t address =
+                    uint16_t(start + i);
+
+                  generic_map_update(
+                    2,
+                    slave,
+                    address,
+                    reg_s(address)
+                  );
+                }
+
+
+
+                // Outdoor-unit FC10 command block sent by the Thermia controller.
+                //
+                // Current functional map:
+                //   0001 = commanded/live target temperature x0.1 °C
+                //   0004 = operating/request mode: 1 heating, 2 DHW, 3 cooling
+                //   0006 = periodic 0/1/2 state/counter; ~2 h steps observed, purpose unknown
+                //   0007 = overall outdoor-unit cycle / sequence request; can stay ON across mode handovers
+                //   0008 = immediate outdoor-unit run enable; can toggle OFF/ON during a heating<->DHW handover
+                if (slave == 0x1E) {
+                  if (start <= 0x0001 && (uint32_t(start) + uint32_t(count)) > 0x0001) {
+                    const float commanded_target = float(reg_s(0x0001)) / 10.0f;
+                    if (commanded_target > -50.0f && commanded_target < 150.0f) {
+                      publish_float_if_changed(
+                        id(thermia_commanded_target_temperature),
+                        commanded_target,
+                        0.05f
+                      );
+                    }
+                  }
+
+                  if (start <= 0x0004 && (uint32_t(start) + uint32_t(count)) > 0x0004) {
+                    const int16_t mode_raw = reg_s(0x0004);
+                    const bool exp296_mode_changed =
+                      !id(thermia_mode_request_raw).has_state() ||
+                      int(id(thermia_mode_request_raw).state) != int(mode_raw);
+                    if (id(exp296_armed) && exp296_mode_changed) {
+                      char marker[64]; snprintf(marker,sizeof(marker),"mode request raw=%d",int(mode_raw));
+                      id(thermia_exp296_last_transition)->publish_state(marker);
+                      ESP_LOGW("thermia_exp296",
+                        "\033[38;5;130m[EXP296] TRANSITION_MODE_REQUEST raw=%d\033[0m", int(mode_raw));
+                    }
+
+                    publish_float_if_changed(
+                      id(thermia_mode_request_raw),
+                      float(mode_raw),
+                      0.5f
+                    );
+
+                    const char *mode_text = "Unknown";
+                    if (mode_raw == 1) {
+                      mode_text = "Heating";
+                    } else if (mode_raw == 2) {
+                      mode_text = "DHW / high temperature";
+                    } else if (mode_raw == 3) {
+                      mode_text = "Cooling";
+                    }
+
+                    publish_text_if_changed(
+                      id(thermia_mode_request),
+                      mode_text
+                    );
+                  }
+
+                  if (start <= 0x0007 && (uint32_t(start) + uint32_t(count)) > 0x0007) {
+                    publish_bool_if_changed(
+                      id(thermia_outdoor_unit_command_0007),
+                      reg_s(0x0007) != 0
+                    );
+                  }
+
+                  if (start <= 0x0008 && (uint32_t(start) + uint32_t(count)) > 0x0008) {
+                    publish_bool_if_changed(
+                      id(thermia_outdoor_unit_command_0008),
+                      reg_s(0x0008) != 0
+                    );
+                  }
+                }
+
+
+                // =============================================================
+                // SLAVE 0x0F
+                // Heating configuration block
+                //
+                // 03E8 Heating curve
+                // 03E9 Heating MIN
+                // 03EA Heating MAX
+                // 03EB Curve +5
+                // 03EC Curve 0
+                // 03ED Curve -5
+                // 03EE Heating stop
+                // 03EF Reduced temperature
+                // 03F0 Room factor
+                // 03F4 Room setpoint mirror
+                // =============================================================
+
+                if (
+                  slave == 0x0F &&
+                  start == 0x03E8 &&
+                  count >= 13
+                ) {
+
+                  // -----------------------------------------------------------
+                  // Mapper: slave 0x0F FC10 block 0x03E8..0x03F5
+                  // -----------------------------------------------------------
+
+                  if (count >= 0x0E) {
+                    for (uint16_t addr = 0x03E8; addr <= 0x03F5; addr++) {
+                      const int16_t v = reg_s(addr);
+                      const size_t idx = size_t(addr - 0x03E8);
+
+                      if (mapper_initialized) {
+                        log_change(
+                          "S0F_FC10",
+                          addr,
+                          prev_03e8_block[idx],
+                          v
+                        );
+                      }
+
+                      prev_03e8_block[idx] = v;
+                    }
+                  }
+
+                  const float heating_curve = float(reg_s(0x03E8));
+                  const float heating_min = float(reg_s(0x03E9));
+                  const float heating_max = float(reg_s(0x03EA));
+                  const float curve_plus5 = float(reg_s(0x03EB));
+                  const float curve_zero = float(reg_s(0x03EC));
+                  const float curve_minus5 = float(reg_s(0x03ED));
+                  const float heating_stop = float(reg_s(0x03EE));
+                  const float reduced_temperature = float(reg_s(0x03EF));
+                  const float room_factor = float(reg_s(0x03F0));
+                  const float room_setpoint_mirror = float(reg_s(0x03F4));
+
+                  // Persist only values received from the real Thermia settings block.
+                  // Avoid marking restored globals dirty when a repeated block contains
+                  // exactly the same values; this reduces unnecessary flash commits.
+                  if (id(thermia_heating_curve_saved) != heating_curve) id(thermia_heating_curve_saved) = heating_curve;
+                  if (id(thermia_heating_min_saved) != heating_min) id(thermia_heating_min_saved) = heating_min;
+                  if (id(thermia_heating_max_saved) != heating_max) id(thermia_heating_max_saved) = heating_max;
+                  if (id(thermia_curve_plus5_saved) != curve_plus5) id(thermia_curve_plus5_saved) = curve_plus5;
+                  if (id(thermia_curve_zero_saved) != curve_zero) id(thermia_curve_zero_saved) = curve_zero;
+                  if (id(thermia_curve_minus5_saved) != curve_minus5) id(thermia_curve_minus5_saved) = curve_minus5;
+                  if (id(thermia_heating_stop_saved) != heating_stop) id(thermia_heating_stop_saved) = heating_stop;
+                  if (id(thermia_reduced_temperature_saved) != reduced_temperature) id(thermia_reduced_temperature_saved) = reduced_temperature;
+                  if (id(thermia_room_factor_saved) != room_factor) id(thermia_room_factor_saved) = room_factor;
+                  if (id(thermia_room_setpoint_mirror_saved) != room_setpoint_mirror) id(thermia_room_setpoint_mirror_saved) = room_setpoint_mirror;
+                  if (!id(thermia_settings_cache_valid)) id(thermia_settings_cache_valid) = true;
+                  id(thermia_settings_live_since_boot) = true;
+
+                  publish_float_if_changed(id(thermia_heating_curve), heating_curve, 0.5f);
+                  publish_float_if_changed(id(thermia_heating_min), heating_min, 0.5f);
+                  publish_float_if_changed(id(thermia_heating_max), heating_max, 0.5f);
+
+                  // Confirmed heating-curve correction points.
+                  publish_float_if_changed(id(thermia_curve_plus5), curve_plus5, 0.5f);
+                  publish_float_if_changed(id(thermia_curve_zero), curve_zero, 0.5f);
+                  publish_float_if_changed(id(thermia_curve_minus5), curve_minus5, 0.5f);
+
+                  publish_float_if_changed(id(thermia_heating_stop), heating_stop, 0.5f);
+                  publish_float_if_changed(id(thermia_reduced_temperature), reduced_temperature, 0.5f);
+                  publish_float_if_changed(id(thermia_room_factor), room_factor, 0.5f);
+
+                  // 03F4 follows the room setpoint. Keep a separate diagnostic
+                  // mirror because it comes from the settings block rather than
+                  // from the room-sensor block.
+                  publish_float_if_changed(id(thermia_room_setpoint_mirror), room_setpoint_mirror, 0.5f);
+                }
+
+                return;
+              }
+
+
+              // ===============================================================
+              // FC17 REQUEST
+              // Read / Write Multiple Registers
+              // ===============================================================
+
+              if (
+                fc == 0x17 &&
+                bytes.size() >= 13
+              ) {
+
+                const uint16_t read_start =
+                  u16(bytes, 2);
+
+                const uint16_t read_count =
+                  u16(bytes, 4);
+
+                const uint16_t write_start =
+                  u16(bytes, 6);
+
+                const uint16_t write_count =
+                  u16(bytes, 8);
+
+                const uint8_t byte_count =
+                  bytes[10];
+
+                const size_t expected_size =
+                  size_t(byte_count) + 13;
+
+
+                if (
+                  bytes.size() == expected_size &&
+                  byte_count == write_count * 2
+                ) {
+
+                  fc17_start[slave] =
+                    read_start;
+
+                  fc17_count[slave] =
+                    read_count;
+
+                  fc17_pending[slave] =
+                    true;
+
+
+                  auto write_reg_s =
+                    [&](uint16_t address) -> int16_t {
+
+                      const size_t offset =
+                        size_t(address - write_start);
+
+                      const size_t pos =
+                        11 + offset * 2;
+
+                      return s16(bytes, pos);
+                    };
+
+
+
+
+                  // Generic mapper: scan complete FC17 write part.
+                  for (uint16_t i = 0; i < write_count; i++) {
+
+                    const uint16_t address =
+                      uint16_t(write_start + i);
+
+                    generic_map_update(
+                      3,
+                      slave,
+                      address,
+                      write_reg_s(address)
+                    );
+                  }
+
+
+                  // ===========================================================
+                  // MAPPER: FC17 write blocks
+                  // ===========================================================
+
+                  if (
+                    slave == 0x0A &&
+                    write_start <= 0xB3C4 &&
+                    (
+                      uint32_t(write_start) +
+                      uint32_t(write_count)
+                    ) >= 0xB3C7
+                  ) {
+
+                    for (uint16_t addr = 0xB3C4; addr <= 0xB3C6; addr++) {
+                      const int16_t v = write_reg_s(addr);
+                      const size_t idx = size_t(addr - 0xB3C4);
+
+                      if (mapper_initialized) {
+                        log_change(
+                          "S0A_FC17W",
+                          addr,
+                          prev_b3c4_block[idx],
+                          v
+                        );
+                      }
+
+                      prev_b3c4_block[idx] = v;
+                    }
+
+                    // B3C6 is an unresolved room-sensor control/status word.
+                    // Values 0 / 2 have been observed, but "boost/enhanced" is
+                    // not sufficiently proven. Keep the binary entity diagnostic
+                    // and neutral: ON only means B3C6 is non-zero.
+                    publish_bool_if_changed(
+                      id(thermia_room_boost_request),
+                      write_reg_s(0xB3C6) != 0
+                    );
+                  }
+
+
+                  if (
+                    slave == 0x02 &&
+                    write_start <= 0xA80C &&
+                    (
+                      uint32_t(write_start) +
+                      uint32_t(write_count)
+                    ) >= 0xA813
+                  ) {
+
+                    for (uint16_t addr = 0xA80C; addr <= 0xA812; addr++) {
+                      const int16_t v = write_reg_s(addr);
+                      const size_t idx = size_t(addr - 0xA80C);
+
+                      if (mapper_initialized) {
+                        log_change(
+                          "S02_FC17W",
+                          addr,
+                          prev_a80c_block[idx],
+                          v
+                        );
+                      }
+
+                      prev_a80c_block[idx] = v;
+                    }
+
+                    const uint16_t a80c = uint16_t(write_reg_s(0xA80C));
+                    const uint16_t a80e = uint16_t(write_reg_s(0xA80E));
+
+                    publish_float_if_changed(
+                      id(thermia_controller_state_a80c),
+                      float(a80c),
+                      0.5f
+                    );
+
+                    const char *controller_context = "Unknown";
+                    switch (a80c) {
+                      case 64:
+                        controller_context = "Normal / baseline";
+                        break;
+                      case 65:
+                        controller_context = "DHW / high temperature";
+                        break;
+                      case 66:
+                        controller_context = "Cooling context / available";
+                        break;
+                      case 112:
+                        controller_context = "Controller housekeeping / transition";
+                        break;
+                      case 193:
+                        controller_context = "Compound / unknown";
+                        break;
+                      default:
+                        controller_context = "Unknown";
+                        break;
+                    }
+                    publish_text_if_changed(
+                      id(thermia_controller_context),
+                      controller_context
+                    );
+
+                    publish_float_if_changed(
+                      id(thermia_controller_state_a80e),
+                      float(a80e),
+                      0.5f
+                    );
+
+                    // Keep these raw bit sensors neutral. A80C is primarily
+                    // treated as a controller context/sequence value, while A80E
+                    // behaves as a controller/accessory status bitfield.
+                    publish_bool_if_changed(id(thermia_a80c_flag_0x10), (a80c & 0x0010U) != 0);
+                    publish_bool_if_changed(id(thermia_a80c_flag_0x20), (a80c & 0x0020U) != 0);
+                    publish_bool_if_changed(id(thermia_a80e_flag_0x08), (a80e & 0x0008U) != 0);
+                    publish_bool_if_changed(id(thermia_a80e_flag_0x20), (a80e & 0x0020U) != 0);
+                  }
+
+
+                  // ===========================================================
+                  // SLAVE 0x02 - controller sequence value (A80F)
+                  //
+                  // A80F takes values such as 5, 10, 50 and 75..100.
+                  // Heating captures show 10->50 before a cycle, 50->80 at
+                  // cycle start and 80->79->...->75 while established. A DHW
+                  // capture showed 80->...->100, then 100->80->5->10 on stop.
+                  // This strongly ties A80F to controller sequencing/control,
+                  // but its exact internal semantics remain unknown.
+                  //
+                  // IMPORTANT: A80F is NOT compressor frequency, compressor
+                  // power, a percentage, or a simple linear heat-demand value.
+                  // ===========================================================
+
+                  if (
+                    slave == 0x02 &&
+                    write_start <= 0xA80F &&
+                    (
+                      uint32_t(write_start) +
+                      uint32_t(write_count)
+                    ) > 0xA80F
+                  ) {
+                    publish_float_if_changed(id(thermia_demand_raw), float(write_reg_s(0xA80F)), 0.5f);
+                  }
+
+
+                  // ===========================================================
+                  // SLAVE 0x0A
+                  //
+                  // B3C5 = controller-propagated / confirmed room setpoint
+                  // ===========================================================
+
+                  if (
+                    slave == 0x0A &&
+                    write_start <= 0xB3C5 &&
+                    (
+                      uint32_t(write_start) +
+                      uint32_t(write_count)
+                    ) > 0xB3C5
+                  ) {
+
+                    const float room_setpoint =
+                      float(
+                        write_reg_s(0xB3C5)
+                      );
+
+
+                    if (
+                      room_setpoint >= 5.0f &&
+                      room_setpoint <= 40.0f
+                    ) {
+
+                      publish_float_if_changed(id(thermia_room_setpoint), room_setpoint, 0.5f);
+                    }
+                  }
+
+                  return;
+                }
+              }
+
+
+              // ===============================================================
+              // FC17 RESPONSE
+              // ===============================================================
+
+              if (
+                fc == 0x17 &&
+                fc17_pending[slave] &&
+                bytes.size() >= 5 &&
+                bytes.size() ==
+                  size_t(bytes[2]) + 5
+              ) {
+
+                const uint16_t start =
+                  fc17_start[slave];
+
+                const uint16_t count =
+                  fc17_count[slave];
+
+                const uint8_t byte_count =
+                  bytes[2];
+
+
+                if (
+                  byte_count !=
+                  count * 2
+                ) {
+
+                  fc17_pending[slave] = false;
+                  return;
+                }
+
+
+                auto reg_s =
+                  [&](uint16_t address) -> int16_t {
+
+                    const size_t offset =
+                      size_t(address - start);
+
+                    const size_t pos =
+                      3 + offset * 2;
+
+                    return s16(bytes, pos);
+                  };
+
+
+                // Generic mapper: scan complete FC17 read response block.
+                for (uint16_t i = 0; i < count; i++) {
+
+                  const uint16_t address =
+                    uint16_t(start + i);
+
+                  generic_map_update(
+                    4,
+                    slave,
+                    address,
+                    reg_s(address)
+                  );
+                }
+
+
+                // =============================================================
+                // SLAVE 0x02
+                //
+                // A7F8 Supply temperature
+                // A7FB DHW upper
+                // A7FC DHW main
+                // A7FD SG discriminator 1
+                // A802 Outdoor temperature
+                // A803 SG discriminator 2
+                // =============================================================
+
+                if (
+                  slave == 0x02 &&
+                  start == 0xA7F8 &&
+                  count >= 15
+                ) {
+
+                  // -----------------------------------------------------------
+                  // Mapper: slave 0x02 FC17 read block 0xA7F8..0xA806
+                  // -----------------------------------------------------------
+
+                  if (count >= 0x0F) {
+                    for (uint16_t addr = 0xA7F8; addr <= 0xA806; addr++) {
+                      const int16_t v = reg_s(addr);
+                      const size_t idx = size_t(addr - 0xA7F8);
+
+                      if (mapper_initialized) {
+                        log_change(
+                          "S02_FC17R",
+                          addr,
+                          prev_a7f8_block[idx],
+                          v
+                        );
+                      }
+
+                      prev_a7f8_block[idx] = v;
+                    }
+                  }
+
+                  const int16_t supply =
+                    reg_s(0xA7F8);
+
+                  const int16_t dhw_upper =
+                    reg_s(0xA7FB);
+
+                  const int16_t dhw =
+                    reg_s(0xA7FC);
+
+                  const int16_t outdoor =
+                    reg_s(0xA802);
+
+                  const int16_t sg_a =
+                    reg_s(0xA7FD);
+
+                  const int16_t sg_b =
+                    reg_s(0xA803);
+
+
+                  // ===========================================================
+                  // DIAGNOSTIC: complete A7F8 block
+                  // Useful to verify whether A7F8 really changes with supply.
+                  // ===========================================================
+
+                  ESP_LOGI(
+                    "thermia_a7f8",
+                    "A7F8=%d A7F9=%d A7FA=%d A7FB=%d A7FC=%d A7FD=%d "
+                    "A7FE=%d A7FF=%d A800=%d A801=%d A802=%d A803=%d "
+                    "A804=%d A805=%d A806=%d",
+                    reg_s(0xA7F8),
+                    reg_s(0xA7F9),
+                    reg_s(0xA7FA),
+                    reg_s(0xA7FB),
+                    reg_s(0xA7FC),
+                    reg_s(0xA7FD),
+                    reg_s(0xA7FE),
+                    reg_s(0xA7FF),
+                    reg_s(0xA800),
+                    reg_s(0xA801),
+                    reg_s(0xA802),
+                    reg_s(0xA803),
+                    reg_s(0xA804),
+                    reg_s(0xA805),
+                    reg_s(0xA806)
+                  );
+
+                  ESP_LOGI(
+                    "thermia_supply",
+                    "Supply candidate A7F8 raw=%d -> %.1f C",
+                    supply,
+                    float(supply)
+                  );
+
+
+                  if (
+                    supply != -1000 &&
+                    supply > -50 &&
+                    supply < 150
+                  ) {
+
+                    publish_float_if_changed(id(thermia_supply_temperature), float(supply), 0.5f);
+                  }
+
+
+                  if (
+                    dhw_upper != -1000 &&
+                    dhw_upper > 0 &&
+                    dhw_upper < 100
+                  ) {
+
+                    publish_float_if_changed(id(thermia_dhw_upper_temperature), float(dhw_upper), 0.5f);
+                  }
+
+
+                  if (
+                    dhw != -1000 &&
+                    dhw > 0 &&
+                    dhw < 100
+                  ) {
+
+                    publish_float_if_changed(id(thermia_dhw_temperature), float(dhw), 0.5f);
+                  }
+
+
+                  if (
+                    outdoor != -1000 &&
+                    outdoor > -50 &&
+                    outdoor < 70
+                  ) {
+
+                    publish_float_if_changed(id(thermia_outdoor_temperature), float(outdoor), 0.5f);
+                  }
+
+
+                  if (
+                    dhw_upper != -1000 &&
+                    dhw != -1000
+                  ) {
+
+                    publish_float_if_changed(
+                      id(thermia_dhw_delta_t),
+                      float(dhw_upper - dhw),
+                      0.5f
+                    );
+                  }
+
+
+                  // ===========================================================
+                  // SG MODE
+                  //
+                  // Controlled tests:
+                  //
+                  // A7FD    A803     SG input state from controlled tests
+                  //
+                  // -1000   232      Blocked  (SG 1-0)
+                  //  1000   224      Normal   (SG 0-0)
+                  //  1000   232      Enhanced (SG 0-1)
+                  // -1000   224      Peak     (SG 1-1)
+                  // ===========================================================
+
+                  ESP_LOGI(
+                    "thermia_sg",
+                    "SG discriminators: A7FD=%d A803=%d",
+                    sg_a,
+                    sg_b
+                  );
+
+
+                  // Corrected from repeated physical SG1/SG2 test:
+                  // 00 -> A7FD=-1000, A803=224 -> Normal
+                  // 10 -> A7FD=-1000, A803=232 -> Blocked
+                  // 01 -> A7FD= 1000, A803=224 -> Enhanced
+                  // 11 -> A7FD= 1000, A803=232 -> Peak
+                  //
+                  // Intermediate A7FD values are treated as transitions.
+
+                  if (
+                    sg_a == -1000 &&
+                    sg_b == 224
+                  ) {
+
+                    publish_text_if_changed(id(thermia_sg_mode), "Normal (0-0)");
+                  }
+
+                  else if (
+                    sg_a == -1000 &&
+                    sg_b == 232
+                  ) {
+
+                    publish_text_if_changed(id(thermia_sg_mode), "Blocked (1-0)");
+                  }
+
+                  else if (
+                    sg_a == 1000 &&
+                    sg_b == 224
+                  ) {
+
+                    publish_text_if_changed(id(thermia_sg_mode), "Enhanced (0-1)");
+                  }
+
+                  else if (
+                    sg_a == 1000 &&
+                    sg_b == 232
+                  ) {
+
+                    publish_text_if_changed(id(thermia_sg_mode), "Peak (1-1)");
+                  }
+
+                  else {
+
+                    // Hold the last valid state during the short transition.
+                    // Do not publish a misleading fifth SG mode.
+                  }
+                }
+
+
+                // =============================================================
+                // SLAVE 0x0A
+                //
+                // B3B0 = room temperature x0.1 °C
+                // =============================================================
+
+                if (
+                  slave == 0x0A &&
+                  start == 0xB3B0 &&
+                  count >= 1
+                ) {
+
+                  // -----------------------------------------------------------
+                  // Mapper: slave 0x0A FC17 read block 0xB3B0..0xB3B2
+                  // -----------------------------------------------------------
+
+                  if (count >= 3) {
+                    for (uint16_t addr = 0xB3B0; addr <= 0xB3B2; addr++) {
+                      const int16_t v = reg_s(addr);
+                      const size_t idx = size_t(addr - 0xB3B0);
+
+                      if (mapper_initialized) {
+                        log_change(
+                          "S0A_FC17R",
+                          addr,
+                          prev_b3b0_block[idx],
+                          v
+                        );
+                      }
+
+                      prev_b3b0_block[idx] = v;
+                    }
+                  }
+
+                  mapper_initialized = true;
+
+                  const float room_temperature =
+                    float(
+                      reg_s(0xB3B0)
+                    ) / 10.0f;
+
+
+                  if (
+                    room_temperature > -20.0f &&
+                    room_temperature < 60.0f
+                  ) {
+
+                    publish_float_if_changed(id(thermia_room_temperature), room_temperature, 0.05f);
+                  }
+                }
+
+
+                fc17_pending[slave] = false;
+                return;
+              }
+
+          };
+
+          while (true) {
+            if (pending.size() < 5) break;
+
+            uint8_t slave = pending[0];
+            uint8_t fn = pending[1];
+            bool known_fn =
+              fn == 0x01 || fn == 0x02 || fn == 0x03 || fn == 0x04 ||
+              fn == 0x05 || fn == 0x06 || fn == 0x08 || fn == 0x0F ||
+              fn == 0x10 || fn == 0x16 || fn == 0x17 || (fn & 0x80);
+            if (!known_slave(slave) || !known_fn) {
+              pending.erase(pending.begin());
+              continue;
+            }
+
+            std::vector<size_t> candidates;
+            if (fn & 0x80) candidates.push_back(5);
+            if (fn == 0x01 || fn == 0x02) {
+              candidates.push_back(8);  // read request
+              if (pending.size() >= 3 && pending[2] <= 240)
+                candidates.push_back(5 + size_t(pending[2])); // read response
+            }
+            if (fn == 0x05 || fn == 0x06 || fn == 0x08) {
+              candidates.push_back(8);
+            }
+            if (fn == 0x0F) {
+              candidates.push_back(8);  // write-multiple-coils response
+              if (pending.size() >= 7 && pending[6] <= 240)
+                candidates.push_back(9 + size_t(pending[6]));
+            }
+            if (fn == 0x16) {
+              candidates.push_back(10); // mask-write-register request/response
+            }
+            if (fn == 0x03) {
+              candidates.push_back(8);
+              if (pending.size() >= 3 && pending[2] <= 240)
+                candidates.push_back(5 + size_t(pending[2]));
+            }
+            if (fn == 0x04) {
+              candidates.push_back(8);
+              if (pending.size() >= 3 && pending[2] <= 240)
+                candidates.push_back(5 + size_t(pending[2]));
+            }
+            if (fn == 0x10) {
+              candidates.push_back(8);
+              if (pending.size() >= 7 && pending[6] <= 240)
+                candidates.push_back(9 + size_t(pending[6]));
+            }
+            if (fn == 0x17) {
+              if (pending.size() >= 3 && pending[2] <= 240)
+                candidates.push_back(5 + size_t(pending[2]));
+              if (pending.size() >= 11 && pending[10] <= 240)
+                candidates.push_back(13 + size_t(pending[10]));
+            }
+
+            std::sort(candidates.begin(), candidates.end());
+            candidates.erase(std::unique(candidates.begin(), candidates.end()), candidates.end());
+
+            size_t matched = 0;
+            bool waiting = false;
+            for (size_t len : candidates) {
+              if (len < 5 || len > 256) continue;
+              if (pending.size() < len) { waiting = true; continue; }
+              if (valid_crc(len)) { matched = len; break; }
+            }
+
+            if (matched) {
+              std::vector<uint8_t> frame(pending.begin(), pending.begin() + matched);
+              pending.erase(pending.begin(), pending.begin() + matched);
+              process_frame(frame);
+              continue;
+            }
+
+            if (waiting) break;
+
+            id(thermia_parser_resync_count)++;
+            ESP_LOGW("thermia_stream", "CRC resync at 0x%02X 0x%02X", slave, fn);
+            pending.erase(pending.begin());
+          }
+
+          if (pending.size() > 512) {
+            id(thermia_rx_buffer_drop_count)++;
+            ESP_LOGW("thermia_stream", "Dropping pending buffer (%u bytes)",
+                     (unsigned) pending.size());
+            pending.clear();
+          }
+
+# =============================================================================
+# HOME ASSISTANT SENSORS
+# =============================================================================
+
+sensor:
+
+  # ===========================================================================
+  # ESP DIAGNOSTICS
+  # ===========================================================================
+
+  - platform: uptime
+    name: "Thermia ESP Uptime"
+    entity_category: diagnostic
+    update_interval: 30s
+
+  - platform: wifi_signal
+    name: "Thermia WiFi Signal"
+    entity_category: diagnostic
+    update_interval: 30s
+
+  # ===========================================================================
+  # BUS / PARSER HEALTH
+  # ===========================================================================
+
+  - platform: template
+    name: "Bus Last Valid Frame Age"
+    unit_of_measurement: "s"
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    update_interval: 5s
+    lambda: |-
+      const uint32_t last = id(thermia_last_valid_frame_ms);
+      if (last == 0) return NAN;
+      return float(millis() - last) / 1000.0f;
+
+  - platform: template
+    name: "Valid Frames Since Boot"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 30s
+    lambda: |-
+      return float(id(thermia_valid_frame_count));
+
+  - platform: template
+    name: "Parser Resyncs Since Boot"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 30s
+    lambda: |-
+      return float(id(thermia_parser_resync_count));
+
+  - platform: template
+    name: "RX Buffer Drops Since Boot"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 30s
+    lambda: |-
+      return float(id(thermia_rx_buffer_drop_count));
+
+  - platform: template
+    name: "Compressor Starts Since Boot"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 30s
+    lambda: |-
+      return float(id(thermia_compressor_start_count));
+
+  - platform: template
+    name: "Observed Compressor Run Duration"
+    unit_of_measurement: "s"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 10s
+    lambda: |-
+      const uint32_t start = id(thermia_compressor_run_start_ms);
+      if (start == 0 || !id(thermia_compressor_last_running)) return 0.0f;
+      return float(millis() - start) / 1000.0f;
+
+  - platform: template
+    name: "Controller 0x02 Frame Age"
+    unit_of_measurement: "s"
+    accuracy_decimals: 1
+    entity_category: diagnostic    disabled_by_default: true
+    update_interval: 5s
+    lambda: |-
+      const uint32_t last = id(thermia_last_s02_ms);
+      if (last == 0) return NAN;
+      return float(millis() - last) / 1000.0f;
+
+  - platform: template
+    name: "Online Slot 0x06 Poll Age"
+    unit_of_measurement: "s"
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 5s
+    lambda: |-
+      const uint32_t last = id(thermia_last_s06_ms);
+      if (last == 0) return NAN;
+      return float(millis() - last) / 1000.0f;
+
+  - platform: template
+    name: "Room Sensor 0x0A Frame Age"
+    unit_of_measurement: "s"
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 5s
+    lambda: |-
+      const uint32_t last = id(thermia_last_s0a_ms);
+      if (last == 0) return NAN;
+      return float(millis() - last) / 1000.0f;
+
+  - platform: template
+    name: "Outdoor Unit 0x1E Frame Age"
+    unit_of_measurement: "s"
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: 5s
+    lambda: |-
+      const uint32_t last = id(thermia_last_s1e_ms);
+      if (last == 0) return NAN;
+      return float(millis() - last) / 1000.0f;
+
+  - platform: debug
+    free:
+      name: "Thermia ESP Heap Free"
+      entity_category: diagnostic
+      disabled_by_default: true
+    min_free:
+      name: "Thermia ESP Heap Min Free"
+      entity_category: diagnostic
+      disabled_by_default: true
+    fragmentation:
+      name: "Thermia ESP Heap Fragmentation"
+      entity_category: diagnostic
+      disabled_by_default: true
+    loop_time:
+      name: "Thermia ESP Loop Time"
+      entity_category: diagnostic
+      disabled_by_default: true
+
+
+  # ===========================================================================
+  # REVERSE-ENGINEERING / CONTROL DIAGNOSTICS
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_demand_raw
+    name: "Controller Sequence Value Raw"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_controller_state_a80c
+    name: "Controller Context Raw A80C"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_controller_state_a80e
+    name: "Controller Accessory Status Raw A80E"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_outdoor_unit_operating_state_raw
+    name: "Outdoor Unit Operating State Raw"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_outdoor_unit_status_flags
+    name: "Outdoor Unit Status Flags"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_mode_request_raw
+    name: "Mode Request Raw"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_commanded_target_temperature
+    name: "Commanded Target Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_room_bus_outdoor_temperature
+    name: "Room Bus Propagated Outdoor Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_dcm_outdoor_temperature
+    name: "DCM Propagated Outdoor Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_dcm_status_afdc
+    name: "Online⁄DCM Context Raw AFDC"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+
+  # ===========================================================================
+  # ROOM / SYSTEM
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_room_temperature
+    name: "Room Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_room_setpoint
+    name: "Room Setpoint"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_outdoor_temperature
+    name: "Outdoor Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_supply_temperature
+    name: "Supply Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  # Return temperature is deliberately omitted.
+  # We have not mapped a reliable Thermia register yet.
+
+
+  # ===========================================================================
+  # DOMESTIC HOT WATER
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_dhw_temperature
+    name: "DHW Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_dhw_upper_temperature
+    name: "DHW Upper Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_dhw_delta_t
+    name: "DHW Delta T"
+    unit_of_measurement: "°C"
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  # ===========================================================================
+  # REQUESTED TEMPERATURE
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_target_temperature
+    name: "Target Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  # ===========================================================================
+  # COMPRESSOR
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_compressor_frequency
+    name: "Compressor Frequency"
+    unit_of_measurement: "Hz"
+    device_class: frequency
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_compressor_current
+    name: "Compressor Current"
+    unit_of_measurement: "A"
+    device_class: current
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  # ===========================================================================
+  # OUTDOOR UNIT
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_high_pressure
+    name: "High Pressure"
+    unit_of_measurement: "bar"
+    device_class: pressure
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_fan_speed
+    name: "Outdoor Fan Speed"
+    unit_of_measurement: "rpm"
+    state_class: measurement
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_expansion_valve_steps
+    name: "Expansion Valve Steps"
+    unit_of_measurement: "steps"
+    state_class: measurement
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+
+  # ===========================================================================
+  # CONDENSER
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_condenser_in
+    name: "Condenser Inlet"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_condenser_out
+    name: "Condenser Outlet"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_condenser_delta_t
+    name: "Condenser Delta T"
+    unit_of_measurement: "°C"
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: never
+
+
+  # ===========================================================================
+  # REFRIGERANT / COMPRESSOR DIAGNOSTICS
+  # Disabled by default: useful for service and further mapping.
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_refrigerant_temperature_1
+    name: "Refrigerant Temperature 1"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_discharge_gas_temperature
+    name: "Discharge Gas Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_refrigerant_temperature_2
+    name: "Refrigerant Temperature 2"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_average_outdoor_temperature
+    name: "Average Outdoor Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_compressor_temperature
+    name: "Compressor Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+
+  # ===========================================================================
+  # HEATING CONFIGURATION
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_heating_curve
+    name: "Heating Curve"
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_heating_min
+    name: "Heating Minimum"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_heating_max
+    name: "Heating Maximum"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_heating_stop
+    name: "Heating Stop"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_reduced_temperature
+    name: "Reduced Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_room_factor
+    name: "Room Factor"
+    accuracy_decimals: 0
+    update_interval: never
+
+
+  - platform: template
+    id: thermia_curve_plus5
+    name: "Heating Curve Correction +5"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 0
+    update_interval: never
+
+  - platform: template
+    id: thermia_curve_zero
+    name: "Heating Curve Correction 0"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 0
+    update_interval: never
+
+  - platform: template
+    id: thermia_curve_minus5
+    name: "Heating Curve Correction -5"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 0
+    update_interval: never
+
+  - platform: template
+    id: thermia_room_setpoint_mirror
+    name: "Room Setpoint Mirror"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+
+
+  # ===========================================================================
+  # RAW MODBUS REGISTERS
+  # All are diagnostic and disabled by default.
+  # Source: 1=FC04 read, 2=FC10 Thermia write, 3=FC17 write part,
+  #         4=FC17 read response.
+  # ===========================================================================
+
+
+
+  # ==========================================================================
+  # EXP296 EXPERIMENT DIAGNOSTICS (Home Assistant: Diagnostics)
+  # ==========================================================================
+  - platform: template
+    id: thermia_exp296_tx_count
+    name: "EXP296 TX Count"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_runtime_cycles
+    name: "EXP296 Runtime Cycles"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_direct_post0884_07d0_count
+    name: "EXP296 Direct Post-0884 07D0 Count"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_direct_post07e4_07f8_count
+    name: "EXP296 Direct Post-07E4 07F8 Count"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_direct_post080c_0820_count
+    name: "EXP296 Direct Post-080C 0820 Count"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_runtime_04a6_count
+    name: "EXP296 Runtime 04A6 Capture Count"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_runtime_04a6_payload_changes
+    name: "EXP296 Runtime 04A6 Payload Changes"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_runtime_04a6_first_age
+    name: "EXP296 Runtime 04A6 First Age"
+    unit_of_measurement: "s"
+    accuracy_decimals: 3
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_runtime_04a6_last_age
+    name: "EXP296 Runtime 04A6 Last Age"
+    unit_of_measurement: "s"
+    accuracy_decimals: 3
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_runtime_events
+    name: "EXP296 Runtime Events Serviced"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_unexpected_count
+    name: "EXP296 Unexpected Session Events"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_room_sensor_frames
+    name: "EXP296 Room Sensor Frames Monitored"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_allowed_mask
+    name: "EXP296 Allowed Runtime Event Mask"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_b3c5
+    name: "EXP296 Passive B3C5 Observation"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    name: "EXP296 Steady-State Service Age"
+    unit_of_measurement: "s"
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    update_interval: 2s
+    lambda: |-
+      if (id(exp296_steady_start_ms) == 0) return NAN;
+      return float(millis() - id(exp296_steady_start_ms)) / 1000.0f;
+binary_sensor:
+
+  - platform: template
+    id: thermia_bus_healthy
+    name: "Bus Healthy"
+    device_class: connectivity
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_compressor_running
+    name: "Compressor Running"
+    device_class: running
+
+  - platform: template
+    id: thermia_compressor_starting
+    name: "Compressor Starting"
+    device_class: running
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_outdoor_fan_running
+    name: "Outdoor Fan Running"
+    device_class: running
+
+  - platform: template
+    id: thermia_outdoor_unit_enabled
+    name: "Outdoor Unit Run Enable Acknowledged"
+    device_class: running
+
+  - platform: template
+    id: thermia_heating_context
+    name: "Heating Context"
+
+  - platform: template
+    id: thermia_dhw_context
+    name: "DHW Context"
+
+  - platform: template
+    id: thermia_cooling_context
+    name: "Cooling Context"
+
+
+  - platform: template
+    id: thermia_heating_active
+    name: "Heating Active"
+    device_class: running
+
+  - platform: template
+    id: thermia_dhw_active
+    name: "DHW Active"
+    device_class: running
+
+  - platform: template
+    id: thermia_cooling_active
+    name: "Cooling Active"
+    device_class: running
+
+  - platform: template
+    id: thermia_room_boost_request
+    name: "Room Sensor Control Flag B3C6"
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_outdoor_unit_command_0007
+    name: "Outdoor Unit Cycle Request 0007"
+    entity_category: diagnostic
+    disabled_by_default: true
+
+  - platform: template
+    id: thermia_outdoor_unit_command_0008
+    name: "Outdoor Unit Run Enable 0008"
+    entity_category: diagnostic
+    disabled_by_default: true
+
+  - platform: template
+    id: thermia_a80c_flag_0x10
+    name: "Controller A80C Flag 0x10"
+    entity_category: diagnostic
+    disabled_by_default: true
+
+  - platform: template
+    id: thermia_a80c_flag_0x20
+    name: "Controller A80C Flag 0x20"
+    entity_category: diagnostic
+    disabled_by_default: true
+
+  - platform: template
+    id: thermia_a80e_flag_0x08
+    name: "Controller A80E Flag 0x08"
+    entity_category: diagnostic
+    disabled_by_default: true
+
+  - platform: template
+    id: thermia_a80e_flag_0x20
+    name: "Controller A80E Periodic Flag 0x20"
+    entity_category: diagnostic
+    disabled_by_default: true
+
+
+
+
+  - platform: template
+    id: thermia_exp296_cache_valid
+    name: "EXP296 Current-Session 03E8 Cache Valid"
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_exp296_active
+    name: "EXP296 Active"
+    entity_category: diagnostic
+
+text_sensor:
+
+  - platform: debug
+    reset_reason:
+      name: "Thermia ESP Reset Reason"
+      entity_category: diagnostic
+    device:
+      name: "Thermia ESP Device Info"
+      entity_category: diagnostic
+      disabled_by_default: true
+
+  - platform: wifi_info
+    ip_address:
+      name: "Thermia IP Address"
+      entity_category: diagnostic
+    bssid:
+      name: "Thermia WiFi BSSID"
+      entity_category: diagnostic
+    power_save_mode:
+      name: "Thermia WiFi Power Save Mode"
+      entity_category: diagnostic
+      disabled_by_default: true
+
+
+  - platform: template
+    name: "Thermia Firmware Build"
+    entity_category: diagnostic
+    update_interval: 6h
+    lambda: |-
+      return {"v27 Public / Optimized"};
+
+  - platform: template
+    name: "Heating Settings Source"
+    entity_category: diagnostic
+    update_interval: 30s
+    lambda: |-
+      if (id(thermia_settings_live_since_boot)) return {"Live"};
+      if (id(thermia_settings_cache_valid)) return {"Cached"};
+      return {"Waiting for live data"};
+
+  - platform: template
+    id: thermia_sg_mode
+    name: "SG Mode"
+
+  - platform: template
+    id: thermia_controller_context
+    name: "Controller Context"
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_outdoor_unit_state
+    name: "Outdoor Unit State"
+
+  - platform: template
+    id: thermia_operating_mode
+    name: "Operating Mode"
+
+  - platform: template
+    id: thermia_mode_request
+    name: "Mode Request"
+    entity_category: diagnostic
+
+
+
+  # EXP296 status is deliberately descriptive, not a protocol semantic claim.
+  - platform: template
+    id: thermia_exp296_status
+    name: "EXP296 Status"
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_runtime_state
+    name: "EXP296 Runtime State"
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_last_071c
+    name: "EXP296 Last 071C Challenge"
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_last_event
+    name: "EXP296 Last Event"
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_last_transition
+    name: "EXP296 Last Operational Transition"
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_exp296_alarm_observation
+    name: "EXP296 Alarm Observation"
+    entity_category: diagnostic
+    update_interval: never
+script:
+  # Fixed historical R1. This is the already-used local replay path; EXP296 does
+  # not claim the genuine challenge algorithm is solved.
+  - id: exp296_send_r1_once
+    mode: single
+    then:
+      - switch.turn_on: waveshare_rs485_direction
+      - delay: 1ms
+      - lambda: |-
+          static const uint8_t frame[] = {
+            0x0F,0x17,0x10,
+            0x16,0x91,0xA5,0xF3,0xF8,0xE8,0xD5,0x87,
+            0x38,0x92,0x44,0x16,0xE8,0xE6,0xA3,0xD5,
+            0xE2,0x27
+          };
+          id(thermia_uart).write_array(frame, sizeof(frame));
+          id(thermia_uart).flush();
+      - delay: 1ms
+      - switch.turn_off: waveshare_rs485_direction
+
+  # Generic standard FC16 address/count ACK, but callable only from the
+  # whitelisted exact states in the EXP296 handler above. CRC is generated at
+  # runtime over the exact ACK bytes to avoid stale hard-coded CRCs.
+  - id: exp296_send_fc16_ack
+    mode: queued
+    parameters:
+      start: int
+      count: int
+    then:
+      - switch.turn_on: waveshare_rs485_direction
+      - delay: 1ms
+      - lambda: |-
+          uint8_t frame[8] = {
+            0x0F,0x10,
+            uint8_t((start >> 8) & 0xFF), uint8_t(start & 0xFF),
+            uint8_t((count >> 8) & 0xFF), uint8_t(count & 0xFF),
+            0x00,0x00
+          };
+          uint16_t crc=0xFFFF;
+          for (int i=0;i<6;i++) {
+            crc ^= frame[i];
+            for (int b=0;b<8;b++) crc=(crc&1)?((crc>>1)^0xA001):(crc>>1);
+          }
+          frame[6]=uint8_t(crc & 0xFF); frame[7]=uint8_t((crc>>8)&0xFF);
+          id(thermia_uart).write_array(frame,sizeof(frame));
+          id(thermia_uart).flush();
+      - delay: 1ms
+      - switch.turn_off: waveshare_rs485_direction
+
+  # Locally proven startup mailbox response after the post-config 085F gate.
+  # Words: 0000 0000 0000 0000 0080 0006. w1 remains 0000.
+  - id: exp296_send_startup_0708
+    mode: single
+    then:
+      - switch.turn_on: waveshare_rs485_direction
+      - delay: 1ms
+      - lambda: |-
+          static const uint8_t frame[] = {
+            0x0F,0x03,0x0C,0x00,0x00,0x00,0x00,0x00,0x00,
+            0x00,0x00,0x00,0x80,0x00,0x06,0x9C,0x9E
+          };
+          id(thermia_uart).write_array(frame,sizeof(frame));
+          id(thermia_uart).flush();
+      - delay: 1ms
+      - switch.turn_off: waveshare_rs485_direction
+
+  # Locally proven steady-state mailbox response. Words:
+  # 0000 0000 0000 0000 0000 0006. It cannot advertise reverse 03E8 data.
+  - id: exp296_send_runtime_0708
+    mode: single
+    then:
+      - switch.turn_on: waveshare_rs485_direction
+      - delay: 1ms
+      - lambda: |-
+          static const uint8_t frame[] = {
+            0x0F,0x03,0x0C,0x00,0x00,0x00,0x00,0x00,0x00,
+            0x00,0x00,0x00,0x00,0x00,0x06,0x9D,0x76
+          };
+          id(thermia_uart).write_array(frame,sizeof(frame));
+          id(thermia_uart).flush();
+      - delay: 1ms
+      - switch.turn_off: waveshare_rs485_direction
+
+button:
+  - platform: template
+    name: "EXP296 Arm Transition Test"
+    entity_category: config
+    on_press:
+      - lambda: |-
+          id(waveshare_rs485_direction).turn_off();
+          id(exp296_armed)=true;
+          id(exp296_session_state)=1;
+          id(exp296_runtime_allowed)=0;
+          id(exp296_mailbox_context)=0;
+          id(exp296_config_index)=0;
+          id(exp296_arm_ms)=millis();
+          id(exp296_last_frame_ms)=id(thermia_last_valid_frame_ms);
+          id(exp296_bus_return_ms)=0;
+          id(exp296_last_progress_ms)=millis();
+          id(exp296_r1_tx_ms)=0;
+          id(exp296_steady_start_ms)=0;
+          id(exp296_approval_count)=0;
+          id(exp296_tx_count)=0;
+          id(exp296_runtime_events)=0;
+          id(exp296_runtime_cycles)=0;
+          id(exp296_direct_post0884_07d0_count)=0;
+          id(exp296_direct_post07e4_07f8_count)=0;
+          id(exp296_direct_post080c_0820_count)=0;
+          id(exp296_runtime_04a6_count)=0;
+          id(exp296_runtime_04a6_payload_changes)=0;
+          id(exp296_runtime_04a6_first_ms)=0;
+          id(exp296_runtime_04a6_last_ms)=0;
+          id(exp296_runtime_04a6_payload_valid)=false;
+          id(exp296_unexpected_count)=0;
+          id(exp296_room_sensor_frames)=0;
+          id(exp296_last_b3c5_valid)=false;
+          id(exp296_a80e_known)=false;
+          id(exp296_a80f_known)=false;
+          id(exp296_last_a80c_block_valid)=false;
+          id(exp296_03e8_page_cache_valid)=false;
+          id(exp296_last_tx_kind)=0;
+          id(exp296_last_tx_ms)=0;
+          id(exp296_last_ack_start)=0;
+          id(exp296_last_ack_count)=0;
+          id(exp296_alarm_seen_during_service)=false;
+          id(exp296_alarm_last_mark_ms)=0;
+          id(thermia_exp296_tx_count)->publish_state(0);
+          id(thermia_exp296_runtime_cycles)->publish_state(0);
+          id(thermia_exp296_direct_post0884_07d0_count)->publish_state(0);
+          id(thermia_exp296_direct_post07e4_07f8_count)->publish_state(0);
+          id(thermia_exp296_direct_post080c_0820_count)->publish_state(0);
+          id(thermia_exp296_runtime_04a6_count)->publish_state(0);
+          id(thermia_exp296_runtime_04a6_payload_changes)->publish_state(0);
+          id(thermia_exp296_runtime_04a6_first_age)->publish_state(NAN);
+          id(thermia_exp296_runtime_04a6_last_age)->publish_state(NAN);
+          id(thermia_exp296_runtime_events)->publish_state(0);
+          id(thermia_exp296_unexpected_count)->publish_state(0);
+          id(thermia_exp296_room_sensor_frames)->publish_state(0);
+          id(thermia_exp296_allowed_mask)->publish_state(0);
+          id(thermia_exp296_cache_valid)->publish_state(false);
+          id(thermia_exp296_active)->publish_state(true);
+          id(thermia_exp296_status)->publish_state("ARMED / reboot Thermia once; then reproduce one operational transition");
+          id(thermia_exp296_runtime_state)->publish_state("waiting >=5 s bus gap + return");
+          id(thermia_exp296_last_071c)->publish_state("waiting");
+          id(thermia_exp296_last_event)->publish_state("armed");
+          id(thermia_exp296_last_transition)->publish_state("waiting for operational transition");
+          id(thermia_exp296_alarm_observation)->publish_state("not marked");
+          ESP_LOGE("thermia_exp296",
+            "\033[31m[EXP296] ===== ARMED PREPARED/NOT-RUN -> reboot controller once; then reproduce ONE operational transition; no semantic writes =====\033[0m");
+
+  - platform: template
+    name: "EXP296 Abort"
+    entity_category: config
+    on_press:
+      - lambda: |-
+          id(waveshare_rs485_direction).turn_off();
+          id(exp296_runtime_allowed)=0;
+          id(exp296_mailbox_context)=0;
+          id(exp296_session_state)=9;
+          id(exp296_armed)=false;
+          id(thermia_exp296_active)->publish_state(false);
+          id(thermia_exp296_status)->publish_state("ABORTED manually / DE LOW");
+          id(thermia_exp296_runtime_state)->publish_state("TX disabled");
+          id(thermia_exp296_last_event)->publish_state("manual abort");
+          ESP_LOGE("thermia_exp296","\033[31m[EXP296] ===== MANUAL_ABORT DE=LOW =====\033[0m");
+
+  - platform: template
+    name: "EXP296 Mark Alarm Visible"
+    entity_category: config
+    on_press:
+      - lambda: |-
+          const uint32_t now=millis();
+          id(exp296_alarm_last_mark_ms)=now;
+          if (id(exp296_session_state)==6) id(exp296_alarm_seen_during_service)=true;
+          char s[96];
+          snprintf(s,sizeof(s),"VISIBLE state=%u active_service=%u",
+                   unsigned(id(exp296_session_state)),
+                   unsigned(id(exp296_alarm_seen_during_service)));
+          id(thermia_exp296_alarm_observation)->publish_state(s);
+          ESP_LOGE("thermia_exp296",
+            "\033[31m[EXP296] ===== ALARM_MARK VISIBLE state=%u since_steady=%ums =====\033[0m",
+            unsigned(id(exp296_session_state)),
+            unsigned(id(exp296_steady_start_ms)?now-id(exp296_steady_start_ms):0));
+  - platform: template
+    name: "EXP296 Mark Alarm Clear"
+    entity_category: config
+    on_press:
+      - lambda: |-
+          const uint32_t now=millis();
+          id(exp296_alarm_last_mark_ms)=now;
+          char s[80]; snprintf(s,sizeof(s),"CLEAR/NOT VISIBLE state=%u",unsigned(id(exp296_session_state)));
+          id(thermia_exp296_alarm_observation)->publish_state(s);
+          ESP_LOGW("thermia_exp296",
+            "\033[38;5;130m[EXP296] ALARM_MARK CLEAR state=%u since_steady=%ums\033[0m",
+            unsigned(id(exp296_session_state)),
+            unsigned(id(exp296_steady_start_ms)?now-id(exp296_steady_start_ms):0));
+
+interval:
+  # EXP296 experiment watchdog / transition robustness guard.
+  - interval: 250ms
+    then:
+      - lambda: |-
+          if (!id(exp296_armed)) return;
+          const uint32_t now=millis();
+          const uint8_t state=id(exp296_session_state);
+          const uint32_t resync_delta = id(exp296_bus_return_ms) ?
+            id(thermia_parser_resync_count)-id(exp296_resync_at_return) : 0;
+          const uint32_t drop_delta = id(exp296_bus_return_ms) ?
+            id(thermia_rx_buffer_drop_count)-id(exp296_drop_at_return) : 0;
+
+          auto stop_fault=[&](const char *reason) {
+            id(waveshare_rs485_direction).turn_off();
+            id(exp296_runtime_allowed)=0;
+            id(exp296_mailbox_context)=0;
+            id(exp296_session_state)=9;
+            id(exp296_armed)=false;
+            id(thermia_exp296_active)->publish_state(false);
+            id(thermia_exp296_status)->publish_state("ABORTED / watchdog fail-closed / return log");
+            id(thermia_exp296_runtime_state)->publish_state("TX disabled");
+            id(thermia_exp296_last_event)->publish_state(reason);
+            ESP_LOGE("thermia_exp296",
+              "\033[31m[EXP296] ===== WATCHDOG_ABORT reason=%s resync=%u drops=%u DE=LOW =====\033[0m",
+              reason,unsigned(resync_delta),unsigned(drop_delta));
+          };
+
+          // Parser/RX integrity is a hard active-TX abort after controller return.
+          if (id(exp296_bus_return_ms) && (resync_delta!=0 || drop_delta!=0) && state<=6) {
+            stop_fault("parser/RX integrity delta after bus return"); return;
+          }
+
+          if (state==2 && id(exp296_bus_return_ms) && (now-id(exp296_bus_return_ms))>15000UL) {
+            stop_fault("no exact approval within 15 s of bus return"); return;
+          }
+          if (state==3 && (now-id(exp296_last_progress_ms))>8000UL) {
+            stop_fault("initial config sync stalled >8 s"); return;
+          }
+          if (state==4 && (now-id(exp296_last_progress_ms))>10000UL) {
+            stop_fault("no startup all-zero 085F within 10 s"); return;
+          }
+          if (state==5 && (now-id(exp296_last_progress_ms))>10000UL) {
+            stop_fault("no startup 0708 within 10 s after 085F ACK"); return;
+          }
+          if (state==6) {
+            if ((now-id(exp296_last_progress_ms))>8000UL) {
+              stop_fault("steady-state runtime progress stalled >8 s"); return;
+            }
+          }
+
+  - interval: 5s
+    then:
+      - lambda: |-
+          const uint32_t last = id(thermia_last_valid_frame_ms);
+          if (last == 0 || (millis() - last) > 10000UL) {
+            if (!id(thermia_bus_healthy)->has_state() || id(thermia_bus_healthy)->state) {
+              id(thermia_bus_healthy)->publish_state(false);
+            }
+          }
