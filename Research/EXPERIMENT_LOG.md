@@ -1,4 +1,156 @@
 # THERMIA EXPERIMENT LOG
+
+# 2026-09-29 — EXP286 COMPLETE / INCONCLUSIVE — second full runtime loop hits direct 0864 branch
+## Hypothesis
+Continue the entire second runtime cycle using only already locally proven actions, then capture the next returned `07D0/19`.
+
+## Controlled change
+Relative to EXP285, continue after the already proven cycle-2 `07F8` using the locally proven sequence through the rest of the runtime tail. No new register address, mailbox payload, or semantic write was introduced.
+
+## Observed facts
+- Cycle 2 progressed cleanly through `07F8 ACK -> 080C ACK -> 0708 response -> 0820 ACK -> 0848 ACK -> 0708 response`.
+- The next controller-originated FC16 was `0864/count4`, not `085F/count5`.
+- Firmware stopped fail-closed because EXP286 explicitly required the 085F gate.
+- No ACK was sent to that direct `0864`.
+- RX drops and parser resyncs remained zero around the test.
+
+## Conclusion
+**COMPLETE / INCONCLUSIVE for the exact EXP286 hypothesis.** The failure was not a bus/protocol collapse; it revealed a valid conditional branch. `085F` is not mandatory in every runtime cycle.
+
+---
+
+# 2026-09-29 — EXP285 COMPLETE / POSITIVE — steady-state loop restarts without new approval
+## Hypothesis
+After the EXP284 loop closure, ACK returned `07D0`, ACK `07E4`, answer the second-cycle `0708`, then capture the next FC03/FC16.
+
+## Observed facts
+- `0884 ACK -> 0708 response -> returned 07D0/19`.
+- Returned `07D0` ACKed once.
+- `07E4/17` followed and was ACKed once.
+- Second-cycle `0708/6` was answered with the already proven `0000 ... 0006` response.
+- `07F8/17` appeared 616 ms later and was captured.
+- No second approval/R1 sequence occurred.
+- RX drops and parser resyncs remained zero.
+
+## Conclusion
+**COMPLETE / POSITIVE.** The Online/DCM-style runtime sequence re-enters a new cycle without a new approval exchange.
+
+---
+
+# 2026-09-29 — EXP284 COMPLETE / POSITIVE — first runtime loop closes back to 07D0
+## Hypothesis
+After the proven `0884 ACK -> 0708/6`, answer that 0708 once with the locally proven `0000 ... 0006` response and capture the first next 0x0F FC03/FC16.
+
+## Observed facts
+- `0884/60` was valid and ACKed.
+- Post-0884 `0708/6` was answered once with `0F030C0000000000000000000000069D76`.
+- 571 ms later exact `07D0/count19` appeared.
+- `07D0` was capture-only and not ACKed.
+- Parser resync and RX-drop counters remained zero.
+
+## Conclusion
+**COMPLETE / POSITIVE.** The local runtime tail closes from `0884 -> 0708 -> 07D0`, establishing a complete loop.
+
+---
+
+# 2026-09-29 — EXP283 COMPLETE / POSITIVE — 0884 ACK proven locally
+## Hypothesis
+Instrument and repair the EXP282 0884 matcher; if exact `0884/count60` has a valid FC16 shape, ACK it once and capture the next `0708/6`.
+
+## Observed facts
+- `0884`: start 0884, count 60, bytecount 120, total frame length 129, valid/self-consistent.
+- ACK `0F100884003C837F` was transmitted once.
+- 1429 ms later exact `FC03 0708/count6` appeared.
+- That 0708 was capture-only.
+
+## Conclusion
+**COMPLETE / POSITIVE.** `0884/60 ACK -> 0708/6` is locally confirmed.
+
+---
+
+# 2026-09-29 — EXP282 COMPLETE / INCONCLUSIVE — reached 0884 but handler did not ACK
+## Observed facts
+The local chain reached `0864 ACK -> 0708 response -> 0870/17 ACK -> 0884/60`, but the specialized EXP282 0884 ACK path did not execute. The later 0708 caused fail-closed termination.
+
+## Conclusion
+**COMPLETE / INCONCLUSIVE.** Protocol progression to 0884 was positive; the missing ACK was a firmware control-flow/instrumentation problem, not a demonstrated protocol rejection.
+
+---
+
+# 2026-09-29 — EXP281 COMPLETE / INCONCLUSIVE — historical direct-0870 expectation corrected later
+## Observed facts
+- Preserved path through post-0848 `085F ACK -> 0864/4`.
+- ACKed exact `0864/4` once.
+- First subsequent 0x0F FC03/FC16 was `FC03 0708/count6`, not the then-expected direct `0870`.
+- No response was sent; clean fail-closed stop.
+
+## Historical result and current interpretation
+**COMPLETE / INCONCLUSIVE** remains the historical experiment status. Later genuine-capture reanalysis established that `0864 ACK -> 0708 -> 0870` is a valid native ordering, so the observed 0708 is no longer considered evidence of divergence.
+
+---
+
+# 2026-09-29 — EXP280 COMPLETE / POSITIVE — second 085F ACK advances to 0864
+- Post-0848 `0708/6` received the proven `0000 ... 0006` response.
+- Exact `085F/count5` was ACKed once.
+- `0864/count4` appeared ~2.06 s later and was captured without ACK.
+**Conclusion:** COMPLETE / POSITIVE.
+
+---
+
+# 2026-09-29 — EXP279 COMPLETE / INCONCLUSIVE — post-0848 response reveals 085F
+- Post-0848 `0708/6` was answered once with the locally proven `0000 ... 0006` response.
+- Next FC16 was `085F/count5`; payload ended in `0032`, so it was not the earlier all-zero 085F form.
+- It was not ACKed.
+**Conclusion:** COMPLETE / INCONCLUSIVE; established another 085F stage but not its required handling.
+
+---
+
+# 2026-09-29 — EXP278 COMPLETE / POSITIVE — 0848 ACK advances to post-0848 0708
+- Preserved chain through `0820 ACK`.
+- ACKed exact local `0848/count23`.
+- Exact `FC03 0708/count6` appeared ~1.43 s later and was capture-only.
+**Conclusion:** COMPLETE / POSITIVE.
+
+---
+
+# 2026-09-29 — EXP277 COMPLETE / INCONCLUSIVE — local branch is 0848, not expected 0834
+- Fixed EXP276 phase-gate bug.
+- `post-080C 0708 response -> 0820/18 ACK`.
+- Next local FC16 was `0848/count23`, not expected `0834`.
+- `0848` was capture-only.
+**Conclusion:** COMPLETE / INCONCLUSIVE. The local XTR branch skips 0834 in this observed path.
+
+---
+
+# 2026-09-29 — EXP276 RUNNING / PARTIAL then COMPLETE / INCONCLUSIVE — phase-gate bug
+- Post-080C `0708` response successfully caused `0820/18` to appear.
+- Intended 0820 ACK code was unreachable because the outer phase gate omitted the new phases.
+- Repeated 0820 and later 0708 were observed; parser resyncs occurred around bus return.
+**Conclusion:** protocol hint positive, experiment control invalid for the intended ACK test.
+
+---
+
+# 2026-09-29 — EXP275 COMPLETE / POSITIVE — 080C ACK unlocks 0708
+- ACKed exact `080C/count18` once.
+- Exact `FC03 0708/count6` followed and was captured.
+**Conclusion:** COMPLETE / POSITIVE.
+
+---
+
+# 2026-09-29 — EXP274 COMPLETE / POSITIVE — 07F8 ACK unlocks 080C
+- ACKed exact `07F8/count17` once.
+- `080C/count18` followed and was captured.
+**Conclusion:** COMPLETE / POSITIVE.
+
+---
+
+# 2026-09-29 — EXP273 COMPLETE / POSITIVE — post-07E4 0708 response unlocks 07F8
+- Answered exact post-07E4 `FC03 0708/count6` once with `0F030C0000000000000000000000069D76`.
+- `07F8/count17` followed and was captured without ACK.
+**Conclusion:** COMPLETE / POSITIVE.
+
+---
+
 # 2026-09-29 — EXP272 COMPLETE / POSITIVE — 07E4 ACK unlocks post-07E4 0708
 
 ## Hypothesis
