@@ -1,4 +1,85 @@
 # THERMIA EXPERIMENT LOG
+# 2026-09-29 — EXP272 COMPLETE / POSITIVE — 07E4 ACK unlocks post-07E4 0708
+
+## Hypothesis
+After EXP271 locally proved `07D0/count19 -> ACK -> 07E4/count17`, a single exact standard ACK of the first `07E4/count17` should advance the XTR M to the next native mailbox request `FC03 0708/count6`.
+
+## Controlled variable
+Relative to EXP271, the entire proven path was preserved. The only new active action was one exact ACK of the first `07E4/count17` with:
+
+`0F1007E400114068`.
+
+The following mailbox request was capture-only. No post-`07E4` 0708 response and no later runtime-page ACK were allowed.
+
+## Timeline / observed facts
+- BUS_GAP and BUS_RETURN detected normally.
+- New local approval challenge:
+  `1A094566F90619ACDC1DC5A0001E8FCC`.
+- Same fixed historical R1 replay sent:
+  `0F17101691A5F3F8E8D58738924416E8E6A3D5E227`.
+- Full known FC16 sync reproduced cleanly through `06F4/19`.
+- First exact all-zero `085F/count5` was ACKed once with `0F10085F00053356`.
+- First early `0708/count6` was answered once with the preserved phase-matched `0080/0006` response.
+- `07D0/count19` appeared and was ACKed once with `0F1007D000138067`.
+- `07E4/count17` appeared ~2.08 s later.
+- EXP272 ACKed `07E4/count17` exactly once with `0F1007E400114068`.
+- Exact `FC03 0708/count6` appeared 1457 ms after the 07E4 ACK.
+- Firmware logged `SUCCESS_0708_AFTER_07E4_ACK`.
+- The post-07E4 0708 request was deliberately not answered.
+- Parser resyncs and RX buffer drops remained zero.
+
+## Comparison with EXP271
+EXP271 stopped capture-only on `07E4/17`. EXP272 preserved every preceding action and added only one exact 07E4 ACK. The controller then advanced to the next 0708 mailbox poll.
+
+## Strong conclusion
+**EXP272 is positive. `07E4/count17` is locally confirmed on the XTR M as an ordered runtime gate whose ACK advances the session to a post-07E4 `FC03 0708/count6` request.**
+
+## Limits
+- This does not prove the correct response payload for the post-07E4 0708 poll.
+- This does not yet prove progression to `07F8/count17`.
+- No semantic desired-state page was served or written.
+
+## Next
+EXP273 should change one variable only: answer the proven post-07E4 `0708/count6` once with the exact phase-matched genuine response `0000 0000 0000 0000 0000 0006` / raw `0F030C0000000000000000000000069D76`, then capture `07F8/count17` without ACK.
+
+---
+
+# 2026-09-29 — EXP271 COMPLETE / POSITIVE — 07D0 ACK unlocks 07E4
+
+## Hypothesis
+After EXP270 proved the path to first `07D0/count19`, ACKing that exact page once should advance the XTR M to `07E4/count17`.
+
+## Controlled variable
+Relative to EXP270, all earlier R1/sync/`085F`/early-`0708` behavior was retained. The only new active action was one exact standard ACK of the first `07D0/count19`:
+
+`0F1007D000138067`.
+
+`07E4/count17` remained capture-only.
+
+## Timeline / observed facts
+- BUS_GAP and BUS_RETURN detected normally.
+- New local approval challenge:
+  `1A094552F90614ACDC1DC594001E8FA4`.
+- Same fixed historical R1 replay sent.
+- Full known synchronization chain through `06F4/19` completed.
+- exact all-zero `085F/count5` was ACKed once.
+- early `0708/count6` received the same single preserved `0080/0006` response.
+- first `07D0/count19` appeared and was ACKed once with `0F1007D000138067`.
+- exact `07E4/count17` appeared 2159 ms after the 07D0 ACK.
+- firmware logged `SUCCESS_07E4_AFTER_07D0_ACK`.
+- `07E4` was deliberately not ACKed.
+- parser resyncs and RX buffer drops remained zero.
+
+## Comparison with EXP270
+EXP270 stopped on first `07D0/19` without ACK. EXP271 preserved the complete EXP270 path and added only one exact 07D0 ACK; `07E4/17` then appeared.
+
+## Strong conclusion
+**EXP271 is positive. `07D0/count19` is locally confirmed as an ordered runtime gate whose ACK advances the XTR M to `07E4/count17`.**
+
+## Limits
+No conclusion is made here about the semantics or payload of 07D0/07E4. Standard FC16 ACKs contain only slave/function/start/count and do not inject the controller-originated page values.
+
+---
 # 2026-09-29 — EXP270 COMPLETE / POSITIVE — exact 085F ACK unlocks 07D0
 
 ## Hypothesis
