@@ -1,5 +1,73 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-29 — EXP312 COMPLETE / POSITIVE; EXP313 NEXT / NOT YET PREPARED
+
+- Last completed experiment: **EXP312 — COMPLETE / POSITIVE**.
+- No later experiment has been run.
+- EXP312 confirmed that a qualified live `0884/60` retained-session stage accepts the standard ACK `0F100884003C837F` and then advances through `0708` to known runtime `07D0/19`.
+- The post-`0884` `0708` was deliberately left NO_TX; `07D0/19` still appeared ~1.95 s after the `0884` ACK.
+- No `0884` retry occurred before `07D0`; post-target counters were `retry=0`, `0708=1`, `known=1`, parser resync=0, RX drops=0, DE LOW.
+- In the same run the controller went from the proven `085F(0800)` normalization to all-zero `085F`, then directly into the `0884` branch without `0864` or `0870`.
+
+### Retained-session findings from EXP298–312
+
+- Fresh-approval-only ESP restart recovery was insufficient in EXP298; the controller remained in retained scheduler traffic instead of reopening `071C/0730` during the supplied observation window.
+- `0848` is not a universal retained re-entry anchor.
+- `085F/5` with `0861=0x0800` is an ACK-sensitive retained-session/retry state; its semantics remain unknown.
+- All-zero `085F/5` is also an ACK-gated retained-session stage in the tested path.
+- `0662/33` is locally re-confirmed as an ACK-gated controller-to-DCM transfer stage.
+- Locally proven causal transitions now include:
+  - `all-zero 085F ACK -> 0708 -> 0864`;
+  - `0864 ACK -> 0708 -> 0870`;
+  - `0870 ACK -> 0708 -> 0884`;
+  - `0884 ACK -> 0708 -> 07D0`.
+- Direct branches are also locally observed:
+  - direct `0870` without `0864`;
+  - direct `0884` without `0864` or `0870`.
+- Therefore the runtime/recovery handler must be a **branch-aware event graph**, not one rigid expected-next-register sequence.
+- ESP reboot/OTA is not protocol rollback; controller retained state can persist across it.
+
+### Current protocol model
+
+The proven steady-state runtime from EXP296/297 remains the production-quality baseline. Retained recovery now reconnects to that graph at known runtime nodes.
+
+A compact view is:
+
+`085F(0800) --ACK--> all-zero 085F --ACK--> branch-aware runtime -> 0864 / 0870 / 0884 -> ... -> 07D0 -> proven steady-state loop`
+
+`0708` can appear between these FC16 stages. In EXP307/308/310/312 its response was intentionally omitted and the next FC16 still appeared. This proves only that an immediate response is not required for those bounded transitions; it does not remove `0708` from the long-term DCM protocol model.
+
+### Strongest current hypothesis
+
+The controller likely applies a session-liveness/watchdog requirement: one or a few ACKs can move the retained state, but durable Online/Link health probably requires sustained service of the known runtime scheduler.
+
+### Important open items
+
+- Can branch-aware retained recovery hand off into the full EXP296/297 runtime responder and remain healthy for multiple complete cycles without a controller reboot?
+- Exact semantics of `0861=0x0800`.
+- Exact long-term role and response cadence of `0708`.
+- Exact liveness/watchdog interval.
+- Runtime `04A6/13` semantics and ACK policy.
+- Genuine `071C/0730` challenge-response algorithm.
+- Multi-hour/overnight stability and rare/fault-state behavior.
+
+### Next experiment candidate
+
+**EXP313 — NOT YET PREPARED / NOT RUN.**
+
+Candidate hypothesis: once adaptive retained-session recovery reaches a known normal runtime node such as `07D0/19`, hand over to the already proven EXP296/297 steady-state responder and test sustained runtime for multiple cycles. This should add no new register target or semantic write; the new variable is the recovery-to-steady-state hand-off itself.
+
+### Safety
+
+- Exact slave/function/address/count/bytecount/CRC/state guards only.
+- No broad FC16 ACKing.
+- `0834/18` and runtime `04A6/13` remain capture-only unless a dedicated experiment explicitly changes them.
+- No semantic write is part of retained-recovery testing.
+- Unexpected `0x0F` branches remain capture-only/fail-closed.
+- Do not assume ESP reboot restores controller state.
+
+---
+
 ## Current status — 2026-09-29 — EXP297 COMPLETE / POSITIVE; EXP298 PREPARED / NOT RUN
 
 - Last completed experiment: **EXP297 — COMPLETE / POSITIVE**.
