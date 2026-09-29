@@ -1,3 +1,144 @@
+# 2026-09-29 — EXP312 COMPLETE / POSITIVE — retained-session recovery now reaches 07D0; EXP313 NEXT / NOT YET PREPARED
+
+**Authoritative current state:** EXP312 is COMPLETE / POSITIVE from the supplied local log. No later experiment has been run. EXP313 is a candidate next experiment and is **NOT YET PREPARED / NOT RUN**.
+
+## Last completed experiment — EXP312
+
+**Hypothesis:** a single standard FC16 address/count ACK to a qualified live `0884/60` retry stage is sufficient to move the retained controller session to the next known runtime stage.
+
+### Baseline and controlled change
+
+Baseline was EXP311, which showed that the post-`085F` scheduler is branch-based: `0884/60` can appear directly without preceding `0864/4` or `0870/17`.
+
+EXP312 changed only the qualification/state-machine logic so that a direct live `0884/60` branch was accepted. The only new protocol action was one human-gated standard ACK to `0884/60`:
+
+- target: slave `0x0F`, FC16, start `0x0884`, count `60` (`0x0884..0x08BF`);
+- ACK: `0F 10 08 84 00 3C 83 7F`;
+- no register values were injected;
+- post-target traffic was strict NO_TX.
+
+The already locally proven prerequisite actions remained automatic and exact-shape gated.
+
+### EXP312 observed result
+
+The controller first repeated `085F/5` with words `0000 0000 0800 0000 0000`. After two observations, one standard `085F/5` ACK was sent. The controller then moved to all-zero `085F/5`; after the existing qualification rule, one standard ACK was sent there as well.
+
+The next runtime branch was:
+
+`all-zero 085F ACK -> 0708 (NO_TX) -> repeated 0884/60`
+
+No `0864/4` or `0870/17` occurred in this run. `0884/60` was qualified from repeated frames plus a fresh `0708`. After human arm, exactly one `0884/60` ACK was sent.
+
+The post-target sequence was:
+
+`0884 ACK -> 0708 (NO_TX) -> 07D0/19`
+
+Timing in the supplied log:
+- target `0884` ACK at approximately 01:36:30.415;
+- post-ACK `0708` approximately 1.325 s later;
+- `07D0/19` approximately 1.947 s after the target ACK.
+
+No `0884` retry occurred before `07D0`. Final counters included `postRetry=0`, `post0708=1`, `postKnown=1`, parser resync delta 0, RX drops 0 and DE LOW at fail-close.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+## Recent retained-session experiment chain — EXP298–312
+
+- **EXP298 — COMPLETE / INCONCLUSIVE:** fresh-approval-only ESP reboot recovery was insufficient; no fresh `071C/0730` was observed in the supplied ~235.7 s window. Retained-session traffic continued and COMM. ERR ONLINE/LINK was visible.
+- **EXP299 — COMPLETE / INCONCLUSIVE:** one bounded retained-session resync reached `0848 ACK -> 0708 -> all-zero 085F`, but did not establish durable health. Alarm clearing was temporary/correlative only.
+- **EXP300 — COMPLETE / INCONCLUSIVE:** waiting for `0848` as a universal retained re-entry anchor failed; the current state could instead present `085F(0800)` or `0708`.
+- **EXP301 — COMPLETE / NEGATIVE:** passive observation showed a persistent `0708 <-> 085F(0800)` retry loop with no `0848`.
+- **EXP302 — COMPLETE / POSITIVE:** one standard ACK to exact `085F(0800)` changed the controller to all-zero `085F`; this locally proves that `0861=0x0800` is ACK-sensitive session/retry state, while its semantic meaning remains unknown.
+- **EXP303 — COMPLETE / INCONCLUSIVE:** the desired `0800 -> zero` reproduction could not be tested because retained controller state had already changed; ESP reboot did not restore the previous controller state.
+- **EXP304 — COMPLETE / INCONCLUSIVE:** exact `0662/33` resurfaced before the intended target and the experiment correctly stopped fail-closed.
+- **EXP305 — COMPLETE / POSITIVE:** standard ACK of repeated `0662/33` stopped that retry stage and was followed by `085F(0800)`, `0708` and then all-zero `085F`; this re-confirms the older EXP141 `0662/33` ACK-gated transfer finding.
+- **EXP306 — COMPLETE / INCONCLUSIVE:** with NO_TX, the controller persisted in `0708 <-> 085F(0800)`; the all-zero target was never reached.
+- **EXP307 — COMPLETE / POSITIVE:** after the proven `085F(0800)` normalization, one ACK to qualified all-zero `085F/5` caused `0708 -> 0864/4`.
+- **EXP308 — COMPLETE / POSITIVE:** one ACK to qualified `0864/4` caused `0708 -> 0870/17`.
+- **EXP309 — COMPLETE / INCONCLUSIVE:** after the proven all-zero `085F` prerequisite, `0870/17` appeared directly with no `0864`; this disproved the experiment's too-linear prerequisite model.
+- **EXP310 — COMPLETE / POSITIVE:** one ACK to live repeated `0870/17` caused `0708 -> 0884/60`.
+- **EXP311 — COMPLETE / INCONCLUSIVE:** `0884/60` appeared directly after the all-zero `085F` ACK, without `0864` or `0870`; no `0884` ACK was sent because the state machine failed closed on the newly observed direct branch.
+- **EXP312 — COMPLETE / POSITIVE:** one ACK to qualified `0884/60` caused `0708 -> 07D0/19` while the `0708` itself remained NO_TX.
+
+## Current protocol model
+
+The native Online/DCM runtime must be modeled as an **event/state-driven scheduler with optional branches**, not a rigid linear sequence.
+
+The older stable runtime graph remains valid as a set of known stages:
+
+`07D0 -> 07E4 -> [optional 0708] -> 07F8 -> 080C -> [optional 0708] -> 0820 -> 0848 -> ... -> 0864 / 0870 / 0884 -> [optional 0708] -> 07D0`
+
+The retained-session experiments add a locally confirmed recovery view:
+
+`0662/33 --ACK--> retained scheduler`
+
+`085F(0800) --ACK--> all-zero 085F`
+
+`all-zero 085F --ACK--> scheduler branch`
+
+From that post-`085F` branch, locally observed valid paths now include at least:
+- `0708 -> 0864`;
+- direct `0870`;
+- `0708 -> 0870`;
+- direct `0884`;
+- `0708 -> 0884`.
+
+Locally tested causal target transitions include:
+- `all-zero 085F ACK -> 0708 -> 0864` (EXP307);
+- `0864 ACK -> 0708 -> 0870` (EXP308);
+- `0870 ACK -> 0708 -> 0884` (EXP310);
+- `0884 ACK -> 0708 -> 07D0` (EXP312).
+
+The post-target `0708` frames in EXP307/308/310/312 were deliberately left NO_TX where applicable, yet the next FC16 runtime stage still appeared. This proves that an immediate `0708` response is not required for those short scheduler transitions. It does **not** prove that `0708` can be ignored for durable session health.
+
+## Locally proven findings added by EXP298–312
+
+- `0662/33` is an ACK-gated controller-to-DCM transfer stage on this XTR M.
+- Exact `085F/5` with register `0861=0x0800` is an ACK-sensitive retained-session/retry state; semantics remain OPEN.
+- Exact all-zero `085F/5` is also an ACK-gated retained-session stage in the tested recovery path.
+- `0864/4`, `0870/17` and `0884/60` each accept the standard FC16 address/count ACK and can advance the local controller to another known runtime stage.
+- `0884/60` can occur directly after the all-zero `085F` stage; neither `0864` nor `0870` is mandatory before it.
+- `0884` payload values are runtime data and can change between repeated frames while start/count remain the same.
+- Controller retained state can survive ESP reboot/OTA; ESP restart is not a rollback mechanism.
+
+## Strongest current hypotheses
+
+- The controller applies a liveness/watchdog model to the DCM session: isolated ACKs can temporarily progress or clear an alarm state, but sustained service of the scheduler is needed for durable Online/Link health.
+- `0708` is a synchronization/mailbox descriptor whose immediate response may be optional for short FC16 scheduler progression but may still matter to durable session liveness or reverse-page signaling.
+- Retained recovery can likely be converted into full steady-state service by joining the proven recovery branch back into the already proven EXP296/297 runtime responder at `07D0` or another recognized runtime node.
+
+## Important unknowns
+
+- Exact semantic meaning of `0861=0x0800`.
+- Exact liveness/watchdog interval and minimum set of runtime events that must be serviced.
+- Whether full branch-aware retained recovery can return to and sustain the EXP296/297 steady-state runtime without a controller reboot.
+- Exact `0708` latching/scheduling semantics and whether/when a response is required for long-term health.
+- Exact semantics of runtime pages `0864`, `0870`, `0884` and the dynamic `0884` payload fields.
+- Runtime `04A6/13` semantics and native ACK policy.
+- Genuine `071C/0730` challenge-response algorithm.
+- Multi-hour/overnight stability and rare/fault-state behavior.
+
+## Next experiment candidate — EXP313
+
+**EXP313 — NOT YET PREPARED / NOT RUN.**
+
+Highest-value next hypothesis: after branch-aware retained-session recovery reaches a known normal runtime node such as `07D0/19`, hand over to the already locally proven EXP296/297 steady-state runtime responder and determine whether the session remains healthy for multiple complete cycles without a Thermia-controller reboot.
+
+This should introduce no new register target or semantic write. The new variable is sustained hand-off from retained recovery into the proven full runtime service. Runtime `04A6/13` should remain capture-only unless explicitly separated into its own later experiment.
+
+## Safety constraints
+
+- Exact slave/function/start/count/bytecount/CRC and state guards remain mandatory.
+- Do not treat ESP reboot/OTA as controller-state rollback.
+- Do not broad-ACK unknown FC16 traffic.
+- `0834/18` remains unsupported/capture-only.
+- Runtime `04A6/13` remains capture-only unless a dedicated experiment explicitly changes that.
+- No semantic settings write is part of retained-recovery testing.
+- Unexpected relevant `0x0F` traffic remains capture-only/fail-closed unless it is a predeclared locally proven branch.
+- Recovery after an unexpected retained-state transition is TX-off/passive observation; a normal controller reboot remains the known way to force a fresh session when required.
+
+---
+
 # 2026-09-29 — EXP297 COMPLETE / POSITIVE — controller-reboot recovery locally proven; EXP298 PREPARED / NOT RUN
 
 **Authoritative current state:** EXP297 COMPLETE / POSITIVE from supplied local log. EXP298 is PREPARED / NOT RUN.
