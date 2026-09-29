@@ -1,3 +1,111 @@
+# 2026-09-29 — EXP296 COMPLETE / POSITIVE — operational state-transition runtime now survives SG changes and DHW/compressor start
+
+**Authoritative current state:** EXP296 COMPLETE / POSITIVE by explicit user confirmation. No EXP297 is prepared or run.
+
+## Last completed experiment — EXP296
+**Hypothesis:** after EXP295 locally observed `080C/18 -> direct 0820/18`, permit exactly that additional runtime branch while preserving all previously proven branches. Runtime `04A6/13` remains capture-only / NO_TX.
+
+### Controlled change from EXP295
+Only one active protocol transition was added:
+- after valid `080C/18` ACK, accept either `FC03 0708/6` or direct `FC16 0820/18`;
+- direct `0820/18` receives the same already-proven standard address/count ACK;
+- no semantic writes;
+- no new ACK for runtime `04A6/13`;
+- all other runtime/session handling unchanged.
+
+## EXP296 observed result
+The session established normally through approval, the complete 32-page FC16 configuration sync, startup `085F/5`, startup `0708/6`, and first runtime `07D0/19`.
+
+The new branch was exercised repeatedly:
+- `080C -> direct 0820` was accepted **11 times** in the supplied capture;
+- previously added `0884 -> direct 07D0` and `07E4 -> direct 07F8` branches also repeated successfully;
+- the capture reached at least 16 completed runtime cycles and 159 serviced runtime events;
+- the active steady-state window reached ~329.8 s;
+- no `ABORT_FAIL_CLOSED` occurred in the supplied capture;
+- RX buffer drops remained 0;
+- the only parser resync count was the pre-session/controller-BUS_RETURN resync already present when the experimental baseline was established.
+
+Operational changes were survived while the Online/DCM emulator remained active:
+- user-reported sequence included **SG Blocked -> Normal -> Enhanced -> Normal**;
+- the log explicitly records Normal -> Enhanced -> Normal;
+- controller context changed to `A80C=0041`, decoded by the current local decoder as **DHW / high temperature**;
+- compressor then started and `DHW Active` became ON while the emulator continued to service the runtime loop.
+
+Runtime `04A6/13` remained deliberately unanswered:
+- it repeated 225 times by the end of the supplied capture;
+- its payload changed twice;
+- one payload change coincided with entry into the DHW/high-temperature context and another with the later return;
+- despite no runtime `04A6` ACK, the runtime loop continued through multiple cycles and state changes.
+
+The original EXP296 run plan asked for five minutes after the first direct post-080C branch. The supplied capture contains ~235 s after that first target marker rather than a literal five minutes. The user nevertheless explicitly confirmed the experiment as **COMPLETE / POSITIVE** based on repeated target-branch exercise and successful operational transitions. Preserve that distinction in the historical record.
+
+## Immediately preceding experiments
+### EXP295 — COMPLETE / INCONCLUSIVE overall; target branch POSITIVE
+Added only `07E4 -> direct 07F8`. That branch was accepted successfully, then the controller produced `080C -> direct 0820` without the previously expected `0708`, causing intentional fail-closed termination. This established the next conditional mailbox position.
+
+### EXP294 — COMPLETE / INCONCLUSIVE overall; target branch POSITIVE
+Added only `0884 -> direct 07D0`. That branch was accepted successfully, then a later `07E4 -> direct 07F8` transition caused intentional fail-closed termination. Runtime `04A6/13` remained capture-only.
+
+### EXP293 — COMPLETE / POSITIVE for stable steady-state scope
+Continuous known-branch servicing ran for roughly 30 minutes with no user-visible `COMM. ERR ONLINE/LINK`; the user explicitly confirmed no alarm during that steady-state run. Later operation-state-transition evidence showed that this did not establish robustness across all state changes.
+
+### EXP292 — COMPLETE / POSITIVE
+Added the locally/genuinely supported optional post-`0870` `0708` branch. Continuous service ran 256.276 s with 12 cycles, 169 runtime events, 204 TX, 0 unexpected events and clean parser/drop deltas. TX was then deliberately stopped; the user reported the Online/Link error appeared shortly afterwards.
+
+### EXP291 — COMPLETE / INCONCLUSIVE
+A strict continuity run exposed a valid post-`0870` `FC03 0708/6` branch that the then-current handler did not allow. It failed closed; this was a state-machine incompleteness, not proof of protocol rejection.
+
+## Current protocol model
+The runtime is best modeled as an **event/state-driven graph**, not one rigid fixed sequence.
+
+Current locally supported core cycle:
+
+`07D0 -> 07E4 -> [optional 0708] -> 07F8 -> 080C -> [optional 0708] -> 0820 -> 0848 -> [conditional 0708 / conditional 085F] -> 0864 -> [optional 0708] -> 0870 -> [optional 0708] -> 0884 -> [optional 0708] -> 07D0 -> ...`
+
+Important nuance:
+- the exact placement/presence of `0708` is state-dependent at several points;
+- `085F` is conditional in steady runtime, although exact `085F` remains an ordered gate when it appears in specific phases;
+- runtime `04A6/13` can coexist with the loop as parallel/retry traffic and was not required for short-term progression in EXP296.
+
+## Locally proven findings
+- Full initial configuration synchronization through `06F4` is reproducible.
+- Fixed historical R1 replay remains sufficient to enter the tested startup/runtime path; the genuine challenge algorithm remains unresolved.
+- The native reverse-page write path is locally demonstrated through semantic application of `03F4 22 -> 23`.
+- Continuous Online/DCM runtime can remain healthy for ~30 minutes in stable state (EXP293).
+- `0884 -> [optional 0708] -> 07D0` is locally confirmed.
+- `07E4 -> [optional 0708] -> 07F8` is locally confirmed.
+- `080C -> [optional 0708] -> 0820` is locally confirmed.
+- EXP296 survived multiple operation-state changes including SG changes, entry into DHW/high-temperature context and compressor start without fail-closed termination in the supplied capture.
+
+## Strongest current hypotheses
+- `0708` is a synchronization/mailbox descriptor whose polls can be omitted at multiple runtime positions depending on pending controller/gateway work.
+- Runtime `04A6/13` is state-dependent parallel page/export traffic. Its payload tracks at least some operational-context changes, but exact field semantics and whether/when native DCM must ACK it remain unknown.
+- The runtime should be implemented as a small set of evidence-backed permitted transitions rather than a fixed script.
+
+## Important unknowns
+- Exact semantics of runtime `04A6/13` and whether acknowledging it is required for long-term/native-equivalent behavior.
+- Exact semantics of `0708` words 0, 4 and 5 and the precise scheduling/latching rules.
+- Authoritative FC16 echo timing/conditions after a reverse semantic write.
+- Genuine `071C/0730` challenge-response algorithm.
+- Long-duration stability across many hours, rare operation states, faults and re-synchronization.
+- Automatic recovery behavior after Thermia or ESP reboot while the emulator is already deployed.
+
+## Next experiment
+**EXP297 — NOT PREPARED / NOT RUN.**
+
+No active change is currently authorized. A safe high-value candidate is an unchanged long soak using the EXP296 protocol graph across natural heating/cooling/DHW/compressor transitions, with runtime `04A6` still capture-only. A separate later experiment may test an evidence-bounded runtime `04A6` ACK, but it should not be mixed into the soak.
+
+## Safety constraints
+- Continue strict CRC/slave/function/address/count/bytecount validation.
+- Allow only locally or genuinely evidenced runtime branches.
+- Unexpected traffic remains capture-only/fail-closed unless explicitly included in the experiment.
+- Runtime `04A6` remains NO_TX until a dedicated experiment explicitly changes that.
+- No semantic setting write in continuity/state-transition tests.
+- Preserve same-session page-cache and bounded guards for any future reverse semantic write.
+- Standard FC16 address/count ACKs remain explicit experimental actions even though they do not inject payload values.
+
+---
+
 # 2026-09-29 — EXP290 COMPLETE / POSITIVE — first locally applied native reverse-page setting change
 
 **Authoritative current state:** EXP290 COMPLETE / POSITIVE for semantic application of one controlled setting change through the native Online/DCM reverse-page path. Authoritative FC16 echo confirmation is still OPEN. No EXP291 result exists; EXP291 is not yet prepared/run in canonical state.
