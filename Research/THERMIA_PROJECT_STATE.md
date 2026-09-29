@@ -1,108 +1,109 @@
-# 2026-09-29 — EXP296 COMPLETE / POSITIVE — operational state-transition runtime now survives SG changes and DHW/compressor start
+# 2026-09-29 — EXP297 COMPLETE / POSITIVE — controller-reboot recovery locally proven; EXP298 PREPARED / NOT RUN
 
-**Authoritative current state:** EXP296 COMPLETE / POSITIVE by explicit user confirmation. No EXP297 is prepared or run.
+**Authoritative current state:** EXP297 COMPLETE / POSITIVE from supplied local log. EXP298 is PREPARED / NOT RUN.
 
-## Last completed experiment — EXP296
-**Hypothesis:** after EXP295 locally observed `080C/18 -> direct 0820/18`, permit exactly that additional runtime branch while preserving all previously proven branches. Runtime `04A6/13` remains capture-only / NO_TX.
+## Last completed experiment — EXP297
+**Hypothesis:** while the EXP296/297 Online/DCM emulator is actively servicing runtime, a reboot of the Thermia controller can be detected and the emulator can rebuild a fresh native session without rebooting or re-arming the ESP.
 
-### Controlled change from EXP295
-Only one active protocol transition was added:
-- after valid `080C/18` ACK, accept either `FC03 0708/6` or direct `FC16 0820/18`;
-- direct `0820/18` receives the same already-proven standard address/count ACK;
-- no semantic writes;
-- no new ACK for runtime `04A6/13`;
-- all other runtime/session handling unchanged.
+### Controlled change from EXP296
+No new Modbus payload, register, FC16 ACK target or semantic write was introduced.
 
-## EXP296 observed result
-The session established normally through approval, the complete 32-page FC16 configuration sync, startup `085F/5`, startup `0708/6`, and first runtime `07D0/19`.
+EXP297 added only controller-reboot recovery state handling:
+- detect a >=5 s bus gap while in active runtime;
+- clear session-local runtime/config/approval state;
+- wait for a fresh exact `071C/0730` approval request;
+- reuse the already-proven fixed historical R1 replay;
+- rerun the existing 32-page configuration sync, startup `085F/5`, startup `0708/6` and proven runtime graph;
+- runtime `04A6/13` remained capture-only / NO_TX.
 
-The new branch was exercised repeatedly:
-- `080C -> direct 0820` was accepted **11 times** in the supplied capture;
-- previously added `0884 -> direct 07D0` and `07E4 -> direct 07F8` branches also repeated successfully;
-- the capture reached at least 16 completed runtime cycles and 159 serviced runtime events;
-- the active steady-state window reached ~329.8 s;
-- no `ABORT_FAIL_CLOSED` occurred in the supplied capture;
-- RX buffer drops remained 0;
-- the only parser resync count was the pre-session/controller-BUS_RETURN resync already present when the experimental baseline was established.
+### EXP297 observed result
+Before the target reboot the emulator had entered normal runtime and completed five cycles.
 
-Operational changes were survived while the Online/DCM emulator remained active:
-- user-reported sequence included **SG Blocked -> Normal -> Enhanced -> Normal**;
-- the log explicitly records Normal -> Enhanced -> Normal;
-- controller context changed to `A80C=0041`, decoded by the current local decoder as **DHW / high temperature**;
-- compressor then started and `DHW Active` became ON while the emulator continued to service the runtime loop.
+During the target controller reboot:
+- a ~14.796 s bus gap was observed;
+- EXP297 emitted `CONTROLLER_REBOOT_RECOVERY_START`;
+- runtime mask/cache/session-local state were reset;
+- bus health returned without ESP reboot or re-arm.
 
-Runtime `04A6/13` remained deliberately unanswered:
-- it repeated 225 times by the end of the supplied capture;
-- its payload changed twice;
-- one payload change coincided with entry into the DHW/high-temperature context and another with the later return;
-- despite no runtime `04A6` ACK, the runtime loop continued through multiple cycles and state changes.
+After bus return:
+- a fresh `071C/0730` challenge was received;
+- the fixed historical R1 replay was sent;
+- the complete ordered 32-page FC16 configuration sync completed again;
+- startup all-zero `085F/5` was ACKed;
+- startup `0708/6` was answered;
+- runtime re-entered at `07D0/19`;
+- the supplied capture continued through runtime cycles 6, 7 and 8.
 
-The original EXP296 run plan asked for five minutes after the first direct post-080C branch. The supplied capture contains ~235 s after that first target marker rather than a literal five minutes. The user nevertheless explicitly confirmed the experiment as **COMPLETE / POSITIVE** based on repeated target-branch exercise and successful operational transitions. Preserve that distinction in the historical record.
+Transport integrity stayed clean in the supplied capture:
+- no `ABORT_FAIL_CLOSED`;
+- parser resync count remained 0;
+- RX buffer drops remained 0.
 
-## Immediately preceding experiments
-### EXP295 — COMPLETE / INCONCLUSIVE overall; target branch POSITIVE
-Added only `07E4 -> direct 07F8`. That branch was accepted successfully, then the controller produced `080C -> direct 0820` without the previously expected `0708`, causing intentional fail-closed termination. This established the next conditional mailbox position.
+**Result:** **COMPLETE / POSITIVE.**
 
-### EXP294 — COMPLETE / INCONCLUSIVE overall; target branch POSITIVE
-Added only `0884 -> direct 07D0`. That branch was accepted successfully, then a later `07E4 -> direct 07F8` transition caused intentional fail-closed termination. Runtime `04A6/13` remained capture-only.
+## EXP296 supplementary evidence
+A later, longer EXP296 capture materially strengthens the original positive result:
+- steady-state service exceeded ~32 minutes;
+- a nearly complete SWW cycle was observed, including DHW active, temperature rise, DHW end and compressor stop;
+- a later SG transition to **Blocked (1-0)** was also survived;
+- runtime `04A6/13` remained NO_TX and reached at least 1696 captures;
+- `04A6` payload-change count reached 3;
+- a new payload form beginning `0042 0001 ...` appeared shortly after the Blocked transition;
+- the emulator continued through the proven runtime graph without fail-close.
 
-### EXP293 — COMPLETE / POSITIVE for stable steady-state scope
-Continuous known-branch servicing ran for roughly 30 minutes with no user-visible `COMM. ERR ONLINE/LINK`; the user explicitly confirmed no alarm during that steady-state run. Later operation-state-transition evidence showed that this did not establish robustness across all state changes.
-
-### EXP292 — COMPLETE / POSITIVE
-Added the locally/genuinely supported optional post-`0870` `0708` branch. Continuous service ran 256.276 s with 12 cycles, 169 runtime events, 204 TX, 0 unexpected events and clean parser/drop deltas. TX was then deliberately stopped; the user reported the Online/Link error appeared shortly afterwards.
-
-### EXP291 — COMPLETE / INCONCLUSIVE
-A strict continuity run exposed a valid post-`0870` `FC03 0708/6` branch that the then-current handler did not allow. It failed closed; this was a state-machine incompleteness, not proof of protocol rejection.
+This strengthens, but does not fully identify, the hypothesis that runtime `04A6/13` is a state-dependent controller-to-DCM status/configuration export.
 
 ## Current protocol model
-The runtime is best modeled as an **event/state-driven graph**, not one rigid fixed sequence.
-
-Current locally supported core cycle:
+The runtime remains best modeled as an **event/state-driven graph**:
 
 `07D0 -> 07E4 -> [optional 0708] -> 07F8 -> 080C -> [optional 0708] -> 0820 -> 0848 -> [conditional 0708 / conditional 085F] -> 0864 -> [optional 0708] -> 0870 -> [optional 0708] -> 0884 -> [optional 0708] -> 07D0 -> ...`
 
-Important nuance:
-- the exact placement/presence of `0708` is state-dependent at several points;
-- `085F` is conditional in steady runtime, although exact `085F` remains an ordered gate when it appears in specific phases;
-- runtime `04A6/13` can coexist with the loop as parallel/retry traffic and was not required for short-term progression in EXP296.
+Runtime `04A6/13` may interleave as parallel/retry traffic and is not an immediate blocking gate in the tested local window.
 
 ## Locally proven findings
 - Full initial configuration synchronization through `06F4` is reproducible.
-- Fixed historical R1 replay remains sufficient to enter the tested startup/runtime path; the genuine challenge algorithm remains unresolved.
-- The native reverse-page write path is locally demonstrated through semantic application of `03F4 22 -> 23`.
-- Continuous Online/DCM runtime can remain healthy for ~30 minutes in stable state (EXP293).
+- Fixed historical R1 replay is sufficient to enter the tested startup/runtime path; genuine challenge algorithm remains unresolved.
+- The native reverse-page write path is locally demonstrated via `03F4 22 -> 23`.
+- Continuous stable runtime has been demonstrated for ~30+ minutes.
 - `0884 -> [optional 0708] -> 07D0` is locally confirmed.
 - `07E4 -> [optional 0708] -> 07F8` is locally confirmed.
 - `080C -> [optional 0708] -> 0820` is locally confirmed.
-- EXP296 survived multiple operation-state changes including SG changes, entry into DHW/high-temperature context and compressor start without fail-closed termination in the supplied capture.
+- Runtime survives SG changes, a full DHW/compressor cycle, and a later Blocked transition in the observed EXP296 window.
+- **Controller-side reboot recovery is locally proven:** after an active-session controller reboot, the emulator can accept a fresh challenge, replay R1, repeat the complete startup sync and resume runtime without ESP reboot/re-arm.
 
 ## Strongest current hypotheses
-- `0708` is a synchronization/mailbox descriptor whose polls can be omitted at multiple runtime positions depending on pending controller/gateway work.
-- Runtime `04A6/13` is state-dependent parallel page/export traffic. Its payload tracks at least some operational-context changes, but exact field semantics and whether/when native DCM must ACK it remain unknown.
-- The runtime should be implemented as a small set of evidence-backed permitted transitions rather than a fixed script.
+- `0708` is a synchronization/mailbox descriptor with state-dependent omission at several runtime positions.
+- Runtime `04A6/13` is a state-dependent page/export whose first words track at least some operating-context changes; exact field semantics remain unknown.
+- A native DCM may ACK runtime `04A6` selectively to stop/reconcile retries, but local proof is still absent.
 
 ## Important unknowns
-- Exact semantics of runtime `04A6/13` and whether acknowledging it is required for long-term/native-equivalent behavior.
-- Exact semantics of `0708` words 0, 4 and 5 and the precise scheduling/latching rules.
-- Authoritative FC16 echo timing/conditions after a reverse semantic write.
+- Whether an **ESP-side restart** can recover while the Thermia controller remains powered and is not manually rebooted.
+- Exact runtime `04A6/13` semantics and native ACK rule.
+- Exact `0708` scheduling/latching semantics.
 - Genuine `071C/0730` challenge-response algorithm.
-- Long-duration stability across many hours, rare operation states, faults and re-synchronization.
-- Automatic recovery behavior after Thermia or ESP reboot while the emulator is already deployed.
+- Authoritative FC16 echo timing after reverse semantic writes.
+- Multi-hour/overnight stability and rare fault-state behavior.
 
-## Next experiment
-**EXP297 — NOT PREPARED / NOT RUN.**
+## Next experiment — EXP298
+**EXP298 — ESP-reboot recovery — PREPARED / NOT RUN.**
 
-No active change is currently authorized. A safe high-value candidate is an unchanged long soak using the EXP296 protocol graph across natural heating/cooling/DHW/compressor transitions, with runtime `04A6` still capture-only. A separate later experiment may test an evidence-bounded runtime `04A6` ACK, but it should not be mixed into the soak.
+Hypothesis: after the DCM emulator/ESP disappears and restarts while the Thermia controller remains powered, the controller will eventually present a fresh exact `071C/0730` approval opportunity that lets the emulator rebuild the same proven session without requiring a Thermia-controller reboot.
+
+Controlled change:
+- controller is deliberately **not** rebooted;
+- after the ESP returns, EXP298 is armed directly into passive approval-wait on the live bus;
+- no TX occurs until an exact `071C/0730` request is observed;
+- approval wait is bounded to 240 s;
+- if approval occurs, all subsequent R1/config/startup/runtime behavior is unchanged from EXP297.
 
 ## Safety constraints
-- Continue strict CRC/slave/function/address/count/bytecount validation.
-- Allow only locally or genuinely evidenced runtime branches.
-- Unexpected traffic remains capture-only/fail-closed unless explicitly included in the experiment.
-- Runtime `04A6` remains NO_TX until a dedicated experiment explicitly changes that.
-- No semantic setting write in continuity/state-transition tests.
-- Preserve same-session page-cache and bounded guards for any future reverse semantic write.
-- Standard FC16 address/count ACKs remain explicit experimental actions even though they do not inject payload values.
+- Do not reboot the Thermia controller during the target EXP298 observation.
+- No semantic write.
+- Runtime `04A6/13` remains NO_TX.
+- No broad ACKing or scan.
+- Exact CRC/slave/function/address/count/bytecount guards remain required.
+- Unexpected traffic stays capture-only unless already part of the proven graph.
+- On failure, abort TX and recover with the known-good stable emulator plus one normal controller reboot.
 
 ---
 
