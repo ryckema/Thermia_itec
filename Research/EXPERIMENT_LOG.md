@@ -1,3 +1,40 @@
+# EXP297 — COMPLETE / POSITIVE — active controller reboot recovered without ESP reboot/re-arm
+
+**Date:** 2026-09-29
+
+**Hypothesis:** after normal runtime has been established, reboot only the Thermia controller while leaving the ESP/DCM emulator active. The emulator should detect the bus interruption, reset only session-local state, accept a fresh approval exchange, rerun startup synchronization and return to runtime without manual re-arm.
+
+**Baseline:** EXP296 COMPLETE / POSITIVE.
+
+**Controlled change from EXP296:**
+- no new Modbus payload or register;
+- no new FC16 ACK target;
+- no semantic write;
+- runtime `04A6/13` remains capture-only / NO_TX;
+- add only controller-reboot recovery state handling after a >=5 s bus gap during active runtime.
+
+**Observed:**
+- normal startup/runtime completed before the target reboot, reaching runtime cycle 5;
+- target controller reboot produced a ~14.796 s bus gap;
+- EXP297 emitted `CONTROLLER_REBOOT_RECOVERY_START` and cleared the current runtime/config/cache state;
+- bus returned while the ESP remained online;
+- a fresh exact `071C/0730` challenge arrived;
+- the same fixed historical R1 replay was transmitted;
+- all 32 configuration pages were again received and ACKed in order;
+- startup all-zero `085F/5` was ACKed;
+- startup `0708/6` was answered;
+- runtime re-entered at `07D0/19`;
+- the capture then completed cycles 6, 7 and 8;
+- no `ABORT_FAIL_CLOSED`;
+- parser resyncs remained 0;
+- RX buffer drops remained 0.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+**Strong conclusion:** on this XTR M, the current DCM emulator can recover from a Thermia-controller reboot and establish a fresh native session without rebooting or manually re-arming the ESP. The fixed historical R1 replay also remained accepted for the fresh post-reboot challenge.
+
+---
+
 # EXP296 — COMPLETE / POSITIVE — direct post-080C 0820 branch survives real operation-state changes
 
 **Date:** 2026-09-29
@@ -36,6 +73,17 @@ Runtime `04A6/13` remained unanswered throughout:
 - payload-change count reached **2**;
 - one change coincided with entry into the DHW/high-temperature context and a later change with return from that context;
 - normal runtime progression continued while these frames were ignored.
+
+**Supplementary later EXP296 capture (same experiment, later evidence):**
+- steady-state service exceeded ~32 minutes;
+- a near-complete SWW cycle was observed through DHW active, temperature rise, DHW end and compressor stop;
+- a later `SG Mode = Blocked (1-0)` transition was survived;
+- runtime `04A6/13` remained NO_TX and reached at least 1696 captures;
+- its payload-change counter reached 3;
+- shortly after the Blocked transition, `04A6` changed to a form beginning `0042 0001 ...`;
+- runtime continued through the proven graph without fail-close, parser-resync growth or RX drops.
+
+This supplementary evidence strengthens the state-dependent `04A6` hypothesis but does not prove that `0042` uniquely means SG Blocked.
 
 **Run-criterion note:** the original plan requested five minutes after the first direct post-080C marker. The supplied capture contains about 235 s after the first marker, not a literal five minutes. The user explicitly confirmed EXP296 as **COMPLETE / POSITIVE** after reviewing that the target branch repeated many times and multiple operation-state changes were survived.
 
