@@ -1,3 +1,64 @@
+# 2026-09-29 — XTR runtime gates locally proven through post-07E4 mailbox poll
+
+## PROVEN / locally confirmed — ordered runtime progression
+EXP270–272 now locally establish the following XTR M session/runtime path:
+
+`... -> 06F4/19 ACK -> 085F/5 all-zero ACK -> early 0708/6 service -> 07D0/19 ACK -> 07E4/17 ACK -> post-07E4 FC03 0708/6`.
+
+Specific causal results:
+- **EXP270:** adding one exact ACK of all-zero `085F/count5` while keeping the same early `0080/0006` mailbox response caused first `07D0/count19` to appear.
+- **EXP271:** adding one exact `07D0/count19` ACK caused `07E4/count17` 2159 ms later.
+- **EXP272:** adding one exact `07E4/count17` ACK caused the next `FC03 0708/count6` 1457 ms later.
+
+These are ordered-stage findings. They do not authorize address-only or broad runtime ACKing outside the proven phase.
+
+## STRONGLY SUPPORTED — 0708 word2/word3 form a 32-bit FC16 page-request bitmap
+Cross-capture analysis of genuine gateway traffic shows that `0708/count6` words 2 and 3 predict which controller->gateway FC16 pages are emitted next.
+
+The mapping supported by sparse and dense bitmap examples is:
+
+- `word3` bit0..bit15:
+  `03E8, 03FC, 0410, 042E, 0442, 0456, 046A, 047E, 0492, 04A6, 04BA, 04D8, 04F6, 050A, 051E, 0532`.
+- `word2` bit0..bit15:
+  `0546, 055A, 057B, 059C, 05BD, 05DE, 05FF, 0620, 0641, 0662, 0683, 06A4, 06C5, 06EA, 06F1, 06F4`.
+
+Examples:
+- `word2=4000, word3=8000` is followed by `06F1` and `0532` (plus separate runtime traffic).
+- `word2=FF80` selects the contiguous tail `0620 .. 06F4`.
+- `word2=E000` selects exactly `06EA, 06F1, 06F4`.
+- `word2=8000` selects `06F4`.
+- `word2=7FFF, word3=FFFF` selects all early pages plus the tail through `06F1`, excluding `06F4`.
+
+Interpretation: 0708 is a synchronization descriptor/mailbox, not merely an idle status frame. The exact vendor naming of the bitmap (dirty/requested/stale/subscription/etc.) remains unknown.
+
+## STRONGLY SUPPORTED — reverse-direction page pull
+In genuine DCM capture data, `0708 word1=0001` is followed ~39–41 ms later by controller `FC03 03E8/count13`, after which the gateway returns the full heating/settings image. Other nearby 0708 responses with word1=0 do not trigger that read.
+
+This supports a bidirectional page-cache model:
+- controller -> gateway current/authoritative pages: FC16 push;
+- gateway -> controller desired/config pages: gateway advertises pending state through 0708, controller pulls the page with FC03.
+
+Exact semantic application and authoritative echo are not yet locally proven.
+
+## HYPOTHESIS — 0708 word4 is a runtime-page bitmap
+A candidate bit mapping fits the observed runtime family:
+
+`bit0=07D0, bit1=07E4, bit2=07F8, bit3=080C, bit4=0820, bit5=0834, bit6=0848, bit7=085F, bit8=0864, bit9=0870, bit10=0884`.
+
+Supporting examples include `word4=077F` accompanying the full steady runtime cycle except 085F, `word4=0080` aligning with 085F, and `word4=010B` including bit8 with 0864 appearing. This remains **HYPOTHESIS**, because local one-bit causal tests have not been performed and scheduler interleaving can obscure direct ordering.
+
+## OPEN / UNKNOWN
+- exact semantics of 0708 word0, word4 and word5;
+- exact vendor meaning of the word2/word3 bitmap;
+- correct local response payload for the proven post-07E4 0708 request;
+- whether one phase-matched post-07E4 response `0000 0000 0000 0000 0000 0006` advances the XTR to `07F8/count17`;
+- genuine 071C/0730 challenge-response algorithm.
+
+## Next bounded protocol test
+EXP273 should preserve the entire EXP272 path and change only the post-07E4 mailbox response: answer that exact `FC03 0708/count6` once with raw `0F030C0000000000000000000000069D76` (words `0000 0000 0000 0000 0000 0006`), then capture exact `07F8/count17` without ACK. No broad runtime servicing and no semantic settings write.
+
+---
+
 # 2026-09-29 — XTR locally proves 085F as ordered gate to runtime
 
 EXP270 provides the first active XTR proof of the transition from the initial 0x0F configuration synchronization into the runtime-page family.
