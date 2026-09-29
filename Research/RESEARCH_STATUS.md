@@ -1,5 +1,39 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-29 — EXP296 COMPLETE / POSITIVE
+
+- Last completed experiment: **EXP296 — COMPLETE / POSITIVE** by explicit user confirmation.
+- Current prepared experiment: **none**. **EXP297 is NOT PREPARED / NOT RUN**.
+- EXP296 preserved the EXP295 runtime graph and added only one new active branch: after `080C/18` ACK, allow either the existing `0708/6` mailbox path or direct `0820/18`.
+- The new direct branch was exercised repeatedly: `DIRECT_POST_080C_0820_ACCEPTED` reached **11** in the supplied capture.
+- Previously added transition branches also repeated successfully: direct post-`0884` `07D0` reached **11**, and direct post-`07E4` `07F8` reached **12**.
+- Runtime reached at least **16 cycles**, **159 serviced runtime events**, and ~**329.8 s** steady-state service age with no `ABORT_FAIL_CLOSED` in the supplied capture.
+- RX buffer drops remained **0**. The parser-resync count stayed at the single controller-BUS_RETURN resync established before steady-state.
+- The run survived multiple real operation-state changes:
+  - user-reported SG progression **Blocked -> Normal -> Enhanced -> Normal**;
+  - the log explicitly records **Normal -> Enhanced -> Normal**;
+  - controller context changed to `A80C=0041`, decoded by the current local decoder as **DHW / high temperature**;
+  - the compressor started and `DHW Active` became ON while the Online/DCM emulator kept running.
+- Runtime `04A6/13` deliberately remained **capture-only / NO_TX**. It repeated **225** times in the capture and its payload changed twice, including a change coincident with entry into the DHW/high-temperature context.
+- Despite leaving runtime `04A6/13` unacknowledged, the main runtime loop continued through multiple cycles and state changes. This disproves the idea that `04A6` must be immediately ACKed for short-term runtime progression, but does **not** prove it is irrelevant for native-equivalent or long-duration behavior.
+- The runtime model is now best treated as an **event/state-driven transition graph**, not one rigid fixed sequence.
+
+Current locally supported core graph:
+
+`07D0 -> 07E4 -> [optional 0708] -> 07F8 -> 080C -> [optional 0708] -> 0820 -> 0848 -> [conditional 0708 / conditional 085F] -> 0864 -> [optional 0708] -> 0870 -> [optional 0708] -> 0884 -> [optional 0708] -> 07D0 -> ...`
+
+- **PROVEN locally:** `0884 -> [optional 0708] -> 07D0`.
+- **PROVEN locally:** `07E4 -> [optional 0708] -> 07F8`.
+- **PROVEN locally:** `080C -> [optional 0708] -> 0820`.
+- **OPEN:** runtime `04A6/13` semantics and whether/when a native DCM ACK is required.
+- **OPEN:** long-duration stability across rare states, faults, re-sync, controller reboot and ESP restart.
+- **OPEN:** genuine `071C/0730` challenge-response algorithm.
+- **Next safe candidate:** an unchanged EXP296 long soak across natural heating/cooling/DHW/compressor transitions, with runtime `04A6` still capture-only. Do not mix a new `04A6` ACK into that soak.
+
+Run-criterion note: the original EXP296 plan requested five minutes after the first direct post-`080C` marker. The supplied capture contains about 235 s after the first target marker rather than a literal five minutes. The user nevertheless explicitly confirmed **EXP296 COMPLETE / POSITIVE** after repeated target-branch exercise and successful operation-state transitions.
+
+---
+
 ## Current status — 2026-09-29 — EXP272 COMPLETE / EXP273 NEXT
 
 - Last completed experiment: **EXP272 — COMPLETE / POSITIVE**.
