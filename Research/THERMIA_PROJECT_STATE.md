@@ -1,3 +1,73 @@
+# 2026-09-29 — EXP286 COMPLETE / INCONCLUSIVE — steady-state runtime loop confirmed with conditional 085F branch
+
+**Authoritative current state:** EXP286 COMPLETE / INCONCLUSIVE. No next live experiment is currently prepared.
+
+## Last completed experiment — EXP286
+**Hypothesis:** after EXP285 proved that the runtime sequence loops back through `07D0 -> 07E4 -> 0708 -> 07F8` without a new approval/R1 exchange, continue the entire second runtime cycle using only already locally proven ACKs and 0708 responses, then capture the next returned `07D0/19` without ACK.
+
+### Controlled change from EXP285
+All first-cycle behaviour and the EXP285-proven start of cycle 2 were retained. The new active scope was only the continuation of cycle 2 using already locally proven actions:
+`07F8 ACK -> 080C ACK -> 0708 response -> 0820 ACK -> 0848 ACK -> 0708 response -> [expected 085F ACK] -> 0864 ACK -> 0708 response -> 0870 ACK -> 0884 ACK -> 0708 response -> returned 07D0 capture-only`.
+
+No new address, payload, or semantic write was introduced.
+
+## EXP286 observed result
+Cycle 2 reproduced cleanly through:
+`07F8 -> 080C -> 0708 -> 0820 -> 0848 -> 0708`.
+
+At that point the local controller did **not** emit `085F/5`; it emitted `0864/4` directly. The experiment had intentionally made `085F` a mandatory gate, so it stopped fail-closed with `LOOP2_085F_GATE_FAILED` and did not ACK the unexpected direct `0864`.
+
+Bus health remained clean: no RX-buffer drops and no parser resyncs during the relevant sequence.
+
+## Strong current protocol model
+The Online/DCM-style runtime loop is now locally established on the XTR M as:
+
+`07D0 -> 07E4 -> 0708 -> 07F8 -> 080C -> 0708 -> 0820 -> 0848 -> 0708 -> [085F optional/state-dependent] -> 0864 -> 0708 -> 0870 -> 0884 -> 0708 -> 07D0 -> ...`
+
+Key evidence:
+- EXP284 closed the first full loop: after `0884 ACK -> 0708 response`, `07D0/19` returned 571 ms later.
+- EXP285 proved steady-state continuation without a new approval/R1 exchange: returned `07D0` was ACKed, followed by `07E4`, `0708`, then `07F8`.
+- EXP286 showed that `085F` is not mandatory in every cycle: after cycle-2 `0848 -> 0708`, the controller went directly to `0864/4`.
+
+## Important correction to earlier interpretation
+EXP281 historically stopped as COMPLETE / INCONCLUSIVE because its hypothesis expected `0864 ACK -> 0870` directly, but it observed `FC03 0708/6` first. Later genuine-capture reanalysis showed that `0864 ACK -> 0708 -> 0870` is a valid native ordering. Preserve EXP281's historical result, but do not treat that 0708 as a protocol divergence.
+
+## Locally proven findings
+- Full initial configuration synchronization through `06F4` remains reproducible.
+- The fixed historical R1 replay is sufficient to reach the runtime family on this XTR, though genuine challenge-response semantics remain unresolved.
+- Standard FC16 ACKs for the observed runtime pages advance the controller without injecting controller payload values.
+- The local runtime cycle can close from `0884` back to `07D0`.
+- A second runtime cycle begins without another approval/R1 exchange.
+- `085F` can appear as an ordered gate, but is now proven **conditional/state-dependent**, not universally mandatory per cycle.
+
+## Important unknowns
+- Exact condition controlling presence/absence and payload role of `085F`.
+- Exact semantics of runtime pages `07D0..0884`.
+- Exact semantics of 0708 words 0, 4 and 5; word4 remains a runtime-bitmap hypothesis.
+- Exact native/genuine response-selection logic for different 0708 runtime states.
+- Genuine `071C/0730` challenge-response algorithm.
+- Whether long-running continuous emulation remains stable across controller state changes, heating/DHW transitions, alarms, and later re-synchronization events.
+- Reverse desired-state page application is still not locally proven and no semantic settings write has been authorized by these experiments.
+
+## Next experiment
+**Not assigned / NOT PREPARED.**
+
+Highest-value next live test, when work resumes, is to make the steady-state runtime handler explicitly accept the two locally/genuinely supported post-`0848 -> 0708` branches:
+1. `085F/5 -> ACK -> 0864/4`
+2. direct `0864/4`
+
+Then continue the already proven tail and verify another loop closure. This should remain a separate bounded experiment; do not silently promote it into production continuous emulation.
+
+## Safety constraints
+- Continue exact stage/order, count, bytecount, CRC and parser-health checks.
+- Treat unexpected traffic as capture-only unless explicitly included in the experiment hypothesis.
+- One-shot latches close before DE is raised; DE returns LOW immediately after permitted TX.
+- No broad register writes/scans and no speculative semantic values.
+- Standard FC16 address/count ACKs are acknowledgements, not value injection, but each new ACK stage remains an explicit active action.
+- Keep semantic desired-state/page-read tests separate from runtime-session continuity tests.
+
+---
+
 # 2026-09-29 — EXP272 COMPLETE / POSITIVE — runtime path proven through post-07E4 0708
 
 **Authoritative current state:** EXP272 COMPLETE / POSITIVE. EXP273 is NEXT / NOT YET PREPARED.
