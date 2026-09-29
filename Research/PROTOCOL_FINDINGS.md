@@ -1,3 +1,106 @@
+# 2026-09-29 — Runtime loop locally closed; 085F is conditional/state-dependent
+
+## PROVEN / locally confirmed — complete XTR M runtime loop
+EXP273–285 extend the locally proven Online/DCM-style runtime path into a closed, repeatable loop:
+
+`07D0 -> 07E4 -> 0708 -> 07F8 -> 080C -> 0708 -> 0820 -> 0848 -> 0708 -> [085F when present] -> 0864 -> 0708 -> 0870 -> 0884 -> 0708 -> 07D0`.
+
+Locally confirmed causal stages include:
+- post-`07E4` 0708 response `0F030C0000000000000000000000069D76` -> `07F8/17` (EXP273);
+- `07F8 ACK -> 080C/18` (EXP274);
+- `080C ACK -> 0708/6` (EXP275);
+- `0708 response -> 0820/18`, then `0820 ACK -> 0848/23` after the EXP276 software issue was fixed (EXP277);
+- `0848 ACK -> 0708/6` (EXP278);
+- post-`0848` 0708 response can lead to `085F/5` (EXP279);
+- `085F ACK -> 0864/4` in that observed branch (EXP280);
+- `0864 ACK -> 0708/6` (EXP281, later recognized as native ordering);
+- post-`0864` 0708 response -> `0870/17`, and `0870 ACK -> 0884/60` (EXP282/283 path);
+- `0884 ACK -> 0708/6` (EXP283);
+- post-`0884` 0708 response -> returned `07D0/19` (EXP284);
+- returned `07D0 ACK -> 07E4 ACK -> 0708 response -> 07F8` without a new approval/R1 exchange (EXP285).
+
+## PROVEN / locally confirmed — steady-state continuation without new approval
+EXP285 shows that after one complete runtime loop closes at `07D0`, the controller can immediately begin the next runtime cycle. No new `071C/0730` approval exchange occurred between loop closure and the second-cycle `07D0 -> 07E4 -> 0708 -> 07F8` progression.
+
+This is the strongest local evidence so far that the observed page family is a real steady-state runtime loop rather than a one-shot initialization tail.
+
+## PROVEN / locally confirmed — 085F is not mandatory in every runtime cycle
+EXP286 materially corrects the earlier interpretation that `085F/count5` is an invariant runtime gate.
+
+In the first observed branch, post-`0848` `0708` was followed by `085F/5`, whose ACK led to `0864/4`.
+
+In the second cycle of EXP286, the controller instead produced:
+`0848 ACK -> 0708 response -> 0864/4`
+with no intervening 085F.
+
+Current status:
+- **PROVEN:** 085F can be an ordered gate when present.
+- **PROVEN:** 085F is not present in every observed cycle.
+- **STRONGLY SUPPORTED:** 085F is conditional/state-dependent queue/runtime traffic.
+- **OPEN:** exact condition and semantics.
+
+This replaces the older blanket wording that 085F is always required before 0864/runtime continuation.
+
+## PROVEN / locally confirmed — 0884 shape and ACK
+Local `0884` frames have:
+- start `0x0884`;
+- count 60;
+- bytecount 120;
+- total Modbus frame length 129.
+
+The standard ACK `0F100884003C837F` was accepted locally and advanced to the next `0708/6`.
+
+The controller-originated 0884 payload itself varies with runtime state; the ACK confirms only address/count and does not inject those values.
+
+## DISPROVEN / SUPERSEDED — direct 0864 -> 0870 requirement
+EXP281 originally treated the post-`0864` `0708/6` as unexpected because the experiment expected direct `0870`.
+
+Later genuine-capture reanalysis showed native ordering can be:
+`0864 ACK -> 0708 request/response -> 0870`.
+
+Therefore:
+- preserve EXP281's historical COMPLETE / INCONCLUSIVE status;
+- the interpretation that post-0864 0708 is a divergence is **SUPERSEDED**.
+
+## STRONGLY SUPPORTED — runtime sequence has genuine-capture variability
+Different genuine Online/Eco5 captures and local cycles do not always place `085F` identically, and post-`0864` ordering can include an intervening `0708`.
+
+Do not encode a single rigid universal runtime sequence across all Thermia/Danfoss models or all controller states. Exact XTR handlers should allow only branches that have been explicitly predeclared from local or genuine evidence.
+
+## STRONGLY SUPPORTED — 0708 remains a synchronization descriptor, not a simple idle poll
+Current evidence supports multiple roles:
+- words 2/3: FC16 page-request/selection bitmap;
+- word1: strong candidate for reverse settings-page availability, based on genuine `0708 -> FC03 03E8` pulls;
+- word4: candidate runtime-page bitmap;
+- phase-dependent response values coordinate runtime page progression.
+
+The locally repeated response `0000 0000 0000 0000 0000 0006` is proven operationally in several runtime phases, but its exact semantic meaning remains unknown.
+
+## HYPOTHESIS — 0708 word4 runtime bitmap, refined by conditional 085F
+Candidate mapping remains:
+`bit0=07D0, bit1=07E4, bit2=07F8, bit3=080C, bit4=0820, bit5=0834, bit6=0848, bit7=085F, bit8=0864, bit9=0870, bit10=0884`.
+
+EXP286's direct `0848 -> 0708 -> 0864` branch is compatible with a state-dependent bit7/085F selection model, but does not prove exact bit semantics. Keep this as **HYPOTHESIS**.
+
+## OPEN / UNKNOWN
+- semantic meaning and condition for 085F;
+- semantics of runtime pages 07D0, 07E4, 07F8, 080C, 0820, 0848, 0864, 0870, 0884;
+- why local steady-state `0834` is absent in the observed branch although it appears in some genuine traces;
+- exact 0708 words 0, 4 and 5 semantics;
+- genuine `071C/0730` challenge-response algorithm;
+- whether fixed replay remains sufficient indefinitely across re-authentication/re-sync events;
+- reverse desired-state page application and authoritative echo on the XTR M;
+- long-term continuous emulation stability.
+
+## Current next step
+No new experiment is prepared. When testing resumes, the smallest useful continuation is a bounded steady-state handler that explicitly permits the two evidence-backed post-`0848 -> 0708` branches:
+1. `085F/5 -> ACK -> 0864/4`;
+2. direct `0864/4`.
+
+No semantic write should be mixed into that continuity experiment.
+
+---
+
 # 2026-09-29 — XTR runtime gates locally proven through post-07E4 mailbox poll
 
 ## PROVEN / locally confirmed — ordered runtime progression
