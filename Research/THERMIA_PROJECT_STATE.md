@@ -99,7 +99,7 @@ The proven R1 + FC16 chain through 06F4 remains unchanged. If `0708/6` occurs af
 
 Safety remains fail-closed: exact all-zero 085F shape only, one 085F ACK maximum, no broad writes/scans, parser/drop and peer-response guards retained. Experimental controls remain under Configuration with red/brown trace markers.
 
-**Authoritative current experiment: EXP270 PREPARED / NOT RUN.**
+**Historical state at that point: EXP270 PREPARED / NOT RUN.**
 
 ## 2026-09-28 — community HMAC-SHA256 serial-number hypothesis
 
