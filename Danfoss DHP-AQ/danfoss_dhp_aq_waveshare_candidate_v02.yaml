@@ -382,8 +382,9 @@ uart:
           };
 
           auto known_slave = [](uint8_t s) -> bool {
-            return s == 0x02 || s == 0x04 || s == 0x06 || s == 0x0A ||
-                   s == 0x0F || s == 0x14 || s == 0x1E ||
+            // DHP-AQ adds slave 0x05 to the public-v27 observed topology.
+            return s == 0x02 || s == 0x04 || s == 0x05 || s == 0x06 ||
+                   s == 0x0A || s == 0x0F || s == 0x14 || s == 0x1E ||
                    s == 0xA4 || s == 0xA5;
           };
 
