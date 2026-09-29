@@ -1,42 +1,315 @@
-# EXP298 — PREPARED / NOT RUN — ESP-side restart recovery with Thermia controller left powered
+# EXP312 — COMPLETE / POSITIVE — 0884 ACK advances retained session to 07D0
 
 **Date:** 2026-09-29
+
+**Hypothesis:** one standard FC16 address/count ACK to a qualified live `0884/60` retry stage advances the retained controller session to the next known runtime stage.
+
+**Baseline:** EXP311 COMPLETE / INCONCLUSIVE.
+
+**Exact controlled change from EXP311:** accept direct `0884/60` as a valid target branch even when neither `0864/4` nor `0870/17` has appeared. Keep all already proven prerequisite ACKs exact-shape gated. The only new active action is one human-gated ACK to `0884/60`: `0F 10 08 84 00 3C 83 7F`.
+
+**Observed:**
+- `085F(0800)` repeated twice and received one already-proven standard ACK.
+- The controller moved to all-zero `085F/5`; after qualification, one already-proven ACK was sent.
+- The runtime then went through `0708` and directly to repeated `0884/60`; `0864` and `0870` were absent.
+- `0884` qualified after repeated frames plus fresh `0708`.
+- After human arm, exactly one `0884/60` ACK was sent at ~01:36:30.415.
+- ~1.325 s later `0708/6` appeared and was intentionally left NO_TX.
+- ~1.947 s after the target ACK, known runtime `07D0/19` appeared.
+- No `0884` retry occurred before `07D0`.
+- Final result counters included `postRetry=0`, `post0708=1`, `postKnown=1`, resync=0, drops=0 and DE LOW.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+**Strong conclusion:** on this XTR M, a single standard ACK to a qualified live `0884/60` stage is sufficient under the tested retained-session conditions to advance through an unanswered `0708` to known runtime `07D0/19`.
+
+---
+
+# EXP311 — COMPLETE / INCONCLUSIVE — direct 0884 branch appears before 0870 prerequisite
+
+**Date:** 2026-09-29
+
+**Hypothesis:** after automatic service of already proven prerequisites through `0870`, a human-gated ACK to repeated `0884/60` should advance to the next runtime stage.
+
+**Baseline:** EXP310 COMPLETE / POSITIVE.
+
+**Controlled change:** `0870/17` became an automatic proven prerequisite; `0884/60` was the new human-gated target.
+
+**Observed:**
+- On one valid run, `085F(0800)` and all-zero `085F` prerequisites were ACKed as intended.
+- The controller then produced `0884/60` directly, with `0864 Seen=0` and `0870 Seen=0`.
+- The experiment failed closed because the state machine still required `0870` before accepting `0884`.
+- A later run reproduced the same direct `all-zero 085F ACK -> 0884/60` branch.
+- No experimental `0884` ACK was sent.
+
+**Result:** **COMPLETE / INCONCLUSIVE** for the target `0884` ACK hypothesis.
+
+**Strong passive finding:** `0884/60` can occur directly after the all-zero-`085F` stage without `0864` or `0870`. The runtime graph is more branch-like than the EXP311 state machine allowed.
+
+---
+
+# EXP310 — COMPLETE / POSITIVE — 0870 ACK advances to 0884
+
+**Date:** 2026-09-29
+
+**Hypothesis:** one standard FC16 address/count ACK to a qualified live `0870/17` stage advances the controller to another known runtime stage.
+
+**Baseline:** EXP309 COMPLETE / INCONCLUSIVE.
+
+**Controlled change:** accept both the `0864 -> 0870` path and a direct `0870` path; keep `0870` human-gated as the only new target.
+
+**Observed:**
+- Proven `085F(0800)` and all-zero `085F` prerequisites were serviced.
+- `0870/17` appeared directly; `0864 Seen=0`.
+- After human arm, exactly one ACK `0F 10 08 70 00 11 02 90` was sent.
+- ~1.47 s later `0708/6` appeared and was left NO_TX.
+- ~2.18 s after the ACK, known runtime `0884/60` appeared.
+- No `0870` retry preceded `0884`; parser/resync/drop counters remained clean.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+---
+
+# EXP309 — COMPLETE / INCONCLUSIVE — direct 0870 branch disproves mandatory 0864 prerequisite
+
+**Date:** 2026-09-29
+
+**Hypothesis:** automate locally proven retained-session prerequisites through `0864`, then human-gate one `0870/17` ACK.
+
+**Baseline:** EXP308 COMPLETE / POSITIVE.
+
+**Controlled change:** deterministic automation of already proven prerequisite ACKs; no new protocol target except the still-human-gated `0870`.
+
+**Observed:**
+- The automatic `085F(0800)` and all-zero `085F` prerequisites worked.
+- After the all-zero `085F` ACK, the controller sent direct `0870/17` before any `0864/4`.
+- EXP309 correctly failed closed because its state machine still required `0864`.
+- No `0870` ACK was sent.
+
+**Result:** **COMPLETE / INCONCLUSIVE** for the target ACK hypothesis.
+
+**Strong passive finding:** `0870/17` does not require a preceding `0864/4` in every retained-runtime branch.
+
+---
+
+# EXP308 — COMPLETE / POSITIVE — 0864 ACK advances to 0870
+
+**Date:** 2026-09-29
+
+**Hypothesis:** after the locally proven EXP307 retained-session chain reaches repeated `0864/4`, one standard ACK to a qualified `0864/4` frame advances the controller to another known runtime stage.
+
+**Baseline:** EXP307 COMPLETE / POSITIVE.
+
+**Controlled change:** keep the EXP307 prerequisites unchanged; human-gate exactly one `0864/4` ACK.
+
+**Observed:**
+- EXP307 prerequisites reproduced successfully.
+- `0864/4` repeated while waiting for human arm.
+- One ACK `0F 10 08 64 00 04 83 5B` was sent.
+- ~1.47 s later `0708/6` appeared.
+- ~2.09 s after the ACK, known runtime `0870/17` appeared.
+- No `0864` retry occurred before `0870`; no parser resync/drop issue; DE LOW at fail-close.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+---
+
+# EXP307 — COMPLETE / POSITIVE — qualified all-zero 085F ACK advances to 0864
+
+**Date:** 2026-09-29
+
+**Hypothesis:** after normalizing the known `085F(0800)` retained retry state, one standard ACK to a freshly qualified all-zero `085F/5` stage advances the controller into the known runtime branch.
+
+**Baseline:** EXP306 COMPLETE / INCONCLUSIVE.
+
+**Controlled change:** keep the already-proven `085F(0800)` normalization as a prerequisite, then separately human-gate exactly one ACK to qualified all-zero `085F/5`.
+
+**Observed:**
+- One normalization ACK moved `085F(0800)` to all-zero `085F`.
+- After a fresh `0708` and repeated all-zero `085F`, the target qualified.
+- One target ACK was sent.
+- ~1.48 s later `0708` appeared; ~2.05 s after target ACK, known runtime `0864/4` appeared.
+- No post-target `085F` retry preceded `0864`; transport counters remained clean.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+---
+
+# EXP306 — COMPLETE / INCONCLUSIVE — persistent 0708 / 085F(0800) loop with NO_TX
+
+**Date:** 2026-09-29
+
+**Hypothesis:** after optional normalization, repeated all-zero `085F` could be qualified as a target for one bounded ACK.
+
+**Baseline:** EXP305 COMPLETE / POSITIVE.
+
+**Observed:** for ~30 s the retained state remained a persistent `0708 <-> 085F(0800)` loop: 14 nonzero `085F(0800)`, 7 `0708`, zero all-zero `085F`, zero `0662`, TX=0.
+
+**Result:** **COMPLETE / INCONCLUSIVE.** The all-zero target condition never occurred, so the target hypothesis was not tested.
+
+---
+
+# EXP305 — COMPLETE / POSITIVE — 0662/33 ACK-gated transfer re-confirmed
+
+**Date:** 2026-09-29
+
+**Hypothesis:** the resurfaced repeated `0662/33` stage is the same ACK-gated XTR transfer stage already observed in EXP141.
+
+**Baseline:** EXP304 COMPLETE / INCONCLUSIVE.
+
+**Controlled change:** observe at least two exact `0662/33` frames, then ACK exactly the second one with standard address/count ACK `0F 10 06 62 00 21 A0 69`; all later traffic NO_TX.
+
+**Observed:**
+- exact `0662/33` repeated twice;
+- one ACK was sent;
+- no further `0662` retry occurred in the observation window;
+- ~71 ms later `085F(0800)` appeared, then `0708`, then all-zero `085F`;
+- no parser resync/drop issue; DE LOW;
+- the Online/Link alarm cleared temporarily after the ACK but later returned; that alarm timing is correlation only.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+**Strong conclusion:** `0662/33` is locally re-confirmed as an ACK-gated controller-to-DCM transfer stage. The downstream appearance of both nonzero and all-zero `085F` also shows that `0861=0x0800` is a transient session-state discriminator rather than proof that every such frame must receive a direct ACK.
+
+---
+
+# EXP304 — COMPLETE / INCONCLUSIVE — 0662 resurfaced before intended all-zero-085F target
+
+**Date:** 2026-09-29
+
+**Hypothesis:** a repeated all-zero `085F/5` stage may be ACK-gated.
+
+**Baseline:** EXP303 COMPLETE / INCONCLUSIVE.
+
+**Observed:** both arms encountered exact `0662/33` as the first relevant transfer. Because the classifier did not authorize that stage, EXP304 stopped fail-closed with TX=0.
+
+**Result:** **COMPLETE / INCONCLUSIVE.** The all-zero-`085F` hypothesis was not tested. The important finding was the return of the historically known `0662/33` transfer stage.
+
+---
+
+# EXP303 — COMPLETE / INCONCLUSIVE — retained state did not return to 085F(0800)
+
+**Date:** 2026-09-29
+
+**Hypothesis:** reproduce `085F(0800)`, ACK it once, then ACK the first resulting all-zero `085F` once.
+
+**Baseline:** EXP302 COMPLETE / POSITIVE.
+
+**Observed:** the controller remained in the post-EXP302 all-zero state. ESP reboot/OTA did not restore the former `085F(0800)` state. The intended first-stage target therefore never occurred and no ACK was sent.
+
+**Result:** **COMPLETE / INCONCLUSIVE.**
+
+**Strong finding:** controller retained state can persist across ESP restart/OTA; ESP reboot is not a valid rollback assumption.
+
+---
+
+# EXP302 — COMPLETE / POSITIVE — ACK of 085F(0800) changes retained controller state
+
+**Date:** 2026-09-29
+
+**Hypothesis:** one standard FC16 ACK to exact repeated `085F/5` carrying words `0000 0000 0800 0000 0000` changes the stalled retained-session state while `0708` remains NO_TX.
+
+**Baseline:** EXP301 COMPLETE / NEGATIVE.
+
+**Controlled change:** exactly one standard ACK to start `0x085F`, count 5: `0F 10 08 5F 00 05 33 56`. No semantic values injected; `0708` remained NO_TX.
+
+**Observed:**
+- exactly one target ACK was sent;
+- ~2.44 s later the controller emitted all-zero `085F/5`;
+- post-target observations showed repeated all-zero `085F` and `0708`, with no further `085F(0800)` in the observed window;
+- parser resync/drop counters remained clean;
+- user-marked alarm clear occurred later, but only correlation is claimed.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+**Strong conclusion:** `0861=0x0800` is an ACK-sensitive controller/session state marker under the tested local condition. Its semantic meaning remains unknown.
+
+---
+
+# EXP301 — COMPLETE / NEGATIVE — passive wait for 0848 does not recover retained session
+
+**Date:** 2026-09-29
+
+**Hypothesis:** the retained controller would eventually return to `0848/23`, allowing the earlier normal runtime anchor to be reused.
+
+**Baseline:** EXP300 COMPLETE / INCONCLUSIVE.
+
+**Observed:** repeated `0708` and repeated exact `085F(0800)` occurred, with no `0848` and TX=0.
+
+**Result:** **COMPLETE / NEGATIVE.** Passive wait-for-`0848` is not a viable universal retained-session recovery strategy.
+
+---
+
+# EXP300 — COMPLETE / INCONCLUSIVE — 0848 is not a universal retained re-entry anchor
+
+**Date:** 2026-09-29
+
+**Hypothesis:** after ESP-side session loss, wait passively for `0848/23` and resume the known scheduler from there.
+
+**Baseline:** EXP299 COMPLETE / INCONCLUSIVE.
+
+**Observed:** the first relevant `0x0F` events were instead nonzero `085F(0800)` and/or `0708`; `0848` did not appear in the target window. No TX occurred.
+
+**Result:** **COMPLETE / INCONCLUSIVE.**
+
+---
+
+# EXP299 — COMPLETE / INCONCLUSIVE — bounded retained-session resync reveals temporary liveness recovery
+
+**Date:** 2026-09-29
+
+**Hypothesis:** a bounded retained-session resync using one known runtime anchor can re-establish useful session progress without waiting for a fresh approval.
+
+**Baseline:** EXP298 COMPLETE / INCONCLUSIVE.
+
+**Observed:**
+- one `0848/23` ACK was sent;
+- a following `0708/6` received the known fixed runtime response;
+- the next exact all-zero `085F/5` appeared ~467 ms later;
+- TX then stopped fail-closed;
+- user-marked Online/Link alarm clearing occurred ~4.5 s after arm, but the alarm was visible again about 135.6 s later.
+
+**Result:** **COMPLETE / INCONCLUSIVE.**
+
+**Strong conclusion:** bounded known-stage service can move a retained session and may temporarily affect visible health, but one/few responses are insufficient evidence of durable recovery.
+
+---
+
+# EXP298 — COMPLETE / INCONCLUSIVE — fresh-approval-only ESP reboot recovery insufficient
+
+**Date:** 2026-09-29
+
+## PREPARED scope retained from the original experiment
 
 **Hypothesis:** after the ESP/DCM emulator restarts while the Thermia controller remains powered, the controller eventually presents a fresh exact `071C/0730` approval request that allows the emulator to rebuild the same proven session without requiring a Thermia-controller reboot.
 
 **Baseline:** EXP297 COMPLETE / POSITIVE.
 
 **Exact controlled change from EXP297:**
-- the Thermia controller is deliberately **not** rebooted;
-- after the ESP returns, EXP298 is manually armed directly into passive approval-wait on the already-active bus;
-- no TX occurs until an exact `071C/0730` request is observed;
-- approval wait is bounded to 240 s;
-- if approval arrives, the existing fixed R1, ordered 32-page config sync, startup `085F/5`, startup `0708/6` and proven runtime graph are reused unchanged;
-- runtime `04A6/13` remains capture-only / NO_TX;
+- the Thermia controller was deliberately **not** rebooted;
+- after ESP return, EXP298 waited passively for a fresh exact `071C/0730`;
+- no TX was authorized before such an approval request;
+- the intended approval wait was bounded to 240 s;
+- if approval arrived, the existing fixed R1, ordered 32-page config sync, startup `085F/5`, startup `0708/6` and proven runtime graph were to be reused unchanged;
+- runtime `04A6/13` remained capture-only / NO_TX;
 - no semantic write.
 
-**Success criteria:**
-- a fresh exact approval request is observed after ESP reboot while the controller remains powered;
-- R1 is accepted;
-- all 32 config pages complete;
-- startup `085F` and `0708` complete;
-- runtime re-enters at `07D0`;
-- at least two further full runtime cycles complete;
-- no fail-close, parser-integrity delta or RX drop.
+## RESULT
 
-**Negative criterion:**
-- no exact approval request within 240 s after arming while the controller remains powered.
+**Observed:**
+- after ESP restart, retained `0708` and `0848` traffic was present;
+- no fresh `071C/0730` approval request appeared in the supplied observation window of approximately 235.7 s;
+- no protocol TX occurred;
+- COMM. ERR ONLINE/LINK was visible.
 
-**Abort criteria:**
-- parser/RX integrity delta;
-- unexpected active-session frame outside the evidence-backed graph after approval;
-- startup/config/runtime watchdog failure.
+The original strict 240 s negative threshold was not fully reached, so the result cannot be labeled a strict negative.
 
-**Recovery:** abort TX, load the known-good stable emulator if needed, then perform one normal Thermia-controller reboot.
+**Result:** **COMPLETE / INCONCLUSIVE.**
 
-**Status:** **PREPARED / NOT RUN.**
+**Strong conclusion:** fresh-approval-only recovery is insufficient as the sole ESP-restart strategy under the tested retained-session condition. The controller can remain in an existing/recovery scheduler state rather than immediately reopen approval.
 
 ---
+
 
 # EXP297 — COMPLETE / POSITIVE — active controller reboot recovered without ESP reboot/re-arm
 
