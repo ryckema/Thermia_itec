@@ -1,3 +1,43 @@
+# EXP298 — PREPARED / NOT RUN — ESP-side restart recovery with Thermia controller left powered
+
+**Date:** 2026-09-29
+
+**Hypothesis:** after the ESP/DCM emulator restarts while the Thermia controller remains powered, the controller eventually presents a fresh exact `071C/0730` approval request that allows the emulator to rebuild the same proven session without requiring a Thermia-controller reboot.
+
+**Baseline:** EXP297 COMPLETE / POSITIVE.
+
+**Exact controlled change from EXP297:**
+- the Thermia controller is deliberately **not** rebooted;
+- after the ESP returns, EXP298 is manually armed directly into passive approval-wait on the already-active bus;
+- no TX occurs until an exact `071C/0730` request is observed;
+- approval wait is bounded to 240 s;
+- if approval arrives, the existing fixed R1, ordered 32-page config sync, startup `085F/5`, startup `0708/6` and proven runtime graph are reused unchanged;
+- runtime `04A6/13` remains capture-only / NO_TX;
+- no semantic write.
+
+**Success criteria:**
+- a fresh exact approval request is observed after ESP reboot while the controller remains powered;
+- R1 is accepted;
+- all 32 config pages complete;
+- startup `085F` and `0708` complete;
+- runtime re-enters at `07D0`;
+- at least two further full runtime cycles complete;
+- no fail-close, parser-integrity delta or RX drop.
+
+**Negative criterion:**
+- no exact approval request within 240 s after arming while the controller remains powered.
+
+**Abort criteria:**
+- parser/RX integrity delta;
+- unexpected active-session frame outside the evidence-backed graph after approval;
+- startup/config/runtime watchdog failure.
+
+**Recovery:** abort TX, load the known-good stable emulator if needed, then perform one normal Thermia-controller reboot.
+
+**Status:** **PREPARED / NOT RUN.**
+
+---
+
 # EXP297 — COMPLETE / POSITIVE — active controller reboot recovered without ESP reboot/re-arm
 
 **Date:** 2026-09-29
