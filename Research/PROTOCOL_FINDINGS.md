@@ -1,58 +1,58 @@
-# 2026-09-29 — EXP291–296 runtime transition findings
+# 2026-09-29 — EXP291–297 runtime, state-transition and recovery findings
 
 ## PROVEN / locally confirmed
-- The Online/DCM runtime is **not one rigid fixed sequence**. Multiple `FC03 0708/6` mailbox positions are conditional/state-dependent.
-- `0884/60 -> [optional 0708/6] -> 07D0/19` is locally confirmed. Both the mailbox-present and direct-`07D0` forms have been accepted.
-- `07E4/17 -> [optional 0708/6] -> 07F8/17` is locally confirmed. EXP295 first proved the direct branch; EXP296 exercised it repeatedly.
-- `080C/18 -> [optional 0708/6] -> 0820/18` is locally confirmed. EXP296 exercised the direct branch at least **11 times** in one captured run.
-- Previously established optional/conditional behavior around `0848`, `085F`, `0864` and `0870` remains valid.
-- EXP293 locally demonstrated roughly 30 minutes of stable continuous runtime with no user-visible `COMM. ERR ONLINE/LINK` during the steady-state scope.
-- EXP296 locally demonstrated continued runtime across several real operation-state changes, including SG-mode changes, entry into a DHW/high-temperature controller context and compressor start, without fail-closed termination in the supplied capture.
-- Runtime `04A6/13` can remain **unacknowledged** while the main Online/DCM runtime continues for at least the EXP296 observation window. In that run it was captured **225 times** and changed payload twice while normal runtime continued.
+- The Online/DCM runtime is **event/state driven**, not one rigid fixed sequence.
+- `0884/60 -> [optional 0708/6] -> 07D0/19` is locally confirmed.
+- `07E4/17 -> [optional 0708/6] -> 07F8/17` is locally confirmed.
+- `080C/18 -> [optional 0708/6] -> 0820/18` is locally confirmed.
+- Conditional behavior around `0848`, `085F`, `0864` and `0870` remains locally confirmed.
+- EXP293 demonstrated roughly 30 minutes of stable continuous runtime without user-visible `COMM. ERR ONLINE/LINK` in that steady-state scope.
+- Extended EXP296 evidence demonstrated >32 minutes of runtime while surviving SG changes, a near-complete DHW/compressor cycle and a later **Blocked (1-0)** transition.
+- Runtime `04A6/13` can remain unacknowledged for at least the observed ~32-minute EXP296 window while the main Online/DCM runtime continues. The later capture reached at least **1696** `04A6` frames with **3** payload changes.
+- **EXP297 proves controller-reboot recovery locally:** from active runtime, the emulator detected a controller bus gap, accepted a fresh `071C/0730` challenge, replayed the existing R1, completed the full 32-page startup sync, serviced startup `085F`/ `0708`, and resumed runtime without ESP reboot or manual re-arm.
+- The same fixed historical R1 replay remained accepted for a fresh challenge after a later controller reboot in the same ESP uptime.
 
 ## STRONGLY SUPPORTED
-- The best current runtime model is an **event/state-driven transition graph** rather than a deterministic script.
-- `0708` acts as a synchronization/mailbox descriptor, but the controller may omit some mailbox polls when moving through operation-state-dependent runtime work.
-- Runtime `04A6/13` behaves like state-dependent parallel/retry traffic rather than a strict immediate blocking gate in the tested window.
-- EXP296 shows a strong correlation between `04A6/13` payload changes and controller operational context:
-  - one payload form repeated before DHW/high-temperature context;
-  - payload changed when `A80C` became `0041` (current local decoder: DHW/high temperature);
-  - payload later changed back as the context returned.
-  This correlation does **not** yet establish field semantics or causal meaning.
-- The long-lived alarm behavior is better explained by **loss of required responder continuity after fail-closed/stop** than by the mere existence of an unacknowledged runtime `04A6` frame. EXP296 continued normally despite hundreds of unacknowledged `04A6` retries.
+- `0708` acts as a synchronization/mailbox descriptor whose presence at several runtime positions depends on controller/session state.
+- Runtime `04A6/13` is parallel/retry traffic rather than an immediate blocking gate in the tested local window.
+- `04A6` payload changes correlate strongly with operational context:
+  - an earlier form changed around DHW/high-temperature entry;
+  - it later returned;
+  - after a subsequent SG Blocked transition, a new form beginning `0042 0001 ...` appeared.
+  This does **not** yet prove field semantics or that `0042` uniquely encodes Blocked.
+- Loss of required responder continuity explains the observed Online/Link alarm behavior better than the mere presence of unacknowledged `04A6` traffic.
+- Session startup is repeatable after controller reboot; approval/config/runtime state is therefore reconstructible rather than tied to one ESP boot.
 
 ## HYPOTHESIS
-- The presence/absence of individual `0708` polls is driven by pending scheduler/mailbox work encoded elsewhere in session state, possibly including the 0708 runtime bitmap/status words.
-- Runtime `04A6/13` may be a controller-to-gateway state/configuration page whose payload reflects current operating context. The exact page meaning remains unknown.
-- A native DCM may ACK runtime `04A6` to stop retries even though that ACK is not required for short-term main-loop progression. This has not yet been tested locally and must not be promoted to fact.
+- Runtime `04A6/13` is a controller-to-DCM state/configuration export whose first words encode an operating/context state.
+- A native DCM may ACK runtime `04A6` selectively to stop/reconcile retries, even though local short/medium-term runtime can proceed without such ACK.
+- After an ESP-side restart with the Thermia controller left powered, the controller may eventually re-open the approval path and issue a fresh `071C/0730` challenge without requiring its own reboot. EXP298 is prepared to test this directly.
 
 ## OPEN / UNKNOWN
-- Exact semantics of runtime `04A6/13`, including whether a native-equivalent emulator should ACK it during steady-state operation.
-- Whether leaving runtime `04A6` unacknowledged causes any long-duration consequence beyond retry traffic.
-- Exact scheduling rules that decide which `0708` polls appear or are skipped.
-- Exact meaning of 0708 words 0, 4 and 5.
-- Long-duration stability across many hours, rare transitions, faults and re-synchronization.
-- Automatic session recovery after Thermia controller reboot or ESP restart.
+- ESP-restart recovery while the controller remains powered.
+- Exact semantics and ACK policy for runtime `04A6/13`.
+- Whether `0041`, `0042` or their neighboring words map uniquely to specific operating/SG contexts.
+- Exact scheduling rules for optional `0708` polls.
+- Exact meaning of `0708` words 0, 4 and 5.
+- Multi-hour/overnight stability, rare states and fault recovery.
 - Genuine `071C/0730` challenge-response algorithm.
 - Authoritative controller FC16 echo timing/conditions after reverse-page semantic writes.
 
 ## Current locally supported runtime graph
-The following is a graph of evidence-backed transitions, not a claim that every optional node appears every cycle:
-
 `07D0 -> 07E4 -> [optional 0708] -> 07F8 -> 080C -> [optional 0708] -> 0820 -> 0848 -> [conditional 0708 / conditional 085F] -> 0864 -> [optional 0708] -> 0870 -> [optional 0708] -> 0884 -> [optional 0708] -> 07D0 -> ...`
 
-Runtime `04A6/13` may interleave with this path and remained capture-only in EXP294–296.
+Runtime `04A6/13` may interleave with this path and remains capture-only in the current emulator experiments.
 
 ## DISPROVEN / SUPERSEDED
-- **SUPERSEDED:** modeling `0708` as a mandatory separator at every previously observed runtime position.
-- **SUPERSEDED:** interpreting the first SG-related failure as evidence that a particular SG state itself breaks Online/DCM emulation. Later controlled experiments show the failure was caused by missing protocol branches during operation-state transitions.
-- **SUPERSEDED as a complete explanation:** “Online alarm occurs only when the responder is deliberately stopped.” A rigid responder can also fail closed on an unmodeled valid transition, after which responder continuity is lost and the alarm can follow.
+- **SUPERSEDED:** `0708` is mandatory at every previously observed runtime position.
+- **SUPERSEDED:** a particular SG state itself breaks Online/DCM emulation; later tests show the earlier failures were missing protocol branches.
+- **SUPERSEDED:** controller reboot necessarily requires ESP reboot/re-arm. EXP297 locally proves automatic controller-side session recovery.
 
 ## Safety interpretation
-These findings authorize only the specific evidence-backed branch handling already tested. They do not authorize broad address-based ACKing.
-- Runtime `04A6/13` remains capture-only until a dedicated experiment explicitly changes that.
-- Keep semantic reverse-page writes separate from continuity/state-transition experiments.
-- Continue strict CRC/slave/function/address/count/bytecount checks and fail closed on truly new branch shapes.
+- No broad address-based ACKing.
+- Runtime `04A6/13` remains capture-only until a dedicated experiment explicitly changes it.
+- Keep semantic reverse-page writes separate from continuity/recovery experiments.
+- Continue strict CRC/slave/function/address/count/bytecount validation and fail closed on new branch shapes.
 
 ---
 
