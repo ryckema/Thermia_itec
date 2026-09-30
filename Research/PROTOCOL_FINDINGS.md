@@ -1,3 +1,76 @@
+# 2026-09-30 — EXP347–349 retained-session reusable semantic control
+
+## PROVEN / locally confirmed — retained session survives ESP OTA for semantic control
+
+EXP347 proves that, on this XTR M, the already-established stage-40 Online/DCM controller session can be rejoined after an ESP OTA/reboot without rebooting the Thermia controller and without sending a new R1/bootstrap. Clean qualification used known runtime FC16 service plus exact `0708/count6` idle service with W5=0006. The guarded `03F4` write/rollback then worked while the user observed continuous DCM icon and no error.
+
+## PROVEN / locally confirmed — HA-selected 03F4 target
+
+EXP348 replaced the fixed -1 °C test delta with an HA-selected whole-degree setpoint. The locally tested roundtrip was:
+
+`22 -> 24 -> 22 °C`
+
+Both write and explicit rollback were controller-confirmed by exact `FC16 03E8/count14` republish with `extraDeltaWords=0`. Normal Home Assistant Room Setpoint followed the semantic result.
+
+This proves selection of at least the locally tested arbitrary target value through the same native desired-page path. It does **not** prove every value from 10..30 has been exercised.
+
+## PROVEN / locally confirmed — repeated writes in one retained session
+
+EXP349 proves that the same native path is reusable repeatedly within one continuously retained session when each successful controller republish is promoted to the source page for the next transaction.
+
+Locally tested chain:
+
+`22 -> 16 -> 24 -> 22 °C`
+
+For all three writes:
+- selector remained `W0..W5 = 0000 0001 0000 0001 0000 0006`;
+- controller issued exact FC03 `03E8/count14`;
+- emulator returned the full current controller-confirmed page with only `03F4` changed;
+- controller republished exact FC16 `03E8/count14`;
+- `extraDeltaWords=0`;
+- runtime continued and the state machine returned READY for the next write.
+
+The three confirmations were:
+- writeNo=1: 22 -> 16;
+- writeNo=2: 16 -> 24;
+- writeNo=3: 24 -> 22.
+
+This upgrades the implementation model from a reversible test transaction to a reusable native setpoint-control mechanism for the locally mapped `03F4` field.
+
+## PROVEN / locally confirmed — implementation safety guards
+
+Current experimental implementation applies both UI-level and write-lambda guards:
+- requested setpoint must be integer 10..30 °C;
+- current cached `03F4` must also be 10..30 before arming;
+- a no-op target equal to current is refused;
+- cache must be valid/fresh;
+- exact page/start/count and clean retained runtime are required;
+- only one semantic transaction may be outstanding;
+- any additional page-word delta in controller republish is fail-closed.
+
+The **10..30 °C range is locally observed from the native indoor-sensor/UI limit**. Treat it as a local safety constraint, not a proven universal Thermia/DCM protocol range.
+
+## STRONGLY SUPPORTED — reusable page-cache architecture
+
+The best current architecture is a bidirectional page cache:
+1. controller-originated/current `03E8` page is cached;
+2. pending desired page is advertised via `0708` W1 bit0;
+3. controller pulls `03E8` with FC03;
+4. emulator returns full cached page with one intended semantic delta;
+5. controller republishes accepted current page with FC16;
+6. exact republish becomes the authoritative source for the next write.
+
+EXP349 directly validates step 6 for three successive local semantic transactions.
+
+## OPEN / UNKNOWN
+
+- Exact semantic meaning of W5=0006 remains unknown; it is only proven sufficient for connected/DCM indication persistence in the tested local context.
+- Generality of the reusable write mechanism to pages/registers other than locally mapped `03F4` remains unproven.
+- The 10..30 UI range is not established as a protocol-level encoded range.
+- Long-duration production behavior and very high write counts have not yet been established; EXP349 was intentionally bounded to eight semantic responses per ESP boot.
+
+---
+
 # 2026-09-30 — EXP346 durable finding: persistent native semantic write + rollback
 
 ## PROVEN / locally confirmed — guarded 03F4 semantic control inside persistent DCM runtime
