@@ -1,3 +1,90 @@
+# EXP315 — COMPLETE / POSITIVE — direct retained 07E4 handoff sustains steady runtime
+
+**Date:** 2026-09-30
+
+**Hypothesis:** a controller retained at the already proven normal-runtime node `07E4/count17` can be safely taken over by qualifying repeated live `07E4` requests, sending one already-proven standard ACK, and then handing directly to the established EXP296/297 steady-runtime responder.
+
+**Baseline:** EXP314 COMPLETE / INCONCLUSIVE.
+
+**Exact controlled change from EXP314:**
+- authorize exact `07E4/count17` as a retained-runtime handoff node;
+- require >=2 live exact `07E4/17` requests before any EXP315 TX;
+- ACK only the second qualified `07E4` with `0F 10 07 E4 00 11 40 68`;
+- enter the existing post-`07E4` runtime state, allowing evidence-backed `0708` or direct `07F8`;
+- no new register/page, payload value or semantic write.
+
+**Observed:**
+- one initial `0708/6` was capture-only;
+- exact `07E4/17` then appeared twice;
+- the second `07E4` received one standard ACK and the emulator entered stage 2 steady runtime;
+- the established runtime scheduler was serviced continuously;
+- 6 full returned runtime loops completed;
+- steady runtime reached 126.401 s;
+- 30 runtime `0708` responses were sent in evidence-backed contexts;
+- the success boundary was the next returned `07D0/19`, intentionally left NO_TX;
+- final summary: `TX=84`, `events=84`, `r0708=30`, `unexpected=0`, `resync=0`, `drops=0`, `DE=LOW`;
+- final firmware status: `POSITIVE / retained recovery sustained proven steady runtime`.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+**Strong conclusion:** on this XTR M, an already-active Online/DCM runtime can be rejoined directly at a qualified retained `07E4/17` node after ESP restart/OTA, and the existing runtime responder can then sustain at least 126.401 s / 6 complete loops without a controller reboot.
+
+---
+
+# EXP314 — COMPLETE / INCONCLUSIVE — controller retained progress to 07E4 while ESP was offline
+
+**Date:** 2026-09-30
+
+**Hypothesis:** the post-`07D0` `0708/6` observed in EXP313 is a valid handoff-boundary mailbox/scheduler event; servicing it with the existing proven runtime response should allow entry to steady runtime.
+
+**Baseline:** EXP313 COMPLETE / INCONCLUSIVE.
+
+**Exact controlled change from EXP313:**
+- allow one exact post-handoff `0708/6` at the retained `07D0` boundary;
+- respond with the already-proven runtime `0708` response only in that newly authorized context;
+- retain the same adaptive recovery and steady-runtime graph otherwise.
+
+**Observed:**
+- after ESP restart, the controller no longer presented the expected `07D0`/boundary-`0708` state;
+- on each arm, the first relevant `0x0F` frame was exact `07E4/17`;
+- EXP314 therefore failed closed because direct `07E4` entry was not yet authorized;
+- no protocol TX occurred in these attempts;
+- parser/resync/drop counters stayed clean and DE remained LOW;
+- one later manual "Error gone" button press was accidental and is INVALID for alarm analysis.
+
+**Result:** **COMPLETE / INCONCLUSIVE.**
+
+**Strong passive finding:** controller Online/DCM scheduler state can continue to be retained/progress across ESP restart/OTA such that the ESP reconnects while the controller is already waiting at a later known runtime node (`07E4/17`).
+
+---
+
+# EXP313 — COMPLETE / INCONCLUSIVE — 07D0 handoff works, post-handoff branch exposes 0708
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after adaptive retained-session recovery reaches known runtime `07D0/19`, handing off to the already proven EXP296/297 runtime responder should sustain multiple complete runtime cycles.
+
+**Baseline:** EXP312 COMPLETE / POSITIVE.
+
+**Exact controlled change from EXP312:**
+- promote the already-proven retained recovery path into an automatic integrator;
+- once exact `07D0/19` is reached, send its already-proven ACK and switch to the full steady-runtime responder;
+- no new register target or semantic write.
+
+**Observed:**
+- the controller was already at exact `07D0/19`; no recovery prerequisite ACKs were needed;
+- one known `07D0` ACK was sent and the handoff flag became active;
+- approximately 1.39 s later exact `0708/6` appeared before `07E4/17`;
+- EXP313 had allowed only `07E4` at that post-handoff point, so it stopped fail-closed;
+- no response was sent to that `0708`;
+- transport integrity remained clean and DE returned LOW.
+
+**Result:** **COMPLETE / INCONCLUSIVE.**
+
+**Strong conclusion:** direct retained handoff at `07D0/19` is technically possible, but the immediate next scheduler event is not guaranteed to be `07E4`; an intervening `0708` can occur.
+
+---
+
 # EXP312 — COMPLETE / POSITIVE — 0884 ACK advances retained session to 07D0
 
 **Date:** 2026-09-29
