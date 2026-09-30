@@ -225,7 +225,7 @@ logger:
   logs:
     thermia: WARN
     thermia_persist: WARN
-    thermia_write: INFO
+    thermia_write: WARN
 
 
 
