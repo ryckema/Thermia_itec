@@ -1,3 +1,27 @@
+# Research status — 2026-09-30 — EXP330 COMPLETE / POSITIVE; EXP331 PREPARED / NOT RUN
+
+Current direct XTR evidence now re-confirms the fresh Online/DCM path through a long ordered initial-sync prefix.
+
+**Last completed:** EXP330 — **COMPLETE / POSITIVE**.
+
+**Current:** EXP331 — **PREPARED / NOT RUN**. No EXP331 result has been supplied yet.
+
+Locally confirmed fresh-session chain:
+
+`fresh controller boot -> 071C/0730 challenge -> fixed R1 -> 03E8/14 ACK -> 03FC/11 ACK -> 0410/22 ACK -> 042E/15 ACK -> 0442/13 ACK -> 0456/12 ACK -> 046A/18 ACK -> 047E/19 ACK -> 0492/11 ACK -> 04A6/13`
+
+Key new conclusions:
+- fixed previously accepted R1 replay works against a different live fresh challenge in the tested XTR context;
+- the fresh initial sync is an ordered FC16 ACK-driven state machine through at least `04A6/13`;
+- ESP reboot/OTA does not reset controller-side Online state;
+- `04A6/13` is context-sensitive and must not receive a universal ACK policy.
+
+EXP331 tests a bounded continuation from `04A6` through `0546`, then captures `055A/33` without ACKing it. The new stages are based on genuine Eco 5 / earlier research and remain unconfirmed in the current run until a result is supplied.
+
+Research-only GitHub maintenance: no production/public/research YAML was modified by this update.
+
+---
+
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
 ## Current status — 2026-09-30 — EXP322 COMPLETE / POSITIVE; EXP323 proposed / NOT YET PREPARED
