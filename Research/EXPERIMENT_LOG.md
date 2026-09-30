@@ -1,3 +1,111 @@
+# EXP349 — COMPLETE / POSITIVE — reusable guarded room-setpoint writes in one retained session
+
+**Date:** 2026-09-30  
+**Status:** COMPLETE / POSITIVE
+
+## PREPARED
+
+**Baseline:** EXP348 COMPLETE / POSITIVE.
+
+**Hypothesis:** the HA-selected `03F4` write is reusable repeatedly in one retained stage-40 Online/DCM session when every successful controller `03E8/count14` republish becomes the source page for the next write.
+
+**Controlled change:** remove EXP348's one-write-plus-rollback terminal behavior and return to READY after each exact controller republish. Maximum semantic budget: 8 per ESP boot. No new register/page/selector/runtime ACK shape.
+
+**Safety:** only `03F4`, range guard 10..30 °C, cache <=300 s, exact `03E8/count14`, one outstanding write, clean retained runtime, exact republish with zero extra page deltas, fail closed on session restart/unknown traffic/parser integrity failure.
+
+## RESULT
+
+Retained session qualified after ESP OTA with no Thermia reboot and no new R1/bootstrap.
+
+### Write 1 — 22 -> 16 °C
+- `WRITE_ARM current03F4=22 requested03F4=16 delta=-6 ... semanticBudget=0/8`
+- selector:
+  `0F030C000000010000000100000006AD26`
+- desired page:
+  `0F031C0024001400280000000000000014001400020028001E000100100002D29E`
+- controller exact republish:
+  `0F1003E8000E1C0024001400280000000000000014001400020028001E0001001000023878`
+- confirmation:
+  `WRITE_CONFIRMED writeNo=1 original03F4=22 target03F4=16 observed03F4=16 extraDeltaWords=0 semanticResponses=1 NEXT_SOURCE=CONTROLLER_REPUBLISH KEEP_W5_0006=1 CONTINUE_RUNTIME=1 READY_AGAIN=1`
+- Room Setpoint Mirror and normal Room Setpoint reached 16 °C.
+
+### Write 2 — 16 -> 24 °C
+- next write used the confirmed 16 °C controller page as source;
+- selector/pull path repeated;
+- desired page contained only `03F4=24`;
+- controller exact republish:
+  `0F1003E8000E1C0024001400280000000000000014001400020028001E000100180002B9BA`
+- confirmation:
+  `WRITE_CONFIRMED writeNo=2 original03F4=16 target03F4=24 observed03F4=24 extraDeltaWords=0 semanticResponses=2 NEXT_SOURCE=CONTROLLER_REPUBLISH KEEP_W5_0006=1 CONTINUE_RUNTIME=1 READY_AGAIN=1`
+- Room Setpoint Mirror reached 24 °C.
+
+### Write 3 — 24 -> 22 °C
+- third transaction used the confirmed 24 °C page as source;
+- desired page:
+  `0F031C0024001400280000000000000014001400020028001E000100160002329F`
+- controller exact republish:
+  `0F1003E8000E1C0024001400280000000000000014001400020028001E000100160002D879`
+- confirmation:
+  `WRITE_CONFIRMED writeNo=3 original03F4=24 target03F4=22 observed03F4=22 extraDeltaWords=0 semanticResponses=3 NEXT_SOURCE=CONTROLLER_REPUBLISH KEEP_W5_0006=1 CONTINUE_RUNTIME=1 READY_AGAIN=1`
+- status:
+  `COMPLETE / POSITIVE / 3+ reusable writes confirmed / runtime continues`
+- Room Setpoint Mirror returned to 22 °C.
+
+Throughout the observed sequence, challenge/postTX/unknown16/unknown03/peer17/peer16ack/resync/drops stayed zero in the relevant heartbeats. User confirmed: **worked perfectly**.
+
+**Conclusion:** repeated native semantic writes are locally proven in one retained session. Latest exact controller republish is a valid next-write source for the tested `03F4` path.
+
+---
+
+# EXP348 — COMPLETE / POSITIVE — HA-selected generic 03F4 target
+
+**Date:** 2026-09-30  
+**Status:** COMPLETE / POSITIVE
+
+## PREPARED
+
+Baseline EXP347. Replace fixed `current-1` target with a Home Assistant number, while keeping the same retained-session qualification, selector, same-session `03E8/count14` clone, exact controller republish verification and explicit rollback. Local implementation guard: 10..30 °C.
+
+## RESULT
+
+- retained stage-40 runtime qualified with `NO_R1=1 NO_THERMIA_REBOOT=1`;
+- current `03F4=22`;
+- user-selected target `24`;
+- desired page changed exactly one word, `03F4: 22 -> 24`;
+- controller exact republish confirmed `observed03F4=24 extraDeltaWords=0`;
+- Home Assistant Room Setpoint Mirror and normal Room Setpoint reached 24 °C;
+- a second new write was correctly refused because EXP348 intentionally allowed only one write before rollback;
+- explicit rollback `24 -> 22` used the same native path;
+- controller exact republish confirmed `extraDeltaWords=0`;
+- Room Setpoint returned to 22 °C;
+- runtime remained clean and user reported the test worked perfectly.
+
+**Conclusion:** arbitrary HA-selected whole-degree target values are locally proven for the tested `03F4` path, not just a hard-coded -1 °C delta. The experiment locally exercised 22 -> 24 -> 22 °C.
+
+---
+
+# EXP347 — COMPLETE / POSITIVE — retained session semantic write without Thermia reboot
+
+**Date:** 2026-09-30  
+**Status:** COMPLETE / POSITIVE
+
+## PREPARED
+
+Baseline EXP346. Controlled change: remove the mandatory Thermia-controller reboot/fresh R1 bootstrap. After ESP OTA, seed the last exact confirmed `03E8/count14` page, qualify the already-existing stage-40 runtime using known FC16 service plus one exact `0708` idle response with W5=0006, then permit one guarded write + rollback.
+
+## RESULT
+
+- retained stage-40 session was rejoined after ESP OTA;
+- no Thermia-controller reboot and no new R1/bootstrap;
+- `RETAINED_RUNTIME_QUALIFIED ... NO_R1=1 NO_THERMIA_REBOOT=1`;
+- guarded `03F4` semantic write completed successfully;
+- explicit rollback completed successfully;
+- user confirmed no error, DCM icon remained visible throughout, and temperature changed/restored correctly.
+
+**Conclusion:** locally proven controller-side Online/DCM session can survive ESP OTA/reboot and remain usable for the native `03F4` semantic path without re-running the Thermia-side bootstrap.
+
+---
+
 # EXP346 — COMPLETE / POSITIVE — guarded 03F4 write + rollback inside persistent DCM runtime
 
 **Date:** 2026-09-30  
