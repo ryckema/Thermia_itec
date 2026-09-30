@@ -1,5 +1,15 @@
 # 2026-09-30 — EXP352 durable findings: local 03E8 PUSH refresh and runtime/cache separation
 
+
+## STRONGLY SUPPORTED / user-confirmed follow-up — reusable 03E8 refresh across one boot (EXP353)
+
+- EXP352 provides raw-log **PROVEN / locally confirmed** evidence for one W3-bit0 current-page refresh of `03E8`, followed by the guarded `03F4` write and exact controller republish.
+- EXP353 was subsequently explicitly confirmed successful by the user for the reusable-refresh follow-up.
+- The detailed EXP353 raw log/YAML is not currently archived, so exact multi-cycle counts/timings are not promoted here as raw-capture facts.
+- Operationally, the Write Beta may use reusable refresh transactions while preserving the same per-transaction safety envelope.
+- This does **not** generalize the W2:W3 bitmap to other pages and does not prove arbitrary long-term/power-loss recovery.
+
+
 ## PROVEN / locally confirmed — 0708 W3 bit0 requests a fresh current 03E8 page on this XTR M
 
 EXP352 began with no write-eligible `03E8/count14` cache. On a user Apply, the emulator first sent **no semantic page values**. At the next exact `FC03 0708/count6` request it returned:
