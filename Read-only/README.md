@@ -20,12 +20,14 @@ It keeps the useful decoded entities and a small set of diagnostics while removi
 
 Use this when collecting captures or validating additional registers.
 
-It is still completely RX-only, but adds:
+It is still completely RX-only and retains the research instrumentation:
 
 - raw Modbus frame logging;
 - generic change-only register mapping;
 - additional raw diagnostic entities;
-- more verbose protocol logging.
+- detailed protocol logging hooks.
+
+**v28 defaults to WARN-only logging**, just like the public build. The DEBUG/VERBOSE research instrumentation is therefore suppressed during normal operation. Temporarily raise only the specific logger categories you need when making a controlled capture, then return them to WARN.
 
 New mappings should be verified here before being promoted to the public build.
 
