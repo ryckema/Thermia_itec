@@ -26,8 +26,8 @@ Two variants are maintained:
 
 Current XTR files:
 
-- `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v27.yaml`
-- `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v27.yaml`
+- `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v28.yaml`
+- `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v28.yaml`
 
 See [Read-only/README.md](Read-only/README.md) for installation, wiring and the difference between both variants.
 
