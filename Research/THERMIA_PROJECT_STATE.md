@@ -1,54 +1,96 @@
-# 2026-09-30 — EXP353 COMPLETE / POSITIVE (user-confirmed); Write Beta v1 created
+# 2026-09-30 — EXP356 PREPARED / NOT RUN; EXP355 COMPLETE / POSITIVE
 
-**Authoritative current state:** EXP353 is **COMPLETE / POSITIVE** by explicit user confirmation. The detailed raw EXP353 log/YAML is not currently archived in the project, so no exact cycle count, timing or frame sequence is invented here. EXP352 remains the newest result with raw-log proof of the complete refresh -> write -> republish path.
+**Authoritative current state:** EXP355 is **COMPLETE / POSITIVE** from the supplied local XTR M log. EXP356 is **PREPARED / NOT RUN** as the next post-recovery soak. EXP354 was not run. EXP353 remains **COMPLETE / POSITIVE** by user confirmation; EXP352 remains the latest earlier experiment with full raw-log proof of the complete refresh -> write -> republish path.
 
-## Current experiment/result
+## Current experiment
 
-### EXP353 — COMPLETE / POSITIVE — user-confirmed
+### EXP356 — PREPARED / NOT RUN — post-recovery runtime soak
 
-**Baseline:** EXP352 COMPLETE / POSITIVE.
+**Baseline:** EXP355 COMPLETE / POSITIVE.
 
-**Hypothesis carried forward from the EXP352 result:** the W3-bit0 current-page refresh should be reusable in one long-lived retained DCM runtime rather than limited to the EXP352 one-refresh-per-ESP-boot experimental budget.
+**Hypothesis:** after one proven EXP355-style controller cold-reboot recovery, the recovered stage-40 Online/DCM session remains stable for an extended soak under ordinary bus activity.
 
-**Controlled change planned for EXP353:** keep the proven EXP352 protocol path unchanged while allowing bounded/reusable stale-cache refresh cycles in the same ESP boot. No second writable register/page was to be introduced.
+**Controlled change:** observation/hardening only. Reuse the EXP355 recovery path; introduce no new register, page, 0708 bitmap, R1 payload, ACK shape or semantic write target. No post-recovery Room Setpoint write is part of this experiment.
 
-**Result evidence available:** the user explicitly stated that EXP353 was successfully executed. No raw EXP353 log or exact EXP353 YAML is presently archived, so the canonical record does not claim exact refresh counts, timestamps, native-change sequence or frame-by-frame details beyond that confirmation.
+**Planned positive criteria:** recovered stage 40 remains serviced with known runtime FC16 traffic plus idle `0708/count6`, while unknown FC16/FC03, peer responder, parser resync and RX-drop counters remain zero and no alarm/DCM presentation loss is observed.
 
-## Production artifact
+**Status:** PREPARED / NOT RUN. Do not infer a result until the user supplies the overnight log or explicitly confirms it.
 
-A production-oriented beta has now been created at:
+## Last completed experiment
 
-`Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v1.yaml`
+### EXP355 — COMPLETE / POSITIVE — controller cold-reboot recovery without ESP reboot
 
-It is derived from the raw-log-proven EXP352 implementation and adopts the reusable-refresh behavior associated with the successful EXP353 follow-up. It removes the EXP352 one-refresh-per-boot and eight-semantic-response test budgets, keeps transactions serialized, retains the 10..30 °C whole-degree guard, requires a fresh controller-originated/confirmed `03E8/count14` page, changes only `03F4`, and requires an exact controller republish with zero extra deltas.
+**Baseline:** EXP353 COMPLETE / POSITIVE, using the EXP352-derived fresh-session/retained-runtime state machine.
 
-This file is **Write (Beta)**, not a claim of universal production readiness. Retained-session operation is substantially better validated than arbitrary fresh controller power-loss/session recovery.
+**Hypothesis:** a running ESP/DCM emulator already in a healthy qualified retained stage-40 runtime can recover after a real Thermia-controller power cycle without rebooting the ESP by reusing the established fresh-session bootstrap.
 
-## Current protocol model
+**Controlled protocol change:** no new writable register/page or semantic payload. EXP355 only made the existing fresh-session stages reachable again from qualified stage 40 after a clearly detected controller outage.
 
-The locally established model remains:
+### Observed facts
 
-1. persistent/retained Online/DCM runtime service;
-2. exact idle `0708/count6` response with W5=`0006`;
-3. W3 bit0 current-page request for `03E8`;
-4. controller-originated `FC16 03E8/count14` becomes the semantic source cache;
-5. W1 bit0 desired-page request path for `03E8`;
-6. controller `FC03 03E8/count14` is answered from that source page with only `03F4` changed;
-7. exact controller `FC16 03E8/count14` republish confirms the change and becomes the next source cache;
-8. native Thermia-front-display changes can update that cache during the same runtime.
+- Before the controller power cycle, retained stage 40 was healthy and repeatedly qualified with known runtime FC16 ACK service and exact `0708/count6` idle replies.
+- Normal pre-reboot state observations repeatedly showed `A80E=0000 / A80F=000A`.
+- EXP355 detected `5166 ms` bus silence while runtime was qualified and `writeState=0`, armed one recovery attempt, invalidated the semantic cache and kept DE low.
+- Bus traffic returned about `10.072 s` after recovery was armed.
+- The first valid returned frame promoted the state machine to fresh-boot stage 2.
+- The cold-boot guard became `A80E=0000 / A80F=0005`.
+- The first exact `071C/0730` challenge passed that guard and triggered exactly one known R1:
+  `0F17101691A5F3F8E8D58738924416E8E6A3D5E227`.
+- The first post-R1 settings publication was exact `FC16 03E8/count14`; it contained `03F4=22` and became the new same-session semantic cache.
+- The existing 32-stage ordered initial-sync sequence completed through `06F4/count19`.
+- Final `06F4/count19` was ACKed about `32.252 s` after R1 and returned the emulator to stage 40.
+- Immediately after stage-40 re-entry, controller `FC16 085F/count5` was serviced and ACKed.
+- A fresh `0708/count6` exchange then completed post-recovery qualification.
+- EXP355 logged `RECOVERY_POSITIVE success=1 runtimeFC16ACK=1 idle0708=1 r1Used=1 cacheValid=1 writeState=0 DE=LOW`.
+- Recovery arm -> positive post-recovery qualification took about `45.297 s`.
+- A later heartbeat remained clean with `runtimeFC16ACK=22`, `idle0708=12`, `unknown16=0`, `unknown03=0`, `peer17=0`, `peer16ack=0`, `resync=0`, `drops=0`, `DE=LOW`, and `cache03F4=22`.
+- No STOP, ABORT or INCONCLUSIVE event was observed after recovery armed in the supplied log.
+
+### Additional state progression observed
+
+During the recovered fresh session:
+
+`A80E/A80F = 0000/0005 -> 0008/0005 -> 0028/0005 -> 0028/000A`
+
+This is an observation only. The abstract semantics of A80E/A80F remain open.
+
+## Strong conclusions
+
+**PROVEN / locally confirmed:** an already-running ESP/DCM emulator can recover from a real Thermia-controller power cycle without an ESP reboot.
+
+**PROVEN / locally confirmed:** in the tested setup, sustained >=5 s observed bus silence from a healthy qualified stage 40 can safely gate re-entry into the already established fresh-session bootstrap.
+
+**PROVEN / locally confirmed:** the recovered controller session reproduces the guarded chain:
+`bus return -> A80E=0000/A80F=0005 -> exact 071C/0730 challenge -> one R1 -> ordered initial-sync -> stage 40 -> fresh runtime FC16 + 0708 qualification`.
+
+**PROVEN / locally confirmed:** the new-session controller `FC16 03E8/count14` publication re-establishes semantic cache provenance; EXP355 observed `03F4=22`.
+
+## Current protocol/lifecycle model
+
+1. retained Online/DCM stage-40 runtime may survive ESP OTA/reboot;
+2. retained runtime qualification uses known FC16 service plus exact idle `0708/count6` with W5=`0006`;
+3. stale/missing `03E8` may be refreshed by W3 bit0 and controller `FC16 03E8/count14`;
+4. desired `03F4` uses W1-bit0 selector -> controller FC03 -> one-word-delta page -> exact controller republish;
+5. if the Thermia/controller cold-reboots while the ESP remains powered, a qualified stage-40 emulator can detect sustained bus silence and re-enter the fresh-session bootstrap;
+6. fresh-session recovery uses the guarded exact `071C/0730` challenge, one known R1, and the established ordered initial-sync ACK chain;
+7. completion of `06F4/count19` re-enters stage 40;
+8. new runtime FC16 + `0708` service requalifies the recovered session.
 
 ## Important unknowns / limits
 
-- Detailed raw evidence for EXP353 itself is not archived; its successful result is currently user-confirmed.
-- Full W2:W3 page behavior beyond W3 bit0 / `03E8` remains unproven locally.
+- EXP355 proves one controller power-cycle recovery in the supplied run; repeated controller cold-reboot recoveries in one ESP boot are not yet locally proven.
+- EXP355 intentionally did not perform a semantic room-setpoint write after recovery; the user explicitly chose to skip that combination test.
+- The exact abstract meanings of A80E and A80F remain unknown.
+- The >=5 s silence threshold is a locally proven implementation discriminator, not a universal Thermia protocol requirement.
+- Recovery from arbitrary interruption points within the initial-sync chain is untested.
+- Full W2:W3 behavior beyond W3 bit0 / `03E8` remains unproven locally.
 - Other writable settings/registers remain unproven; active semantic writes stay limited to `03F4`.
 - W0, W4 and the abstract meaning of W5 remain open.
-- Fresh controller-session/power-loss recovery is less mature than retained-session operation.
-- The separate native/controller-originated 22 °C event from EXP352 remains unattributed to a specific physical source; the 19 °C event is explicitly correlated to the Thermia front display.
+- The separate native/controller-originated 22 °C event from EXP352 remains unattributed; the 19 °C event is explicitly correlated to the Thermia front display.
 
-## Next development step
+## Safety constraints
 
-Production hardening rather than a new semantic write target: run the Write Beta for a longer soak, including ordinary Home Assistant setpoint use and native Thermia-display changes, while preserving the same single-register safety envelope. Do not promote a second writable setting until the beta runtime/recovery behavior is characterized.
+No broad writes, scans or unknown-value injection. Semantic control remains limited to locally mapped `03F4` inside `03E8/count14`, using only a fresh controller-originated/confirmed full page and changing one word. Keep 10..30 °C whole-degree guards, one outstanding transaction, exact republish verification and fail-closed handling. Recovery remains gated on a previously healthy qualified runtime and the known guarded fresh-session path.
 
 ---
 
