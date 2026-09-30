@@ -1,3 +1,112 @@
+# EXP346 — COMPLETE / POSITIVE — guarded 03F4 write + rollback inside persistent DCM runtime
+
+**Date:** 2026-09-30  
+**Baseline:** EXP345 — COMPLETE / POSITIVE  
+**Status:** **COMPLETE / POSITIVE**
+
+## Hypothesis
+
+The native 03E8 desired-page semantic write mechanism proven in EXP343 can be performed inside the persistent EXP345 stage-40 Online/DCM runtime without dropping the DCM-connected state.
+
+## Controlled change from EXP345
+
+Preserve EXP345 bootstrap, fixed-R1 entry, complete initial sync, stage-40 FC16 whitelist/ACK scheduler and idle 0708 response with W5=0006. Add only:
+- same-session full 03E8/count14 cache;
+- one guarded manual 03F4 test write;
+- one explicit rollback to the latched original 03F4;
+- exact republish comparison requiring zero extra page-word deltas.
+
+No other semantic target was introduced.
+
+## RESULT
+
+### Test write
+
+Same-session initial controller page:
+
+`FC16 03E8/count14 ... 03F4=0016` = 22 °C.
+
+Write arm:
+
+`WRITE_ARM current03F4=22 target03F4=21 delta=-1 ... semanticBudget=0/2`
+
+Selector returned on exact 0708 request:
+
+`0F030C000000010000000100000006AD26`
+
+Words:
+
+`0000 0001 0000 0001 0000 0006`
+
+Controller then pulled exact `FC03 03E8/count14`.
+
+Desired page returned:
+
+`0F031C0024001400280000000000000014001400020028001E000100150002C29F`
+
+Only semantic delta: `03F4 0016 -> 0015`.
+
+Controller republished:
+
+`0F1003E8000E1C0024001400280000000000000014001400020028001E0001001500022879`
+
+Verification:
+
+`WRITE_CONFIRMED original03F4=22 target03F4=21 observed03F4=21 extraDeltaWords=0 semanticResponses=1 KEEP_W5_0006=1 CONTINUE_RUNTIME=1`
+
+Home Assistant subsequently showed Room Setpoint Mirror = 21 °C and Room Setpoint = 21 °C. User confirmed DCM icon remained visible and no Online/Link error appeared.
+
+### Rollback
+
+Rollback arm:
+
+`ROLLBACK_ARM cached03F4=21 restore03F4=22 ... semanticBudget=1/2`
+
+Same 0708 selector mechanism was used, then controller again pulled exact `FC03 03E8/count14`.
+
+Rollback desired page returned:
+
+`0F031C0024001400280000000000000014001400020028001E000100160002329F`
+
+Only semantic delta: `03F4 0015 -> 0016`.
+
+Controller republished:
+
+`0F1003E8000E1C0024001400280000000000000014001400020028001E000100160002D879`
+
+Verification:
+
+`ROLLBACK_CONFIRMED original03F4=22 observed03F4=22 extraDeltaWords=0 semanticResponses=2 KEEP_W5_0006=1 CONTINUE_RUNTIME=1`
+
+Home Assistant subsequently showed Room Setpoint Mirror = 22 °C and Room Setpoint = 22 °C. User confirmed DCM icon still visible and no Online/Link error.
+
+## Classification
+
+### Observed facts
+- stage 40 persistent runtime was active before the write;
+- W5=0006 idle mailbox service continued;
+- write and rollback each used the authentic 0708 selector -> FC03 03E8 pull -> desired-page response -> controller FC16 republish sequence;
+- write republish matched target 21 with zero extra 03E8-page deltas;
+- rollback republish restored 22 with zero extra 03E8-page deltas;
+- semantic response budget was exactly 2/2;
+- runtime continued after both actions;
+- user observed DCM icon continuously present and no Online/Link error.
+
+### Strong conclusion
+**PROVEN / locally confirmed:** semantic 03F4 control and persistent Online/DCM-connected runtime coexist in the same XTR M session. The desired-page mechanism is reversible and controller-confirmed for the tested 22 -> 21 -> 22 sequence.
+
+### Unknowns
+- whether arbitrary values across the full UI-valid range behave identically;
+- whether repeated semantic commands remain reliable over many hours without a controller reboot;
+- exact W5 field semantics;
+- whether other desired pages/fields can use the same generic mechanism on the XTR M.
+
+## Safety / recovery outcome
+
+No abort condition was reached. No broad write, scan or unknown-field injection occurred. Only 03F4 changed, once for the test and once for rollback. No recovery reboot was required.
+
+---
+
 # EXP345 — COMPLETE / POSITIVE — persistent DCM runtime with 0708 W5=0006
 
 **Date:** 2026-09-30
