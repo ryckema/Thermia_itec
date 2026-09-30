@@ -1,3 +1,145 @@
+# EXP331 — PREPARED / NOT RUN
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after the locally proven EXP330 prefix through `0492/11 ACK -> 04A6/13`, a bounded eight-page ACK batch matching genuine Eco 5 / earlier research will advance through:
+
+`04A6/13 -> 04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10 -> 0532/18 -> 0546/20 -> 055A/33`.
+
+**Controlled change from EXP330:** ACK the eight exact pages above once each. The proven prefix is otherwise unchanged. After `0546/20` ACK, capture-only.
+
+**New ACKs prepared:**
+- `04A6/13` -> `0F1004A6000DE1F1`
+- `04BA/22` -> `0F1004BA0016603C`
+- `04D8/27` -> `0F1004D8001B0027`
+- `04F6/14` -> `0F1004F6000EA1E1`
+- `050A/19` -> `0F10050A0013A024`
+- `051E/10` -> `0F10051E000A21EA`
+- `0532/18` -> `0F1005320012E029`
+- `0546/20` -> `0F10054600142031`
+
+**Success:** exact `055A/count33` is first different FC16 after the `0546` ACK.
+
+**Abort / fail-close:** wrong page shape/order/timing, previous-page retry, early FC03, parser/RX integrity delta, peer FC17 response or unexpected peer FC16 ACK.
+
+**Safety:** address/count ACKs only; no register-value injection; no 055A ACK; no mailbox response; DE LOW on stop. ESPHome compile was not independently run when prepared.
+
+---
+
+# EXP330 — COMPLETE / POSITIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after the proven prefix to `046A/18`, exact one-shot ACKs for `046A/18`, `047E/19` and `0492/11` advance the same fresh initial-sync chain to `04A6/13`.
+
+**Controlled change from EXP329:** add exactly those three standard FC16 address/count ACKs; leave the first post-`0492` stage capture-only.
+
+**Observed result:** exact `046A/18 -> ACK -> 047E/19 -> ACK -> 0492/11 -> ACK -> 04A6/13`. `04A6/13` arrived approximately 571 ms after the `0492` ACK and was not ACKed. No approval retry, external responder, parser resync or RX drop; DE LOW.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+---
+
+# EXP329 — COMPLETE / POSITIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** a bounded three-block continuation after the proven prefix advances `042E/15 -> 0442/13 -> 0456/12 -> 046A/18`.
+
+**Controlled change from EXP328:** add one standard ACK each for exact `042E/15`, `0442/13`, `0456/12`; capture the next stage without ACK.
+
+**Observed result:** exact ordered chain `042E/15 ACK -> 0442/13 ACK -> 0456/12 ACK -> 046A/18`. `046A/18` appeared approximately 1428 ms after the `0456` ACK. No post-R1 challenge retry, external responder, parser resync or RX drop; DE LOW.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+---
+
+# EXP328 — COMPLETE / POSITIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** one standard ACK to exact `0410/count22` advances the local XTR initial sync to `042E/count15`.
+
+**Controlled change from EXP327:** add exactly one `0410/22` address/count ACK; capture next stage only.
+
+**Observed result:** the proven prefix reproduced; exact `0410/22` was ACKed once and exact `042E/15` appeared about 709 ms later. No further ACK. Clean parser and DE LOW.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+---
+
+# EXP327 — COMPLETE / POSITIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** one standard ACK to exact `03FC/count11` advances the local initial sync to `0410/count22`.
+
+**Controlled change from EXP326:** add exactly one `03FC/11` address/count ACK; capture next stage only.
+
+**Observed result:** fresh approval and `03E8 ACK -> 03FC` reproduced; `03FC/11` was ACKed once and exact `0410/22` appeared about 1500 ms later. No further TX. Clean run.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+---
+
+# EXP326 — COMPLETE / POSITIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after fresh approval R1, one standard ACK for the first exact `03E8/count14` advances the controller to the next native sync stage.
+
+**Controlled change from EXP325:** add only one `03E8/14` standard FC16 ACK `0F1003E8000EC093`.
+
+**Observed result:** after fresh reboot and guard `A80E=0000 / A80F=0005`, a different live `071C/0730` challenge received fixed R1. Exact `03E8/14` appeared about 124 ms later. One ACK was sent, then exact `03FC/11` appeared about 697 ms after that ACK. No further TX. Parser resync 0, drops 0, DE LOW.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+---
+
+# EXP325 — COMPLETE / POSITIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after a true controller reboot, one previously accepted fixed R1 response to the first exact fresh `071C/0730` challenge is sufficient to open native initial sync.
+
+**Controlled change from EXP322:** no 0x06 responder; only the first exact fresh challenge may receive one fixed R1. No FC16 ACK, no mailbox response.
+
+**Observed result:** fresh guard `A80E=0000 / A80F=0005`; first exact `071C/0730` challenge received fixed R1. Exact `03E8/count14` appeared about 120 ms later. No prior 04A6 ACK, 085F ACK, FC16 ACK or mailbox response was required.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+**Superseded historical note:** the earlier EXP325 concept for a cold-boot single `04A6` ACK was never run and is **SUPERSEDED / NOT RUN**. The experiment number was reused for the fresh-reboot R1 re-approval test above.
+
+---
+
+# EXP324 — COMPLETE / INCONCLUSIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after the EXP323 all-zero `085F` ACK, a longer post-ACK observation following ESP reboot would reveal delayed continuation.
+
+**Controlled change:** longer intended observation, but the Thermia controller itself was not rebooted.
+
+**Observed result:** the intended all-zero `085F` qualification state never reappeared. During the bounded window only `04A6/13` was seen; TX=0. Therefore the post-`085F` hypothesis was not actually exercised.
+
+**Result:** **COMPLETE / INCONCLUSIVE**.
+
+---
+
+# EXP323 — COMPLETE / INCONCLUSIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** in the clean post-controller-reboot sparse state, one standard ACK to a conservatively qualified all-zero `085F/5` can advance the scheduler.
+
+**Controlled change from EXP322:** first exact all-zero `085F` is qualification/no-TX; second receives exactly one standard ACK `0F10085F00053356`; all later traffic capture-only.
+
+**Observed result:** one ACK was sent. For roughly 42 s afterward, only `04A6/13` appeared; no further `085F` or known runtime/configuration stage was observed. Parser remained clean and DE LOW.
+
+**Result:** **COMPLETE / INCONCLUSIVE**. One all-zero `085F` ACK alone was not shown to establish fresh Online progression.
+
+---
+
 # EXP322 — COMPLETE / POSITIVE — clean post-controller-reboot passive baseline
 
 **Date:** 2026-09-30
