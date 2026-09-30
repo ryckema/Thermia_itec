@@ -1,3 +1,145 @@
+# EXP322 — COMPLETE / POSITIVE — clean post-controller-reboot passive baseline
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after the user rebooted the Thermia controller to clear the visible errors, the clean state may expose a different passive slave-`0x0F` sequence from the pre-reboot EXP321 state.
+
+**Controlled change:** strict passive 90 s census after the controller reboot. Experiment TX was structurally disabled.
+
+**Observed:**
+- `total0F=125`, `FC16=125`, `FC03=0`;
+- `04A6/13=83`, payload changes=0;
+- `085F/5=42`, all 42 exact all-zero, `085F(0800)=0`;
+- `0708=0`;
+- every tracked normal-runtime page `07D0..0884=0`;
+- `other=0`;
+- `resync=0`, `drops=0`, `TX=0`, `DE=LOW`.
+
+The first `04A6` was followed about 0.69 s later by all-zero `085F`. The same two frame classes dominated the complete run at approximately 2:1 cadence.
+
+**Result:** **COMPLETE / POSITIVE** as a passive baseline.
+
+**Strong conclusion:** repeated `04A6` alone is not specific to the prior visible alarm state. After a controller reboot, all-zero `085F/5` reappears persistently and is the clearer state discriminator versus EXP321.
+
+---
+
+# EXP321 — COMPLETE / INCONCLUSIVE — planned recovery entry absent
+
+**Date:** 2026-09-30
+
+**Hypothesis:** reconstruct the proven retained chain and hand off from qualified `07D0/19` to the existing steady-runtime responder for a short integration run.
+
+**Observed:**
+- 120 s qualification window completed;
+- no exact `085F(0800)` entry frame appeared;
+- approximately 111 x `04A6/13`;
+- no all-zero `085F`;
+- `TX=0`, `handoff=0`, `loops=0`;
+- `unexpected=0`, `resync=0`, `drops=0`, DE LOW.
+
+**Result:** **COMPLETE / INCONCLUSIVE.** The intended recovery chain was never exercised.
+
+The user then rebooted the Thermia controller to clear visible errors before EXP322.
+
+---
+
+# EXP320 — COMPLETE / POSITIVE — qualified 0884 ACK reaches direct 07D0
+
+**Date:** 2026-09-30
+
+**Hypothesis:** from the locally reconfirmed retained chain `085F(0800) -> zero 085F -> 0884`, one qualified standard `0884/60` ACK reveals the next retained-session state.
+
+**Observed:**
+- two exact `085F(0800)` requests; ACK second once;
+- two exact all-zero `085F`; ACK second once;
+- two valid `0884/60`; ACK second once;
+- 4.328 s after the `0884` ACK, first non-`04A6` frame was direct `07D0/19`;
+- post-target `07D0` intentionally NO_TX;
+- `TX=3`, `0800ACK=1`, `zeroACK=1`, `0884ACK=1`;
+- `unexpected=0`, `resync=0`, `drops=0`, DE LOW.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+**Strong conclusion:** in this retained context, `0884 ACK -> 07D0` is valid without mandatory immediate `0708`.
+
+---
+
+# EXP319 — COMPLETE / POSITIVE — all-zero 085F ACK exposes direct 0884
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after normalizing `085F(0800)`, ACK a qualified exact all-zero `085F/5` and capture the first subsequent non-`04A6` frame.
+
+**Observed:**
+- two exact `085F(0800)`; ACK second once;
+- two exact all-zero `085F`; ACK second once;
+- 2.381 s after the all-zero ACK, first non-`04A6` frame was exact FC16 `0884/60`;
+- `TX=2`, `0800ACK=1`, `zeroACK=1`, `0884ACK=0`;
+- no runtime response after target; clean fail-close.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+---
+
+# EXP318 — COMPLETE / POSITIVE — 085F(0800) ACK reconfirms all-zero transition
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after two exact `085F(0800)` requests, ACK the second once and capture the first subsequent non-`04A6` frame.
+
+**Observed:**
+- first target NO_TX;
+- second target received one standard `085F/5` ACK;
+- 2.196 s later first non-`04A6` frame was exact all-zero `085F/5`;
+- `TX=1`, `0800ACK=1`, `zeroACK=0`;
+- clean fail-close with no parser/RX integrity error.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+---
+
+# EXP317 — COMPLETE / INCONCLUSIVE — progress-anchored timeout, but no post-085F transition
+
+**Date:** 2026-09-30
+
+**Controlled change from EXP316-Q:** stage-1 timeout was anchored to last supported progress rather than absolute test start.
+
+**Observed:**
+- one known `085F(0800)` ACK was sent early;
+- then no supported recovery/handoff progress for about 90 s;
+- 86 x `04A6/13` capture-only;
+- `TX=1`, `handoff=0`, `cycles=0`, `loops=0`, `unexpected=0`, `resync=0`, `drops=0`, DE LOW.
+
+**Result:** **COMPLETE / INCONCLUSIVE.**
+
+---
+
+# EXP316-Q — COMPLETE / INCONCLUSIVE — quiet long-run harness timeout flaw
+
+**Date:** 2026-09-30
+
+**Purpose:** quiet logging variant of the EXP316 integration/endurance harness.
+
+**Observed:**
+- `085F(0800)` appeared at about 84.8 s and received one known ACK;
+- roughly 5 s later the harness fired its absolute 90 s-from-start timeout;
+- `TX=1`, `handoff=0`, `cycles=0`, `loops=0`, `events=0`, `r0708=0`;
+- `04A6=78`, `resync=0`, `drops=0`, DE LOW.
+
+**Result:** **COMPLETE / INCONCLUSIVE.** This was a harness-timeout defect, not a protocol-negative result.
+
+---
+
+# EXP316 — RUNNING / PARTIAL, then superseded by quiet variant
+
+**Date:** 2026-09-30
+
+Initial full-logging integration showed a healthy exact `07D0` handoff into the known runtime graph, but logging volume was about 0.5 MB per four minutes. It was replaced by EXP316-Q to test the same concept with quiet diagnostics.
+
+**Status:** **RUNNING / PARTIAL**, then operationally superseded by EXP316-Q; do not treat it as a completed endurance result.
+
+---
+
 # EXP315 — COMPLETE / POSITIVE — direct retained 07E4 handoff sustains steady runtime
 
 **Date:** 2026-09-30
