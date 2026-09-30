@@ -1,3 +1,121 @@
+# 2026-10-01 — offline re-analysis of genuine Online/DCM and Eco5 gateway captures
+
+No new live experiment was performed. These findings come from re-analysis of existing raw captures and are kept separate from the locally active-tested XTR M results.
+
+## STRONGLY SUPPORTED — complete 0708 W2:W3 32-page current/PUSH bitmap
+
+A genuine DCM capture contains a `0708/count6` response with:
+
+`W0..W5 = 0000,0000,7FFF,FFFF,0080,0007`
+
+Immediately afterward the controller publishes the ordered configuration pages beginning at `03E8`. The observed sequence and independent Eco5 gateway single/few-bit cases fit one consistent 32-page mapping:
+
+- `W3 bit0 -> 03E8`
+- `W3 bit1 -> 03FC`
+- `W3 bit2 -> 0410`
+- `W3 bit3 -> 042E`
+- `W3 bit4 -> 0442`
+- `W3 bit5 -> 0456`
+- `W3 bit6 -> 046A`
+- `W3 bit7 -> 047E`
+- `W3 bit8 -> 0492`
+- `W3 bit9 -> 04A6`
+- `W3 bit10 -> 04BA`
+- `W3 bit11 -> 04D8`
+- `W3 bit12 -> 04F6`
+- `W3 bit13 -> 050A`
+- `W3 bit14 -> 051E`
+- `W3 bit15 -> 0532`
+- `W2 bit0 -> 0546`
+- `W2 bit1 -> 055A`
+- `W2 bit2 -> 057B`
+- `W2 bit3 -> 059C`
+- `W2 bit4 -> 05BD`
+- `W2 bit5 -> 05DE`
+- `W2 bit6 -> 05FF`
+- `W2 bit7 -> 0620`
+- `W2 bit8 -> 0641`
+- `W2 bit9 -> 0662`
+- `W2 bit10 -> 0683`
+- `W2 bit11 -> 06A4`
+- `W2 bit12 -> 06C5`
+- `W2 bit13 -> 06EA`
+- `W2 bit14 -> 06F1`
+- `W2 bit15 -> 06F4`
+
+Cross-checks from genuine Eco5 gateway traffic include:
+- W3 bit15 together with W2 bit14 followed by controller publications for `0532` and `06F1`;
+- W2 bit15 followed by controller `FC16 06F4/count19`.
+
+**Status:** the full W2:W3 map is **STRONGLY SUPPORTED** by genuine DCM/Eco5 capture evidence. Only W3 bit0 -> `03E8` is currently **PROVEN / locally confirmed** by active XTR M testing (EXP352). Do not promote the other bits to local proof.
+
+## STRONGLY SUPPORTED — W1 is a desired/PULL page selector using the same page-index family
+
+Existing genuine captures provide direct examples:
+- W1 bit0 is followed by controller `FC03 03E8` and a gateway page response;
+- W1 bit3 is followed by controller `FC03 042E/count15`, then the gateway page response and controller republish.
+
+This strongly supports W1 as the desired/PULL bitmap for the same ordered page family used by W3/W2 for current/PUSH advertisement.
+
+**Local status:** W1 bit0 -> desired `03E8` is locally proven on this XTR M. W1 bit3 -> `042E` is cross-model/genuine-gateway evidence only.
+
+## PROVEN / genuine Eco5 gateway capture — challenge response is session/challenge dependent
+
+The exact `071C/0730` challenge does not receive one constant 16-byte response from a genuine gateway.
+
+One captured pair is:
+
+- challenge payload: `63CEFB32C6F41382087992370CACEeba`
+- gateway response payload: `1691A5F3F8E8D58738924416E8E6A3D5`
+
+A later session shows a different pair:
+
+- challenge payload: `31FB59FC8FB1175CD89F904D06D92EA4`
+- gateway response payload: `FD636CCD0F921D83FF232A1A2413B372`
+
+Therefore the official gateway behavior uses a challenge-dependent/session-dependent response. The transform or cryptographic construction remains unknown.
+
+## PROVEN / locally confirmed — fixed response replay is accepted on this XTR M
+
+EXP355 replayed the previously captured payload:
+
+`1691A5F3F8E8D58738924416E8E6A3D5`
+
+under the locally proven cold-boot guard `A80E=0000 / A80F=0005`, even though the live challenge differed from the challenge that originally produced that response in the genuine gateway capture. The XTR M accepted the replay, published `03E8/count14`, completed the full ordered initial sync, and returned to qualified stage 40.
+
+**Durable distinction:**
+- genuine gateway: response varies with challenge/session;
+- this XTR M: one captured response is replayable in the tested guarded context;
+- unknown: whether replay works across other Thermia models, firmware versions, or every future session.
+
+The fixed response must therefore be documented as a **locally proven replay value**, not as “the Thermia R1 algorithm” or a universal native response.
+
+## STRONGLY SUPPORTED — at least two native Online/DCM lifecycle paths exist
+
+Existing capture evidence is consistent with two distinct integration lifecycles:
+
+1. **Controller cold boot with accessory present:** cold-boot state -> exact challenge -> challenge-dependent gateway response -> ordered initial sync -> runtime.
+2. **Accessory/gateway rejoin while controller is already running:** `0708` response advertises a broad current-page bitmap -> controller exports requested pages -> runtime continues.
+
+The first path is now locally emulated/recovered on this XTR M through EXP355 using a replayed response. The second hot-rejoin/page-bitmap path is genuine-capture-supported but has not been locally emulated and should not be assumed production-proven.
+
+## STRONGLY SUPPORTED — A80E/A80F are lifecycle/state fields, exact semantics still unknown
+
+EXP355 locally observed:
+
+`0000/0005 -> 0008/0005 -> 0028/0005 -> 0028/000A`
+
+Existing genuine capture evidence shows the same `0028/0005` early-session state and later `0028/000A` operation.
+
+This further supports:
+- `A80F=0005` as associated with an early integration/bootstrap phase;
+- `A80F=000A` as a later operating state in this sequence;
+- A80E behaving like a progressive/status bitfield.
+
+**OPEN / UNKNOWN:** do not assign protocol names such as “connected”, “authenticated”, or “sync complete” to A80E/A80F without stronger evidence.
+
+---
+
 # 2026-09-30 — EXP355 durable findings: controller cold-reboot recovery
 
 ## PROVEN / locally confirmed — controller power-cycle recovery without ESP reboot
