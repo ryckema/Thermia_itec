@@ -1,3 +1,140 @@
+# EXP355 — COMPLETE / POSITIVE — fresh controller-session recovery from retained runtime
+
+**Date:** 2026-09-30  
+**Status:** COMPLETE / POSITIVE
+
+## PREPARED
+
+**Baseline:** EXP353 COMPLETE / POSITIVE; implementation based on the EXP352-derived retained/fresh-session state machine.
+
+**Hypothesis:** after a real Thermia-controller power cycle, an ESP that remains powered can recover the Online/DCM path by returning from qualified retained stage 40 to the already known fresh-session bootstrap, without adding any new protocol payload.
+
+**Controlled change:** allow one recovery attempt from healthy stage 40 after >=5 s of bus silence. Reuse the existing fresh-session state guard, exact challenge, one-shot R1 and ordered initial-sync ACK chain unchanged. Invalidate stale semantic cache and reset session-local state before recovery.
+
+**Safety:** no Room Setpoint write during recovery; no new target/page/register; DE low during outage; one R1 maximum; exact A80E/A80F guard; ordered page/count chain only; fail closed on parser/RX integrity change, peer responder, wrong page/count/order or conflicting traffic.
+
+## RESULT
+
+### Pre-recovery retained runtime
+
+The emulator was healthy in stage 40. Known runtime FC16 pages were ACKed and exact `0708/count6` idle service continued. Repeated qualification logs showed `READY_FOR_POWER_CYCLE=1`.
+
+The normal pre-reboot controller-state observation was `A80E=0000 / A80F=000A`.
+
+### Controller outage detection
+
+At `00:51:19.590`:
+
+`RECOVERY_ARMED silenceAge=5166ms runtimeQualified=1 writeState=0 cacheInvalidated=1 TX=0 DE=LOW`
+
+The ESP stayed powered. Runtime counters were reset for the new session and the semantic `03E8` cache was invalidated.
+
+### Bus return and cold-boot guard
+
+At `00:51:29.662`, about 10.072 s after recovery arm, the first valid bus frame returned:
+
+`BOOT_RETURN RAW=1E04001600081267`
+
+At `00:51:30.355`:
+
+`STATE_GUARD A80E=0000 A80F=0005 bootAge=715ms`
+
+The exact `071C/0730` challenge then passed the guard.
+
+### One-shot R1
+
+At `00:51:31.005` exactly one known response was transmitted:
+
+`0F17101691A5F3F8E8D58738924416E8E6A3D5E227`
+
+The R1 latch was closed before transmission; no second R1 was observed.
+
+### First controller page / cache provenance
+
+The first post-R1 config page was exact `FC16 03E8/count14`:
+
+`03E8_CACHE_INITIAL current03F4=22 cacheAge=0ms source=controller_FC16_same_session`
+
+It was ACKed using the established `03E8/count14` address/count ACK.
+
+### Ordered initial sync
+
+All 32 expected page/count stages completed in order:
+
+`03E8/14 -> 03FC/11 -> 0410/22 -> 042E/15 -> 0442/13 -> 0456/12 -> 046A/18 -> 047E/19 -> 0492/11 -> 04A6/13 -> 04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10 -> 0532/18 -> 0546/20 -> 055A/33 -> 057B/33 -> 059C/33 -> 05BD/33 -> 05DE/33 -> 05FF/33 -> 0620/33 -> 0641/33 -> 0662/33 -> 0683/33 -> 06A4/33 -> 06C5/33 -> 06EA/7 -> 06F1/3 -> 06F4/19`
+
+`06F4_ACK_TX_EXECUTED ... ENTER_PERSISTENT_RUNTIME_SERVICE` occurred at `00:52:03.257`, about 32.252 s after the logged R1 execution.
+
+### Fresh runtime qualification after recovery
+
+Immediately after entering stage 40, `FC16 085F/count5` was observed and ACKed. A fresh exact `0708/count6` request was then serviced.
+
+At `00:52:04.887`:
+
+`RECOVERY_POSITIVE success=1 runtimeFC16ACK=1 idle0708=1 r1Used=1 cacheValid=1 writeState=0 DE=LOW`
+
+Total time from recovery arm to positive post-recovery runtime qualification was about 45.297 s.
+
+### Post-recovery observation
+
+A later heartbeat showed:
+
+- `runtimeFC16ACK=22`
+- `idle0708=12`
+- `rt085F=1`
+- `unknown16=0`
+- `unknown03=0`
+- `peer17=0`
+- `peer16ack=0`
+- `resync=0`
+- `drops=0`
+- `DE=LOW`
+- `cacheValid=1`
+- `cache03F4=22`
+- `semanticResponses=0`
+- `confirmedWrites=0`
+
+No STOP, ABORT or INCONCLUSIVE event was found after recovery arm.
+
+### State-guard progression
+
+The fresh-session log observed:
+
+`A80E/A80F = 0000/0005 -> 0008/0005 -> 0028/0005 -> 0028/000A`
+
+This progression is observation only; no abstract semantic labels are assigned.
+
+## CONCLUSION
+
+**COMPLETE / POSITIVE.**
+
+A running ESP/DCM emulator recovered from a real Thermia-controller power cycle without ESP reboot. The locally proven recovery chain is:
+
+`qualified retained stage40 -> >=5 s bus silence -> bus return -> A80E=0000/A80F=0005 -> exact 071C/0730 challenge -> one R1 -> full ordered initial-sync ACK chain -> 06F4/count19 -> stage40 -> fresh runtime FC16 + 0708 -> recovered runtime qualified`
+
+No semantic Room Setpoint write was attempted after recovery; the user explicitly chose to skip that follow-up combination test.
+
+---
+
+# EXP356 — PREPARED / NOT RUN — post-recovery runtime soak
+
+**Date:** 2026-09-30  
+**Status:** PREPARED / NOT RUN
+
+**Baseline:** EXP355 COMPLETE / POSITIVE.
+
+**Hypothesis:** a session recovered through the proven EXP355 controller cold-reboot path remains stable for an extended post-recovery soak.
+
+**Controlled change:** observation/hardening only. No new register, page, selector, R1 payload, ACK shape or semantic target. No post-recovery Room Setpoint write.
+
+**Positive criteria:** recovered stage-40 runtime continues servicing known FC16 and idle `0708/count6` traffic without unknown FC16/FC03, peer responder, parser resync, RX drop, alarm or loss of DCM presentation.
+
+**Negative/abort:** existing fail-closed runtime/session/parser conditions remain authoritative.
+
+**Result:** not run yet. Await user-supplied overnight log/result.
+
+---
+
 # EXP353 — COMPLETE / POSITIVE — reusable stale-cache refresh follow-up
 
 **Date:** 2026-09-30  
