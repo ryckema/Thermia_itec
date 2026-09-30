@@ -1,3 +1,47 @@
+# 2026-09-30 — EXP318–322 retained recovery, 04A6 context split, and clean-reboot baseline
+
+## PROVEN / locally confirmed
+
+- In the tested retained context, exact `085F/5` with words `0000 0000 0800 0000 0000` advances to exact all-zero `085F/5` after one qualified standard FC16 ACK.
+- In EXP319, after the `085F(0800)` prerequisite was serviced, one qualified standard ACK to exact all-zero `085F/5` was followed 2.381 s later by direct `0884/60`.
+- In EXP320, one qualified standard ACK to `0884/60` was followed 4.328 s later by direct `07D0/19`.
+- Therefore the locally confirmed retained branch includes:
+  `085F(0800) --ACK--> all-zero 085F --ACK--> 0884/60 --ACK--> 07D0/19`.
+- EXP312 had independently shown `0884 ACK -> 0708 (NO_TX) -> 07D0`; EXP320 proves `0708` is not a mandatory immediate post-`0884` step in every retained context.
+- EXP322 passively proved that, after a controller reboot and with emulator TX=0, this local XTR M repeatedly emits sparse `04A6/13` and exact all-zero `085F/5` with no normal runtime pages. Over 90 s: `04A6=83`, `085F-zero=42`, all tracked runtime pages=0, parser resync=0, RX drops=0.
+- The sparse EXP322 `04A6` payload remained invariant:
+  `0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 4020 0000 0000`.
+- Repeated `04A6/13` alone is not a reliable indicator of the prior visible alarm state, because it persists after the controller reboot that cleared those errors.
+
+## STRONGLY SUPPORTED
+
+- **Genuine XTR/DCM capture evidence:** a real DCM ACKs at least one richer `04A6/13` configuration payload with standard FC16 ACK `0F 10 04 A6 00 0D E1 F1`.
+- Genuine configuration captures place `04A6/13` inside a broader FC16 configuration/page-sync family rather than proving it is a standalone alarm frame.
+- The apparent sequence `04A6 ACK -> 085F` in some captures should not be treated as a universal causal rule. All-zero `085F` can recur periodically among different configuration pages.
+- The post-reboot reappearance of all-zero `085F/5` is a more useful discriminator between EXP321 and EXP322 than the mere presence of `04A6`.
+
+## HYPOTHESIS
+
+- In the clean post-reboot state, one conservatively qualified standard ACK to exact all-zero `085F/5` may advance the controller to `0708/6` or another known initialization/runtime state.
+- The sparse `04A6` seen locally may represent a retryable initialization/configuration state, but its exact semantics remain unknown.
+- The richer genuine `04A6` payload and the sparse local `04A6` payload may belong to different sub-states of the same configuration family.
+
+## OPEN / UNKNOWN
+
+- First non-`04A6` state after ACKing exact all-zero `085F/5` in the current clean post-reboot condition.
+- Whether the sparse `04A6` payload should receive the same ACK policy as the richer genuine DCM configuration payload.
+- Exact word semantics of both sparse and rich `04A6/13` payloads.
+- Exact semantics of `0861=0x0800`.
+- Exact `0708` mailbox/scheduler latching rules.
+- Long-duration stability once the clean-start path is reconnected to the proven runtime responder.
+
+## DISPROVEN / SUPERSEDED
+
+- **Superseded:** treating every runtime/config `04A6/13` as globally capture-only in the protocol model. Capture-only remains the current local safety policy, but genuine XTR/DCM evidence proves that real DCM firmware does ACK at least some `04A6/13` configuration frames.
+- **Superseded:** the hypothesis that repeated `04A6` by itself identifies the visible alarm/retry state. EXP322 shows repeated `04A6` after a controller reboot that cleared the visible errors.
+
+---
+
 # 2026-09-30 — EXP313–315 retained-runtime direct handoff and sustained steady-state findings
 
 ## PROVEN / locally confirmed
