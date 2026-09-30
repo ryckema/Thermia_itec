@@ -112,7 +112,7 @@ Use this for normal Home Assistant operation and for sharing with other users.
 
 Current file:
 
-`thermia_itec_xtr_m_waveshare_public_v27.yaml`
+`Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v27.yaml`
 
 ### Research / register mapping
 
@@ -127,7 +127,7 @@ Use this when capturing the bus to identify or verify additional registers.
 
 Current file:
 
-`thermia_itec_xtr_m_waveshare_research_v27.yaml`
+`Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v27.yaml`
 
 Both variants use the same confirmed bus parameters and decoded register logic. New discoveries should first be verified in the research build and only then promoted to the public build.
 
@@ -159,7 +159,7 @@ Compared with v25, v26 does **not** add Thermia TX or write controls. It is a re
 
 ## Installation
 
-1. Choose either `thermia_itec_xtr_m_waveshare_public_v27.yaml` or `thermia_itec_xtr_m_waveshare_research_v27.yaml` and copy it into your ESPHome configuration directory.
+1. Choose either `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v27.yaml` or `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v27.yaml` and copy it into your ESPHome configuration directory.
 2. Copy the entries from `secrets.example.yaml` into your ESPHome `secrets.yaml`.
 3. Replace the placeholder values with your Wi-Fi, API encryption key, OTA password and fallback-AP password.
 4. Connect the RS485 bus as shown above.
