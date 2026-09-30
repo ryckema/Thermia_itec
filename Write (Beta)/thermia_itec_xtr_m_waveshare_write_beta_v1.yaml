@@ -5293,7 +5293,6 @@ number:
     id: thermia_write_desired_room_setpoint
     name: "Thermia Desired Room Setpoint"
     entity_category: config
-    disabled_by_default: true
     icon: mdi:thermometer
     unit_of_measurement: "°C"
     min_value: 10
