@@ -1,3 +1,131 @@
+# EXP352 — COMPLETE / POSITIVE — runtime-independent fresh-page refresh + reusable room-setpoint writes
+
+**Date:** 2026-09-30  
+**Status:** COMPLETE / POSITIVE
+
+## PREPARED
+
+**Baseline:** EXP351 COMPLETE / INCONCLUSIVE.
+
+**Hypothesis:** retained stage-40 runtime does not require a hard-coded `03E8` page image. Start/qualify runtime with no write-eligible semantic cache, then obtain a fresh controller page on demand through W3 bit0 before using the proven W1-bit0 desired-page write path.
+
+**Controlled change:** remove EXP351's hard-coded historical handover-equality gate; seed `page_cache_valid=false` at boot; preserve the known-good retained runtime and EXP351 refresh-only state machine.
+
+**Refresh action under test:** on stale/missing cache, next exact `0708/count6` response uses
+`W0..W5 = 0000 0000 0000 0001 0000 0006`
+(frame `0F030C000000000000000100000006A0B6`), with W1=0 and no semantic page values sent.
+
+**Safety:** no semantic TX before retained runtime qualification; requested/current `03F4` whole-degree 10..30 °C; maximum one refresh request for this experiment; unexpected FC03 03E8 during refresh is not answered; 10 s refresh timeout; one outstanding semantic transaction; exact republish with zero extra deltas; fail closed on session/runtime/parser anomalies.
+
+## RESULT
+
+### Runtime qualification
+- Automatic retained stage 40 qualified after ESP OTA.
+- No Thermia-controller reboot and no new R1/bootstrap.
+- Known runtime FC16 ACK service and exact `0708` idle service with W5=0006 continued.
+- User later confirmed no alarm and DCM icon still visible.
+
+### Refresh-only discriminator — POSITIVE
+- First Apply: target 25 °C, `cacheValid=0`; log:
+  `CACHE_REFRESH_ARM ... requested03F4=25 ... NO_SEMANTIC_TX`.
+- On the next exact `0708/count6`, emulator sent:
+  `0F030C000000000000000100000006A0B6`
+  = `0000,0000,0000,0001,0000,0006`.
+- About 120 ms later the controller published:
+  `FC16 03E8/count14`, current `03F4=23`.
+- Log:
+  `REFRESH_CONFIRMED refreshNo=1 current03F4=23 target03F4=25 latency=120ms source=controller_FC16_03E8_14 W1=0000 W3bit0=1 NO_DESIRED_PULL=1 CACHE_FRESH=1`.
+- No desired-page FC03 pull preceded this controller refresh.
+
+**Conclusion:** W3 bit0 -> current-page/PUSH refresh for `03E8` is now **PROVEN / locally confirmed** on this XTR M in the tested retained stage-40 context.
+
+### Semantic writes
+Six ESP-originated writes were controller-confirmed in the same retained runtime, each with `extraDeltaWords=0`:
+
+1. `23 -> 25`
+2. `25 -> 17`
+3. `17 -> 23`
+4. `23 -> 21`
+5. after a native/controller update to 22: `22 -> 21`
+6. after a native/controller update to 19: `19 -> 21`
+
+Each exact controller republish became the next-write source.
+
+### Native / physical changes during emulator runtime
+- While `writeState=4` with no ESP semantic write pending, controller published a new `FC16 03E8/count14` with `03F4=22`; EXP352 logged `03E8_CACHE_REFRESH current03F4=22 source=runtime_controller_FC16` and promoted it to the live cache.
+- Later controller independently published `03F4=19`; user explicitly confirmed **19 °C was set on the Thermia front display**.
+- EXP352 promoted 19 to the live cache.
+- The next ESP write then correctly used `current03F4=19` as its source and wrote `19 -> 21`.
+- The precise physical source of the separate 22 °C native update is not assigned because both room-sensor and Thermia controls were used in this run.
+
+### End-to-end state
+- User confirmed **no alarm**.
+- DCM icon remained visible.
+- Runtime continued after refresh, six writes and native UI changes.
+
+**Conclusion:** the production-relevant architecture is now locally proven for Room Setpoint: persistent retained DCM runtime can operate independently from semantic cache provenance; stale/missing `03E8` can be refreshed on demand through W3 bit0; the proven W1-bit0 desired-page flow can then write `03F4`; controller-originated native changes update the cache and become the source for subsequent HA writes.
+
+---
+
+# EXP351 — COMPLETE / INCONCLUSIVE — refresh hypothesis not reached because emulator activation was gated
+
+**Date:** 2026-09-30  
+**Status:** COMPLETE / INCONCLUSIVE
+
+## PREPARED
+
+**Baseline:** EXP350 automatic retained runtime worked, but a later semantic write was blocked by the 300 s `03E8` cache-freshness guard.
+
+**Hypothesis:** when cache is stale, a W3-bit0-only `0708` response with W1=0 and W5=0006 can request a fresh controller-originated `03E8` page before the semantic write.
+
+**Controlled change:** add one bounded refresh-only request and keep the EXP350 write flow otherwise unchanged.
+
+## RESULT
+
+The intended protocol action was never reached.
+
+EXP351 automatic startup still contained a historical handover safety gate that required persisted mapped `03E8` settings to exactly match a hard-coded previous page, including the old 22 °C room-setpoint value. The live system had already moved away from that historical state, so startup returned before `exp351_active=true` / stage 40.
+
+Observed consequence:
+- no `RETAINED_RUNTIME_QUALIFIED`;
+- EXP351 runtime/cache age sensors remained unset/NaN;
+- user reported that the emulator appeared not to trigger and an alarm appeared;
+- no W3 refresh-only discriminator was validly tested.
+
+**Conclusion:** no negative conclusion about W3 refresh can be drawn from EXP351. The experiment is **INCONCLUSIVE due to implementation gating**. The historical exact-page prerequisite is superseded as a runtime-liveness requirement; EXP352 separates session/runtime liveness from semantic page provenance.
+
+---
+
+# EXP350 — COMPLETE / INCONCLUSIVE — automatic retained qualification positive; long-interval write blocked by stale cache
+
+**Date:** 2026-09-30  
+**Status:** COMPLETE / INCONCLUSIVE
+
+## PREPARED
+
+**Baseline:** EXP349 COMPLETE / POSITIVE.
+
+**Hypothesis:** remove the manual Arm control, automatically qualify the retained stage-40 session after ESP boot/OTA, and then sustain reusable setpoint control over a longer soak.
+
+**Controlled change:** automatic retained qualification replaces manual Arm. Existing setpoint write path, 10..30 °C guard, <=300 s cache freshness, exact republish verification and eight-response semantic budget remain unchanged.
+
+## RESULT
+
+Positive sub-results:
+- automatic retained qualification worked;
+- persistent stage-40 runtime remained healthy;
+- user confirmed no error/alarm and DCM icon still visible.
+
+The long-interval semantic write itself was not performed. On Apply:
+- `cacheValid=1`;
+- cached `03F4=23`;
+- `cacheAge` about 715493 ms;
+- implementation correctly refused the write because the page exceeded the 300 s freshness limit.
+
+**Conclusion:** EXP350 does not falsify the write path. It exposed a real production requirement: after long idle periods the emulator must obtain a fresh controller page rather than weaken/remove the cache-freshness safeguard. This led to EXP351/352.
+
+---
+
 # EXP349 — COMPLETE / POSITIVE — reusable guarded room-setpoint writes in one retained session
 
 **Date:** 2026-09-30  
