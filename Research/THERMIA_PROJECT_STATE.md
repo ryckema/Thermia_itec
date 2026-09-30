@@ -1,3 +1,103 @@
+# 2026-09-30 — EXP330 COMPLETE / POSITIVE; EXP331 PREPARED / NOT RUN
+
+**Authoritative current state:** EXP330 is **COMPLETE / POSITIVE** from the supplied local XTR M log. EXP331 is **PREPARED / NOT RUN**. No result for EXP331 has been supplied yet.
+
+## Current experiment — EXP331
+
+**Status:** **PREPARED / NOT RUN**
+
+**Hypothesis:** after reproducing the now locally confirmed fresh-session prefix through `0492/11 ACK -> 04A6/13`, a bounded eight-block continuation matching genuine Eco 5 / earlier local research will advance:
+
+`04A6/13 -> 04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10 -> 0532/18 -> 0546/20 -> 055A/33`
+
+**Controlled change from EXP330:** preserve the complete proven prefix and, instead of stopping at `04A6/13`, ACK exactly the eight listed FC16 pages once each. After the `0546/20` ACK, all traffic is capture-only. No `055A` ACK, no FC03/mailbox response, no 0x06 response, and no semantic register-value write.
+
+**Safety:** the added transmissions are standard FC16 address/count ACKs only; each stage is exact-shape, ordered, timed and fail-closed. Maximum active experiment TX is one fixed R1 plus 17 FC16 ACKs. Recovery remains: abort, verify DE LOW, reboot the Thermia controller if the deliberately incomplete Online session produces an alarm.
+
+## Last completed experiment — EXP330
+
+**Status:** **COMPLETE / POSITIVE**
+
+EXP330 reproduced the complete locally proven fresh-session prefix and then tested the new bounded continuation:
+
+`046A/18 -> ACK -> 047E/19 -> ACK -> 0492/11 -> ACK -> 04A6/13`
+
+Observed:
+- exact `046A/count18` accepted its standard ACK;
+- exact `047E/count19` followed and accepted its standard ACK;
+- exact `0492/count11` followed and accepted its standard ACK;
+- exact `04A6/count13` then appeared as the first predicted next stage, approximately 571 ms after the `0492` ACK;
+- no ACK was sent to `04A6`;
+- no post-R1 challenge retry, no external FC17 responder, no external FC16 ACK, parser resync delta 0, RX-drop delta 0, DE LOW.
+
+## Fresh-session findings added by EXP323–330
+
+- **EXP323 — COMPLETE / INCONCLUSIVE:** one standard ACK to the second qualified all-zero `085F/5` did not establish the fresh Online path; after the ACK, only `04A6/13` remained visible during the bounded observation.
+- **EXP324 — COMPLETE / INCONCLUSIVE:** ESP OTA reboot without controller reboot did not recreate the all-zero `085F` qualification state; only `04A6/13` appeared. This reinforced that controller-side state persists across ESP reboot.
+- **EXP325 — COMPLETE / POSITIVE:** after a true controller reboot, one fixed previously captured R1 response to the first exact fresh `071C/0730` FC17 challenge, under the observed fresh guard `A80E=0000 / A80F=0005`, caused `03E8/count14` to appear about 120 ms later. No 0x06 emulation, 04A6/085F ACK, FC16 ACK or mailbox response was required before `03E8`.
+- **EXP326 — COMPLETE / POSITIVE:** one standard ACK to exact `03E8/count14` advanced the controller to exact `03FC/count11`.
+- **EXP327 — COMPLETE / POSITIVE:** one standard ACK to exact `03FC/count11` advanced the controller to exact `0410/count22`.
+- **EXP328 — COMPLETE / POSITIVE:** one standard ACK to exact `0410/count22` advanced the controller to exact `042E/count15`.
+- **EXP329 — COMPLETE / POSITIVE:** one bounded run locally confirmed `042E/15 ACK -> 0442/13 ACK -> 0456/12 ACK -> 046A/18`.
+- **EXP330 — COMPLETE / POSITIVE:** one bounded run locally confirmed `046A/18 ACK -> 047E/19 ACK -> 0492/11 ACK -> 04A6/13`.
+
+## Current locally proven fresh-session prefix
+
+`fresh controller boot`
+`-> exact 071C/0730 challenge`
+`-> fixed previously accepted R1`
+`-> 03E8/14 ACK`
+`-> 03FC/11 ACK`
+`-> 0410/22 ACK`
+`-> 042E/15 ACK`
+`-> 0442/13 ACK`
+`-> 0456/12 ACK`
+`-> 046A/18 ACK`
+`-> 047E/19 ACK`
+`-> 0492/11 ACK`
+`-> 04A6/13`
+
+This is **PROVEN / locally confirmed for the tested XTR M context**. It does not prove the semantic meaning of the exported blocks.
+
+## Current protocol model
+
+There are two locally demonstrated families of Online/DCM behavior:
+
+1. **Fresh-session approval + ordered initial sync:** fresh controller state exposes `071C/0730`; one fixed captured R1 can be accepted even when the live challenge differs from the challenge that originally produced that R1. The controller then advances through an ACK-driven FC16 initial-sync chain.
+2. **Retained-session/runtime recovery:** previously proven retained branches can rejoin the steady runtime scheduler without repeating fresh approval.
+
+The fresh prefix through `04A6/13` is now independently re-confirmed by EXP325–330. Standard FC16 ACKs are causal state-machine acknowledgements in this chain; they acknowledge address/count and do not inject the controller-exported values.
+
+## Strong conclusions
+
+- The fresh `071C/0730` FC17 exchange is a major session-entry gate on this XTR M.
+- Strict per-live-challenge uniqueness is not required for acceptance in the tested case: fixed R1 replay was accepted against a different live challenge.
+- Do **not** generalize that into “arbitrary responses work” or “there is no authentication”; those remain unproven.
+- The fresh initial sync is an ordered, ACK-driven FC16 state machine at least through `0492/11 -> 04A6/13`.
+- `04A6/13` is context-sensitive: it occurs as the predicted post-`0492` initialization stage and also as recurrent sparse/runtime traffic in other contexts. ACK policy must therefore remain state-specific.
+
+## Important unknowns
+
+- Exact algorithm / security semantics / lifetime scope of the `071C/0730` response.
+- Whether the fixed R1 remains acceptable across firmware changes or other XTR units.
+- Semantic meaning of the individual initial-sync blocks.
+- Exact boundary where initial sync hands over to mailbox/startup/runtime.
+- Whether the EXP331 continuation reaches `055A/33` cleanly in this current run.
+- Exact `04A6` payload semantics across initialization, sparse passive and runtime contexts.
+- Multi-hour production stability and rare/fault branches remain separate validation work.
+
+## Safety constraints
+
+- Exact slave/function/start/count/bytecount/length/CRC and state guards remain mandatory.
+- No broad ACKing of unknown FC16 traffic.
+- Unexpected traffic is capture-only / fail-closed.
+- No semantic write is authorized by EXP331.
+- 0x06 accessory emulation remains outside this fresh-session experiment.
+- ESP reboot is not controller-state rollback.
+- Controller reboot remains the known way to obtain a controlled fresh-session state when required.
+
+---
+
 # 2026-09-30 — EXP322 COMPLETE / POSITIVE passive clean-reboot baseline; EXP323 next / NOT YET PREPARED
 
 **Authoritative current state:** EXP322 is **COMPLETE / POSITIVE** as a passive baseline from the supplied local log. EXP321 is **COMPLETE / INCONCLUSIVE**. The Thermia controller was manually rebooted by the user between EXP321 and EXP322 to clear the visible errors. EXP323 is the next proposed experiment and is **NOT YET PREPARED / NOT RUN**.
