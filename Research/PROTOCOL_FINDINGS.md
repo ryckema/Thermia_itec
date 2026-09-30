@@ -1,3 +1,64 @@
+# 2026-09-30 — EXP346 durable finding: persistent native semantic write + rollback
+
+## PROVEN / locally confirmed — guarded 03F4 semantic control inside persistent DCM runtime
+
+EXP346 combines the two previously separate local capabilities established by EXP343 and EXP345.
+
+In a fresh XTR M Online/DCM-emulation session that had already reached persistent stage 40 with idle 0708 W5=0006:
+
+- controller-originated `03E8/count14` was cached from the same session with `03F4=22`;
+- a guarded 0708 desired-page selector advertised 03E8 while retaining W5=0006;
+- the controller initiated `FC03 03E8/count14`;
+- the emulator returned the same 14-word page with exactly one delta, `03F4 0016 -> 0015`;
+- the controller republished `FC16 03E8/count14` with `03F4=0015` and no other page-word delta;
+- Home Assistant room setpoint became 21 °C;
+- persistent runtime continued and the user observed the DCM icon still present with no Online/Link error;
+- a second guarded native transaction restored `03F4 0015 -> 0016`;
+- the controller republished the restored page with zero extra deltas;
+- Home Assistant room setpoint returned to 22 °C;
+- persistent runtime and DCM indication again remained intact.
+
+**Durable conclusion:** on this XTR M, the native Online/DCM mailbox + desired-page mechanism is sufficient for reversible semantic control of mapped register 03F4 **without leaving the persistent connected session**.
+
+This is stronger than EXP343 alone (semantic application) and EXP345 alone (persistent DCM presentation): EXP346 proves the two behaviors coexist in one live session.
+
+## PROVEN / locally confirmed — exact tested semantic roundtrip
+
+Test:
+`03F4 0016 (22 °C) -> 0015 (21 °C)`
+
+Rollback:
+`03F4 0015 (21 °C) -> 0016 (22 °C)`
+
+Both controller republishes matched all 14 words of the expected page, with `extraDeltaWords=0`.
+
+## PROVEN / locally confirmed — connected mailbox selector used during semantic write
+
+The tested selector response was:
+
+`0F030C000000010000000100000006AD26`
+
+Decoded words:
+
+`W0=0000 W1=0001 W2=0000 W3=0001 W4=0000 W5=0006`
+
+In this tested context:
+- W1 bit0 advertises desired page 03E8;
+- W3 bit0 is simultaneously present in the connected selector used by EXP346;
+- W5=0006 is retained from the proven persistent-connected baseline.
+
+Do not over-interpret W3 bit0 as a required universal condition from this single combined test; the broader W2:W3 PUSH/current-page interpretation remains **STRONGLY SUPPORTED**, while exact selector composition rules outside the tested path remain to be generalized.
+
+## OPEN / UNKNOWN
+
+- exact semantic meaning of W5=0006;
+- whether W3 bit0 is required for every 03E8 write while connected, versus simply reflecting current-page state;
+- generality of the write path to other mapped pages/registers on XTR M;
+- long-term repeated-write behavior without controller reboot;
+- limits/range validation required for production-grade control.
+
+---
+
 # 2026-09-30 — Durable findings from EXP343–345
 
 ## PROVEN / locally confirmed — native desired-page semantic application
