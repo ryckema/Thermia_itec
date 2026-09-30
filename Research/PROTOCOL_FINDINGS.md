@@ -1,3 +1,59 @@
+# 2026-09-30 — EXP313–315 retained-runtime direct handoff and sustained steady-state findings
+
+## PROVEN / locally confirmed
+
+- The XTR M controller can preserve Online/DCM scheduler state across ESP restart/OTA and can be encountered already inside the normal runtime graph rather than at fresh approval or an early retained-recovery stage.
+- Exact retained `07D0/19` can accept the already-proven standard ACK as a handoff attempt. EXP313 showed that the controller then produced `0708/6` before `07E4/17` in that retained context.
+- Exact retained `07E4/17`, when observed repeatedly and qualified before any ESP TX, can be used as a direct runtime re-entry node with the already-proven ACK `0F 10 07 E4 00 11 40 68`.
+- EXP315 proved that direct retained takeover at `07E4/17` can hand off into the existing EXP296/297 runtime responder and sustain at least **126.401 s and 6 complete returned runtime loops**.
+- The successful EXP315 run ended intentionally at a returned `07D0/19` boundary left NO_TX, with `TX=84`, `events=84`, `r0708=30`, `unexpected=0`, `resync=0`, `drops=0`, `DE=LOW`.
+- In that successful run no retained-recovery ACKs for `0662`, `085F(0800)`, all-zero `085F`, `0864`, `0870` or `0884` were needed before handoff. Direct known-node takeover was sufficient.
+- The earlier hypothesis that retained recovery must first be forced back to a single universal anchor such as `0848` or `07D0` is superseded. The safer production model is current-state classification plus node-specific handoff where locally proven.
+
+## STRONGLY SUPPORTED
+
+- A production DCM emulator should have two complementary retained-session mechanisms:
+  1. direct re-entry at a recognized, qualified normal-runtime node;
+  2. adaptive retained recovery only when the controller is in a recovery/retry state.
+- Sustained Online/DCM health is tied to continuing the scheduler rather than merely issuing an isolated recovery ACK.
+- `0708` should remain modeled as an event that can appear between FC16 scheduler nodes. Its correct treatment is context-dependent; EXP313 showed it can appear immediately after a retained `07D0` handoff, while EXP315 showed normal evidence-backed runtime responses can sustain the session after direct `07E4` entry.
+- Runtime takeover must preserve the allowed-next-event set for the node at which handoff occurs; a generic broad ACK policy is not justified.
+
+## HYPOTHESIS
+
+- Other already-proven normal runtime nodes may also be safe direct retained-entry anchors if they are conservatively qualified and joined with their existing next-event graph.
+- A unified state machine combining fresh startup, controller-reboot recovery, direct retained-runtime node takeover and adaptive retained recovery should be sufficient for production use without requiring a Thermia-controller reboot after every ESP restart.
+- Longer-term Online/Link alarm clearing should correlate with sustained scheduler service, but durable alarm behavior across hours and operating modes still needs dedicated observation.
+
+## OPEN / UNKNOWN
+
+- Which additional runtime nodes are safe direct retained-entry anchors beyond the locally proven `07E4/17` handoff and the partially validated `07D0` handoff.
+- Multi-hour/overnight stability across compressor state changes, DHW cycles, defrost, SG transitions and faults.
+- Exact long-term semantics and required cadence of `0708`.
+- Exact session-liveness/watchdog interval.
+- Exact semantics of `0861=0x0800`.
+- Runtime `04A6/13` semantics and native ACK policy.
+- Genuine `071C/0730` challenge-response algorithm.
+- Rare scheduler branches and fault-state recovery behavior.
+
+## DISPROVEN / SUPERSEDED
+
+- **SUPERSEDED:** retained-session recovery must first return to one specific anchor before steady runtime can resume. EXP315 proved direct steady-runtime takeover at retained `07E4/17`.
+- **SUPERSEDED:** ESP restart implies the controller will reopen fresh approval/config sync. EXP298–315 show persistent retained controller/session state across ESP restart/OTA.
+- **SUPERSEDED:** a production emulator should enforce one rigid exact-next-frame chain across all reconnect conditions. Retained-state evidence requires a qualified branch-aware event graph.
+
+## Safety interpretation
+
+- Direct retained-node takeover does not authorize unknown nodes. Only exact, locally proven frame shapes with node-specific next-event rules may be serviced.
+- Standard FC16 ACKs still acknowledge slave/function/start/count only and do not inject the controller-originated payload values.
+- `0834/18` remains capture-only/unsupported.
+- Runtime `04A6/13` remains capture-only until separately tested.
+- Unexpected `0x0F` traffic remains capture-only/fail-closed.
+- ESP reboot/OTA is not rollback.
+- Manual alarm-observation buttons are not protocol evidence unless intentionally pressed while observing the actual front-panel state.
+
+---
+
 # 2026-09-29 — EXP298–312 retained-session recovery and branch-aware runtime findings
 
 ## PROVEN / locally confirmed
