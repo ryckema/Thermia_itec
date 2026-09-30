@@ -1,3 +1,33 @@
+# 2026-09-30 — EXP345 COMPLETE / POSITIVE; persistent DCM-connected baseline established
+
+**Authoritative current state:** EXP345 is **COMPLETE / POSITIVE** from supplied local XTR M logs plus the user's direct Thermia-screen observation. EXP343 is also confirmed **COMPLETE / POSITIVE** from its original result log. EXP346 is **NOT YET PREPARED / NOT RUN**.
+
+## Current proven integration chain
+
+- **EXP343 — COMPLETE / POSITIVE:** authentic 0708 selector caused controller FC03 03E8/14; emulator returned the same-session page with only 03F4 changed 0016 -> 0015; about 690 ms later controller republished exactly that one-word change, and Room Setpoint Mirror / Room Setpoint reported 21 °C. This is local semantic application.
+- **EXP344 — COMPLETE / NEGATIVE for persistent DCM-connected indication; POSITIVE transport sub-result:** persistent stage-40 runtime stayed clean >15 min with all-zero idle 0708 response, but the DCM icon was absent after the soak; no Online/Link error.
+- **EXP345 — COMPLETE / POSITIVE:** same persistent runtime design, with only idle-0708 W5 changed 0000 -> 0006. At runtime age 900.5 s: runtimeFC16ACK=379, idle0708=210, unknown16=0, unknown03=0, peer17=0, peer16ack=0, resync=0, drops=0, DE=LOW. User confirmed DCM icon remained present and no COMM. ERR ONLINE/LINK.
+
+## Controlled A/B result
+
+    EXP344 W0..W5 = 0000 0000 0000 0000 0000 0000
+    EXP345 W0..W5 = 0000 0000 0000 0000 0000 0006
+
+All bootstrap, initial-sync, stage-40 runtime service and FC16 whitelist/ACK behavior were preserved. **Local conclusion:** W5=0006 is sufficient in this tested emulator/session context to retain the DCM-connected indication where W5=0000 did not. The semantic meaning of W5 remains **OPEN / UNKNOWN**.
+
+## Current protocol model
+
+Locally proven: fresh challenge/fixed-R1/full-sync path; persistent stage-40 Online runtime; interleaved 0708 mailbox service; authentic 03E8 PULL selection; semantic application of a same-session desired 03E8 page (EXP343); and >15-minute persistent DCM icon with W5=0006 (EXP345). W1 as low desired-page/PULL bitmap and W2:W3 as current-page/PUSH bitmap remain strongly supported. W0, W4 and exact W5 semantics remain open.
+
+## Next experiment
+
+**EXP346 — NOT YET PREPARED / NOT RUN.** Preferred target: preserve EXP345 as the persistent connected baseline and add one guarded native desired-page action using the already-proven EXP343 mechanism. Exact target/value, guard, rollback and stop criteria must be fixed before YAML generation.
+
+## Safety constraints
+
+No broad writes/scans or unknown-value injection. Any semantic write must use a locally mapped field, known current value, same-session page data and one controlled delta. Unexpected traffic remains capture-only/fail-closed. Preserve production/Home Assistant functionality; experimental controls remain under Configuration. Controller reboot remains recovery for an abnormal Online/Link state.
+
+---
 # 2026-09-30 — EXP340 COMPLETE / INCONCLUSIVE; 0708 offline reduction COMPLETE
 
 **Authoritative current state:** EXP340 is **COMPLETE / INCONCLUSIVE** from the supplied local XTR M log. The intended 07F8 -> 0708-zero -> next-FC16 path was not executed because retained runtime had already advanced to 080C/18 before EXP340 could transmit. The offline reduction of the available genuine gateway/DCM captures is **COMPLETE**. EXP341 is the next target, but is **NOT YET PREPARED / NOT RUN**.
