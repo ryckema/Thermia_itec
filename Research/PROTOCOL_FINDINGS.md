@@ -1,3 +1,80 @@
+# 2026-09-30 — EXP352 durable findings: local 03E8 PUSH refresh and runtime/cache separation
+
+## PROVEN / locally confirmed — 0708 W3 bit0 requests a fresh current 03E8 page on this XTR M
+
+EXP352 began with no write-eligible `03E8/count14` cache. On a user Apply, the emulator first sent **no semantic page values**. At the next exact `FC03 0708/count6` request it returned:
+
+    W0..W5 = 0000 0000 0000 0001 0000 0006
+    frame   = 0F030C000000000000000100000006A0B6
+
+Here W1 remained zero, so no desired-page/PULL bit was advertised. About 120 ms later the controller itself published `FC16 03E8/count14` with current `03F4=23`. The log reported:
+
+    REFRESH_CONFIRMED ... current03F4=23 ... latency=120ms
+    source=controller_FC16_03E8_14 W1=0000 W3bit0=1
+    NO_DESIRED_PULL=1 CACHE_FRESH=1
+
+No `FC03 03E8/count14` desired-page pull preceded that refresh.
+
+**Current status:** W3 bit0 -> current-page/PUSH refresh for page `03E8` is **PROVEN / locally confirmed** in the tested retained stage-40 context.
+
+This upgrades only **bit0/page 03E8**. The remainder of the 32-bit W2:W3 page map remains **STRONGLY SUPPORTED** by genuine DCM/Eco5/ATEC captures until individually or generically validated locally.
+
+## PROVEN / locally confirmed — retained runtime liveness is independent of a hard-coded 03E8 page image
+
+EXP351 failed to enter active stage 40 because implementation code required persisted mapped settings to match a hard-coded historical handover page. That prevented the intended refresh experiment and produced an abnormal Online state.
+
+EXP352 removed that equality prerequisite and intentionally started with:
+
+    page_cache_valid = false
+
+while retaining the same known-good runtime service. The XTR then qualified retained stage 40 normally, without Thermia reboot and without a new R1/bootstrap.
+
+**Conclusion:** a historical exact `03E8` page image is **not required** for retained Online/DCM runtime liveness on the tested XTR session. Semantic page freshness/provenance must be handled separately from session/runtime qualification.
+
+## DISPROVEN / SUPERSEDED — exact historical 03E8 handover equality as a runtime-entry prerequisite
+
+The EXP351 implementation assumption that the persisted mapped settings must exactly match one prior `03E8/count14` page before activating retained runtime is superseded.
+
+It was a local safety implementation, not a proven protocol requirement. EXP352 demonstrates successful retained runtime with no valid semantic page cache at boot.
+
+## PROVEN / locally confirmed — native/controller 03E8 publications refresh the semantic source cache
+
+During EXP352 normal stage-40 runtime, with no ESP semantic write pending, the controller independently published new `FC16 03E8/count14` pages.
+
+Observed examples:
+
+- controller publication with `03F4=22` -> emulator logged `03E8_CACHE_REFRESH current03F4=22 source=runtime_controller_FC16`;
+- later controller publication with `03F4=19` -> emulator updated the cache to 19.
+
+The user explicitly confirmed that **19 °C had been set on the Thermia front display**. Therefore the 19 °C event is locally tied to a native front-panel change. The exact physical source of the separate 22 °C event is left unresolved because both room-sensor and Thermia controls were used during the same run.
+
+A later HA/ESP semantic transaction used the refreshed 19 °C controller page as its source and successfully changed `19 -> 21`.
+
+**Conclusion:** the room-setpoint page cache can coexist with native physical control. A controller-originated `03E8` publication supersedes older cached state and is a valid source for a later guarded semantic write.
+
+## PROVEN / locally confirmed — refresh + repeated semantic writes coexist in one retained runtime
+
+After the W3-bit0 refresh, EXP352 completed six controller-confirmed ESP semantic writes in the same retained runtime:
+
+    23 -> 25
+    25 -> 17
+    17 -> 23
+    23 -> 21
+    22 -> 21   (after native/controller cache update)
+    19 -> 21   (after native Thermia-display cache update)
+
+Each controller confirmation reported `extraDeltaWords=0`; controller republished the complete accepted `03E8/count14` page and the latest page was promoted as next-write source.
+
+User confirmed no alarm and DCM icon remained visible.
+
+## OPEN / UNKNOWN — repeated refresh-only cycles per ESP boot
+
+EXP352 intentionally allowed only **one** W3-bit0 refresh-only request per ESP boot as an experimental safety budget.
+
+Therefore this experiment proves the refresh mechanism itself, but does **not** yet prove repeated stale-cache refresh cycles separated by long idle periods in one continuous ESP boot. This is the preferred next integration test before calling the setpoint control production-ready.
+
+---
+
 # 2026-09-30 — EXP347–349 retained-session reusable semantic control
 
 ## PROVEN / locally confirmed — retained session survives ESP OTA for semantic control
