@@ -1,5 +1,8 @@
 # Thermia iTec XTR M — Write (Beta)
 
+> [!WARNING]
+> **Active control software.** This build transmits on the Thermia internal RS485 bus and can change heat-pump settings. It has been locally tested only on the documented Thermia iTec XTR M configuration. Verify your wiring and configuration, keep the documented safeguards intact, and do not assume compatibility with other Thermia/Danfoss models. Use at your own risk; see the repository's [Disclaimer and license](../README.md#disclaimer-and-license).
+
 This folder contains the **active write-capable beta** for the tested Thermia iTec XTR M with the older/non-Genesis controller.
 
 Unlike the [Read-only](../Read-only/) builds, this firmware configures RS485 TX and actively participates in the native Thermia/Danfoss Online/DCM path. It preserves the normal monitoring entities while adding a guarded Room Setpoint write flow.
