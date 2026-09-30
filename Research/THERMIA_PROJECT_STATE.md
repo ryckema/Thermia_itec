@@ -1,3 +1,94 @@
+# 2026-09-30 — EXP352 COMPLETE / POSITIVE; retained runtime, fresh-page refresh and native coexistence proven
+
+**Authoritative current state:** EXP352 is **COMPLETE / POSITIVE** from the supplied local XTR M log plus the user's direct confirmation that there was **no alarm** and the DCM icon remained visible. EXP351 is **COMPLETE / INCONCLUSIVE** because its intended refresh hypothesis was never reached due to an implementation gate. EXP350 is **COMPLETE / INCONCLUSIVE** for the full soak-write hypothesis, with positive automatic-retained-runtime sub-results.
+
+## Current experiment/result
+
+### EXP352 — COMPLETE / POSITIVE
+
+**Hypothesis:** retained stage-40 Online/DCM runtime does not require a hard-coded boot-time `03E8/count14` page image. Runtime service and semantic-write page provenance can be separated: start/qualify the retained runtime with no write-eligible `03E8` cache, obtain a fresh controller-originated `03E8` page only when needed via the 0708 current-page/PUSH path, then use the already-proven guarded semantic write flow.
+
+**Controlled change from EXP351:** remove the hard-coded historical `03E8` handover equality gate that prevented stage-40 entry when the real setpoint no longer matched the old page; seed no valid/write-eligible `03E8` page at boot; preserve the known-good retained runtime service and the bounded W3-bit0 refresh-only path.
+
+### Observed facts
+
+- After ESP OTA/reboot, retained stage 40 qualified automatically with no Thermia-controller reboot and no new R1/bootstrap.
+- Runtime service remained clean: known controller FC16 pages were ACKed, exact idle `0708/count6` service continued with W5=`0006`, and relevant challenge/unknown/peer/resync/drop counters remained zero in the observed run.
+- The boot-time semantic page cache was intentionally invalid.
+- On the first Apply with target 25 °C and no valid cache, EXP352 armed refresh only; no semantic page was transmitted.
+- On the next exact `FC03 0708/count6`, EXP352 sent:
+  `W0..W5 = 0000 0000 0000 0001 0000 0006`
+  frame `0F030C000000000000000100000006A0B6`.
+- About 120 ms later, the controller itself published `FC16 03E8/count14` with current `03F4=23`; the log reported `REFRESH_CONFIRMED ... W1=0000 W3bit0=1 NO_DESIRED_PULL=1 CACHE_FRESH=1`.
+- The proven desired-page flow then wrote 23 -> 25 °C and the controller confirmed the exact page with `extraDeltaWords=0`.
+- Six ESP-originated semantic writes were confirmed in the same retained runtime:
+  `23 -> 25 -> 17 -> 23 -> 21`, then after a native/controller-originated update `22 -> 21`, then after another native update `19 -> 21`.
+- While no ESP semantic write was pending, the controller independently published a new `03E8/count14` with `03F4=22`; EXP352 promoted that controller page to the live cache.
+- Later the controller independently published `03F4=19`; the user explicitly confirmed that **19 °C was set on the Thermia front display**. EXP352 again promoted that page to the live cache.
+- The following ESP write used the newly observed native value as its source (`19 -> 21`), showing that a physical Thermia change is not overwritten from stale cached state.
+- User confirmed **no alarm** and **DCM icon still visible** after the run.
+
+## Strong conclusions
+
+**PROVEN / locally confirmed:** retained Online/DCM runtime qualification on this XTR M does not require a hard-coded historical `03E8` page image. Semantic page provenance can be kept separate from runtime/session liveness.
+
+**PROVEN / locally confirmed:** in the tested stage-40 context, `0708` **W3 bit0** with W1=0 requests a fresh current `03E8` page. The controller responded with its own `FC16 03E8/count14` publication and no desired-page FC03 pull occurred first. This upgrades W3 bit0 / page 03E8 from genuine-capture evidence to local XTR proof.
+
+**PROVEN / locally confirmed:** controller-originated `03E8` publications during normal runtime can safely refresh the source cache for later guarded room-setpoint writes. A Thermia-front-display change to 19 °C was observed as controller `FC16 03E8/count14` with `03F4=19`.
+
+**PROVEN / locally confirmed:** the combined flow
+`fresh-page refresh -> guarded semantic write -> exact controller republish -> continued runtime`
+works while the DCM icon remains present and no Online/Link alarm is observed.
+
+## Current protocol model
+
+The locally proven bidirectional cache model now includes:
+
+1. retained controller-side Online/DCM session surviving ESP OTA/reboot;
+2. automatic retained stage-40 qualification without manual Arm, Thermia reboot or new R1;
+3. persistent runtime FC16 service;
+4. idle `0708` service with W5=`0006`;
+5. W3 bit0 current-page/PUSH request for `03E8`;
+6. controller-originated `FC16 03E8/count14` refresh;
+7. W1 bit0 desired-page/PULL selector for `03E8`;
+8. controller `FC03 03E8/count14` desired-page read;
+9. desired page changing only locally mapped `03F4`;
+10. exact controller FC16 republish confirming semantic application;
+11. promotion of any new controller-originated/confirmed `03E8` page to the next-write source;
+12. coexistence with native Thermia-front-display changes during the same persistent DCM runtime.
+
+The **full** W2:W3 32-bit page map remains strongly supported by genuine DCM/Eco5/ATEC captures; only W3 bit0 -> `03E8` is now locally active-tested. W0, W4 and the abstract meaning of W5 remain open.
+
+## Immediately preceding results
+
+### EXP351 — COMPLETE / INCONCLUSIVE
+The planned W3-only stale-cache refresh test was **not reached**. Automatic stage-40 entry was incorrectly gated on persisted settings matching a hard-coded historical `03E8` handover image, including an old 22 °C setpoint. With live state changed, the experiment returned before activating the emulator. User observed alarm/no retained runtime. No valid protocol conclusion about W3 refresh is drawn from EXP351 itself; EXP352 removed the faulty gate and tested the intended hypothesis.
+
+### EXP350 — COMPLETE / INCONCLUSIVE
+Automatic retained-session qualification without a manual Arm control worked and the DCM presentation remained healthy; user confirmed no error and icon still visible. The later setpoint write was correctly refused because `cacheValid=1` but the `03E8` source cache was about 715 s old, beyond the 300 s freshness guard. This exposed the need for an explicit fresh-page request before long-interval writes rather than weakening the freshness guard.
+
+## Important unknowns / limits
+
+- EXP352 actively exercised **one** W3-bit0 refresh-only request per ESP boot. Repeated stale-cache refresh cycles in one long-lived boot are not yet locally proven.
+- Full W2:W3 page-refresh bitmap behavior beyond bit0/page 03E8 remains genuine-capture-supported rather than locally proven.
+- The source of the separate native/controller-originated 22 °C event is unresolved because both room-sensor and Thermia controls were used during the run. Do not label that event specifically as a room-sensor change.
+- Other writable settings/registers remain unproven; active writes stay limited to `03F4`.
+- W0, W4 and W5 field semantics remain open; W5=`0006` is a proven working runtime value, not a proven “connected flag.”
+
+## Next experiment
+
+**EXP353 — NOT YET PREPARED / NOT RUN.**
+
+Preferred controlled change: keep the complete EXP352 protocol path unchanged, but replace the **one-refresh-per-ESP-boot experimental budget** with a still-bounded reusable refresh mechanism (for example, several rate-limited refreshes in one boot). Validate at least three stale-cache cycles separated by >300 s, with each cycle:
+`Apply -> W3-bit0 refresh -> controller FC16 03E8 -> guarded W1-bit0 write -> exact republish -> READY`.
+Include at least one native Thermia/display change between cycles and verify that it becomes the next source cache. Do not introduce a second writable setting in the same experiment.
+
+## Safety constraints
+
+No broad writes, scans or unknown-value injection. Semantic control remains limited to locally mapped `03F4` inside `03E8/count14`, using only a fresh controller-originated/confirmed full page and changing one word. Keep 10..30 °C whole-degree guards, one outstanding transaction, exact republish verification and fail-closed handling. Unexpected session challenges, unknown FC16/FC03, peer responders, parser resyncs or RX drops remain abort conditions. Preserve the known-good W5=`0006` persistent runtime. Thermia-controller reboot is recovery only if an abnormal Online/Link state actually occurs.
+
+---
+
 # 2026-09-30 — EXP349 COMPLETE / POSITIVE; reusable HA-selected room-setpoint writes proven in one retained DCM session
 
 **Authoritative current state:** EXP349 is **COMPLETE / POSITIVE** from the supplied local XTR M log plus the user's direct confirmation that it worked perfectly. EXP348 and EXP347 are also **COMPLETE / POSITIVE**. EXP350 is **NOT YET PREPARED / NOT RUN**.
