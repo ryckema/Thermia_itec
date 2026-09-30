@@ -1,3 +1,140 @@
+# EXP340 — COMPLETE / INCONCLUSIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** in retained runtime, exact 07F8/count17 ACK -> exact 0708/count6 -> one genuine Eco5 all-zero six-word mailbox response should advance to the next non-background FC16 page.
+
+**Controlled change from EXP339:** retain the one exact 07F8 ACK and add exactly one all-zero response to the locally observed post-07F8 0708 poll; then capture-only.
+
+**Observed:** about 0.49 s after ARM, before 07F8 or 0708 and before any EXP340 TX, exact FC16 080C/count18 appeared. The experiment stopped fail-closed. peer17=0, peer16ack=0, resync=0, drops=0, DE LOW.
+
+**Result:** **COMPLETE / INCONCLUSIVE**. The intended hypothesis was not tested. The retained controller runtime had already advanced beyond the planned starting page during/after the ESP OTA reboot.
+
+---
+
+# EXP339 — COMPLETE / INCONCLUSIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** ACKing exact retained 07F8/count17 once will advance to the next runtime FC16 page.
+
+**Controlled change from EXP338:** wait exact 07F8, ACK it once with 0F1007F8001181AE, then capture the next non-background FC16; no mailbox response.
+
+**Observed:** exact 07F8/count17 arrived, was ACKed once, and about 1.57 s later exact FC03 0708/count6 appeared before another FC16. No 0708 response was sent; run stopped cleanly.
+
+**Result:** **COMPLETE / INCONCLUSIVE**. The post-07F8 transition is locally confirmed to admit/interleave a 0708 mailbox poll.
+
+---
+
+# EXP338 — COMPLETE / INCONCLUSIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** a retained 0708/count6 poll answered once with the genuine Eco5 all-zero six-word response will advance to the next runtime FC16.
+
+**Controlled change from EXP337:** no 07D0/07E4 ACKs; wait retained 0708 and respond once; capture next FC16.
+
+**Observed:** about 0.82 s after ARM, before any retained 0708 and with zero experiment TX, exact FC16 07F8/count17 appeared. The run stopped fail-closed.
+
+**Result:** **COMPLETE / INCONCLUSIVE**. The intended 0708-response hypothesis was not tested. Retained runtime progress continued across ESP OTA.
+
+---
+
+# EXP337 — COMPLETE / POSITIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** in retained runtime, exact 07D0/count19 ACK -> exact 07E4/count17 ACK -> exact FC03 0708/count6, without a fresh Thermia boot or startup replay.
+
+**Controlled change from EXP336:** remove the retained 0708 response test; instead ACK retained 07D0 once, ACK retained 07E4 once, then capture 0708 without responding.
+
+**Observed:** exact retained 07D0/19 was ACKed once; exact 07E4/17 followed about 2.205 s later and was ACKed once; exact FC03 0708/6 followed about 1.453 s after the 07E4 ACK. No R1, fresh sync, 085F ACK or mailbox response occurred in the run. Parser/RX counters remained clean and DE LOW.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+---
+
+# EXP336 — COMPLETE / INCONCLUSIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** in retained runtime, exact 0708/count6 -> one historical phase-matched 0080/0006 mailbox response -> 07D0/count19.
+
+**Controlled change from EXP335:** ESP OTA only, no Thermia reboot, no R1/cold ACK/new 085F ACK; wait retained 0708 and respond once.
+
+**Observed:** about 0.53 s after ARM and before any 0708 or experiment TX, exact 07D0/count19 appeared. challenges=0, postR1=0, rspUsed=0, resync=0, drops=0, DE LOW.
+
+**Result:** **COMPLETE / INCONCLUSIVE** for the planned hypothesis. **Positive retained-session evidence:** controller-side Online/runtime state survived ESP OTA and emitted 07D0 without a new startup exchange or an immediately preceding experimental mailbox response.
+
+---
+
+# EXP335 — COMPLETE / INCONCLUSIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after the fresh proven chain through 06F4, one exact all-zero 085F/count5 ACK might be sufficient to produce 07D0 without a mailbox response.
+
+**Controlled change:** ACK exact post-tail all-zero 085F once; do not answer 0708.
+
+**Observed:** after 06F4 ACK, all-zero 085F/5 appeared and was ACKed once. Exact FC03 0708/count6 appeared about 1.48 s later before 07D0. No mailbox response was sent.
+
+**Result:** **COMPLETE / INCONCLUSIVE**. This is a local counterexample to the simplified rule '085F ACK alone immediately yields 07D0'.
+
+---
+
+# EXP334 — COMPLETE / INCONCLUSIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after the full fresh prefix through 06F4, bounded service of 0708 with the historical all-zero-like response 0000 0000 0000 0000 0001 0000 while leaving 085F un-ACKed may advance to runtime.
+
+**Controlled change:** ignore post-tail 085F; send at most three matching 0708 responses.
+
+**Observed:** full chain through 06F4 completed; first 085F was ignored; three 0708 replies were sent; no fourth 0708 and no 07D0 appeared in the bounded window; recurring 085F continued. Bus integrity stayed clean.
+
+**Result:** **COMPLETE / INCONCLUSIVE**. Three mailbox replies without the post-tail 085F ACK were insufficient to establish 07D0 in this run.
+
+---
+
+# EXP333 — COMPLETE / POSITIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after the EXP332-proven prefix through 06C5, ACK 06EA/7, 06F1/3 and 06F4/19 and passively observe the post-sync transition.
+
+**Observed:** fresh fixed-R1 session reproduced the entire prior chain; exact 06EA/7, 06F1/3 and 06F4/19 were each ACKed. About 82 ms after 06F4 ACK, 085F/5 appeared; about 1.56 s after 06F4 ACK, exact FC03 0708/count6 appeared. No response was sent to either.
+
+**Result:** **COMPLETE / POSITIVE**. Fresh-session initial sync is locally proven through 06F4 and reaches the 085F/0708 post-tail region.
+
+---
+
+# EXP332 — COMPLETE / POSITIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** after the proven prefix through 0546, a bounded run of the twelve 33-word blocks 055A..06C5 will advance to 06EA/7.
+
+**Controlled change from EXP331:** ACK exactly 055A, 057B, 059C, 05BD, 05DE, 05FF, 0620, 0641, 0662, 0683, 06A4 and 06C5, each count33; capture 06EA without ACK.
+
+**Observed:** the twelve-block sequence completed in order and exact 06EA/count7 appeared as the next stage.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+---
+
+# EXP331 — COMPLETE / POSITIVE
+
+**Date:** 2026-09-30
+
+**Hypothesis:** extend the locally proven fresh prefix from 04A6/13 through 0546/20 and capture 055A/33.
+
+**Controlled change from EXP330:** add the bounded exact ACK sequence 04A6/13, 04BA/22, 04D8/27, 04F6/14, 050A/19, 051E/10, 0532/18, 0546/20; then capture-only.
+
+**Observed:** the ordered continuation completed and exact 055A/count33 appeared.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+---
 # EXP331 — PREPARED / NOT RUN
 
 **Date:** 2026-09-30

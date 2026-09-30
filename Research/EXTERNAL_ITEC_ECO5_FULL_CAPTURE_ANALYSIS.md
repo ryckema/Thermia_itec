@@ -1,3 +1,58 @@
+# 2026-09-30 addendum — full 0708 mailbox reduction across genuine captures
+
+A systematic offline reduction was run across the six available genuine gateway/DCM capture files (two iTec Eco5 gateway logs and four older genuine ATEC/DCM-family captures). The parser found 327 exact FC03 0708/count6 requests; 302 had paired six-word responses suitable for correlation.
+
+## Directional mailbox model
+
+Response words are written here as W0..W5:
+
+    W0 W1 W2 W3 W4 W5
+
+Best current interpretation:
+- W1: low 16-bit desired-page/PULL bitmap. A set bit asks the controller to read a desired page from slave 0x0F using FC03.
+- W2:W3: 32-bit current-page PUSH/refresh bitmap. Set bits select controller-originated FC16 pages.
+- W0: possible high half of the PULL bitmap, but always zero in the paired sample; hypothesis only.
+- W4/W5: unresolved lifecycle/status/capability/session fields.
+
+## W2:W3 page map
+
+The 32 push/refresh bits enumerate the configuration pages in order:
+
+    03E8 03FC 0410 042E 0442 0456 046A 047E
+    0492 04A6 04BA 04D8 04F6 050A 051E 0532
+    0546 055A 057B 059C 05BD 05DE 05FF 0620
+    0641 0662 0683 06A4 06C5 06EA 06F1 06F4
+
+Examples:
+- 4000:8000 selects 06F1 plus 0532.
+- FFFF:867F selects the corresponding 26-page Eco5 refresh set.
+- ATEC 7FFF:FFFF selects the first 31 pages through 06F1.
+
+## Desired-page PULL proof in the genuine captures
+
+Observed low-half selectors:
+- W1=0001 -> controller FC03 03E8.
+- W1=0008 -> controller FC03 042E.
+
+ATEC provides the clean directional discriminator: W1=0001 with W3=0000 is still followed by FC03 03E8. Therefore W1 and W3 are not duplicate copies of one request flag.
+
+Eco5 write-roundtrip examples then show:
+1. 0708 advertises W1 bit.
+2. Controller initiates FC03 for the selected page.
+3. Gateway returns desired page values.
+4. Controller subsequently republishes the accepted/current page with FC16.
+
+For 03E8/14, a captured desired page differs by only 03F4=0014->001E; a later event restores 001E->0014. For 042E/15, captured events change 042F and later 042E one at a time. These are genuine cross-model DCM behaviors, not yet local XTR write-path proof.
+
+## Runtime relation
+
+Normal genuine runtime interleaves 0708 polls between FC16 runtime/export pages. All-zero mailbox responses are common in ordinary runtime. The local XTR EXP337–340 retained-session observations now fit this architecture well, but cross-model ordering must not be promoted to local fact without direct confirmation.
+
+## Practical consequence
+
+The next local target should no longer be a guessed direct register write. It should be a bounded no-op desired-page pull using a locally cached 03E8/14 page, proving that the XTR controller will perform the same 0708 -> FC03 desired-page fetch without changing any register value.
+
+---
 # External iTec Eco 5 full gateway capture — analysis
 
 Date analysed: 2026-09-27

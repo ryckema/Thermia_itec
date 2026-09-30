@@ -1,3 +1,32 @@
+# Research status — 2026-09-30 — EXP340 COMPLETE / INCONCLUSIVE; native PULL path next
+
+**Last completed live experiment:** EXP340 — **COMPLETE / INCONCLUSIVE**.
+
+**Current next experiment:** EXP341 — **NOT YET PREPARED / NOT RUN**.
+
+The fresh XTR Online/DCM session is now locally reconstructed from fixed-R1 approval through the full configuration transfer ending at 06F4/19. EXP336–340 additionally show that controller runtime state survives ESP OTA reboot and continues through the 07D0/07E4/07F8/080C region while 0708 mailbox polls are interleaved.
+
+The highest-value new result is offline, from a systematic reduction of the available genuine gateway/DCM captures:
+
+- 327 exact FC03 0708/count6 requests were found; 302 had paired six-word responses suitable for reduction.
+- 0708 W2:W3 maps bit-for-bit to the 32 configuration pages 03E8 through 06F4 and drives controller->gateway FC16 refresh/export.
+- 0708 W1 bit0 causes controller FC03 pull of 03E8; W1 bit3 causes FC03 pull of 042E.
+- ATEC evidence shows W1=0001 can cause the 03E8 pull while W3=0000, separating the desired-page PULL direction from the current-page PUSH/refresh direction.
+- Genuine Eco5 desired-page transactions show the controller reading a page from the gateway and then republishing the accepted page via FC16. Captured examples change 03F4 only, and separately 042F/042E one at a time.
+
+**Current protocol model:** the native Online/DCM path is a bidirectional page cache, not a direct second-master register-write path. Current controller pages are exported by FC16; desired pages are advertised in 0708 and fetched by controller-initiated FC03.
+
+**Evidence classification:**
+- local XTR: fresh initial-sync chain, retained runtime progression, 03F4 room-setpoint mirror;
+- genuine Eco5/ATEC gateway captures: 0708 bitmap behavior, FC03 desired-page pulls, FC16 confirmation/republish;
+- W0 high-half PULL interpretation: hypothesis only;
+- W4/W5 semantics: open/unknown.
+
+**Way forward:** prepare EXP341 as a bounded no-op 03E8 desired-page PULL test. Cache a fresh local controller 03E8/14 image, advertise only the exact authentic 03E8 PULL selector at a valid 0708 point, answer the resulting controller FC03 only with the identical cached page, and stop/capture. No setting should change. Only after local no-op acceptance should a single known reversible semantic field ever be considered.
+
+Research-only GitHub maintenance in this update: canonical state/log/findings/status and external-capture analysis updated; detailed 0708 offline reduction added. Production/public YAML is unchanged.
+
+---
 # Research status — 2026-09-30 — EXP330 COMPLETE / POSITIVE; EXP331 PREPARED / NOT RUN
 
 Current direct XTR evidence now re-confirms the fresh Online/DCM path through a long ordered initial-sync prefix.

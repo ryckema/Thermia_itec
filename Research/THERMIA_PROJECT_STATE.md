@@ -1,3 +1,107 @@
+# 2026-09-30 — EXP340 COMPLETE / INCONCLUSIVE; 0708 offline reduction COMPLETE
+
+**Authoritative current state:** EXP340 is **COMPLETE / INCONCLUSIVE** from the supplied local XTR M log. The intended 07F8 -> 0708-zero -> next-FC16 path was not executed because retained runtime had already advanced to 080C/18 before EXP340 could transmit. The offline reduction of the available genuine gateway/DCM captures is **COMPLETE**. EXP341 is the next target, but is **NOT YET PREPARED / NOT RUN**.
+
+## Last completed live experiment — EXP340
+
+**Status:** **COMPLETE / INCONCLUSIVE**.
+
+EXP340 armed in a retained controller session after ESP OTA only. About 0.49 s after ARM the controller emitted exact slave-0x0F FC16 080C/count18:
+
+    0F10080C00122400E40000000000000000000000160008001600E4000000DC00000000000000200000000011CE
+
+No 07F8, no 0708 and no EXP340 TX occurred before that page. The experiment stopped fail-closed, with peer responder count 0, parser resync delta 0, RX-drop delta 0 and DE LOW.
+
+**Interpretation:** this does not test the planned EXP340 mailbox hypothesis. It does add another local retained-session observation: controller runtime can continue across an ESP OTA reboot and can be found already at a later runtime page.
+
+## Locally confirmed runtime evidence from EXP336–340
+
+- EXP336: after ESP OTA only, retained 07D0/19 appeared about 0.53 s after ARM with zero experiment TX. Planned retained-0708 hypothesis was therefore not tested.
+- EXP337: **COMPLETE / POSITIVE** — retained 07D0/19 ACK -> 07E4/17 ACK -> exact FC03 0708/count6, with no Thermia reboot, R1, new 085F ACK or mailbox response.
+- EXP338: **COMPLETE / INCONCLUSIVE** — after ESP OTA, exact 07F8/17 appeared before the planned 0708 response; zero experiment TX.
+- EXP339: **COMPLETE / INCONCLUSIVE** — exact retained 07F8/17 was ACKed once; about 1.57 s later exact FC03 0708/count6 appeared. No mailbox response was sent.
+- EXP340: **COMPLETE / INCONCLUSIVE** — exact 080C/18 appeared before the expected retained 07F8; zero experiment TX.
+
+These results support a runtime model in which FC16 runtime/export pages continue in controller-owned state while 0708 mailbox polls are interleaved. They do **not** prove that every page transition is independent of mailbox service.
+
+## Full fresh-session chain now locally proven
+
+EXP331–333 extended the fresh XTR chain beyond the previous EXP330 boundary. The locally observed ordered chain is now:
+
+    fresh boot
+    -> 071C/0730 challenge
+    -> fixed captured R1 accepted
+    -> 03E8/14 -> 03FC/11 -> 0410/22 -> 042E/15 -> 0442/13
+    -> 0456/12 -> 046A/18 -> 047E/19 -> 0492/11 -> 04A6/13
+    -> 04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10
+    -> 0532/18 -> 0546/20
+    -> 055A/33 -> 057B/33 -> 059C/33 -> 05BD/33 -> 05DE/33 -> 05FF/33
+    -> 0620/33 -> 0641/33 -> 0662/33 -> 0683/33 -> 06A4/33 -> 06C5/33
+    -> 06EA/7 -> 06F1/3 -> 06F4/19
+
+EXP333 then observed post-tail 085F/5 and FC03 0708/count6. The page sequence is locally confirmed; page semantics remain separate questions.
+
+## Offline 0708 mailbox reduction — genuine gateway/DCM evidence
+
+An offline parser reduction over the six available genuine gateway/DCM capture files found 327 FC03 0708/count6 requests, 302 with a paired six-word response suitable for reduction.
+
+Best current six-word model:
+
+    W0 W1 W2 W3 W4 W5
+
+- **W1: STRONGLY SUPPORTED** as the low 16-bit gateway->controller desired-page/PULL bitmap.
+- **W2:W3: STRONGLY SUPPORTED** as a 32-bit controller->gateway current-page/PUSH or refresh bitmap.
+- **W0: HYPOTHESIS** as a possible high half of the PULL bitmap; it was zero in all 302 paired responses, so this is not demonstrated.
+- **W4/W5: OPEN / UNKNOWN** lifecycle, status, capability or session fields. Do not port literal values between models without evidence.
+
+### W2:W3 page-selection map from genuine captures
+
+    bit  0 = 03E8    bit 16 = 0546
+    bit  1 = 03FC    bit 17 = 055A
+    bit  2 = 0410    bit 18 = 057B
+    bit  3 = 042E    bit 19 = 059C
+    bit  4 = 0442    bit 20 = 05BD
+    bit  5 = 0456    bit 21 = 05DE
+    bit  6 = 046A    bit 22 = 05FF
+    bit  7 = 047E    bit 23 = 0620
+    bit  8 = 0492    bit 24 = 0641
+    bit  9 = 04A6    bit 25 = 0662
+    bit 10 = 04BA    bit 26 = 0683
+    bit 11 = 04D8    bit 27 = 06A4
+    bit 12 = 04F6    bit 28 = 06C5
+    bit 13 = 050A    bit 29 = 06EA
+    bit 14 = 051E    bit 30 = 06F1
+    bit 15 = 0532    bit 31 = 06F4
+
+Examples include genuine 4000:8000 selecting 06F1 and 0532, FFFF:867F selecting the corresponding 26 configuration pages, and ATEC 7FFF:FFFF selecting the first 31 pages through 06F1.
+
+### Genuine desired-page PULL/write-path evidence
+
+- W1 bit0 (0001) is followed by controller FC03 03E8 reads.
+- W1 bit3 (0008) is followed by controller FC03 042E reads.
+- In Eco5 write-roundtrips, the gateway returns a desired page to that FC03 read and the controller subsequently republishes the accepted page by FC16.
+- For 03E8/14, one captured roundtrip changes only 03F4 from 0014 to 001E; a later roundtrip restores 001E to 0014. 03F4 is independently locally confirmed on the XTR as the room-setpoint mirror.
+- For 042E/15, captured desired-page pulls alter 042F and later 042E one field at a time, followed by matching controller FC16 publication. Exact XTR semantics of those fields are not imported from the other model.
+
+**Strong architectural conclusion:** genuine Online/DCM traffic behaves like a bidirectional page cache: controller current state is exported to the gateway via FC16, while pending desired pages are advertised through the 0708 mailbox and pulled by controller-initiated FC03 reads. This is cross-model genuine gateway/DCM evidence until the PULL path is locally reproduced on the XTR M.
+
+## Next experiment target — EXP341
+
+**Status:** **NOT YET PREPARED / NOT RUN**.
+
+Target hypothesis: locally reproduce the genuine desired-page PULL path without changing any setting. The safest design is a bounded no-op 03E8/14 test: first cache a current controller-originated 03E8/14 page, then at an exact 0708 request advertise only the authentic PULL selector needed for 03E8, answer the resulting controller FC03 03E8/14 with an exact clone of the cached current values, and capture whether the controller accepts/republishes the page.
+
+No EXP341 frame should be finalized until the exact 0708 envelope and stop/recovery behavior are fixed. Success must be transport proof only; no semantic value change is required.
+
+## Safety constraints
+
+- No broad register writes, scans or unknown-value injection.
+- FC16 ACKs remain address/count acknowledgements only.
+- For EXP341, any FC03 data response must be an exact current-value clone captured from the same local XTR session.
+- Fail closed on wrong page, wrong count, stale cache, parser/RX integrity change, peer responder evidence or unexpected session restart.
+- Preserve production/Home Assistant functionality and keep experimental controls under Configuration.
+
+---
 # 2026-09-30 — EXP330 COMPLETE / POSITIVE; EXP331 PREPARED / NOT RUN
 
 **Authoritative current state:** EXP330 is **COMPLETE / POSITIVE** from the supplied local XTR M log. EXP331 is **PREPARED / NOT RUN**. No result for EXP331 has been supplied yet.

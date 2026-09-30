@@ -1,3 +1,100 @@
+# 2026-09-30 — Runtime retention and 0708 bidirectional page-cache model
+
+## PROVEN / locally confirmed — fresh XTR initial-sync chain now reaches 06F4
+
+EXP331–333 extend the locally proven fresh-session chain from the previous 04A6 boundary through:
+
+    04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10 -> 0532/18 -> 0546/20
+    -> 055A/33 -> 057B/33 -> 059C/33 -> 05BD/33 -> 05DE/33 -> 05FF/33
+    -> 0620/33 -> 0641/33 -> 0662/33 -> 0683/33 -> 06A4/33 -> 06C5/33
+    -> 06EA/7 -> 06F1/3 -> 06F4/19
+
+After 06F4 ACK, local XTR traffic enters the post-tail region containing 085F/5 and FC03 0708/count6.
+
+## PROVEN / locally confirmed — retained runtime survives ESP OTA and remains actionable
+
+- EXP336: retained 07D0/19 appeared after ESP OTA with zero experiment TX.
+- EXP337: 07D0/19 ACK -> 07E4/17 ACK -> FC03 0708/count6.
+- EXP338: after another ESP OTA, 07F8/17 appeared before any experiment TX.
+- EXP339: 07F8/17 ACK -> FC03 0708/count6 about 1.57 s later.
+- EXP340: after another ESP OTA, 080C/18 appeared before any experiment TX.
+
+**PROVEN locally:** ESP reboot is not controller-session rollback. Controller-side runtime/export state can persist and advance while the ESP restarts.
+
+**STRONGLY SUPPORTED:** 0708 is interleaved mailbox service inside runtime, not a universal mandatory immediate gate before every runtime FC16 page.
+
+## STRONGLY SUPPORTED / genuine gateway evidence — 0708 W2:W3 is a 32-bit PUSH/refresh page bitmap
+
+Across the available genuine Eco5 and ATEC/DCM captures, the third and fourth response words to FC03 0708/count6 select controller-originated FC16 page refreshes bit-for-bit:
+
+| Bit | Page | Bit | Page |
+|---:|---:|---:|---:|
+| 0 | 03E8 | 16 | 0546 |
+| 1 | 03FC | 17 | 055A |
+| 2 | 0410 | 18 | 057B |
+| 3 | 042E | 19 | 059C |
+| 4 | 0442 | 20 | 05BD |
+| 5 | 0456 | 21 | 05DE |
+| 6 | 046A | 22 | 05FF |
+| 7 | 047E | 23 | 0620 |
+| 8 | 0492 | 24 | 0641 |
+| 9 | 04A6 | 25 | 0662 |
+| 10 | 04BA | 26 | 0683 |
+| 11 | 04D8 | 27 | 06A4 |
+| 12 | 04F6 | 28 | 06C5 |
+| 13 | 050A | 29 | 06EA |
+| 14 | 051E | 30 | 06F1 |
+| 15 | 0532 | 31 | 06F4 |
+
+Evidence includes sparse 4000:8000 selecting 06F1 and 0532, Eco5 FFFF:867F selecting its corresponding 26-page refresh set, and ATEC 7FFF:FFFF selecting the first 31 pages through 06F1.
+
+This mapping is **genuine gateway/DCM capture evidence**. It is not, by itself, a locally proven XTR mailbox-response mapping.
+
+## STRONGLY SUPPORTED / genuine gateway evidence — 0708 W1 is desired-page PULL selector
+
+Two independent low-bit cases are directly observed:
+
+- W1=0001 -> controller initiates FC03 read of page 03E8.
+- W1=0008 -> controller initiates FC03 read of page 042E.
+
+ATEC/DCM capture evidence includes W1=0001 with W3=0000 followed by FC03 03E8, proving that the pull function does not require the corresponding push bit to be set simultaneously.
+
+In Eco5 captured write-roundtrips, the gateway answers the controller's page read with desired values and the controller subsequently republishes the accepted page through FC16.
+
+### 03E8 desired-page roundtrip
+
+A captured Eco5 pull changes only register 03F4 from 0014 to 001E relative to the immediately preceding/current page image; the subsequent controller FC16 03E8 page matches the gateway-supplied desired page. A later roundtrip restores 03F4 from 001E to 0014 and is again followed by the matching controller page.
+
+03F4 is independently **PROVEN / locally confirmed** on this XTR M as the room-setpoint mirror. The Eco5 write event itself remains cross-model evidence.
+
+### 042E desired-page roundtrips
+
+Captured Eco5 W1=0008 pulls show one-field changes within 042E/count15: first 042F 0001->0000, later 042E 0001->0000, each followed by a controller FC16 publication matching the desired page. The public DCM material labels 042E as Integral A1, but individual semantics are not imported as proven XTR behavior.
+
+## STRONGLY SUPPORTED — Online/DCM behaves as a bidirectional page cache
+
+Best current architecture:
+
+    controller -> gateway current state: FC16 page export
+    gateway -> controller desired state: 0708 PULL bit -> controller FC03 page read
+    mailbox W2:W3: current-page refresh request bitmap
+    mailbox W1: desired-page pending bitmap (low 16 bits observed)
+
+This explains genuine setting changes without requiring the DCM to act as a second Modbus master performing direct FC16 register writes into the controller.
+
+## HYPOTHESIS — W0 is high half of PULL bitmap
+
+W0 was zero in all 302 paired 0708 responses in the offline reduction. Symmetry makes a high-half PULL interpretation plausible, but there is currently no positive bit observation. Keep as **HYPOTHESIS**, not fact.
+
+## OPEN / UNKNOWN — W4 and W5
+
+Eco5 W4 values include 0100/010B/03DF/03DC/03D8/03D0/03CF/038C/0380/0300/0200. Older ATEC/DCM captures show different values including 077F/0080 and W5 values 0006/0007. These fields likely carry lifecycle/status/capability/session information, but exact semantics and cross-model portability are unknown.
+
+## Next discriminator
+
+A no-op local XTR desired-page PULL test is now preferred over further one-page runtime chasing. The target is 03E8/14 because the page is locally established and includes locally mapped 03F4. The controller must first provide a fresh current page; if a matching 0708 PULL request is induced, the ESP should answer a controller FC03 read only with an exact clone of that current page. Any semantic value modification is explicitly out of scope for the first test.
+
+---
 # 2026-09-30 — Fresh approval and ordered initial-sync chain re-confirmed through 04A6/13
 
 ## PROVEN / locally confirmed — fixed captured R1 can open a fresh XTR session
