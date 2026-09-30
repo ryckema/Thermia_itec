@@ -1,5 +1,71 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-30 — EXP315 COMPLETE / POSITIVE; EXP316 next / NOT YET PREPARED
+
+- Last completed experiment: **EXP315 — COMPLETE / POSITIVE**.
+- EXP315 qualified a retained exact `07E4/17` node after ESP restart/OTA and used the already-proven standard ACK as a direct handoff into the EXP296/297 steady-runtime responder.
+- The handoff sustained **6 complete runtime loops** for **126.401 s**.
+- Final success boundary was a returned `07D0/19` intentionally left NO_TX.
+- Final counters: `TX=84`, `events=84`, `r0708=30`, `unexpected=0`, `resync=0`, `drops=0`, `DE=LOW`.
+- Firmware final status: `POSITIVE / retained recovery sustained proven steady runtime`.
+
+### What EXP313–315 changed
+
+EXP313 showed that direct handoff at retained `07D0/19` is technically possible, but a `0708/6` can appear before `07E4/17`, so a rigid post-`07D0` expectation was too narrow.
+
+EXP314 then found that after another ESP restart the controller had retained/progressed to `07E4/17`; because direct `07E4` entry was not yet authorized, the experiment safely stopped with TX=0.
+
+EXP315 authorized only that exact new context: repeated live `07E4/17` before any ESP TX. The second qualified request received the already-proven `07E4` ACK, after which the existing runtime responder sustained the session successfully.
+
+### Current protocol model
+
+The emulator architecture should now be:
+
+`fresh session -> approval/config/startup -> steady runtime`
+
+or, after ESP reconnect:
+
+`observe current 0x0F state`
+- if a **known qualified normal-runtime node** is active: directly join its existing scheduler state;
+- if a **known retained recovery/retry node** is active: use adaptive recovery;
+- if traffic is unknown or ordering is unsupported: capture-only / fail-closed.
+
+This supersedes the idea that every ESP restart must force the controller back to fresh approval or to one universal runtime anchor.
+
+### Locally proven retained-session capabilities
+
+- controller session state can survive ESP reboot/OTA;
+- `0662/33`, `085F(0800)`, all-zero `085F`, `0864`, `0870` and `0884` have locally proven retained-recovery behavior under their tested contexts;
+- `0884 ACK -> 0708 -> 07D0` reconnects recovery to normal runtime;
+- retained `07E4/17` can be used as a direct steady-runtime handoff;
+- direct `07E4` takeover has been sustained for 126.401 s / 6 loops with no unexpected events or transport errors.
+
+### Important open items
+
+- production hardening across repeated ESP restarts at different scheduler positions;
+- multi-hour / overnight stability across heating, DHW, defrost, SG and fault transitions;
+- which additional known normal runtime nodes can safely be used as direct retained-entry anchors;
+- exact semantics of `0861=0x0800`;
+- exact long-term role/cadence of `0708`;
+- runtime `04A6/13` semantics and native ACK policy;
+- genuine `071C/0730` challenge-response algorithm.
+
+### Next experiment candidate
+
+**EXP316 — NOT YET PREPARED / NOT RUN.**
+
+Recommended scope: production/recovery hardening. Reboot only the ESP at controlled points while leaving the Thermia controller powered, classify the retained current state, rejoin via an already locally proven node/recovery path, and verify multiple complete runtime loops. Do not introduce a new register target or semantic write.
+
+### Safety
+
+- exact frame shape and node-specific state guards only;
+- no broad ACKing;
+- `0834/18` and runtime `04A6/13` remain capture-only unless separately tested;
+- unknown branches fail closed;
+- ESP reboot/OTA is never treated as controller rollback.
+
+---
+
 ## Current status — 2026-09-29 — EXP312 COMPLETE / POSITIVE; EXP313 NEXT / NOT YET PREPARED
 
 - Last completed experiment: **EXP312 — COMPLETE / POSITIVE**.
