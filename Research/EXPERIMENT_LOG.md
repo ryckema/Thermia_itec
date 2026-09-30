@@ -1,3 +1,52 @@
+# EXP345 — COMPLETE / POSITIVE — persistent DCM runtime with 0708 W5=0006
+
+**Date:** 2026-09-30
+
+**Hypothesis:** W5 in the FC03 0708/count6 mailbox response participates in the controller's DCM-connected/liveness decision.
+
+**Baseline:** EXP344 used an all-zero idle 0708 response and stayed transport-clean >15 minutes, but the DCM icon was absent after the soak.
+
+**Controlled change:** only W5 changed:
+
+    EXP344 W0..W5 = 0000 0000 0000 0000 0000 0000
+    EXP345 W0..W5 = 0000 0000 0000 0000 0000 0006
+    EXP345 frame    = 0F030C0000000000000000000000069D76
+
+All bootstrap, initial-sync, runtime FC16 whitelist/ACK and soak behavior was preserved. No semantic desired-page write was enabled.
+
+## RESULT
+
+**Status:** **COMPLETE / POSITIVE**
+
+Fresh bootstrap completed and stage 40 persistent runtime was entered. At runtime age 900.5 s the firmware emitted SOAK_15M_PASS with runtimeFC16ACK=379, idle0708=210, rt085F=1, rt04A6=0, unknown16=0, unknown03=0, peer17=0, peer16ack=0, resync=0, drops=0, CONTINUE_RUNNING=1, DE=LOW. The service continued after the milestone. User observation: **DCM icon remained present** and **no COMM. ERR ONLINE/LINK**.
+
+**Conclusion:** compared with EXP344's otherwise-equivalent negative control, W5=0006 retained the DCM-connected UI indication while preserving the clean persistent runtime. This proves sufficiency in the tested local session; it does not decode W5's semantic meaning.
+
+---
+
+# EXP344 — COMPLETE / NEGATIVE for persistent DCM-connected indication; POSITIVE transport sub-result
+
+**Date:** 2026-09-30
+
+Persistent stage-40 runtime with all-zero idle 0708 response remained clean for >15 minutes and produced no Online/Link error, but the user observed that the DCM icon was no longer present after the soak. This is the controlled baseline for EXP345.
+
+---
+
+# EXP343 — COMPLETE / POSITIVE — semantic 03F4 desired-page write
+
+**Date:** 2026-09-30
+
+**Controlled change from EXP342:** EXP342 returned a no-op clone of the current 03E8/14 page. EXP343 changed exactly one word, 03F4 0016 -> 0015, preserving all other words from the same-session cache.
+
+## RESULT
+
+**Status:** **COMPLETE / POSITIVE**
+
+Authentic PULL selector 0F030C0000000100000001000000002D24 was sent. The controller pulled 03E8/14. The emulator returned 0F031C0024001400280000000000000014001400020028001E000100150002C29F. About 690 ms later the controller republished FC16 03E8/14 with observed 03F4=0015, desiredMatch=1 and extraDeltaBytes=0. The experiment stopped as COMPLETE / POSITIVE. Room Setpoint Mirror and Room Setpoint reported 21 °C. No confirmation ACK was sent and no peer/resync/drop anomaly was observed.
+
+**Conclusion:** semantic desired-page application through the native 0708/PULL/FC03 page-response path is **PROVEN / locally confirmed** for the tested 03F4 22 -> 21 °C transition.
+
+---
 # EXP340 — COMPLETE / INCONCLUSIVE
 
 **Date:** 2026-09-30
