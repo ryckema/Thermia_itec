@@ -1,3 +1,87 @@
+# 2026-09-30 — EXP349 COMPLETE / POSITIVE; reusable HA-selected room-setpoint writes proven in one retained DCM session
+
+**Authoritative current state:** EXP349 is **COMPLETE / POSITIVE** from the supplied local XTR M log plus the user's direct confirmation that it worked perfectly. EXP348 and EXP347 are also **COMPLETE / POSITIVE**. EXP350 is **NOT YET PREPARED / NOT RUN**.
+
+## Current experiment/result
+
+### EXP349 — COMPLETE / POSITIVE
+
+**Hypothesis:** the locally proven HA-selected `03F4` desired-page write can be reused repeatedly in one retained stage-40 Online/DCM session, with each new transaction built from the latest exact controller-republished `03E8/count14` page.
+
+**Controlled change from EXP348:** remove the one-write-plus-rollback limitation and allow repeated guarded writes. After every exact controller republish, promote that page to the source cache for the next write and return to READY. The experimental budget remained bounded to eight semantic responses per ESP boot. No new page, register, selector encoding or runtime ACK shape was introduced.
+
+### Observed facts
+
+- EXP349 was entered from the retained EXP348 controller session after ESP OTA; no Thermia-controller reboot and no new R1/bootstrap were used.
+- Retained runtime qualification was repeatedly observed from known FC16 service plus exact `0708/count6` idle service with:
+  `W0..W5 = 0000 0000 0000 0000 0000 0006`.
+- Before semantic writes, runtime health remained clean: no new challenge, unknown FC16/FC03, peer responder, parser resync or RX drop.
+- First reusable write:
+  - current `03F4=22`, requested `16`;
+  - selector `0000 0001 0000 0001 0000 0006`;
+  - desired page changed only `03F4: 22 -> 16`;
+  - controller republished exact `03E8/count14`;
+  - `WRITE_CONFIRMED writeNo=1 ... extraDeltaWords=0 ... NEXT_SOURCE=CONTROLLER_REPUBLISH ... READY_AGAIN=1`;
+  - Home Assistant `Room Setpoint Mirror` and normal `Room Setpoint` reached 16 °C.
+- Second reusable write:
+  - current `03F4=16`, requested `24`;
+  - exact same native selector/pull path;
+  - controller republished exact page with `03F4=24`;
+  - `WRITE_CONFIRMED writeNo=2 ... extraDeltaWords=0 ... READY_AGAIN=1`;
+  - Home Assistant reflected 24 °C.
+- Third reusable write:
+  - current `03F4=24`, requested `22`;
+  - controller republished exact page with `03F4=22`;
+  - `WRITE_CONFIRMED writeNo=3 ... extraDeltaWords=0 ... READY_AGAIN=1`;
+  - EXP349 status became `COMPLETE / POSITIVE / 3+ reusable writes confirmed / runtime continues`;
+  - Home Assistant returned to 22 °C.
+- User directly confirmed the sequence worked perfectly.
+- The 10..30 °C protection is implemented both in the HA number limits and in the write lambda; out-of-range current or requested values are fail-closed. This limit is a locally observed native indoor-sensor/UI range, not a claimed universal protocol range.
+
+## Strong conclusions
+
+**PROVEN / locally confirmed:** on this XTR M, the native Online/DCM mailbox + desired-page path for mapped register `03F4` is reusable for multiple semantic setpoint writes inside one continuously retained stage-40 session. The exact controller republish from one successful write can be promoted to the source page for the next write.
+
+**PROVEN / locally confirmed:** a single retained session successfully carried the tested chain `22 -> 16 -> 24 -> 22 °C`, with `extraDeltaWords=0` on all three controller confirmations and continued stage-40 runtime.
+
+**PROVEN / locally confirmed:** changing the HA number alone does not transmit a semantic write; the explicit Apply action is required. Requested/current values outside 10..30 °C are refused by local implementation guards.
+
+## Current protocol model
+
+Locally proven integration chain now includes:
+1. retained controller-side Online/DCM session surviving ESP OTA/reboot;
+2. requalification without Thermia reboot or new R1;
+3. persistent stage-40 runtime FC16 service;
+4. idle `0708` mailbox with W5=0006 preserving DCM-connected presentation in the tested context;
+5. W1 bit0 desired-page selector for `03E8`;
+6. controller FC03 `03E8/count14` pull;
+7. same-session desired page changing only mapped `03F4`;
+8. exact controller FC16 republish confirming the requested setpoint;
+9. promotion of that republish to the next-write source cache;
+10. repeated semantic writes in the same session without rebootstrap.
+
+W1 as low desired-page/PULL bitmap and W2:W3 as current-page/PUSH bitmap remain strongly supported. W0, W4 and the exact semantic meaning of W5 remain open. W5=0006 is proven only as sufficient for persistent DCM indication in the tested local context.
+
+## Immediately preceding results
+
+### EXP348 — COMPLETE / POSITIVE
+HA-selected generic target was locally proven with `22 -> 24 -> 22 °C`. The controller confirmed both the write and explicit rollback with `extraDeltaWords=0`; Room Setpoint followed; retained runtime stayed clean. EXP348 remained intentionally one write plus one rollback.
+
+### EXP347 — COMPLETE / POSITIVE
+After ESP OTA/reboot, the existing controller-side stage-40 session was rejoined **without Thermia-controller reboot and without new R1/bootstrap**. Retained runtime qualification succeeded, then the guarded `03F4` write/rollback worked while the user confirmed the DCM icon stayed visible, no error appeared and the temperature changed/restored correctly.
+
+## Next experiment
+
+**EXP350 — NOT YET PREPARED / NOT RUN.**
+
+Preferred controlled change: remove the manual experiment Arm button. After ESP boot/OTA, automatically enter passive retained-session qualification. Do not permit semantic writes until the same EXP349 clean-runtime requirements are satisfied. Keep only the explicit HA desired-setpoint control + Apply trigger for active semantic writes. Preserve all existing 10..30 guards, cache freshness, exact republish verification, fail-closed behavior and bounded write budget unless EXP350 explicitly tests a different one.
+
+## Safety constraints
+
+No broad writes, scans or unknown-value injection. Semantic control remains limited to locally mapped `03F4` inside `03E8/count14`, using the latest controller-originated/confirmed full page and changing one word only. Exact stage/function/start/count/session and runtime-health guards remain mandatory. Unexpected traffic is capture-only/fail-closed. An abnormal Online/Link state remains a stop condition; Thermia-controller reboot is recovery only if such an abnormal state actually occurs.
+
+---
+
 # 2026-09-30 — EXP346 COMPLETE / POSITIVE; guarded semantic write + rollback inside persistent DCM runtime
 
 **Authoritative current state:** EXP346 is **COMPLETE / POSITIVE** from supplied local XTR M logs plus the user's direct Thermia-screen observation. EXP345 remains the proven persistent-connected baseline. EXP347 is **NOT YET PREPARED / NOT RUN**.
