@@ -1,3 +1,132 @@
+# 2026-09-30 — EXP322 COMPLETE / POSITIVE passive clean-reboot baseline; EXP323 next / NOT YET PREPARED
+
+**Authoritative current state:** EXP322 is **COMPLETE / POSITIVE** as a passive baseline from the supplied local log. EXP321 is **COMPLETE / INCONCLUSIVE**. The Thermia controller was manually rebooted by the user between EXP321 and EXP322 to clear the visible errors. EXP323 is the next proposed experiment and is **NOT YET PREPARED / NOT RUN**.
+
+## Current experiment
+
+**EXP323 — NOT YET PREPARED / NOT RUN.**
+
+Planned hypothesis: in the current clean post-controller-reboot state, one conservatively qualified standard ACK to exact all-zero `085F/5` can advance the native scheduler to its next state.
+
+Planned controlled change from EXP322:
+- wait for two exact all-zero `085F/5` requests;
+- first is qualification / NO_TX;
+- second receives exactly one already-proven standard ACK `0F 10 08 5F 00 05 33 56`;
+- `04A6/13` remains capture-only / NO_TX;
+- after the one `085F` ACK, all traffic is capture-only and the first subsequent relevant non-`04A6` slave-`0x0F` frame is recorded before fail-close;
+- no semantic register values are injected.
+
+## Last completed experiment — EXP322
+
+**Status:** **COMPLETE / POSITIVE** as a passive clean-reboot baseline.
+
+After EXP321, the user rebooted the Thermia controller to clear the visible Online/Link errors. EXP322 then observed the resulting state for 90 s with strict TX=0.
+
+Final census:
+- total slave-`0x0F` frames: 125;
+- FC16: 125;
+- FC03: 0;
+- `04A6/13`: 83;
+- `04A6` payload changes: 0;
+- `085F/5`: 42;
+- all 42 `085F` frames were exact all-zero payload;
+- `085F(0800)`: 0;
+- `0708`: 0;
+- `07D0, 07E4, 07F8, 080C, 0820, 0834, 0848, 0864, 0870, 0884`: all 0;
+- other slave-`0x0F`: 0;
+- parser resync delta: 0;
+- RX-drop delta: 0;
+- TX=0 and DE LOW.
+
+The clean state therefore emitted a stable approximate 2:1 pattern of sparse `04A6/13` to all-zero `085F/5`, with no normal runtime progression because the emulator intentionally sent nothing.
+
+The EXP322 `04A6` payload remained invariant:
+`0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 4020 0000 0000`.
+
+## EXP321 — COMPLETE / INCONCLUSIVE
+
+EXP321 was intended as a 3-minute recovery-to-runtime integration test. Before the controller reboot it never reached its intended `085F(0800)` entry condition.
+
+Observed over the 120 s qualification window:
+- TX=0;
+- approximately 111 x `04A6/13`;
+- no `085F(0800)`;
+- no all-zero `085F`;
+- no handoff or runtime loops;
+- unexpected=0;
+- parser resync delta=0;
+- RX-drop delta=0;
+- DE LOW.
+
+This is not a negative result for the previously proven retained-recovery chain; the required entry state was not present.
+
+## EXP318–320 retained recovery result
+
+- **EXP318 — COMPLETE / POSITIVE:** two exact `085F(0800)` requests were qualified; one standard `085F/5` ACK was sent; 2.196 s later the first non-`04A6` frame was exact all-zero `085F/5`.
+- **EXP319 — COMPLETE / POSITIVE:** after qualifying and ACKing `085F(0800)`, exact all-zero `085F/5` was qualified and ACKed; 2.381 s later the first non-`04A6` frame was `0884/60`.
+- **EXP320 — COMPLETE / POSITIVE:** the same prerequisites were reconstructed; `0884/60` was qualified and ACKed; 4.328 s later the first non-`04A6` frame was direct `07D0/19`.
+
+This locally confirms the retained-session branch, in the tested context:
+
+`085F(0800) --ACK--> all-zero 085F --ACK--> 0884/60 --ACK--> 07D0/19`.
+
+EXP312 had previously observed `0884 ACK -> 0708 (NO_TX) -> 07D0`; EXP320 proves that `0708` is not mandatory as the immediate post-`0884` event in every retained context.
+
+## Current protocol model
+
+The native Online/DCM path remains an event/state graph with both fresh-session and retained-session behavior.
+
+Confirmed retained branch:
+`085F(0800) -> ACK -> all-zero 085F -> ACK -> 0884 -> ACK -> 07D0`.
+
+Clean post-controller-reboot passive state now adds:
+`sparse 04A6/13 <-> all-zero 085F/5` repeated with no emulator TX.
+
+The current `04A6` interpretation must remain payload/context sensitive:
+- genuine XTR/DCM configuration captures show the real DCM ACKing `04A6/13` with standard ACK `0F 10 04 A6 00 0D E1 F1`;
+- those genuine captures include a richer `04A6` payload such as `0000 0003 0004 0002 003F 0050 003C 0002 0000 003C 000F 001E 0000`;
+- EXP322's clean local passive state repeatedly emits a different sparse payload ending in `4020 0000 0000`;
+- therefore genuine ACK behavior for the rich configuration payload must not yet be generalized to the current sparse `04A6` state.
+
+## Locally proven findings added by EXP318–322
+
+- Exact `085F/5` with `0861=0x0800` can be advanced by its standard FC16 ACK to exact all-zero `085F/5`.
+- Exact all-zero `085F/5` can be ACK-gated into a scheduler branch that may lead directly to `0884/60`.
+- Qualified `0884/60` can be ACKed into direct `07D0/19` without an intervening `0708` in at least one retained context.
+- After a controller reboot, with no emulator TX, this XTR M can repeatedly emit sparse `04A6/13` plus all-zero `085F/5` while no normal runtime pages appear.
+- The presence of repeated `04A6/13` alone is therefore not a reliable discriminator for the visible alarm state.
+- The reappearance of all-zero `085F/5` after the controller reboot is a concrete state difference from EXP321.
+
+## Strongest current hypotheses
+
+- In the clean post-reboot state, ACKing a conservatively qualified all-zero `085F/5` may be the lowest-risk way to reveal the next native scheduler state.
+- If the next state is `0708/6` or a known configuration/runtime node, one or two additional bounded experiments may be enough to reconnect this clean-start path to the already-proven runtime responder.
+- The sparse `04A6` state may be part of an initialization/configuration retry loop, but its exact semantics and whether it should be ACKed locally remain open.
+
+## Important unknowns
+
+- What exact event follows one qualified all-zero `085F` ACK in the current clean post-reboot state.
+- Whether the sparse `04A6` payload should receive the same ACK policy as the richer genuine configuration payload.
+- Exact semantics of sparse versus rich `04A6/13`.
+- Exact semantics of `0861=0x0800`.
+- Long-duration stability after clean-start recovery reconnects to normal runtime.
+- Exact `0708` latching/scheduling semantics.
+- Genuine `071C/0730` challenge-response algorithm.
+
+## Safety constraints
+
+- Exact slave/function/address/count/bytecount/CRC and state guards remain mandatory.
+- Do not broad-ACK unknown FC16 traffic.
+- `0834/18` remains unsupported/capture-only.
+- EXP323 must leave `04A6/13` NO_TX.
+- Any post-target traffic in EXP323 is capture-only.
+- ESP reboot/OTA is not controller rollback.
+- A standard FC16 ACK carries address/count only and does not inject controller-originated register values.
+- Unexpected traffic or parser/RX integrity changes remain fail-closed.
+- Controller reboot remains the known fresh-state recovery procedure when required.
+
+---
+
 # 2026-09-30 — EXP315 COMPLETE / POSITIVE — retained runtime takeover sustained for 126 s / 6 loops; EXP316 next / NOT YET PREPARED
 
 **Authoritative current state:** EXP315 is **COMPLETE / POSITIVE** from the supplied local log. EXP313 and EXP314 were intermediate retained-runtime handoff experiments. No later experiment has been run. EXP316 is the next candidate and is **NOT YET PREPARED / NOT RUN**.
