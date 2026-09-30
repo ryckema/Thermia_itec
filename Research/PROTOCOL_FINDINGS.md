@@ -1,3 +1,76 @@
+# 2026-09-30 — Fresh approval and ordered initial-sync chain re-confirmed through 04A6/13
+
+## PROVEN / locally confirmed — fixed captured R1 can open a fresh XTR session
+
+On a true fresh Thermia-controller reboot, with the observed fresh guard `A80E=0000 / A80F=0005`, the first exact slave-`0x0F` FC17 request:
+
+- read start `0x0730`, count 8;
+- write start `0x071C`, count 8;
+- write bytecount 16;
+
+accepted the previously captured fixed R1 response:
+
+`0F17101691A5F3F8E8D58738924416E8E6A3D5E227`
+
+even though the live challenge differed from the challenge associated with that historical R1. In EXP325, `03E8/count14` followed about 120 ms later.
+
+This proves acceptance of that fixed replay in the tested XTR context. It does **not** prove that arbitrary responses work, that the mechanism is unauthenticated, or that the replay is universal/permanent.
+
+## PROVEN / locally confirmed — ordered fresh-session FC16 initial-sync prefix
+
+EXP326–330 locally confirm the following ordered ACK-driven progression:
+
+`03E8/14 --ACK--> 03FC/11 --ACK--> 0410/22 --ACK--> 042E/15 --ACK--> 0442/13 --ACK--> 0456/12 --ACK--> 046A/18 --ACK--> 047E/19 --ACK--> 0492/11 --ACK--> 04A6/13`
+
+Together with EXP325, the currently proven fresh prefix is:
+
+`fresh boot -> 071C/0730 challenge -> fixed R1 -> 03E8/14 -> ... -> 04A6/13`
+
+The ACKs in these tests are standard FC16 address/count acknowledgements only. They do not inject the controller-exported payload values.
+
+## PROVEN / locally confirmed — individual new transitions
+
+- EXP326: `03E8/14 ACK -> 03FC/11`.
+- EXP327: `03FC/11 ACK -> 0410/22`.
+- EXP328: `0410/22 ACK -> 042E/15`.
+- EXP329: `042E/15 ACK -> 0442/13 ACK -> 0456/12 ACK -> 046A/18`.
+- EXP330: `046A/18 ACK -> 047E/19 ACK -> 0492/11 ACK -> 04A6/13`.
+
+All current-run transitions were observed with clean parser/RX integrity and fail-closed behavior.
+
+## PROVEN / locally confirmed — ESP reboot is not controller-state rollback
+
+EXP324 did not recreate the clean all-zero-`085F` fresh state after ESP OTA/reboot while the Thermia controller remained powered. This agrees with prior retained-session work: controller-side Online/DCM state can persist while the ESP is restarted.
+
+## STRONGLY SUPPORTED — next fresh-sync continuation
+
+Genuine Eco 5 capture evidence and the earlier EXP262 design support the next ordered continuation:
+
+`04A6/13 -> 04BA/22 -> 04D8/27 -> 04F6/14 -> 050A/19 -> 051E/10 -> 0532/18 -> 0546/20 -> 055A/33`
+
+EXP331 is prepared to test that bounded continuation in the current fresh-XTR run. Until its result is supplied, the current-run local proof boundary remains `04A6/13`.
+
+## HYPOTHESIS — security/session semantics of 071C/0730
+
+The fixed-R1 replay result strongly weakens a strict “unique cryptographic response required for every live challenge” interpretation for this tested acceptance path. The actual algorithm, scope, lifetime and security role remain unknown.
+
+Do not promote any of the following to fact:
+- arbitrary 16-byte responses are accepted;
+- the challenge is meaningless;
+- no cryptography/authentication exists;
+- R1 is universally valid across units, firmware versions or indefinitely.
+
+## OPEN / UNKNOWN — 04A6 semantics remain context-sensitive
+
+`04A6/count13` now occurs in at least three distinct observed contexts:
+- predicted initial-sync stage immediately after `0492/11`;
+- sparse passive fresh-state traffic;
+- recurrent runtime traffic with state-dependent payloads.
+
+Therefore the address alone is not enough to determine semantics or ACK policy. State, payload, ordering and session context remain required.
+
+---
+
 # 2026-09-30 — EXP318–322 retained recovery, 04A6 context split, and clean-reboot baseline
 
 ## PROVEN / locally confirmed
