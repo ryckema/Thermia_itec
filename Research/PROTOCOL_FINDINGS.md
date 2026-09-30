@@ -1,3 +1,30 @@
+# 2026-09-30 — Durable findings from EXP343–345
+
+## PROVEN / locally confirmed — native desired-page semantic application
+
+EXP343 proves that the native 0x0F desired-page path can apply a semantic value change on the tested iTec XTR M. After the authentic 03E8 PULL selector, the controller issued FC03 03E8/14; the emulator returned the same-session page with only 03F4 changed 0016 -> 0015; about 690 ms later the controller republished FC16 03E8/14 with exactly 03F4=0015 and no other payload delta; Room Setpoint Mirror and Room Setpoint reported 21 °C.
+
+## PROVEN / locally confirmed — persistent Online/DCM runtime
+
+EXP344 and EXP345 both demonstrate that the emulator can maintain the known stage-40 0x0F runtime for at least 15 minutes while ACKing only the explicit runtime whitelist and servicing exact 0708/count6 mailbox polls. EXP345 reached 379 runtime FC16 ACKs and 210 idle 0708 responses at the 15-minute milestone with zero unknown FC16, unknown FC03, peer FC17, peer FC16-ACK, resync and drop counters.
+
+## PROVEN / locally confirmed — W5=0006 sufficient for persistent DCM indication in tested context
+
+Controlled A/B: EXP344 used W0..W5 = 0000 0000 0000 0000 0000 0000 and lost the DCM icon after the soak while transport remained healthy. EXP345 used W0..W5 = 0000 0000 0000 0000 0000 0006; transport remained healthy >15 minutes, the DCM icon remained present, and no Online/Link error appeared. Only W5 changed.
+
+Therefore W5=0006 is sufficient, in this tested local emulator/session context, to retain the controller's DCM-connected UI indication where W5=0000 did not.
+
+## OPEN / UNKNOWN — semantic meaning of W5
+
+Do not label W5 as a proven connected flag. Genuine older DCM/ATEC evidence motivated 0006, but the field could encode device type, version, capability, session state or another lifecycle property. EXP345 proves a behavioral requirement/sufficiency result, not the field's abstract meaning.
+
+## STRONGLY SUPPORTED architecture after EXP343–345
+
+The locally demonstrated pieces now fit the genuine Online/DCM cache model: controller exports pages to slave 0x0F via FC16; 0708 is an interleaved mailbox/control envelope; desired-page availability can be advertised there; controller pulls the desired page using FC03; the returned page can change controller semantics; and W5=0006 permits the tested persistent DCM-connected presentation while runtime continues.
+
+The next integration question is whether the EXP343 guarded desired-page action can be performed safely inside the EXP345 long-lived connected baseline, followed by longer-duration and reconnect testing.
+
+---
 # 2026-09-30 — Runtime retention and 0708 bidirectional page-cache model
 
 ## PROVEN / locally confirmed — fresh XTR initial-sync chain now reaches 06F4
