@@ -1,3 +1,109 @@
+# 2026-09-30 — EXP315 COMPLETE / POSITIVE — retained runtime takeover sustained for 126 s / 6 loops; EXP316 next / NOT YET PREPARED
+
+**Authoritative current state:** EXP315 is **COMPLETE / POSITIVE** from the supplied local log. EXP313 and EXP314 were intermediate retained-runtime handoff experiments. No later experiment has been run. EXP316 is the next candidate and is **NOT YET PREPARED / NOT RUN**.
+
+## Last completed experiment — EXP315
+
+**Hypothesis:** if the controller is retained at the already locally proven normal-runtime node `07E4/count17`, then a qualified standard `07E4` ACK can be used as a direct handoff into the established EXP296/297 steady-runtime responder.
+
+### Baseline and exact controlled change
+
+Baseline was EXP314 COMPLETE / INCONCLUSIVE. EXP314 observed exact `07E4/17` as the first relevant `0x0F` frame on each arm and correctly failed closed with TX=0 because its handoff model still required `07D0` or the inherited post-`07D0` `0708` boundary.
+
+EXP315 changed only one context authorization:
+- during retained stage 1, exact `07E4/count17` became a possible handoff node;
+- qualification required at least two live exact `07E4/17` requests before any EXP315 TX;
+- the second qualified request received the already-proven standard ACK `0F 10 07 E4 00 11 40 68`;
+- after that, the existing proven post-`07E4` runtime graph was used unchanged;
+- no new register/page, payload value or semantic write was introduced.
+
+### EXP315 observed result
+
+- Initial traffic included one `0708/6` capture-only request.
+- Exact `07E4/17` then repeated twice.
+- On the second `07E4`, EXP315 sent exactly one standard ACK and entered steady runtime.
+- The runtime continued through the established sequence with evidence-backed `0708` responses and FC16 ACKs.
+- The controller completed **6 full returned runtime loops**.
+- Steady runtime reached **126.401 s** before the success boundary.
+- At the final returned `07D0/19`, EXP315 intentionally stopped before ACKing that boundary.
+- Final stop summary: `TX=84`, `events=84`, `r0708=30`, `unexpected=0`, `resync=0`, `drops=0`, `DE=LOW`.
+- Firmware final status: `POSITIVE / retained recovery sustained proven steady runtime`.
+
+**Result:** **COMPLETE / POSITIVE.**
+
+## EXP313–315 retained-runtime handoff progression
+
+- **EXP313 — COMPLETE / INCONCLUSIVE:** controller was already at `07D0/19`; one known ACK successfully initiated handoff, but ~1.39 s later `0708/6` appeared before `07E4/17`. The state machine did not yet allow that branch and failed closed. No sustained-runtime claim.
+- **EXP314 — COMPLETE / INCONCLUSIVE:** after ESP restart, the controller had retained progress further into the scheduler and repeatedly presented `07E4/17` as the first relevant frame. EXP314 correctly failed closed with TX=0 because direct `07E4` entry was not yet authorized. The user's accidental "Error gone" click is invalid for alarm analysis and is not used as protocol evidence.
+- **EXP315 — COMPLETE / POSITIVE:** repeated retained `07E4/17` was qualified; one already-proven `07E4` ACK joined the established runtime. The emulator then sustained 6 complete loops for 126.401 s with no unexpected session events, parser resyncs or RX drops.
+
+## Current protocol model
+
+The native Online/DCM integration is now best modeled as a **state/event graph with direct retained-runtime re-entry**, not as a cold-start-only sequence.
+
+Fresh-session path remains:
+
+`071C/0730 -> R1 -> config sync -> startup -> normal runtime`
+
+Retained-session path can use recovery nodes when necessary:
+
+`0662 / 085F(0800) / all-zero 085F -> branch-aware recovery -> known runtime node`
+
+But EXP315 additionally proves a simpler path when the controller is already retained inside the normal scheduler:
+
+`observe current known runtime node -> qualify -> send already-proven response -> join steady runtime`
+
+Locally proven steady-runtime nodes remain:
+`07D0, 07E4, 07F8, 080C, 0820, 0848, 085F, 0864, 0870, 0884`
+
+with `0708` appearing at evidence-backed scheduler positions and using the known fixed runtime response where already proven.
+
+## Locally proven findings added by EXP313–315
+
+- The controller can retain its Online/DCM scheduler position across ESP reboot/OTA.
+- Direct retained takeover at `07D0/19` is technically possible, but the immediate next scheduler event can include `0708` before `07E4`.
+- The controller can progress further to `07E4/17` while the ESP remains offline/restarts.
+- A qualified standard ACK to retained `07E4/17` can join the existing EXP296/297 steady-state runtime.
+- After that handoff, the local XTR M can sustain at least **126.401 s and 6 complete loops** under the current emulator logic.
+- Sustained steady runtime did not require any retained-recovery ACK in this run; direct known-node takeover was sufficient.
+- The production architecture should therefore first classify the observed current `0x0F` state and directly join at a known runtime node when safe, falling back to adaptive recovery only when needed.
+
+## Strongest current hypotheses
+
+- Known-node retained takeover can be generalized to additional already-proven runtime nodes, provided qualification is conservative and node-specific next-event sets are preserved.
+- Durable Online/Link health likely depends on sustained service of the runtime scheduler rather than any single special recovery ACK.
+- A production-quality emulator should combine fresh-session startup, controller-reboot recovery, retained-runtime known-node takeover and adaptive retained recovery in one state machine.
+
+## Important unknowns
+
+- Multi-hour / overnight stability across compressor, DHW, defrost, SG and fault-state transitions.
+- Which normal runtime nodes are safe direct retained-entry anchors besides locally proven `07E4` and the partial `07D0` handoff.
+- Exact semantics of `0861=0x0800`.
+- Exact long-term role and response cadence of `0708`.
+- Runtime `04A6/13` semantics and native ACK policy.
+- Genuine `071C/0730` challenge-response algorithm.
+- Rare scheduler branches and fault/recovery behavior.
+
+## Next experiment candidate — EXP316
+
+**EXP316 — NOT YET PREPARED / NOT RUN.**
+
+Highest-value next step is no longer another single ACK target. It should be a production/recovery-hardening integration test: reboot only the ESP at controlled points while the Thermia controller remains powered, classify whichever already-known runtime/recovery node is current, and verify that one combined state machine can safely rejoin steady runtime and remain healthy for multiple loops.
+
+No new register target or semantic write should be introduced in EXP316.
+
+## Safety constraints
+
+- Exact slave/function/address/count/bytecount/CRC and state guards remain mandatory.
+- Do not broad-ACK unknown FC16 traffic.
+- `0834/18` remains unsupported/capture-only.
+- Runtime `04A6/13` remains capture-only unless separately tested.
+- Unexpected `0x0F` traffic remains capture-only/fail-closed.
+- ESP reboot/OTA is never assumed to roll back controller state.
+- Alarm marker buttons are observational only and must not be treated as protocol evidence unless intentionally pressed while the display state is actually checked.
+
+---
+
 # 2026-09-29 — EXP312 COMPLETE / POSITIVE — retained-session recovery now reaches 07D0; EXP313 NEXT / NOT YET PREPARED
 
 **Authoritative current state:** EXP312 is COMPLETE / POSITIVE from the supplied local log. No later experiment has been run. EXP313 is a candidate next experiment and is **NOT YET PREPARED / NOT RUN**.
