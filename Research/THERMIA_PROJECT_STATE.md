@@ -1,3 +1,75 @@
+# 2026-09-30 — EXP346 COMPLETE / POSITIVE; guarded semantic write + rollback inside persistent DCM runtime
+
+**Authoritative current state:** EXP346 is **COMPLETE / POSITIVE** from supplied local XTR M logs plus the user's direct Thermia-screen observation. EXP345 remains the proven persistent-connected baseline. EXP347 is **NOT YET PREPARED / NOT RUN**.
+
+## Current experiment/result
+
+### EXP346 — COMPLETE / POSITIVE
+
+**Hypothesis:** the native desired-page write path proven in EXP343 can be executed inside the persistent EXP345 Online/DCM runtime without dropping the DCM-connected presentation.
+
+**Controlled change from EXP345:** preserve the entire EXP345 fresh-session bootstrap, ordered initial sync, stage-40 runtime FC16 whitelist/ACK scheduler and idle 0708 W5=0006 behavior; add exactly one guarded 03E8/count14 desired-page write plus one explicit rollback using a same-session controller-originated page cache. No other settings words are intentionally changed.
+
+### Observed facts
+
+- Fresh session entered stage 40 normally and continued serving persistent runtime with idle mailbox:
+  `W0..W5 = 0000 0000 0000 0000 0000 0006`.
+- Initial same-session controller FC16 `03E8/count14` cached `03F4=22`.
+- User armed one guarded write:
+  `current03F4=22 -> target03F4=21`.
+- On the next exact `0708/count6` request, emulator returned selector:
+  `W0..W5 = 0000 0001 0000 0001 0000 0006`
+  with frame `0F030C000000010000000100000006AD26`.
+- Controller then issued exact `FC03 03E8/count14`.
+- Emulator answered with the same-session 14-word page, changing only `03F4: 0016 -> 0015`:
+  `0F031C0024001400280000000000000014001400020028001E000100150002C29F`.
+- Controller republished exact `FC16 03E8/count14` with `03F4=0015`.
+- EXP346 verification reported:
+  `WRITE_CONFIRMED original03F4=22 target03F4=21 observed03F4=21 extraDeltaWords=0 semanticResponses=1 KEEP_W5_0006=1 CONTINUE_RUNTIME=1`.
+- Home Assistant `Room Setpoint Mirror` and then normal `Room Setpoint` both reached 21 °C.
+- User confirmed the DCM icon remained visible and no Online/Link error appeared.
+- Explicit rollback was then armed while cached `03F4=21`.
+- Emulator repeated the same native selector/pull flow and returned the same-session page with only `03F4: 0015 -> 0016`:
+  `0F031C0024001400280000000000000014001400020028001E000100160002329F`.
+- Controller republished exact `FC16 03E8/count14` with `03F4=0016`.
+- EXP346 verification reported:
+  `ROLLBACK_CONFIRMED original03F4=22 observed03F4=22 extraDeltaWords=0 semanticResponses=2 KEEP_W5_0006=1 CONTINUE_RUNTIME=1`.
+- Home Assistant `Room Setpoint Mirror` and normal `Room Setpoint` returned to 22 °C.
+- User again confirmed DCM icon still visible and no Online/Link error.
+
+## Strong conclusion
+
+**PROVEN / locally confirmed:** on this XTR M, a guarded native 03E8 desired-page semantic change can be applied and rolled back inside the long-lived stage-40 Online/DCM-emulation runtime while W5=0006 preserves the DCM-connected presentation. The controller itself republishes the changed page, and in EXP346 the only page-word delta on both write and rollback was 03F4.
+
+This upgrades the local model from “semantic write works” (EXP343) plus “persistent connected runtime works” (EXP345) to **both functions working together in the same session**.
+
+## Current protocol model
+
+Locally proven integration chain now includes:
+1. fresh challenge / accepted fixed-R1 entry;
+2. ordered full initial FC16 sync;
+3. persistent stage-40 runtime FC16 service;
+4. idle 0708 mailbox with W5=0006 retaining DCM indication;
+5. authentic W1 bit0 desired-page selector for 03E8;
+6. controller-initiated FC03 03E8/count14 pull;
+7. same-session cloned desired page with exactly one 03F4 delta;
+8. controller FC16 republish confirming semantic application;
+9. continued persistent runtime after the write;
+10. second native transaction restoring the original 03F4 value;
+11. continued DCM indication and no observed Online/Link error through write and rollback.
+
+W1 as low desired-page/PULL bitmap and W2:W3 as current-page/PUSH bitmap remain strongly supported. W0, W4 and the exact semantic meaning of W5 remain open. W5=0006 is proven only as sufficient for DCM-indication persistence in the tested local context.
+
+## Next experiment
+
+**EXP347 — NOT YET PREPARED / NOT RUN.** Preferred target: test **reusability of the proven semantic path within one already-established persistent session** without a new controller reboot: one additional bounded user-requested 03F4 setpoint change, using the latest controller-originated same-session page as source, followed by exact controller republish verification and rollback. Exact target, freshness bound, write budget and abort criteria must be fixed before YAML generation.
+
+## Safety constraints
+
+No broad writes/scans or unknown-value injection. Semantic writes remain limited to locally mapped 03F4 using same-session controller data and one controlled word delta. Every write must be guarded by exact stage/function/start/count/CRC/session state; any unexpected traffic is capture-only/fail-closed. Preserve the persistent runtime baseline and Home Assistant production functionality. Controller reboot remains recovery for any abnormal Online/Link state.
+
+---
+
 # 2026-09-30 — EXP345 COMPLETE / POSITIVE; persistent DCM-connected baseline established
 
 **Authoritative current state:** EXP345 is **COMPLETE / POSITIVE** from supplied local XTR M logs plus the user's direct Thermia-screen observation. EXP343 is also confirmed **COMPLETE / POSITIVE** from its original result log. EXP346 is **NOT YET PREPARED / NOT RUN**.
