@@ -1,3 +1,57 @@
+# 2026-09-30 — EXP353 COMPLETE / POSITIVE (user-confirmed); Write Beta v1 created
+
+**Authoritative current state:** EXP353 is **COMPLETE / POSITIVE** by explicit user confirmation. The detailed raw EXP353 log/YAML is not currently archived in the project, so no exact cycle count, timing or frame sequence is invented here. EXP352 remains the newest result with raw-log proof of the complete refresh -> write -> republish path.
+
+## Current experiment/result
+
+### EXP353 — COMPLETE / POSITIVE — user-confirmed
+
+**Baseline:** EXP352 COMPLETE / POSITIVE.
+
+**Hypothesis carried forward from the EXP352 result:** the W3-bit0 current-page refresh should be reusable in one long-lived retained DCM runtime rather than limited to the EXP352 one-refresh-per-ESP-boot experimental budget.
+
+**Controlled change planned for EXP353:** keep the proven EXP352 protocol path unchanged while allowing bounded/reusable stale-cache refresh cycles in the same ESP boot. No second writable register/page was to be introduced.
+
+**Result evidence available:** the user explicitly stated that EXP353 was successfully executed. No raw EXP353 log or exact EXP353 YAML is presently archived, so the canonical record does not claim exact refresh counts, timestamps, native-change sequence or frame-by-frame details beyond that confirmation.
+
+## Production artifact
+
+A production-oriented beta has now been created at:
+
+`Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v1.yaml`
+
+It is derived from the raw-log-proven EXP352 implementation and adopts the reusable-refresh behavior associated with the successful EXP353 follow-up. It removes the EXP352 one-refresh-per-boot and eight-semantic-response test budgets, keeps transactions serialized, retains the 10..30 °C whole-degree guard, requires a fresh controller-originated/confirmed `03E8/count14` page, changes only `03F4`, and requires an exact controller republish with zero extra deltas.
+
+This file is **Write (Beta)**, not a claim of universal production readiness. Retained-session operation is substantially better validated than arbitrary fresh controller power-loss/session recovery.
+
+## Current protocol model
+
+The locally established model remains:
+
+1. persistent/retained Online/DCM runtime service;
+2. exact idle `0708/count6` response with W5=`0006`;
+3. W3 bit0 current-page request for `03E8`;
+4. controller-originated `FC16 03E8/count14` becomes the semantic source cache;
+5. W1 bit0 desired-page request path for `03E8`;
+6. controller `FC03 03E8/count14` is answered from that source page with only `03F4` changed;
+7. exact controller `FC16 03E8/count14` republish confirms the change and becomes the next source cache;
+8. native Thermia-front-display changes can update that cache during the same runtime.
+
+## Important unknowns / limits
+
+- Detailed raw evidence for EXP353 itself is not archived; its successful result is currently user-confirmed.
+- Full W2:W3 page behavior beyond W3 bit0 / `03E8` remains unproven locally.
+- Other writable settings/registers remain unproven; active semantic writes stay limited to `03F4`.
+- W0, W4 and the abstract meaning of W5 remain open.
+- Fresh controller-session/power-loss recovery is less mature than retained-session operation.
+- The separate native/controller-originated 22 °C event from EXP352 remains unattributed to a specific physical source; the 19 °C event is explicitly correlated to the Thermia front display.
+
+## Next development step
+
+Production hardening rather than a new semantic write target: run the Write Beta for a longer soak, including ordinary Home Assistant setpoint use and native Thermia-display changes, while preserving the same single-register safety envelope. Do not promote a second writable setting until the beta runtime/recovery behavior is characterized.
+
+---
+
 # 2026-09-30 — EXP352 COMPLETE / POSITIVE; retained runtime, fresh-page refresh and native coexistence proven
 
 **Authoritative current state:** EXP352 is **COMPLETE / POSITIVE** from the supplied local XTR M log plus the user's direct confirmation that there was **no alarm** and the DCM icon remained visible. EXP351 is **COMPLETE / INCONCLUSIVE** because its intended refresh hypothesis was never reached due to an implementation gate. EXP350 is **COMPLETE / INCONCLUSIVE** for the full soak-write hypothesis, with positive automatic-retained-runtime sub-results.
