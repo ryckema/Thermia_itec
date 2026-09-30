@@ -1,3 +1,61 @@
+# 2026-09-30 — EXP355 durable findings: controller cold-reboot recovery
+
+## PROVEN / locally confirmed — controller power-cycle recovery without ESP reboot
+
+EXP355 demonstrates on this XTR M that an already-running ESP/DCM emulator can recover after the Thermia/controller itself is power-cycled while the ESP remains powered.
+
+The tested lifecycle was:
+
+`qualified retained stage40 -> sustained bus silence -> fresh controller bus return -> guarded fresh-session bootstrap -> ordered initial-sync -> stage40 -> fresh runtime qualification`
+
+The implementation detected 5166 ms of bus silence before arming recovery. This >=5 s value is a proven working local implementation threshold, not a universal protocol rule.
+
+## PROVEN / locally confirmed — fresh-session cold-boot guard and one-R1 path during recovery
+
+After bus return the controller presented `A80E=0000 / A80F=0005`. The first exact `071C/0730` challenge then triggered exactly one already-known R1:
+
+`0F17101691A5F3F8E8D58738924416E8E6A3D5E227`
+
+Recovery required no ESP reboot and introduced no new payload.
+
+## PROVEN / locally confirmed — full ordered initial-sync chain is sufficient to return to runtime
+
+After R1 the controller began the known config publication sequence at `03E8/count14`. EXP355 ACKed all 32 expected page/count stages in order through `06F4/count19`.
+
+The final `06F4` ACK returned the emulator to stage 40. Fresh `085F/count5` runtime traffic and an exact `0708/count6` exchange then requalified the recovered runtime.
+
+## PROVEN / locally confirmed — fresh-session 03E8 page restores semantic cache provenance
+
+The first post-R1 `FC16 03E8/count14` was controller-originated in the new session and contained `03F4=22`. EXP355 promoted it to the semantic cache.
+
+This proves that fresh-session recovery itself can re-establish a controller-originated `03E8` source page. EXP355 did not test a subsequent semantic write from that recovered cache.
+
+## STRONGLY SUPPORTED — A80F=0005 is associated with the early fresh-session/bootstrap window
+
+Before controller reboot, normal retained runtime repeatedly showed:
+
+`A80E=0000 / A80F=000A`
+
+After bus return and before R1, EXP355 observed:
+
+`A80E=0000 / A80F=0005`
+
+During initial synchronization the observed state progressed:
+
+`0000/0005 -> 0008/0005 -> 0028/0005 -> 0028/000A`
+
+This strongly supports treating `A80F=0005` as associated with the early fresh-session/bootstrap window and `000A` as a later operating state in this observed sequence. The exact abstract semantics of A80E and A80F remain **OPEN / UNKNOWN**.
+
+## OPEN / UNKNOWN
+
+- Repeated controller power cycles in one ESP boot have not yet been locally proven.
+- Recovery from arbitrary interruption points inside the initial-sync chain has not been tested.
+- The >=5 s silence threshold is not established as a universal Thermia/DCM requirement.
+- A semantic `03F4` write immediately after recovered-session bootstrap was deliberately not tested.
+- Other writable registers/pages remain unproven.
+
+---
+
 # 2026-09-30 — EXP352 durable findings: local 03E8 PUSH refresh and runtime/cache separation
 
 
@@ -77,11 +135,11 @@ Each controller confirmation reported `extraDeltaWords=0`; controller republishe
 
 User confirmed no alarm and DCM icon remained visible.
 
-## OPEN / UNKNOWN — repeated refresh-only cycles per ESP boot
+## SUPERSEDED — EXP352 one-refresh-per-boot limit
 
-EXP352 intentionally allowed only **one** W3-bit0 refresh-only request per ESP boot as an experimental safety budget.
+EXP352 itself intentionally allowed only **one** W3-bit0 refresh-only request per ESP boot, so EXP352 alone did not prove repeated stale-cache refresh cycles.
 
-Therefore this experiment proves the refresh mechanism itself, but does **not** yet prove repeated stale-cache refresh cycles separated by long idle periods in one continuous ESP boot. This is the preferred next integration test before calling the setpoint control production-ready.
+That experiment-local limitation is superseded by EXP353, which the user explicitly confirmed as successful for the reusable-refresh follow-up. Because the detailed EXP353 raw log/YAML is not archived, exact cycle counts and timings remain unavailable and are not invented.
 
 ---
 
