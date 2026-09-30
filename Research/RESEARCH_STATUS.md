@@ -1,5 +1,37 @@
 # Thermia iTec XTR M – Reverse Engineering Research Status
 
+## Current status — 2026-09-30 — EXP322 COMPLETE / POSITIVE; EXP323 proposed / NOT YET PREPARED
+
+- Last completed experiment: **EXP322 — COMPLETE / POSITIVE** passive clean-reboot baseline.
+- Current next experiment: **EXP323 — NOT YET PREPARED / NOT RUN**.
+- The controller was manually rebooted between EXP321 and EXP322 to clear visible errors.
+- EXP321 had stalled for 120 s with about 111 x `04A6/13`, no `085F(0800)`, no all-zero `085F`, and TX=0.
+- After the controller reboot, EXP322 with strict TX=0 observed 83 x sparse `04A6/13` and 42 x exact all-zero `085F/5` in 90 s, with no `0708`, no normal runtime pages, no parser resyncs and no RX drops.
+- The sparse `04A6` payload did not change during EXP322.
+- Therefore repeated `04A6` alone is not specific to the prior visible alarm state; all-zero `085F` is the more useful state discriminator.
+- EXP318–320 have already locally proven a retained branch:
+  `085F(0800) -> ACK -> all-zero 085F -> ACK -> 0884 -> ACK -> 07D0`.
+- Genuine XTR/DCM captures prove that a real DCM ACKs richer `04A6/13` configuration frames, but that ACK behavior is not yet generalized to the sparse EXP322 payload.
+
+### Proposed EXP323
+
+Change exactly one active variable:
+- require two exact all-zero `085F/5` frames;
+- first NO_TX;
+- ACK the second once with `0F 10 08 5F 00 05 33 56`;
+- leave `04A6/13` NO_TX;
+- capture the first subsequent relevant non-`04A6` slave-`0x0F` frame and stop.
+
+If that reveals `0708` or another known state, the next work should be one bounded step toward the already-proven runtime responder, followed by a short integration run and then overnight endurance.
+
+### Safety
+
+No broad ACKs, no speculative `04A6` ACK in EXP323, no semantic setting injection, strict frame/state guards, parser/RX delta fail-close, and DE LOW on every stop.
+
+---
+
+# Thermia iTec XTR M – Reverse Engineering Research Status
+
 ## Current status — 2026-09-30 — EXP315 COMPLETE / POSITIVE; EXP316 next / NOT YET PREPARED
 
 - Last completed experiment: **EXP315 — COMPLETE / POSITIVE**.
