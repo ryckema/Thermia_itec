@@ -1,29 +1,29 @@
 # Thermia iTec XTR M → Home Assistant via ESPHome
 
-A **local, read-only ESPHome integration** for a Thermia iTec XTR M heat pump using its internal RS485 communication bus.
+A local ESPHome integration for the Thermia iTec XTR M internal RS485 bus, with a stable **read-only** branch and a separate **Write (Beta)** branch.
 
-This project is based on reverse engineering of a real Thermia iTec XTR M with the older/non-Genesis controller. The bus traffic has been identified as **Modbus RTU** and a number of useful values are decoded into native Home Assistant entities.
+The project is based on reverse engineering of a real Thermia iTec XTR M with the older/non-Genesis controller. The bus is Modbus RTU. Read-only decoding exposes useful values to Home Assistant; the write research additionally reconstructs the native Thermia/Danfoss Online/DCM path.
 
-> **Current status:** read-only monitoring is working reliably on the tested system. Writing/control is intentionally disabled. Direct writes to several known mirror/broadcast registers did not change the controller's master state, and the Online/DCM command protocol is not yet understood well enough for safe control.
+> **Current status (EXP353):** read-only monitoring remains the recommended low-risk build. On the tested XTR M, Room Setpoint control through the native Online/DCM mailbox path is locally confirmed. EXP352 provides raw-log proof for fresh-page refresh, guarded `03F4` writes, exact controller republish and coexistence with native display changes. EXP353 was explicitly confirmed successful by the user for the reusable-refresh follow-up; its detailed raw log/YAML is not currently archived. The first production-oriented implementation is therefore published separately under **Write (Beta)** and only enables Room Setpoint writes.
 
-## Current reverse-engineering status (EXP182)
+## Current reverse-engineering status
 
-The active write-path research is deliberately kept separate from the shared RX-only YAML builds. The latest completed analysis is **EXP182**, an offline reconstruction of the genuine Online/DCM mailbox and scheduler behaviour.
+The locally proven Room Setpoint write path is:
 
-Recent findings:
+```text
+persistent DCM runtime
+    -> fresh 03E8 page if needed (0708 W3 bit0)
+    -> controller FC16 03E8/count14 cache
+    -> desired-page selector (0708 W1 bit0 + W3 bit0)
+    -> controller FC03 03E8/count14
+    -> response changes only 03F4
+    -> exact controller FC16 03E8/count14 republish
+    -> republish becomes next-write source
+```
 
-- Genuine Online/DCM captures show an **extended controller-side service topology** with recurring `0xA5` / `0xA4` / `0x05` activity, periodic `0x0F FC03 0x0708/count6` mailbox polls, and cyclic `0x0F FC16` runtime uploads in the `0x07D0..0x0884` family.
-- In a DCM-rejoin capture, the controller keeps issuing `0x0708/count6` polls while the DCM is still silent. This proves that the scheduler itself is controller-side; DCM availability is not required for each poll to be scheduled.
-- The first DCM response after rejoin is `0000,0000,7FFF,FFFF,0080,0007`, after which the controller starts a broad FC16 state/configuration resynchronisation beginning at `0x03E8`.
-- In a command-event capture, `0x0708` response word1=`0001` is followed about 40 ms later by `0x0F FC03 0x03E8/count13`. This is the strongest source-proven desired-state dispatch relation found so far.
-- The normal/steady `0x0708` response is commonly `0000,0000,0000,0000,077F,0006`. Other startup variants exist, so the six-word header is treated as mailbox/session state rather than a fixed heartbeat.
-- The tested XTR M does **not** show the reference system's extended runtime family (`0708` polling plus `07D0..0884` cyclic FC16 uploads), even though it does have native `0x0F` settings/state traffic such as `03E8`, `04A6` and `085F`.
-- This shifts the main unresolved question away from a single writable register: the missing piece now appears to be a **controller-side scheduler/topology/integration mode** that is active on the reference system but not on the tested XTR M.
-- A genuine DCM being physically present may still be part of how that controller mode is selected or recognised at boot. The available captures do not yet separate physical DCM-presence from model/firmware/configuration differences.
+Important boundaries remain: only `03F4` is enabled for semantic writes; the tested range is whole degrees `10..30 °C`; W5=`0006` is a proven working runtime value but its abstract meaning remains unknown; full W2:W3 page behavior beyond the locally tested `03E8` bit remains unproven on this XTR M; and fresh controller-session/power-loss recovery is less mature than retained-session operation.
 
-The current highest-value external evidence would be a **true controller cold boot with DCM connected**, ideally paired with a second cold boot of the same controller without the DCM. That A/B capture could reveal the first bus-level discriminator that enables the extended topology.
-
-The normal/public integration remains **strictly receive-only**.
+The read-only builds remain strictly passive. The write-capable build is intentionally isolated in `Write (Beta)/`.
 
 ## What you need
 
@@ -92,7 +92,7 @@ uart:
   stop_bits: 1
 ```
 
-TX is intentionally not configured in either shared YAML, so the ESP32 remains passive/read-only.
+TX is intentionally not configured in either **read-only** YAML, so those builds remain passive. The separate `Write (Beta)` build configures TX because it actively participates in the proven DCM path.
 
 ## Which YAML should I use?
 
@@ -131,6 +131,16 @@ Current file:
 
 Both variants use the same confirmed bus parameters and decoded register logic. New discoveries should first be verified in the research build and only then promoted to the public build.
 
+### Write (Beta)
+
+Use this only when you intentionally want active Room Setpoint control on the tested XTR M platform.
+
+Current file:
+
+`Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v1.yaml`
+
+The beta actively transmits DCM runtime/ACK traffic and the guarded Room Setpoint flow. Changing the desired number alone does not write; **Thermia Apply Room Setpoint** explicitly arms the transaction. See `Write (Beta)/README.md` for scope, safeguards and current limitations.
+
 ### v27 changes
 
 v27 keeps both shared YAMLs strictly **passive RX-only**. The functional production decoder remains conservative; this release mainly updates the protocol model and removes interpretations disproved by later controlled experiments.
@@ -159,7 +169,7 @@ Compared with v25, v26 does **not** add Thermia TX or write controls. It is a re
 
 ## Installation
 
-1. Choose either `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v27.yaml` or `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v27.yaml` and copy it into your ESPHome configuration directory.
+1. For read-only use, choose either `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v27.yaml` or `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v27.yaml`. For active Room Setpoint control, use the separate `Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v1.yaml` only after reading its README.
 2. Copy the entries from `secrets.example.yaml` into your ESPHome `secrets.yaml`.
 3. Replace the placeholder values with your Wi-Fi, API encryption key, OTA password and fallback-AP password.
 4. Connect the RS485 bus as shown above.
