@@ -1,3 +1,28 @@
+# EXP353 — COMPLETE / POSITIVE — reusable stale-cache refresh follow-up
+
+**Date:** 2026-09-30  
+**Status:** COMPLETE / POSITIVE — user-confirmed; detailed raw log/YAML not archived
+
+## PREPARED / intended controlled change
+
+**Baseline:** EXP352 COMPLETE / POSITIVE.
+
+**Hypothesis:** the locally proven W3-bit0 refresh for `03E8` is reusable in one long-lived retained DCM runtime and does not need to remain limited to the EXP352 one-refresh-per-ESP-boot experimental budget.
+
+**Controlled change:** keep the complete EXP352 runtime, refresh, write and republish path unchanged; allow reusable/bounded stale-cache refresh cycles in the same ESP boot. Do not introduce a second writable register/page.
+
+**Safety carried forward:** only `03F4`; whole-degree `10..30 °C`; fresh controller-originated/confirmed `03E8/count14` source page; one outstanding semantic transaction; exact republish with zero extra deltas; fail closed on conflicting/session/parser anomalies.
+
+## RESULT
+
+The user explicitly confirmed: **“EXP353 was successful uitgevoerd.”**
+
+No detailed EXP353 raw log or exact EXP353 YAML is currently archived in the project material. Therefore this entry records the positive completion but does **not** invent the exact number of refresh cycles, timings, native-change sequence or frame-by-frame observations.
+
+**Current use of the result:** the new `Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v1.yaml` removes the EXP352 one-refresh-per-boot and eight-semantic-response test budgets while retaining the proven per-transaction safeguards.
+
+---
+
 # EXP352 — COMPLETE / POSITIVE — runtime-independent fresh-page refresh + reusable room-setpoint writes
 
 **Date:** 2026-09-30  
