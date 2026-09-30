@@ -8,7 +8,7 @@ These builds do **not** transmit Thermia Modbus frames. GPIO17/TX is intentional
 
 ### Public / optimized
 
-`Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v27.yaml`
+`Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v28.yaml`
 
 Recommended for normal Home Assistant use.
 
@@ -16,7 +16,7 @@ It keeps the useful decoded entities and a small set of diagnostics while removi
 
 ### Research / register mapping
 
-`Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v27.yaml`
+`Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v28.yaml`
 
 Use this when collecting captures or validating additional registers.
 
@@ -28,6 +28,22 @@ It is still completely RX-only, but adds:
 - more verbose protocol logging.
 
 New mappings should be verified here before being promoted to the public build.
+
+## v28 changes
+
+v28 keeps both XTR builds **strictly RX-only**. It does not import any DCM TX/write code from Write (Beta).
+
+Changes from v27:
+
+- protocol comments are reconciled with the locally proven EXP352 model;
+- `03F4` is documented as the observed room-setpoint field that is semantically controllable only through the separate native DCM desired-page flow, not by direct register overwrite;
+- W3 bit0 → fresh `03E8` controller page and the locally proven `03E8` desired-page path are documented without enabling either action here;
+- EXP353 reusable refresh is noted only at the user-confirmed evidence level;
+- default logging is **WARN-only** in both Public and Research builds;
+- INFO-severity logging calls were removed from v28; detailed research DEBUG/VERBOSE instrumentation remains compiled but is suppressed by the default WARN configuration;
+- the v27 files are retained under `Thermia itec XTR/Old versions/`.
+
+No read-only TX pin, DCM emulation, write control or semantic response has been added.
 
 ## Tested hardware
 
