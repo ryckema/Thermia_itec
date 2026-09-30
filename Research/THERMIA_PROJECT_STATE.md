@@ -2,6 +2,23 @@
 
 **Authoritative current state:** EXP355 is **COMPLETE / POSITIVE** from the supplied local XTR M log. EXP356 is **PREPARED / NOT RUN** as the next post-recovery soak. EXP354 was not run. EXP353 remains **COMPLETE / POSITIVE** by user confirmation; EXP352 remains the latest earlier experiment with full raw-log proof of the complete refresh -> write -> republish path.
 
+## Offline capture re-analysis — 2026-10-01
+
+No new bus experiment was run. Existing genuine DCM/Online and collaborator Eco5 gateway captures were re-analysed against the now-locally-proven EXP352/355 model.
+
+### New durable cross-capture evidence
+
+- **STRONGLY SUPPORTED / genuine DCM + Eco5 capture evidence:** `0708` W2:W3 is a 32-page current/PUSH bitmap covering the ordered config pages from `03E8` through `06F4`. The externally observed bitmap is consistent with W3 bits 0..15 mapping `03E8..0532` and W2 bits 0..15 mapping `0546..06F4`.
+- **Direct cross-capture checks:** W3 bit15 + W2 bit14 is followed by controller pages `0532` and `06F1`; W2 bit15 is followed by `06F4/count19`. This materially strengthens the full bitmap model, while only W3 bit0 -> `03E8` remains locally active-tested on this XTR M.
+- **STRONGLY SUPPORTED desired-page indexing:** genuine Online/DCM capture evidence shows W1 bit0 followed by controller `FC03 03E8`; genuine Eco5 gateway evidence shows W1 bit3 followed by controller `FC03 042E/count15`. This supports W1 using the same page-index family for desired/PULL selection.
+- **PROVEN / genuine Eco5 gateway capture:** the 16-byte response to the exact `071C/0730` challenge is not constant across sessions. Different challenges receive different response payloads.
+- **PROVEN / locally confirmed XTR M:** despite that native variability, EXP355 successfully replayed the previously captured fixed response `1691A5F3F8E8D58738924416E8E6A3D5` under the known cold-boot guard and completed the full initial sync. Therefore the fixed payload is a locally proven replay for this unit/context, not a universal Thermia/Danfoss challenge-response value.
+- **STRONGLY SUPPORTED lifecycle interpretation:** existing genuine capture evidence is consistent with at least two native integration paths: controller cold boot with challenge/response + initial sync, and accessory/gateway rejoin to an already-running controller via a `0708` page bitmap followed by controller page export. The latter is not yet locally emulated.
+
+### Consequence for production recovery
+
+The production-recovery design remains valid for this XTR M, but documentation/code comments must describe the fixed R1 as a **locally proven replay** rather than the native universal response algorithm. Do not generalize the replay to other Thermia models/firmware. The native challenge-response transform remains unknown.
+
 ## Current experiment
 
 ### EXP356 — PREPARED / NOT RUN — post-recovery runtime soak
@@ -81,6 +98,8 @@ This is an observation only. The abstract semantics of A80E/A80F remain open.
 - EXP355 proves one controller power-cycle recovery in the supplied run; repeated controller cold-reboot recoveries in one ESP boot are not yet locally proven.
 - EXP355 intentionally did not perform a semantic room-setpoint write after recovery; the user explicitly chose to skip that combination test.
 - The exact abstract meanings of A80E and A80F remain unknown.
+- The official 16-byte challenge-response transform is unknown; genuine gateway responses vary per challenge/session. The fixed `1691...A3D5` payload is only a locally proven replay on this XTR M.
+- Native hot-rejoin via `0708` page-bitmap advertisement is strongly supported by genuine captures but has not been locally emulated.
 - The >=5 s silence threshold is a locally proven implementation discriminator, not a universal Thermia protocol requirement.
 - Recovery from arbitrary interruption points within the initial-sync chain is untested.
 - Full W2:W3 behavior beyond W3 bit0 / `03E8` remains unproven locally.
