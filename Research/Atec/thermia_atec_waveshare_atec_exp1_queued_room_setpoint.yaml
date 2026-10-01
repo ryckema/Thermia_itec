@@ -1,0 +1,1606 @@
+# =============================================================================
+# ATEC-EXP1 — ATEC/DHP-AQ 0x0F RUNTIME + QUEUED ROOM-SETPOINT WRITE
+# STATUS: PREPARED / NOT RUN
+#
+# Baseline / evidence
+# - Derived from the XTR EXP374 queued-write safety architecture.
+# - ATEC/Eco capture 2026-09-26 shows exact native/emulated mailbox transaction:
+#     0F 03 0708 0006
+#     -> 0F 03 response words 0000,0001,0000,0001,0000,0000
+#     -> controller 0F 03 03E8 000E
+#     -> 14-word 03E8 page response
+#     -> controller republishes 0F 10 03E8 000E
+# - The same capture shows 03F4 / word12 changing 20 -> 30 and being republished.
+# - Discussion #143 independently labels decimal 1012 / 0x03F4 as room thermostat.
+# - ATEC captures show the full 03E8..06F4 config-export page shape family and
+#   runtime 0x0F FC16 pages including 0834/count18.
+#
+# Hypothesis
+# - With the native Online/DCM responder absent, the ATEC/DHP-AQ controller can
+#   be serviced safely on slave 0x0F using only frame shapes observed in the
+#   supplied ATEC captures.
+# - A fresh 03E8/count14 page can be modified at exactly word12 / 03F4 and
+#   accepted by the controller through the captured 0708 -> FC03 03E8 ->
+#   desired-page -> FC16 03E8 republish sequence.
+#
+# Exact controlled changes from XTR EXP374
+# - REMOVE XTR-specific cold-boot/R1 replay, A80E/A80F guard, hot-rejoin and
+#   XTR-only semantic write targets.
+# - ADD 10 s passive peer-responder qualification before any TX.
+# - USE ATEC idle 0708 response: 0000,0000,0000,0000,0000,0000.
+# - USE exact ATEC 03E8 selector: 0000,0001,0000,0001,0000,0000.
+# - ADD exact ATEC runtime FC16 0834/count18 ACK support.
+# - KEEP 04A6 capture-only outside an explicitly requested settings snapshot.
+# - ONLY expose semantic write target 03F4 / room setpoint.
+# - KEEP one-slot LAST-INTENT-WINS queue and >=2 s post-confirm settle.
+#
+# Safety / abort
+# - No TX at all during the first 10 s.
+# - Any pre-existing 0x0F response/ACK during preflight => STOP, TX remains off.
+# - Any later non-self 0x0F response/ACK => STOP, TX off.
+# - Any parser resync or RX-buffer drop after activation => STOP, TX off.
+# - Unknown 0x0F traffic is capture-only; never answered.
+# - A semantic write requires a fresh controller 03E8/count14 cache <=60 s.
+# - Only word12 may differ in the desired page.
+# - Any republish mismatch disables semantic writes; runtime service can continue.
+#
+# Settings snapshot
+# - "ATEC Request Settings Snapshot" sends ONE exact ATEC 0708 bitmap captured
+#   in both supplied logs: 0000,0000,FFFF,867F,03DF,0000.
+# - This requests a broad controller settings export. It does NOT inject setting
+#   values. Only exact captured address/count pages are ACKed.
+# - Snapshot is manual, never automatic.
+#
+# Success
+# - Clean runtime service (known FC16 ACK + 0708 idle response), then:
+#   fresh 03E8 cache -> selector -> FC03 03E8 pull -> one-word desired page ->
+#   exact controller FC16 03E8 republish with only word12 changed.
+# - resync=0, drops=0, peer=0, extraDeltaWords=0.
+#
+# Negative
+# - Controller republishes the original 03F4 value unchanged.
+#
+# Inconclusive / abort
+# - Peer responder, parser/RX fault, unknown desired-page pull, stale cache,
+#   snapshot out-of-order/timeout, or extra changed words.
+# =============================================================================
+
+substitutions:
+  device_name: "thermia-atec-experimental"
+  friendly_name: "Thermia ATEC Experimental"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  on_boot:
+    - priority: -100
+      then:
+        - delay: 500ms
+        - lambda: |-
+            id(waveshare_rs485_direction).turn_off();
+            id(atec_stage) = 0;
+            id(atec_preflight_start_ms) = millis();
+            id(atec_peer_count) = 0;
+            id(atec_active) = true;
+            id(atec_write_enabled) = true;
+            id(atec_sync_requested) = false;
+            id(atec_sync_in_progress) = false;
+            id(atec_sync_index) = 0;
+            id(atec_sync_retries) = 0;
+            id(atec_write_state) = 0;
+            id(atec_pending_valid) = false;
+            id(atec_queue_not_before_ms) = 0;
+            id(atec_page_cache_valid) = false;
+            id(atec_last_tx_ms) = 0;
+            id(atec_last_tx_crc) = 0;
+            id(atec_last_tx_len) = 0;
+            id(atec_last_tx_fc) = 0;
+            id(atec_resync_baseline) = id(thermia_parser_resync_count);
+            id(atec_drop_baseline) = id(thermia_rx_buffer_drop_count);
+            id(atec_runtime_fc16_ack_count) = 0;
+            id(atec_runtime_0708_reply_count) = 0;
+            id(atec_unknown_0f_count) = 0;
+            id(atec_write_confirmed_count) = 0;
+            id(atec_extra_delta_words) = 0;
+            id(thermia_atec_runtime_active)->publish_state(false);
+            id(thermia_atec_write_confirmed)->publish_state(false);
+            id(thermia_atec_cache_valid)->publish_state(false);
+            id(thermia_atec_status)->publish_state("PREPARED / passive 10 s peer qualification / TX=0");
+            id(thermia_atec_stage_text)->publish_state("stage 0 / passive peer check / DE LOW");
+            id(thermia_atec_last_event)->publish_state("ATEC-EXP1 boot: no TX for first 10 s");
+
+esp32:
+  variant: esp32s3
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+api:
+  encryption:
+    key: !secret thermia_api_encryption_key
+  reboot_timeout: 0s
+
+ota:
+  - platform: esphome
+    password: !secret thermia_ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  power_save_mode: none
+  reboot_timeout: 30min
+  ap:
+    ssid: "Thermia ATEC Fallback"
+    password: !secret thermia_fallback_password
+
+captive_portal:
+
+logger:
+  level: WARN
+  baud_rate: 0
+  logs:
+    thermia: WARN
+    thermia_stream: WARN
+    thermia_atec1: WARN
+
+switch:
+  - platform: gpio
+    id: waveshare_rs485_direction
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin:
+      number: GPIO21
+      inverted: false
+
+globals:
+  - id: thermia_last_valid_frame_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: thermia_valid_frame_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: thermia_parser_resync_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: thermia_rx_buffer_drop_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_active
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  # 0=passive preflight, 40=active runtime, 99=stopped
+  - id: atec_stage
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_preflight_start_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_resync_baseline
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_drop_baseline
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_peer_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_unknown_0f_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_runtime_fc16_ack_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_runtime_0708_reply_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_last_tx_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_last_tx_crc
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_last_tx_len
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_last_tx_fc
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+
+  # Manual broad settings export request.
+  - id: atec_sync_requested
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: atec_sync_in_progress
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: atec_sync_index
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_sync_retries
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_sync_start_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  # Cached 03E8/count14 page.
+  - id: atec_page_cache_valid
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: atec_page_cache_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_page_w00
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w01
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w02
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w03
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w04
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w05
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w06
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w07
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w08
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w09
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w10
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w11
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w12
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: atec_page_w13
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+  # 0 idle, 1 wait next 0708 to send selector,
+  # 2 selector sent / wait FC03 03E8 pull,
+  # 3 desired page sent / wait FC16 03E8 republish,
+  # 7 semantic writes disabled (runtime service remains).
+  - id: atec_write_state
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_write_enabled
+    type: bool
+    restore_value: no
+    initial_value: 'true'
+
+  - id: atec_original_room_setpoint
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_target_room_setpoint
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_write_start_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_write_confirmed_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_extra_delta_words
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+
+  # One-slot LAST USER INTENT WINS queue.
+  - id: atec_request_target
+    type: uint16_t
+    restore_value: no
+    initial_value: '20'
+
+  - id: atec_request_generation
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_pending_valid
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: atec_pending_target
+    type: uint16_t
+    restore_value: no
+    initial_value: '20'
+
+  - id: atec_pending_generation
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: atec_queue_not_before_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+uart:
+  id: thermia_uart
+  tx_pin:
+    number: GPIO17
+    inverted: false
+  rx_pin:
+    number: GPIO18
+    inverted: false
+  baud_rate: 9600
+  data_bits: 8
+  parity: EVEN
+  stop_bits: 1
+  rx_buffer_size: 2048
+  rx_full_threshold: 120
+  rx_timeout: 2
+  debug:
+    direction: RX
+    dummy_receiver: true
+    debug_prefix: "[THERMIA ATEC] "
+    after:
+      timeout: 5ms
+    sequence:
+      - lambda: |-
+          static std::vector<uint8_t> pending;
+          if (pending.capacity() == 0) pending.reserve(512);
+          pending.insert(pending.end(), bytes.begin(), bytes.end());
+
+          if (pending.size() > 4096) {
+            id(thermia_rx_buffer_drop_count)++;
+            pending.clear();
+            ESP_LOGW("thermia_stream", "RX stream buffer exceeded 4096 bytes; cleared.");
+            return;
+          }
+
+          auto crc16 = [](const uint8_t *data, size_t len) -> uint16_t {
+            uint16_t crc = 0xFFFF;
+            for (size_t i = 0; i < len; i++) {
+              crc ^= data[i];
+              for (uint8_t bit = 0; bit < 8; bit++)
+                crc = (crc & 1) ? uint16_t((crc >> 1) ^ 0xA001) : uint16_t(crc >> 1);
+            }
+            return crc;
+          };
+
+          auto valid_crc = [&](size_t len) -> bool {
+            if (len < 5 || pending.size() < len) return false;
+            const uint16_t got =
+              uint16_t(pending[len - 2]) | (uint16_t(pending[len - 1]) << 8);
+            return crc16(pending.data(), len - 2) == got;
+          };
+
+          auto known_slave = [](uint8_t s) -> bool {
+            return s == 0x01 || s == 0x02 || s == 0x03 || s == 0x04 ||
+                   s == 0x05 || s == 0x06 || s == 0x0A || s == 0x0F ||
+                   s == 0x14 || s == 0x1E || s == 0xA4 || s == 0xA5 ||
+                   s == 0xC8;
+          };
+
+          auto process_frame = [&](const std::vector<uint8_t> &f) {
+            if (f.size() < 5) return;
+
+            const uint8_t slave = f[0];
+            const uint8_t fc = f[1];
+            const uint32_t now = millis();
+            const uint16_t received_crc =
+              uint16_t(f[f.size() - 2]) | (uint16_t(f[f.size() - 1]) << 8);
+
+            id(thermia_last_valid_frame_ms) = now;
+            id(thermia_valid_frame_count)++;
+            id(thermia_bus_healthy)->publish_state(true);
+
+            auto u16 = [&](size_t p) -> uint16_t {
+              return (uint16_t(f[p]) << 8) | uint16_t(f[p + 1]);
+            };
+
+            auto mark_last_tx = [&](uint8_t tx_fc, uint16_t tx_len, uint16_t tx_crc) {
+              id(atec_last_tx_ms) = millis();
+              id(atec_last_tx_fc) = tx_fc;
+              id(atec_last_tx_len) = tx_len;
+              id(atec_last_tx_crc) = tx_crc;
+            };
+
+            auto send_bytes = [&](const uint8_t *data, size_t len, uint16_t tx_crc) {
+              mark_last_tx(data[1], uint16_t(len), tx_crc);
+              id(waveshare_rs485_direction).turn_on();
+              delay_microseconds_safe(1000);
+              id(thermia_uart).write_array(data, len);
+              id(thermia_uart).flush();
+              delay_microseconds_safe(1000);
+              id(waveshare_rs485_direction).turn_off();
+            };
+
+            auto send_fc16_ack = [&](uint16_t st, uint16_t ct, const char *why) {
+              uint8_t a[8] = {
+                0x0F, 0x10,
+                uint8_t(st >> 8), uint8_t(st & 0xFF),
+                uint8_t(ct >> 8), uint8_t(ct & 0xFF),
+                0, 0
+              };
+              const uint16_t c = crc16(a, 6);
+              a[6] = uint8_t(c & 0xFF);
+              a[7] = uint8_t(c >> 8);
+              ESP_LOGE(
+                "thermia_atec1",
+                "\033[31m[ATEC-EXP1] FC16_ACK_TX reason=%s start=%04X count=%u crc=%04X\033[0m",
+                why, unsigned(st), unsigned(ct), unsigned(c)
+              );
+              send_bytes(a, sizeof(a), c);
+              id(atec_runtime_fc16_ack_count)++;
+              id(thermia_atec_runtime_fc16_acks)->publish_state(
+                float(id(atec_runtime_fc16_ack_count))
+              );
+            };
+
+            auto is_self_echo = [&]() -> bool {
+              return id(atec_last_tx_ms) &&
+                     (now - id(atec_last_tx_ms)) < 120UL &&
+                     fc == id(atec_last_tx_fc) &&
+                     f.size() == id(atec_last_tx_len) &&
+                     received_crc == id(atec_last_tx_crc);
+            };
+
+            // Any response-shaped 0x0F frame not matching our own immediate echo
+            // proves another responder is present. Never compete with it.
+            if (slave == 0x0F) {
+              bool response_shaped = false;
+              if (fc == 0x10 && f.size() == 8) response_shaped = true;
+              if (fc == 0x17 && f.size() == 21 && f[2] == 0x10) response_shaped = true;
+              if (fc == 0x03 && f.size() >= 5 && f[2] <= 240 &&
+                  f.size() == size_t(5 + f[2])) response_shaped = true;
+
+              if (response_shaped) {
+                if (is_self_echo()) {
+                  ESP_LOGE(
+                    "thermia_atec1",
+                    "\033[38;5;130m[ATEC-EXP1] SELF_ECHO fc=%02X len=%u crc=%04X\033[0m",
+                    unsigned(fc), unsigned(f.size()), unsigned(received_crc)
+                  );
+                  return;
+                }
+
+                id(atec_peer_count)++;
+                id(thermia_atec_peer_responses)->publish_state(float(id(atec_peer_count)));
+                id(waveshare_rs485_direction).turn_off();
+                id(atec_active) = false;
+                id(atec_stage) = 99;
+                id(atec_pending_valid) = false;
+                id(atec_sync_requested) = false;
+                id(atec_sync_in_progress) = false;
+                id(thermia_atec_runtime_active)->publish_state(false);
+                id(thermia_atec_status)->publish_state(
+                  "STOPPED / another 0x0F responder detected / TX disabled"
+                );
+                id(thermia_atec_stage_text)->publish_state("stage 99 / DE LOW");
+                id(thermia_atec_last_event)->publish_state(
+                  "peer 0x0F response/ACK observed; no bus competition permitted"
+                );
+                ESP_LOGE(
+                  "thermia_atec1",
+                  "\033[31m[ATEC-EXP1] ===== PEER_RESPONDER_STOP fc=%02X len=%u crc=%04X DE=LOW =====\033[0m",
+                  unsigned(fc), unsigned(f.size()), unsigned(received_crc)
+                );
+                return;
+              }
+            }
+
+            // Preflight is capture-only.
+            if (!id(atec_active) || id(atec_stage) != 40) return;
+
+            const uint32_t resync_delta =
+              id(thermia_parser_resync_count) - id(atec_resync_baseline);
+            const uint32_t drop_delta =
+              id(thermia_rx_buffer_drop_count) - id(atec_drop_baseline);
+            if (resync_delta || drop_delta) {
+              id(waveshare_rs485_direction).turn_off();
+              id(atec_active) = false;
+              id(atec_stage) = 99;
+              id(atec_pending_valid) = false;
+              id(atec_sync_requested) = false;
+              id(atec_sync_in_progress) = false;
+              id(thermia_atec_runtime_active)->publish_state(false);
+              id(thermia_atec_status)->publish_state(
+                "STOPPED / parser-RX integrity delta / TX disabled"
+              );
+              id(thermia_atec_stage_text)->publish_state("stage 99 / DE LOW");
+              id(thermia_atec_last_event)->publish_state(
+                "parser resync/drop changed after runtime activation"
+              );
+              ESP_LOGE(
+                "thermia_atec1",
+                "\033[31m[ATEC-EXP1] ===== INTEGRITY_STOP resync=%u drops=%u DE=LOW =====\033[0m",
+                unsigned(resync_delta), unsigned(drop_delta)
+              );
+              return;
+            }
+
+            // ---------------------------------------------------------------
+            // Slave 0x0F FC16: controller -> gateway/application mailbox
+            // ---------------------------------------------------------------
+            if (slave == 0x0F && fc == 0x10 && f.size() >= 9) {
+              const uint16_t st = u16(2);
+              const uint16_t ct = u16(4);
+              const uint8_t bc = f[6];
+              const bool shape = bc == ct * 2 && f.size() == size_t(9 + bc);
+              if (!shape) return;
+
+              auto cache_03e8 = [&]() {
+                id(atec_page_w00) = u16(7);
+                id(atec_page_w01) = u16(9);
+                id(atec_page_w02) = u16(11);
+                id(atec_page_w03) = u16(13);
+                id(atec_page_w04) = u16(15);
+                id(atec_page_w05) = u16(17);
+                id(atec_page_w06) = u16(19);
+                id(atec_page_w07) = u16(21);
+                id(atec_page_w08) = u16(23);
+                id(atec_page_w09) = u16(25);
+                id(atec_page_w10) = u16(27);
+                id(atec_page_w11) = u16(29);
+                id(atec_page_w12) = u16(31);
+                id(atec_page_w13) = u16(33);
+                id(atec_page_cache_valid) = true;
+                id(atec_page_cache_ms) = now;
+                id(thermia_atec_cache_valid)->publish_state(true);
+                id(thermia_atec_room_setpoint_current)->publish_state(
+                  float(id(atec_page_w12))
+                );
+              };
+
+              if (st == 0x03E8 && ct == 14 && bc == 28 && f.size() == 37) {
+                if (id(atec_write_state) == 3) {
+                  const uint16_t cached[14] = {
+                    id(atec_page_w00), id(atec_page_w01), id(atec_page_w02), id(atec_page_w03),
+                    id(atec_page_w04), id(atec_page_w05), id(atec_page_w06), id(atec_page_w07),
+                    id(atec_page_w08), id(atec_page_w09), id(atec_page_w10), id(atec_page_w11),
+                    id(atec_page_w12), id(atec_page_w13)
+                  };
+                  const uint16_t target = id(atec_target_room_setpoint);
+                  uint8_t extra = 0;
+                  bool exact = true;
+                  for (uint8_t i = 0; i < 14; i++) {
+                    const uint16_t expected = (i == 12) ? target : cached[i];
+                    const uint16_t got = u16(7 + size_t(i) * 2);
+                    if (got != expected) {
+                      exact = false;
+                      if (i != 12) extra++;
+                    }
+                  }
+                  id(atec_extra_delta_words) = extra;
+
+                  // The controller-originated FC16 is ACKed even if the semantic
+                  // result is negative/inconclusive; ACK is not the setting write.
+                  send_fc16_ack(st, ct, "03E8_REPUBLISH");
+
+                  if (exact && extra == 0) {
+                    cache_03e8();
+                    id(atec_write_confirmed_count)++;
+                    id(atec_write_state) = 0;
+                    id(atec_write_start_ms) = 0;
+                    id(atec_queue_not_before_ms) = now + 2000UL;
+                    id(thermia_atec_write_confirmed)->publish_state(true);
+                    id(thermia_atec_confirmed_writes)->publish_state(
+                      float(id(atec_write_confirmed_count))
+                    );
+                    id(thermia_atec_status)->publish_state(
+                      "READY / exact 03F4 room-setpoint republish confirmed"
+                    );
+                    id(thermia_atec_last_event)->publish_state(
+                      "WRITE_CONFIRMED: only 03F4 changed; queue settle 2 s"
+                    );
+                    id(thermia_atec_room_setpoint_target).publish_state(
+                      float(id(atec_page_w12))
+                    );
+                    ESP_LOGE(
+                      "thermia_atec1",
+                      "\033[31m[ATEC-EXP1] ===== WRITE_CONFIRMED reg=03F4 original=%u target=%u observed=%u extraDeltaWords=0 =====\033[0m",
+                      unsigned(id(atec_original_room_setpoint)),
+                      unsigned(target),
+                      unsigned(id(atec_page_w12))
+                    );
+                  } else {
+                    const uint16_t observed = u16(31);
+                    const bool unchanged =
+                      extra == 0 && observed == id(atec_original_room_setpoint);
+                    id(atec_write_state) = 7;
+                    id(atec_write_enabled) = false;
+                    id(atec_pending_valid) = false;
+                    id(atec_queue_not_before_ms) = 0;
+                    if (unchanged) {
+                      id(thermia_atec_status)->publish_state(
+                        "COMPLETE / NEGATIVE / controller kept original 03F4 value"
+                      );
+                      id(thermia_atec_last_event)->publish_state(
+                        "negative semantic result; runtime remains active, writes disabled"
+                      );
+                    } else {
+                      id(thermia_atec_status)->publish_state(
+                        "COMPLETE / INCONCLUSIVE / 03E8 republish mismatch"
+                      );
+                      id(thermia_atec_last_event)->publish_state(
+                        "extra page delta or unexpected 03F4 value; runtime only"
+                      );
+                    }
+                    ESP_LOGE(
+                      "thermia_atec1",
+                      "\033[31m[ATEC-EXP1] ===== REPUBLISH_MISMATCH original=%u target=%u observed=%u extraDeltaWords=%u semanticWrites=DISABLED =====\033[0m",
+                      unsigned(id(atec_original_room_setpoint)),
+                      unsigned(target),
+                      unsigned(observed),
+                      unsigned(extra)
+                    );
+                  }
+                  return;
+                }
+
+                cache_03e8();
+                send_fc16_ack(st, ct, id(atec_sync_in_progress) ? "SYNC_03E8" : "RUNTIME_03E8");
+                ESP_LOGE(
+                  "thermia_atec1",
+                  "\033[38;5;130m[ATEC-EXP1] 03E8_CACHE room=%u age=0ms source=controller_FC16\033[0m",
+                  unsigned(id(atec_page_w12))
+                );
+
+                if (id(atec_sync_in_progress) && id(atec_sync_index) == 0) {
+                  id(atec_sync_index) = 1;
+                }
+                return;
+              }
+
+              // Read-only candidate from Discussion #143:
+              // decimal 1053 / 0x041D = 0410 page word13 = DHW start.
+              if (st == 0x0410 && ct == 22 && bc == 44 && f.size() == 53) {
+                id(thermia_atec_dhw_start_candidate)->publish_state(float(u16(7 + 13 * 2)));
+              }
+
+              // During a manual settings snapshot, ACK the exact captured page
+              // sequence 03E8..06F4. Runtime pages may interleave and are handled below.
+              if (id(atec_sync_in_progress)) {
+                static const uint16_t sync_st[32] = {
+                  0x03E8,0x03FC,0x0410,0x042E,0x0442,0x0456,0x046A,0x047E,
+                  0x0492,0x04A6,0x04BA,0x04D8,0x04F6,0x050A,0x051E,0x0532,
+                  0x0546,0x055A,0x057B,0x059C,0x05BD,0x05DE,0x05FF,0x0620,
+                  0x0641,0x0662,0x0683,0x06A4,0x06C5,0x06EA,0x06F1,0x06F4
+                };
+                static const uint16_t sync_ct[32] = {
+                  14,11,22,15,13,12,18,19,
+                  11,13,22,27,14,19,10,18,
+                  20,33,33,33,33,33,33,33,
+                  33,33,33,33,33,7,3,19
+                };
+
+                const uint8_t ix = id(atec_sync_index);
+                if (ix < 32 && st == sync_st[ix] && ct == sync_ct[ix]) {
+                  send_fc16_ack(st, ct, "SETTINGS_SNAPSHOT");
+                  id(atec_sync_index)++;
+                  id(atec_sync_retries) = 0;
+                  if (id(atec_sync_index) >= 32) {
+                    id(atec_sync_in_progress) = false;
+                    id(atec_sync_start_ms) = 0;
+                    id(thermia_atec_status)->publish_state(
+                      "READY / ATEC settings snapshot complete / fresh 03E8 cached"
+                    );
+                    id(thermia_atec_last_event)->publish_state(
+                      "snapshot reached 06F4; room-setpoint write can be tested while cache is fresh"
+                    );
+                    ESP_LOGE(
+                      "thermia_atec1",
+                      "\033[31m[ATEC-EXP1] ===== SETTINGS_SNAPSHOT_COMPLETE pages=32 cacheValid=%u room=%u =====\033[0m",
+                      unsigned(id(atec_page_cache_valid)),
+                      unsigned(id(atec_page_w12))
+                    );
+                  }
+                  return;
+                }
+
+                // Allow a retry of the immediately previous config page without
+                // advancing the expected index.
+                if (ix > 0 && st == sync_st[ix - 1] && ct == sync_ct[ix - 1] &&
+                    id(atec_sync_retries) < 3) {
+                  id(atec_sync_retries)++;
+                  send_fc16_ack(st, ct, "SETTINGS_SNAPSHOT_RETRY");
+                  ESP_LOGE(
+                    "thermia_atec1",
+                    "\033[38;5;130m[ATEC-EXP1] SNAPSHOT_RETRY start=%04X count=%u retry=%u\033[0m",
+                    unsigned(st), unsigned(ct), unsigned(id(atec_sync_retries))
+                  );
+                  return;
+                }
+              }
+
+              // Runtime pages observed repeatedly in both ATEC capture files.
+              bool runtime_known =
+                (st == 0x07D0 && ct == 19) ||
+                (st == 0x07E4 && ct == 17) ||
+                (st == 0x07F8 && ct == 17) ||
+                (st == 0x080C && ct == 18) ||
+                (st == 0x0820 && ct == 18) ||
+                (st == 0x0834 && ct == 18) ||
+                (st == 0x0848 && ct == 23) ||
+                (st == 0x0864 && ct == 4)  ||
+                (st == 0x0870 && ct == 17) ||
+                (st == 0x0884 && ct == 60);
+
+              if (st == 0x085F && ct == 5 && bc == 10 && f.size() == 19) {
+                // Both supplied ATEC logs show only all-zero 085F payload.
+                runtime_known =
+                  u16(7) == 0 && u16(9) == 0 && u16(11) == 0 &&
+                  u16(13) == 0 && u16(15) == 0;
+              }
+
+              if (runtime_known) {
+                send_fc16_ack(st, ct, "ATEC_RUNTIME");
+                return;
+              }
+
+              // 04A6/count13 is frequent in the ATEC captures but is intentionally
+              // capture-only outside a manually requested settings snapshot because
+              // ACKing it can resume a larger config export.
+              if (st == 0x04A6 && ct == 13) {
+                ESP_LOGE(
+                  "thermia_atec1",
+                  "\033[38;5;130m[ATEC-EXP1] 04A6_CAPTURE_ONLY count=13 sync=%u NO_ACK\033[0m",
+                  unsigned(id(atec_sync_in_progress))
+                );
+                return;
+              }
+
+              id(atec_unknown_0f_count)++;
+              id(thermia_atec_unknown_0f)->publish_state(float(id(atec_unknown_0f_count)));
+              ESP_LOGE(
+                "thermia_atec1",
+                "\033[38;5;130m[ATEC-EXP1] UNKNOWN_0F_FC16_CAPTURE_ONLY start=%04X count=%u NO_ACK\033[0m",
+                unsigned(st), unsigned(ct)
+              );
+              return;
+            }
+
+            // ---------------------------------------------------------------
+            // Slave 0x0F FC03: controller reads gateway/application mailbox
+            // ---------------------------------------------------------------
+            if (slave == 0x0F && fc == 0x03 && f.size() == 8) {
+              const uint16_t st = u16(2);
+              const uint16_t ct = u16(4);
+
+              if (st == 0x0708 && ct == 6) {
+                if (id(atec_sync_requested) && !id(atec_sync_in_progress) &&
+                    id(atec_write_state) == 0) {
+                  // Exact ATEC capture: 0000,0000,FFFF,867F,03DF,0000
+                  static const uint8_t sync_rsp[17] = {
+                    0x0F,0x03,0x0C,
+                    0x00,0x00, 0x00,0x00, 0xFF,0xFF,
+                    0x86,0x7F, 0x03,0xDF, 0x00,0x00,
+                    0x66,0xAD
+                  };
+                  id(atec_sync_requested) = false;
+                  id(atec_sync_in_progress) = true;
+                  id(atec_sync_index) = 0;
+                  id(atec_sync_retries) = 0;
+                  id(atec_sync_start_ms) = now;
+                  id(thermia_atec_status)->publish_state(
+                    "RUNNING / manual settings snapshot requested / wait 03E8..06F4"
+                  );
+                  id(thermia_atec_last_event)->publish_state(
+                    "one captured broad settings-export bitmap transmitted"
+                  );
+                  ESP_LOGE(
+                    "thermia_atec1",
+                    "\033[31m[ATEC-EXP1] ===== SETTINGS_SNAPSHOT_BITMAP_TX frame=0F030C00000000FFFF867F03DF000066AD =====\033[0m"
+                  );
+                  send_bytes(sync_rsp, sizeof(sync_rsp), 0xAD66);
+                  id(atec_runtime_0708_reply_count)++;
+                  id(thermia_atec_runtime_0708_replies)->publish_state(
+                    float(id(atec_runtime_0708_reply_count))
+                  );
+                  return;
+                }
+
+                if (id(atec_write_state) == 1 && id(atec_write_enabled) &&
+                    !id(atec_sync_in_progress)) {
+                  // Exact ATEC capture at 1202.718:
+                  // 0000,0001,0000,0001,0000,0000 -> FC03 03E8/count14.
+                  static const uint8_t selector_rsp[17] = {
+                    0x0F,0x03,0x0C,
+                    0x00,0x00, 0x00,0x01, 0x00,0x00,
+                    0x00,0x01, 0x00,0x00, 0x00,0x00,
+                    0x2D,0x24
+                  };
+                  id(atec_write_state) = 2;
+                  id(atec_write_start_ms) = now;
+                  id(thermia_atec_status)->publish_state(
+                    "RUNNING / ATEC 03E8 selector sent / wait FC03 03E8 pull"
+                  );
+                  id(thermia_atec_last_event)->publish_state(
+                    "selector 0000,0001,0000,0001,0000,0000 sent"
+                  );
+                  ESP_LOGE(
+                    "thermia_atec1",
+                    "\033[31m[ATEC-EXP1] ===== 0708_SELECTOR_TX target03F4=%u frame=0F030C0000000100000001000000002D24 =====\033[0m",
+                    unsigned(id(atec_target_room_setpoint))
+                  );
+                  send_bytes(selector_rsp, sizeof(selector_rsp), 0x242D);
+                  id(atec_runtime_0708_reply_count)++;
+                  id(thermia_atec_runtime_0708_replies)->publish_state(
+                    float(id(atec_runtime_0708_reply_count))
+                  );
+                  return;
+                }
+
+                // Exact dominant ATEC idle response in both supplied logs:
+                // six zero words.
+                static const uint8_t idle_rsp[17] = {
+                  0x0F,0x03,0x0C,
+                  0x00,0x00, 0x00,0x00, 0x00,0x00,
+                  0x00,0x00, 0x00,0x00, 0x00,0x00,
+                  0x1D,0x74
+                };
+                send_bytes(idle_rsp, sizeof(idle_rsp), 0x741D);
+                id(atec_runtime_0708_reply_count)++;
+                id(thermia_atec_runtime_0708_replies)->publish_state(
+                  float(id(atec_runtime_0708_reply_count))
+                );
+                ESP_LOGE(
+                  "thermia_atec1",
+                  "\033[31m[ATEC-EXP1] RUNTIME_0708_IDLE_TX n=%u frame=0F030C0000000000000000000000001D74\033[0m",
+                  unsigned(id(atec_runtime_0708_reply_count))
+                );
+                return;
+              }
+
+              if (st == 0x03E8 && ct == 14 && id(atec_write_state) == 2 &&
+                  id(atec_write_enabled)) {
+                const uint32_t cache_age =
+                  id(atec_page_cache_ms) ? now - id(atec_page_cache_ms) : 0xFFFFFFFFUL;
+
+                if (!id(atec_page_cache_valid) || cache_age > 60000UL) {
+                  id(atec_write_state) = 7;
+                  id(atec_write_enabled) = false;
+                  id(atec_pending_valid) = false;
+                  id(thermia_atec_status)->publish_state(
+                    "COMPLETE / INCONCLUSIVE / desired-page pull arrived but cache stale"
+                  );
+                  id(thermia_atec_last_event)->publish_state(
+                    "03E8 response withheld; semantic writes disabled"
+                  );
+                  ESP_LOGE(
+                    "thermia_atec1",
+                    "\033[31m[ATEC-EXP1] ===== DESIRED_PAGE_REFUSED cacheValid=%u cacheAge=%ums NO_TX =====\033[0m",
+                    unsigned(id(atec_page_cache_valid)), unsigned(cache_age)
+                  );
+                  return;
+                }
+
+                uint16_t words[14] = {
+                  id(atec_page_w00), id(atec_page_w01), id(atec_page_w02), id(atec_page_w03),
+                  id(atec_page_w04), id(atec_page_w05), id(atec_page_w06), id(atec_page_w07),
+                  id(atec_page_w08), id(atec_page_w09), id(atec_page_w10), id(atec_page_w11),
+                  id(atec_page_w12), id(atec_page_w13)
+                };
+                id(atec_original_room_setpoint) = words[12];
+                words[12] = id(atec_target_room_setpoint);
+
+                uint8_t rsp[33] = {0x0F,0x03,0x1C};
+                for (uint8_t i = 0; i < 14; i++) {
+                  rsp[3 + i * 2] = uint8_t(words[i] >> 8);
+                  rsp[4 + i * 2] = uint8_t(words[i] & 0xFF);
+                }
+                const uint16_t c = crc16(rsp, 31);
+                rsp[31] = uint8_t(c & 0xFF);
+                rsp[32] = uint8_t(c >> 8);
+
+                id(atec_write_state) = 3;
+                id(atec_write_start_ms) = now;
+                id(thermia_atec_status)->publish_state(
+                  "RUNNING / desired 03E8 page sent / wait exact FC16 republish"
+                );
+                id(thermia_atec_last_event)->publish_state(
+                  "desired page transmitted with only 03F4 changed"
+                );
+                ESP_LOGE(
+                  "thermia_atec1",
+                  "\033[31m[ATEC-EXP1] ===== DESIRED_PAGE_TX reg=03F4 original=%u desired=%u deltaWords=1 crc=%04X =====\033[0m",
+                  unsigned(id(atec_original_room_setpoint)),
+                  unsigned(id(atec_target_room_setpoint)),
+                  unsigned(c)
+                );
+                send_bytes(rsp, sizeof(rsp), c);
+                return;
+              }
+
+              id(atec_unknown_0f_count)++;
+              id(thermia_atec_unknown_0f)->publish_state(float(id(atec_unknown_0f_count)));
+              ESP_LOGE(
+                "thermia_atec1",
+                "\033[38;5;130m[ATEC-EXP1] UNKNOWN_0F_FC03_CAPTURE_ONLY start=%04X count=%u writeState=%u NO_TX\033[0m",
+                unsigned(st), unsigned(ct), unsigned(id(atec_write_state))
+              );
+              return;
+            }
+
+            // Exact 0x0F FC17 request is deliberately capture-only in ATEC-EXP1.
+            // No R1 replay is used.
+            if (slave == 0x0F && fc == 0x17) {
+              ESP_LOGE(
+                "thermia_atec1",
+                "\033[38;5;130m[ATEC-EXP1] 0F_FC17_CAPTURE_ONLY len=%u NO_TX\033[0m",
+                unsigned(f.size())
+              );
+              return;
+            }
+          };
+
+          while (true) {
+            if (pending.size() < 5) break;
+
+            const uint8_t slave = pending[0];
+            const uint8_t fn = pending[1];
+            const bool known_fn =
+              fn == 0x01 || fn == 0x02 || fn == 0x03 || fn == 0x04 ||
+              fn == 0x05 || fn == 0x06 || fn == 0x08 || fn == 0x0F ||
+              fn == 0x10 || fn == 0x16 || fn == 0x17 || (fn & 0x80);
+
+            if (!known_slave(slave) || !known_fn) {
+              pending.erase(pending.begin());
+              continue;
+            }
+
+            std::vector<size_t> candidates;
+            if (fn & 0x80) candidates.push_back(5);
+            if (fn == 0x01 || fn == 0x02) {
+              candidates.push_back(8);
+              if (pending.size() >= 3 && pending[2] <= 240)
+                candidates.push_back(5 + size_t(pending[2]));
+            }
+            if (fn == 0x05 || fn == 0x06 || fn == 0x08) candidates.push_back(8);
+            if (fn == 0x0F) {
+              candidates.push_back(8);
+              if (pending.size() >= 7 && pending[6] <= 240)
+                candidates.push_back(9 + size_t(pending[6]));
+            }
+            if (fn == 0x16) candidates.push_back(10);
+            if (fn == 0x03 || fn == 0x04) {
+              candidates.push_back(8);
+              if (pending.size() >= 3 && pending[2] <= 240)
+                candidates.push_back(5 + size_t(pending[2]));
+            }
+            if (fn == 0x10) {
+              candidates.push_back(8);
+              if (pending.size() >= 7 && pending[6] <= 240)
+                candidates.push_back(9 + size_t(pending[6]));
+            }
+            if (fn == 0x17) {
+              if (pending.size() >= 3 && pending[2] <= 240)
+                candidates.push_back(5 + size_t(pending[2]));
+              if (pending.size() >= 11 && pending[10] <= 240)
+                candidates.push_back(13 + size_t(pending[10]));
+            }
+
+            std::sort(candidates.begin(), candidates.end());
+            candidates.erase(
+              std::unique(candidates.begin(), candidates.end()),
+              candidates.end()
+            );
+
+            size_t matched = 0;
+            bool waiting = false;
+            for (size_t len : candidates) {
+              if (len < 5 || len > 256) continue;
+              if (pending.size() < len) {
+                waiting = true;
+                continue;
+              }
+              if (valid_crc(len)) {
+                matched = len;
+                break;
+              }
+            }
+
+            if (matched) {
+              std::vector<uint8_t> frame(
+                pending.begin(), pending.begin() + matched
+              );
+              pending.erase(pending.begin(), pending.begin() + matched);
+              process_frame(frame);
+              continue;
+            }
+
+            if (waiting) break;
+
+            id(thermia_parser_resync_count)++;
+            ESP_LOGW(
+              "thermia_stream",
+              "CRC resync at 0x%02X 0x%02X",
+              unsigned(slave), unsigned(fn)
+            );
+            pending.erase(pending.begin());
+          }
+
+          if (pending.size() > 512) {
+            id(thermia_rx_buffer_drop_count)++;
+            ESP_LOGW(
+              "thermia_stream",
+              "Dropping pending buffer (%u bytes)",
+              unsigned(pending.size())
+            );
+            pending.clear();
+          }
+
+binary_sensor:
+  - platform: template
+    id: thermia_bus_healthy
+    name: "Thermia ATEC Bus Healthy"
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_atec_runtime_active
+    name: "ATEC-EXP1 Runtime Active"
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_atec_write_confirmed
+    name: "ATEC-EXP1 Last Room Write Confirmed"
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_atec_cache_valid
+    name: "ATEC-EXP1 03E8 Cache Valid"
+    entity_category: diagnostic
+
+sensor:
+  - platform: template
+    id: thermia_valid_frames_sensor
+    name: "Thermia ATEC Valid Frames"
+    entity_category: diagnostic
+    update_interval: 10s
+    lambda: return float(id(thermia_valid_frame_count));
+
+  - platform: template
+    id: thermia_parser_resync_sensor
+    name: "Thermia ATEC Parser Resyncs"
+    entity_category: diagnostic
+    update_interval: 10s
+    lambda: return float(id(thermia_parser_resync_count));
+
+  - platform: template
+    id: thermia_rx_drop_sensor
+    name: "Thermia ATEC RX Buffer Drops"
+    entity_category: diagnostic
+    update_interval: 10s
+    lambda: return float(id(thermia_rx_buffer_drop_count));
+
+  - platform: template
+    id: thermia_bus_age_sensor
+    name: "Thermia ATEC Bus Age"
+    unit_of_measurement: "s"
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    update_interval: 5s
+    lambda: |-
+      if (!id(thermia_last_valid_frame_ms)) return NAN;
+      return float(millis() - id(thermia_last_valid_frame_ms)) / 1000.0f;
+
+  - platform: template
+    id: thermia_atec_runtime_fc16_acks
+    name: "ATEC-EXP1 Runtime FC16 ACKs"
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_runtime_0708_replies
+    name: "ATEC-EXP1 0708 Replies"
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_peer_responses
+    name: "ATEC-EXP1 Peer 0F Responses"
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_unknown_0f
+    name: "ATEC-EXP1 Unknown 0F Frames"
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_confirmed_writes
+    name: "ATEC-EXP1 Confirmed Room Writes"
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_cache_age
+    name: "ATEC-EXP1 03E8 Cache Age"
+    unit_of_measurement: "s"
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    update_interval: 5s
+    lambda: |-
+      if (!id(atec_page_cache_valid) || !id(atec_page_cache_ms)) return NAN;
+      return float(millis() - id(atec_page_cache_ms)) / 1000.0f;
+
+  - platform: template
+    id: thermia_atec_room_setpoint_current
+    name: "ATEC Room Setpoint Current"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 0
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_dhw_start_candidate
+    name: "ATEC DHW Start (0x041D mapped)"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+text_sensor:
+  - platform: template
+    id: thermia_atec_status
+    name: "ATEC-EXP1 Status"
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_stage_text
+    name: "ATEC-EXP1 Stage"
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_last_event
+    name: "ATEC-EXP1 Last Event"
+    entity_category: diagnostic
+    update_interval: never
+
+script:
+  - id: atec_start_room_write
+    mode: single
+    then:
+      - lambda: |-
+          id(waveshare_rs485_direction).turn_off();
+          const uint32_t now = millis();
+
+          if (!id(atec_active) || id(atec_stage) != 40 || !id(atec_write_enabled)) {
+            id(thermia_atec_last_event)->publish_state(
+              "WRITE REFUSED: active runtime / semantic-write guard not satisfied"
+            );
+            return;
+          }
+
+          if (id(atec_write_state) != 0 || id(atec_sync_requested) ||
+              id(atec_sync_in_progress)) {
+            id(thermia_atec_last_event)->publish_state(
+              "WRITE REFUSED: transaction or settings snapshot already active"
+            );
+            return;
+          }
+
+          const uint32_t rd =
+            id(thermia_parser_resync_count) - id(atec_resync_baseline);
+          const uint32_t dd =
+            id(thermia_rx_buffer_drop_count) - id(atec_drop_baseline);
+          const bool runtime_qualified =
+            id(atec_runtime_fc16_ack_count) >= 1 &&
+            id(atec_runtime_0708_reply_count) >= 1 &&
+            id(atec_peer_count) == 0 &&
+            rd == 0 && dd == 0;
+
+          if (!runtime_qualified) {
+            id(thermia_atec_last_event)->publish_state(
+              "WRITE REFUSED: runtime not yet qualified"
+            );
+            return;
+          }
+
+          const uint32_t cache_age =
+            id(atec_page_cache_ms) ? now - id(atec_page_cache_ms) : 0xFFFFFFFFUL;
+          if (!id(atec_page_cache_valid) || cache_age > 60000UL) {
+            id(thermia_atec_status)->publish_state(
+              "READY / room write refused: fresh 03E8 snapshot required"
+            );
+            id(thermia_atec_last_event)->publish_state(
+              "press 'ATEC Request Settings Snapshot'; no semantic TX sent"
+            );
+            return;
+          }
+
+          const uint16_t target = id(atec_request_target);
+          const uint16_t current = id(atec_page_w12);
+          if (target < 20 || target > 30) {
+            id(thermia_atec_last_event)->publish_state(
+              "WRITE REFUSED: target outside ATEC-EXP1 observed 20..30 °C guard"
+            );
+            return;
+          }
+
+          if (target == current) {
+            id(atec_queue_not_before_ms) = now + 2000UL;
+            id(thermia_atec_write_confirmed)->publish_state(true);
+            id(thermia_atec_status)->publish_state(
+              "READY / target already current / no semantic TX"
+            );
+            id(thermia_atec_last_event)->publish_state(
+              "no-op room-setpoint request; queue settle 2 s"
+            );
+            return;
+          }
+
+          id(atec_target_room_setpoint) = target;
+          id(atec_original_room_setpoint) = current;
+          id(atec_write_state) = 1;
+          id(atec_write_start_ms) = now;
+          id(atec_extra_delta_words) = 0;
+          id(thermia_atec_write_confirmed)->publish_state(false);
+          id(thermia_atec_status)->publish_state(
+            "RUNNING / room write latched / wait next 0708 selector slot"
+          );
+          id(thermia_atec_last_event)->publish_state(
+            "03F4 target latched; no page TX until exact controller pull"
+          );
+          ESP_LOGE(
+            "thermia_atec1",
+            "\033[31m[ATEC-EXP1] ===== ROOM_WRITE_ARM reg=03F4 original=%u target=%u cacheAge=%ums wait=0708 =====\033[0m",
+            unsigned(current), unsigned(target), unsigned(cache_age)
+          );
+
+  - id: atec_debounce_room_write
+    mode: restart
+    then:
+      - delay: 1500ms
+      - lambda: |-
+          const uint32_t now = millis();
+          const uint16_t target = id(atec_request_target);
+          const uint32_t gen = id(atec_request_generation);
+
+          if (!id(atec_active) || id(atec_stage) != 40 ||
+              !id(atec_write_enabled)) {
+            id(atec_pending_valid) = false;
+            id(thermia_atec_last_event)->publish_state(
+              "QUEUE DROP: runtime/write path not eligible"
+            );
+            return;
+          }
+
+          const bool settle_wait =
+            id(atec_queue_not_before_ms) &&
+            int32_t(now - id(atec_queue_not_before_ms)) < 0;
+
+          if (id(atec_write_state) != 0 || settle_wait ||
+              id(atec_pending_valid)) {
+            const bool replaced = id(atec_pending_valid);
+            id(atec_pending_valid) = true;
+            id(atec_pending_target) = target;
+            id(atec_pending_generation) = gen;
+            id(thermia_atec_status)->publish_state(
+              id(atec_write_state) != 0 ?
+                "QUEUED / active room transaction must close first" :
+                "QUEUED / 2 s settle before next room transaction"
+            );
+            id(thermia_atec_last_event)->publish_state(
+              replaced ?
+                "QUEUE REPLACED: newest room-setpoint intent retained" :
+                "QUEUE STORED: newest room-setpoint intent retained"
+            );
+            ESP_LOGE(
+              "thermia_atec1",
+              "\033[31m[ATEC-EXP1] ===== QUEUE_%s gen=%u target=%u writeState=%u settle=%u =====\033[0m",
+              replaced ? "REPLACE" : "STORE",
+              unsigned(gen), unsigned(target),
+              unsigned(id(atec_write_state)), unsigned(settle_wait)
+            );
+            return;
+          }
+
+          id(atec_start_room_write).execute();
+
+number:
+  - platform: template
+    id: thermia_atec_room_setpoint_target
+    name: "ATEC-EXP1 Room Setpoint"
+    entity_category: config
+    icon: mdi:thermometer
+    optimistic: true
+    restore_value: false
+    initial_value: 20
+    min_value: 20
+    max_value: 30
+    step: 1
+    mode: slider
+    set_action:
+      - lambda: |-
+          if (!std::isfinite(x) || fabsf(x - roundf(x)) > 0.01f ||
+              x < 20 || x > 30) return;
+          id(atec_request_target) = uint16_t(lroundf(x));
+          id(atec_request_generation)++;
+          id(atec_debounce_room_write).execute();
+
+button:
+  - platform: template
+    name: "ATEC Request Settings Snapshot"
+    entity_category: config
+    icon: mdi:database-refresh-outline
+    on_press:
+      - lambda: |-
+          id(waveshare_rs485_direction).turn_off();
+          if (!id(atec_active) || id(atec_stage) != 40 ||
+              id(atec_peer_count) != 0 ||
+              id(atec_write_state) != 0 ||
+              id(atec_sync_requested) || id(atec_sync_in_progress)) {
+            id(thermia_atec_last_event)->publish_state(
+              "SNAPSHOT REFUSED: runtime/peer/write/snapshot guard not satisfied"
+            );
+            return;
+          }
+          id(atec_sync_requested) = true;
+          id(atec_sync_index) = 0;
+          id(atec_sync_retries) = 0;
+          id(thermia_atec_status)->publish_state(
+            "ARMED / one captured ATEC settings-export bitmap on next 0708"
+          );
+          id(thermia_atec_last_event)->publish_state(
+            "snapshot armed; no TX until exact 0708/count6 poll"
+          );
+          ESP_LOGE(
+            "thermia_atec1",
+            "\033[31m[ATEC-EXP1] ===== SETTINGS_SNAPSHOT_ARMED exactBitmap=0000,0000,FFFF,867F,03DF,0000 =====\033[0m"
+          );
+
+  - platform: template
+    name: "ATEC Abort Experiment"
+    entity_category: config
+    icon: mdi:stop-circle-outline
+    on_press:
+      - lambda: |-
+          id(waveshare_rs485_direction).turn_off();
+          id(atec_active) = false;
+          id(atec_stage) = 99;
+          id(atec_pending_valid) = false;
+          id(atec_sync_requested) = false;
+          id(atec_sync_in_progress) = false;
+          id(atec_write_state) = 7;
+          id(atec_write_enabled) = false;
+          id(thermia_atec_runtime_active)->publish_state(false);
+          id(thermia_atec_status)->publish_state(
+            "ABORTED manually / all experiment TX disabled / DE LOW"
+          );
+          id(thermia_atec_stage_text)->publish_state("stage 99 / stopped / DE LOW");
+          id(thermia_atec_last_event)->publish_state("manual abort");
+          ESP_LOGE(
+            "thermia_atec1",
+            "\033[31m[ATEC-EXP1] ===== MANUAL_ABORT DE=LOW =====\033[0m"
+          );
+
+interval:
+  - interval: 250ms
+    then:
+      - lambda: |-
+          const uint32_t now = millis();
+          const uint32_t last = id(thermia_last_valid_frame_ms);
+
+          if (last && now - last > 3000UL) {
+            id(thermia_bus_healthy)->publish_state(false);
+          }
+
+          if (!id(atec_active)) return;
+
+          // Passive peer qualification: absolutely no TX for 10 s.
+          if (id(atec_stage) == 0) {
+            const uint32_t age = now - id(atec_preflight_start_ms);
+            if (id(atec_peer_count) > 0) {
+              id(waveshare_rs485_direction).turn_off();
+              id(atec_active) = false;
+              id(atec_stage) = 99;
+              id(thermia_atec_runtime_active)->publish_state(false);
+              id(thermia_atec_status)->publish_state(
+                "STOPPED / peer responder seen during passive preflight"
+              );
+              id(thermia_atec_stage_text)->publish_state("stage 99 / DE LOW");
+              return;
+            }
+
+            if (age >= 10000UL && last && (now - last) < 2000UL) {
+              id(atec_stage) = 40;
+              id(atec_resync_baseline) = id(thermia_parser_resync_count);
+              id(atec_drop_baseline) = id(thermia_rx_buffer_drop_count);
+              id(thermia_atec_runtime_active)->publish_state(true);
+              id(thermia_atec_status)->publish_state(
+                "RUNNING / ATEC 0x0F runtime active / room write waits fresh 03E8"
+              );
+              id(thermia_atec_stage_text)->publish_state(
+                "stage 40 / captured ATEC runtime service"
+              );
+              id(thermia_atec_last_event)->publish_state(
+                "10 s clean peer check passed; TX enabled only for exact captured slots"
+              );
+              ESP_LOGE(
+                "thermia_atec1",
+                "\033[31m[ATEC-EXP1] ===== PREFLIGHT_PASSED peer=0 busFresh=1 ENTER_STAGE40 DE=LOW =====\033[0m"
+              );
+              return;
+            }
+
+            if (age >= 30000UL && (!last || (now - last) >= 2000UL)) {
+              id(waveshare_rs485_direction).turn_off();
+              id(atec_active) = false;
+              id(atec_stage) = 99;
+              id(thermia_atec_status)->publish_state(
+                "STOPPED / no healthy bus during passive preflight"
+              );
+              id(thermia_atec_stage_text)->publish_state("stage 99 / DE LOW");
+              id(thermia_atec_last_event)->publish_state(
+                "30 s preflight timeout without fresh valid bus traffic"
+              );
+              return;
+            }
+          }
+
+          if (id(atec_stage) != 40) return;
+
+          const uint32_t rd =
+            id(thermia_parser_resync_count) - id(atec_resync_baseline);
+          const uint32_t dd =
+            id(thermia_rx_buffer_drop_count) - id(atec_drop_baseline);
+          if (rd || dd) {
+            id(waveshare_rs485_direction).turn_off();
+            id(atec_active) = false;
+            id(atec_stage) = 99;
+            id(atec_pending_valid) = false;
+            id(atec_sync_requested) = false;
+            id(atec_sync_in_progress) = false;
+            id(thermia_atec_runtime_active)->publish_state(false);
+            id(thermia_atec_status)->publish_state(
+              "STOPPED / parser-RX integrity delta / TX disabled"
+            );
+            id(thermia_atec_stage_text)->publish_state("stage 99 / DE LOW");
+            id(thermia_atec_last_event)->publish_state(
+              "integrity counter changed during active runtime"
+            );
+            return;
+          }
+
+          // Settings snapshot timeout. Runtime remains active; no automatic retry.
+          if (id(atec_sync_in_progress) && id(atec_sync_start_ms) &&
+              now - id(atec_sync_start_ms) > 60000UL) {
+            id(atec_sync_in_progress) = false;
+            id(atec_sync_requested) = false;
+            id(thermia_atec_status)->publish_state(
+              "COMPLETE / INCONCLUSIVE / settings snapshot timeout / runtime continues"
+            );
+            id(thermia_atec_last_event)->publish_state(
+              "snapshot did not reach 06F4 within 60 s; no retry"
+            );
+            ESP_LOGE(
+              "thermia_atec1",
+              "\033[31m[ATEC-EXP1] ===== SETTINGS_SNAPSHOT_TIMEOUT index=%u NO_RETRY =====\033[0m",
+              unsigned(id(atec_sync_index))
+            );
+          }
+
+          // Semantic transaction timeout; disable writes, keep captured runtime.
+          if (id(atec_write_state) >= 1 && id(atec_write_state) <= 3 &&
+              id(atec_write_start_ms) &&
+              now - id(atec_write_start_ms) > 12000UL) {
+            id(atec_write_state) = 7;
+            id(atec_write_enabled) = false;
+            id(atec_pending_valid) = false;
+            id(atec_queue_not_before_ms) = 0;
+            id(thermia_atec_status)->publish_state(
+              "COMPLETE / INCONCLUSIVE / room-write timeout / runtime only"
+            );
+            id(thermia_atec_last_event)->publish_state(
+              "semantic transaction timed out; no retry, writes disabled"
+            );
+            ESP_LOGE(
+              "thermia_atec1",
+              "\033[31m[ATEC-EXP1] ===== ROOM_WRITE_TIMEOUT semanticWrites=DISABLED =====\033[0m"
+            );
+          }
+
+          // One-slot queued write dispatcher.
+          if (id(atec_write_state) == 0 && id(atec_pending_valid) &&
+              id(atec_pending_generation) == id(atec_request_generation) &&
+              (id(atec_queue_not_before_ms) == 0 ||
+               int32_t(now - id(atec_queue_not_before_ms)) >= 0)) {
+            const uint16_t qtarget = id(atec_pending_target);
+            const uint32_t qgen = id(atec_pending_generation);
+            id(atec_pending_valid) = false;
+            id(atec_pending_generation) = 0;
+            id(atec_request_target) = qtarget;
+            ESP_LOGE(
+              "thermia_atec1",
+              "\033[31m[ATEC-EXP1] ===== QUEUE_DISPATCH gen=%u target=%u freshCacheRequired=1 =====\033[0m",
+              unsigned(qgen), unsigned(qtarget)
+            );
+            id(atec_start_room_write).execute();
+          }
