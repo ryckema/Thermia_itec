@@ -1,3 +1,66 @@
+# 2026-10-01 — semantic write expansion through EXP373
+
+## PROVEN / locally confirmed
+
+### Native desired-page semantic-write mechanism is reusable across multiple settings
+
+The XTR M semantic write path is no longer proven only for Room Setpoint. The same guarded flow has now been locally confirmed for multiple words in the `03E8/count14` page:
+
+`fresh controller FC16 03E8/count14`
+-> desired-page selector on `0708`
+-> controller `FC03 03E8/count14`
+-> emulator returns the full page with exactly one intended word changed
+-> controller republishes `FC16 03E8/count14`
+-> success only when selected word equals target and `extraDeltaWords=0`.
+
+EXP365–370 prove that this mechanism is reusable in one healthy runtime session and is not inherently a one-shot write path.
+
+### Confirmed writable fields
+
+- **`03E8` Heating Curve — PROVEN writable.** Confirmed examples include `30 -> 31 -> 30`, `30 -> 35`, `35 -> 32/35` during verifier-development runs, and reusable `35 -> 40 -> 30`. Exact controller republish with one-word delta was observed.
+- **`03EA` Heating Maximum — PROVEN writable.** Confirmed sequence includes `40 -> 41 -> 58 -> 40`, with exact controller republish and no extra delta words.
+- **`03ED` Curve Correction -5 — PROVEN writable.** EXP373 confirmed `0 -> -5 -> 0`; `-5` is transported as signed int16 `0xFFFB`.
+- **`03EE` Heating Stop — PROVEN writable.** EXP373 confirmed `20 -> 22` and `22 -> 18 -> 22`.
+- **`03EF` Reduced Temperature — PROVEN writable.** EXP373 confirmed `20 -> 22 -> 20`.
+- **`03F4` Room Setpoint — PROVEN writable through the native desired-page flow.** Prior proof remains valid, and reusable writes were again observed in EXP370.
+
+For all promoted write findings above, the controller republished the full `03E8/count14` page with the intended selected word changed and `extraDeltaWords=0`.
+
+### No-op suppression is locally confirmed
+
+When a fresh controller page already contains the requested target, the write state machine can close READY without sending a semantic desired page. EXP373 demonstrated this for `03EF` at 20.
+
+### Controller reboot recovery remains locally proven after production hardening
+
+EXP358 confirmed the v2.1 hardening did not break retained runtime, fresh-page refresh or the established Room Setpoint write path. EXP359 then repeated controller cold-reboot recovery: >5 s silence gate, guarded fresh-session bootstrap, full ordered sync through `06F4/count19`, stage-40 re-entry and post-recovery runtime qualification all completed with clean parser/RX health.
+
+## STRONGLY SUPPORTED
+
+### Semantic control is page-owned, not arbitrary direct-register write behavior
+
+The growing set of successful one-word changes all use the same full-page desired-state exchange and exact controller republish. This strongly supports a page ownership/synchronization model for `03E8/count14`, rather than treating each setting as an independent Modbus master write target.
+
+### Signed 16-bit interpretation applies to curve-correction words
+
+Local EXP373 write evidence proves signed int16 handling at least for `03ED` because `-5` is represented as `0xFFFB` and was accepted/re-published exactly. The neighboring correction fields are still not promoted as writable without their own local confirmation.
+
+## OPEN / UNKNOWN
+
+- **`03E9` Heating Minimum writeability:** not yet locally proven. A recent attempt was blocked by a local software guard before semantic TX. Do not treat Minimum < Maximum as a Thermia protocol rule on that basis.
+- **`03EB` Curve Correction +5 writeability:** mapping is locally established on the page, but no clean local write confirmation is recorded in the current EXP373 evidence.
+- **`03EC` Curve Correction 0 writeability:** same status as `03EB`.
+- **`03F0` Room Factor writeability:** strongly indicated by mapping/cross-model evidence but not locally write-confirmed here.
+- Native hot-rejoin behavior remains unresolved. EXP360–364 produced mixed/inconclusive transport observations and do not establish a general no-R1 rejoin algorithm.
+- Queueing multiple user requests safely is not yet proven. EXP374 is prepared specifically to test scheduling safety without changing the proven wire protocol.
+
+## DISPROVEN / SUPERSEDED implementation assumptions
+
+- A semantic write need not be limited to +/-1 changes: larger Heating Curve and Heating Maximum deltas were accepted and exactly republished.
+- A semantic write need not be one-shot per ESP/runtime session: EXP370 proved reusable serialized writes.
+- The previous local Minimum < Maximum guard must not be presented as Thermia protocol behavior; it blocked an experiment before any semantic TX and is therefore only an implementation constraint.
+
+---
+
 # 2026-10-01 — EXP357 durable findings
 
 ## PROVEN / locally confirmed — reusable W3-bit0 stale-cache refresh
