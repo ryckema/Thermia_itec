@@ -1,3 +1,95 @@
+# EXP383 — STRONGLY SUPPORTED candidate controls — PREPARED / NOT RUN
+
+**Date:** 2026-10-01  
+**Status:** PREPARED / NOT RUN
+
+## PREPARED
+
+**Baseline:** EXP381B COMPLETE / POSITIVE; EXP382 COMPLETE / POSITIVE offline analysis.
+
+**Hypothesis:** the seven mappings promoted by EXP382 to STRONGLY SUPPORTED can be tested through the already proven native desired-page mechanisms of 042E/count15, 0442/count13 and 0546/count20.
+
+**Exact controlled change:** add functional Configuration controls with `TEST` in every candidate entity name:
+- 0430 word2 — Hot Water TOP_UP
+- 0444 word2 — Cooling Hysteresis
+- 0446 word4 — Cooling Configuration/Type
+- 0448 word6 — Cooling STOP threshold
+- 044A word8 — MAX_STARTTEMP
+- 044B word9 — MIN_STOPTEMP
+- 0559 word19 — Link Integration
+
+The existing selectors, session model, page ownership, exact-republish requirement and fail-closed integrity guards are retained.
+
+**Positive criterion per candidate:** controller republishes the same native page with exactly the selected target word changed, `extraDeltaWords=0`, and the physical/UI effect matches the hypothesized field. A protocol-level exact republish without the expected semantic effect is not sufficient to promote the mapping.
+
+**Negative:** controller retains the original selected value with no unrelated page changes.
+
+**Abort/inconclusive:** parser/RX/peer/session fault, timeout, wrong page/count, extra changed words, unexpected semantic effect, or integration/session disruption. No retry.
+
+**Safety:** one candidate at a time; smallest reversible change; 0559 Link Integration last.
+
+**RESULT:** not run.
+
+---
+
+# EXP382 — offline controlled-page gap analysis — COMPLETE / POSITIVE
+
+**Date:** 2026-10-01  
+**Status:** COMPLETE / POSITIVE — OFFLINE ONLY
+
+## PREPARED
+
+**Baseline:** EXP381B COMPLETE / POSITIVE.
+
+**Hypothesis:** existing project evidence can reduce unknown words inside already controlled native pages without live TX.
+
+**Controlled change:** none on device. No YAML/protocol transmission was required.
+
+## RESULT
+
+The analysis produced the following evidence upgrades:
+- 0430 → Hot Water TOP_UP — STRONGLY SUPPORTED
+- 0444 → Cooling Hysteresis — STRONGLY SUPPORTED
+- 0446 → Service Cooling Configuration/Type — STRONGLY SUPPORTED
+- 0448 → Cooling STOP threshold — STRONGLY SUPPORTED
+- 044A → MAX_STARTTEMP — STRONGLY SUPPORTED
+- 044B → MIN_STOPTEMP — STRONGLY SUPPORTED
+- 0559 → Link Integration — STRONGLY SUPPORTED
+- 0447 → Cooling START threshold — HYPOTHESIS only
+
+No candidate was promoted to local XTR proof. Full report: `Research/EXP382_OFFLINE_GAP_ANALYSIS.md`.
+
+---
+
+# EXP381B — production/UI consolidation — COMPLETE / POSITIVE
+
+**Date:** 2026-10-01  
+**Status:** COMPLETE / POSITIVE — explicit user confirmation
+
+**Baseline:** EXP380 COMPLETE / POSITIVE.
+
+**Controlled change:** behavior-preserving production cleanup and manual-aligned entity ordering only. No protocol target, selector, page, CRC, timing, ACK or recovery-state change.
+
+**Result:** user reported: “EXP381B run & successful”.
+
+**Conclusion:** EXP381B becomes the locally proven runtime baseline for subsequent work.
+
+---
+
+# EXP381A — initial UI/read-only consolidation — SUPERSEDED / NOT RUN
+
+EXP381A was prepared but superseded by EXP381B before a distinct run. No separate experiment result is inferred.
+
+---
+
+# EXP380 — persistent Operation Mode on 0546/count20 — COMPLETE / POSITIVE
+
+**Status:** COMPLETE / POSITIVE by explicit user confirmation.
+
+The locally exercised 0546 desired-page path successfully controlled `0553` Operation Mode while retaining the same fresh-page → selector → FC03 desired-page → exact FC16 republish architecture. The durable claim is local semantic writeability of `0553`; values not individually exercised are not retroactively promoted.
+
+---
+
 # THERMIA EXPERIMENT LOG
 
 ## EXP380 — Operation Mode 0553 on 0546/count20 — PREPARED / NOT RUN
