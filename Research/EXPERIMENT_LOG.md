@@ -1,3 +1,101 @@
+# THERMIA EXPERIMENT LOG
+
+## EXP374 — queued serialized write safety layer — PREPARED / NOT RUN
+
+**Hypothesis:** serialize rapid Home Assistant write requests without overlapping semantic transactions or reusing stale page state.
+
+**Baseline:** EXP370 reusable serialized semantic-write engine; EXP373 partial positive expansion to additional heating settings.
+
+**Controlled change:** scheduling only. One active transaction plus one last-intent-wins pending slot; pending storage causes no TX; queued dispatch waits for the current exact republish, a settle delay and a new fresh `03E8/count14` page. Queue is cleared on negative/inconclusive/abort/parser/RX/peer/timeout conditions. No wire frame, selector, ACK shape or writable address is changed.
+
+**Planned first test:** use only locally confirmed registers, e.g. Heating Stop then Reduced Temperature, and verify two independently closed writes with no overlap.
+
+**Status:** PREPARED / NOT RUN.
+
+## EXP373 — extended heating settings sliders — RUNNING / PARTIAL
+
+**Hypothesis:** the established fresh-page -> selector -> FC03 desired-page -> exact FC16 republish mechanism can safely address additional one-word settings in the `03E8/count14` page.
+
+**Observed / locally confirmed sub-results:**
+- `03ED` Curve Correction -5: `0 -> -5 -> 0`; wire value `0xFFFB` for -5; both directions exact republish; `extraDeltaWords=0`.
+- `03EE` Heating Stop: `20 -> 22`, later `22 -> 18 -> 22`; exact republish each time; `extraDeltaWords=0`.
+- `03EF` Reduced Temperature: `20 -> 22 -> 20`; exact republish both directions; `extraDeltaWords=0`.
+- no-op `03EF` request with current==target correctly produced READY with no semantic TX.
+- inspected run remained clean: no abort observed; resync/drop/challenge/peer17/peer16ack counters stayed zero.
+
+**Result:** RUNNING / PARTIAL. These individual mappings/write paths are positive, but the full EXP373 target set was not systematically closed in the supplied evidence.
+
+## EXP372 — extended heating sliders design — SUPERSEDED / NOT RUN
+
+Prepared to add `03EB..03F0` sliders with signed int16 handling for curve corrections and reusable serialized writes. Superseded by the audited EXP373 build before a distinct run.
+
+## EXP371 — unrestricted Min/Max follow-up — SUPERSEDED / NOT RUN
+
+Prepared as a distinct follow-up to remove the local +/-1 restriction for Heating Minimum/Maximum. Final conversation-21 reconciliation assigns the observed Maximum write sequence to EXP370, not to a separate EXP371 run.
+
+## EXP370 — reusable multi-setting semantic write engine — COMPLETE / POSITIVE
+
+**Controlled change:** remove the one-shot semantic-write limit while preserving one active transaction at a time, fresh-page provenance and exact republish verification.
+
+**Observed:**
+- Heating Curve `35 -> 40 -> 30`, exact one-word controller republish, `extraDeltaWords=0`.
+- Heating Maximum `40 -> 41 -> 58 -> 40`, exact controller republish, `extraDeltaWords=0`.
+- Room Setpoint `20 -> 22` confirmed through the same reusable engine.
+- Heating Minimum target 40 was not transmitted because the local implementation enforced Minimum < Maximum while Maximum was 40.
+
+**Conclusion:** reusable serialized semantic writes are locally proven across multiple settings. The local Min<Max guard is implementation behavior, not Thermia protocol evidence.
+
+## EXP369 — verifier-latch fix — COMPLETE / POSITIVE
+
+**Purpose:** prevent a second Apply from changing the latched register/word while the first semantic transaction is still being verified.
+
+**Observed:** Curve `32 -> 35` confirmed. A later Room Setpoint Apply was refused before changing the active selection. The one-shot experiment limit still prevented a second semantic transaction.
+
+## EXP368 — multi-control verifier test — COMPLETE / INCONCLUSIVE
+
+Curve `35 -> 32` itself completed positively, but a verifier-latch bug allowed a later Apply to overwrite the selected register/word before verification. The semantic result is retained as an observation; the experiment-level verifier objective is inconclusive.
+
+## EXP367 — larger Heating Curve delta — COMPLETE / POSITIVE
+
+Heating Curve `30 -> 35` completed by fresh page -> selector -> desired page -> exact controller republish with only word0 changed and `extraDeltaWords=0`. Existing one-shot logic blocked a second semantic write.
+
+## EXP366 — inverse Heating Curve write — COMPLETE / POSITIVE
+
+Heating Curve `31 -> 30`; exact one-word controller republish, `extraDeltaWords=0`.
+
+## EXP365 — first Heating Curve semantic write — COMPLETE / POSITIVE
+
+Heating Curve `30 -> 31`; fresh `03E8/count14`, selector, controller FC03 desired-page pull, one-word desired page and exact controller republish with `extraDeltaWords=0`.
+
+## EXP364 — hot-rejoin discriminator — COMPLETE / INCONCLUSIVE
+
+The expected `04A6` discriminator did not occur. A fresh-boot/hot-rejoin-style runtime without a new R1/bitmap remained stable for more than 5.5 minutes, but this does not prove the native hot-rejoin mechanism.
+
+## EXP363 — 04A6-to-0708 hypothesis — COMPLETE / NEGATIVE
+
+The specific hypothesis that `04A6` ACK directly yields the expected `0708` transition was not confirmed. However, ACKing exact `04A6/count13` resumed the interleaved export sequence, which is retained as transport evidence.
+
+## EXP362 — bitmap transmission attempt — COMPLETE / INCONCLUSIVE
+
+The intended bitmap was never transmitted, so the target hypothesis was not actually exercised.
+
+## EXP361 — 0708 discriminator follow-up — COMPLETE / NEGATIVE
+
+The expected `0708` event did not occur under the tested condition.
+
+## EXP360 — broad 0708 bitmap exploration — COMPLETE / INCONCLUSIVE
+
+Tested broad bitmap `7FFF/FFFF/0000/0006`. The intended hot-rejoin/page-export discriminator was not cleanly resolved; no protocol fact is promoted solely from this run.
+
+## EXP359 — controller cold-reboot recovery regression — COMPLETE / POSITIVE
+
+Observed sustained bus silence (>5 s), cache invalidation with TX disabled/DE LOW, controller traffic return, guarded fresh-session bootstrap, ordered 32-page sync through `06F4/count19`, stage-40 re-entry and fresh FC16 + `0708` runtime qualification. Recovery count reached 1; parser/RX health remained clean. Runtime `04A6` was not permissively ACKed.
+
+## EXP358 — Write Beta v2.1 production regression — COMPLETE / POSITIVE
+
+v2.1 retained-runtime qualification, stale `03E8` refresh and exact Room Setpoint semantic write remained functional after hardening. The confirmed write was `22 -> 21` with exact republish and `extraDeltaWords=0`; runtime remained healthy with resync/drop counters clean. Conditional fail-closed branches that did not occur in the run remain unexercised rather than assumed proven.
+
+
 # EXP358 — PREPARED / NOT RUN — Write Beta v2.1 production regression
 
 **Date:** 2026-10-01  
