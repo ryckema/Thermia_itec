@@ -1,3 +1,62 @@
+# 2026-10-01 — EXP380 through EXP383 consolidation
+
+## PROVEN / locally confirmed — 0546/count20 semantic write path
+
+EXP380 was explicitly confirmed successful by the user. `0553` / word13 Operation Mode is therefore **PROVEN / locally confirmed writable** on this XTR M through the native 0546/count20 desired-page mechanism.
+
+This extends the locally proven page-owned semantic-write model to four controlled pages:
+- 03E8/count14
+- 042E/count15
+- 0442/count13
+- 0546/count20
+
+The same safety rule remains: success requires an authoritative fresh page, exactly one intended selected-word change in the desired response, and an exact controller FC16 republish with `extraDeltaWords=0`.
+
+## PROVEN / locally confirmed — EXP381B behavior-preserving consolidation
+
+EXP381B was run and explicitly reported successful. Manual-aligned Configuration ordering and read-only visibility cleanup did not regress the established native write behavior. This is the current proven runtime baseline.
+
+## STRONGLY SUPPORTED — EXP382 candidate mappings
+
+Offline EXP382 strengthened the following mappings without transmitting anything to the heat pump:
+
+- `0430` = Hot Water TOP_UP
+- `0444` = INFORMATION Cooling Hysteresis
+- `0446` = SERVICE Cooling Configuration/Type
+- `0448` = SERVICE Cooling STOP threshold
+- `044A` = Cooling MAX_STARTTEMP
+- `044B` = Cooling MIN_STOPTEMP
+- `0559` = Link Integration
+
+These remain **STRONGLY SUPPORTED**, not PROVEN.
+
+Evidence basis:
+- 0430 follows the locally mapped 042E Hot Water Enabled and 042F Mode fields exactly where the commissioning manual places TOP_UP in the user-facing Hot Water sequence.
+- 0449..044E aligns exceptionally well with the SERVICE cooling tail: Cooling Time → MAX_STARTTEMP → MIN_STOPTEMP → Room Sensor → low room hysteresis → high room hysteresis. The latter four/tail fields already have local proof where stated.
+- 0444 is compatible with the INFORMATION Cooling Hysteresis position and genuine capture value/scaling evidence.
+- 0446 values are compatible with the documented UIT / ACTIEVE_KOELING / GEÏNTEGR. IN WP configuration enum.
+- public Online/DCM register-index evidence explicitly identifies decimal 1369 / hex 0559 as Link Integration.
+
+## HYPOTHESIS — 0447 Cooling START threshold
+
+The position strongly suggests the SERVICE cooling START threshold, but the encoding/value evidence is not clean enough for STRONGLY SUPPORTED status. It is intentionally omitted from EXP383.
+
+## OPEN / UNKNOWN retained
+
+No new labels are assigned to:
+- 03F1, 03F2, 03F3, 03F5
+- 0431, 0432, 0435..043C
+- 0546..0552, 0554..0558
+- the exact encoding/semantics of 0447
+
+## EXP383 — TEST-only implementation, not evidence promotion
+
+Write Beta v4.0 implements seven candidate controls using the already proven page mechanisms. Their Home Assistant display names contain `TEST`. Implementation does **not** promote protocol confidence. Each candidate must be locally correlated and, where written, rolled back individually before its status can become PROVEN.
+
+0559 Link Integration is treated as the highest-risk candidate because changing integration mode may alter the Online/DCM-style session. It should be tested last and without automatic retry.
+
+---
+
 # THERMIA PROTOCOL FINDINGS
 
 # 2026-10-01 — multi-page semantic writes through EXP379
