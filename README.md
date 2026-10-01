@@ -179,18 +179,18 @@ Evidence is separated into locally confirmed XTR M behavior, genuine Online/DCM 
 
 ## Roadmap
 
-The current roadmap after EXP383 validation is:
+After EXP383 candidate validation, the planned development path is:
 
-1. **Kalenderfunctionaliteit**
-2. **Missende entiteiten toevoegen**
-3. **Storingen/alarmen uitlezen**
-4. **Volledige native settings-map afronden**
-5. **Generieke DCM/Online-emulator maken**
-6. **Challenge-response oplossen**
-7. **Defrost + volledig operating-state model**
-8. **Cross-model vergelijking**
+1. **Calendar functionality** — decode and expose the native Thermia scheduling/calendar features in Home Assistant.
+2. **Complete the missing entity set** — add useful read-only and control entities that are already supported by the protocol evidence but are not yet exposed cleanly.
+3. **Fault and alarm monitoring** — decode active faults, warnings and, where available, alarm history as read-only Home Assistant entities.
+4. **Complete the native settings map** — finish mapping the remaining settings pages, registers, value types, ranges and enums.
+5. **Build a generic DCM/Online emulator** — replace page-specific experimental logic with a reusable emulator for the native Thermia/Danfoss Online/DCM communication model.
+6. **Solve the native challenge-response mechanism** — reconstruct the real session authentication/handshake instead of relying on locally proven replay behavior.
+7. **Defrost and complete operating-state model** — map defrost behavior, compressor sequencing and the full operating-state/state-machine model.
+8. **Cross-model compatibility** — validate and document support across additional Thermia/Danfoss heat-pump models, with an explicit compatibility matrix instead of assuming that behavior transfers between models.
 
-The cross-model step is intended as a **supported-types compatibility effort**: establish which Thermia/Danfoss models share the required bus architecture, pages, mappings and safe control behavior rather than assuming compatibility from platform similarity.
+The long-term goal is a robust local Home Assistant integration that follows the native Thermia/Danfoss communication model, with model-specific differences and evidence levels documented explicitly.
 
 ## ESPHome secrets
 
