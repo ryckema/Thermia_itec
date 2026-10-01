@@ -1,3 +1,39 @@
+# 2026-10-01 — EXP357 COMPLETE / POSITIVE; Write Beta v2 promoted
+
+**Authoritative current state:** EXP357 is **COMPLETE / POSITIVE** from the supplied local XTR M raw log. EXP356 is **SUPERSEDED / NOT RUN** because the user chose to install the next targeted write test instead. EXP355 remains **COMPLETE / POSITIVE** for controller cold-reboot recovery.
+
+## Last completed experiment
+
+### EXP357 — COMPLETE / POSITIVE — reusable stale-cache refresh in one ESP boot
+
+**Hypothesis:** after the `03E8` semantic cache becomes stale again later in the same ESP boot, the proven W3-bit0 refresh-only flow can be reused and followed by the existing safe Room Setpoint semantic write.
+
+**Controlled change from EXP355:** remove only the experimental one-refresh-per-ESP-boot budget. Keep the 300 s stale threshold, W3-bit0 refresh frame, controller-originated `FC16 03E8/count14` freshness requirement, W1-bit0 selector, `03F4`-only delta and exact controller republish confirmation.
+
+### Observed facts
+
+- Refresh #1 produced controller `FC16 03E8/count14` in about 120 ms and was followed by a confirmed 22 -> 20 °C write.
+- Later in the same ESP boot, refresh #2 was transmitted with the same W3-bit0 frame and produced controller `FC16 03E8/count14` in about 119 ms.
+- Refresh #2 was followed by the normal selector -> controller FC03 -> one-word-delta desired page -> exact controller republish path.
+- The resulting 22 -> 24 °C write was confirmed with `extraDeltaWords=0`.
+- The supplied run reached five confirmed semantic writes.
+- Runtime remained clean in the inspected log: unknown FC16/FC03, peer responder, parser resync and RX drop counters remained zero; DE returned low.
+
+### Strong conclusion
+
+**PROVEN / locally confirmed:** stale-cache refresh via `0708` W3 bit0 is reusable in the same retained ESP session. The old one-refresh-per-ESP-boot safety budget is obsolete for this XTR M and has been removed from Write Beta v2.
+
+## Production status
+
+`Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v2.yaml` is now the current production-beta file.
+
+It combines:
+- the locally proven retained runtime and Room Setpoint write path;
+- reusable stale-cache refresh proven by EXP357;
+- one controller cold-reboot recovery attempt per ESP boot using the EXP355-proven guarded fresh-session path.
+
+The previous v1 file remains as the pre-recovery production-beta baseline.
+
 # 2026-09-30 — EXP356 PREPARED / NOT RUN; EXP355 COMPLETE / POSITIVE
 
 **Authoritative current state:** EXP355 is **COMPLETE / POSITIVE** from the supplied local XTR M log. EXP356 is **PREPARED / NOT RUN** as the next post-recovery soak. EXP354 was not run. EXP353 remains **COMPLETE / POSITIVE** by user confirmation; EXP352 remains the latest earlier experiment with full raw-log proof of the complete refresh -> write -> republish path.
