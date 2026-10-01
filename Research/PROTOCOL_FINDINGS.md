@@ -1,3 +1,47 @@
+# 2026-10-01 — full confirmed writable core of 03E8/count14
+
+## PROVEN / locally confirmed — writable settings
+
+The native desired-page mechanism is now locally confirmed across the practical heating/settings core of `03E8/count14`:
+
+- `03E8` Heating Curve
+- `03E9` Heating Minimum
+- `03EA` Heating Maximum
+- `03EB` Curve Correction +5
+- `03EC` Curve Correction 0
+- `03ED` Curve Correction -5
+- `03EE` Heating Stop
+- `03EF` Reduced Temperature
+- `03F0` Room Factor
+- `03F4` Room Setpoint
+
+`03E9` and `03F0` were explicitly user-confirmed positive in EXP375A/B. `03EB` and `03EC` were explicitly confirmed through the successful multi-setting queue test. These confirmations are sufficient for local project status, but raw final-run logs were not separately supplied for those specific confirmations.
+
+## PROVEN / locally confirmed — serialized queue behavior
+
+EXP374's final v4d implementation preserves multiple pending register intents without overlapping Thermia semantic transactions. Each register is dispatched separately and must acquire a fresh controller-originated `03E8/count14` page before the existing selector -> FC03 pull -> one-word desired page -> exact FC16 republish sequence.
+
+Configuration presentation is intentionally not identical to instantaneous controller state while a queue is pending:
+- ordinary read sensors = actual controller state;
+- Configuration numbers = active target, else queued target, else controller state.
+
+This is UI/state separation only; it does not broaden the protocol write mechanism.
+
+## DISPROVEN / SUPERSEDED implementation assumptions
+
+- A single global pending slot/debounce is sufficient for rapid changes across multiple settings — superseded by the per-register dirty-set.
+- Configuration controls should always republish every intermediate authoritative controller page — superseded because it makes queued desired intent appear to disappear and reappear.
+- Heating Minimum requires a locally imposed Minimum < Maximum software guard — not Thermia protocol evidence and superseded by successful `03E9` writing.
+
+## OPEN / UNKNOWN
+
+- `03F1`, `03F2`, `03F3` and `03F5` remain semantically unknown on this XTR M.
+- Prior local work specifically rejects `03F1` as the live DHW START mapping on this XTR M.
+- Writeability outside `03E8/count14` must not be inferred from this page's success.
+- Native challenge-response derivation remains unknown; fixed replay is only locally proven in its guarded XTR context.
+
+---
+
 # 2026-10-01 — semantic write expansion through EXP373
 
 ## PROVEN / locally confirmed
