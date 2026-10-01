@@ -1,3 +1,64 @@
+# 2026-10-01 — Write Beta v2.1 hardened; EXP358 PREPARED / NOT RUN
+
+**Authoritative current state:** EXP357 remains the last completed experiment and is **COMPLETE / POSITIVE**. Write Beta v2.1 has been prepared from the v2 production code audit but has **not yet been live-regression-tested**. EXP358 is the next experiment and is **PREPARED / NOT RUN**.
+
+## Production hardening — Write Beta v2.1
+
+Current production-beta candidate:
+
+`Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v2_1.yaml`
+
+This revision adds **no new writable register, page, bitmap bit, R1 payload or ACK shape**. It only narrows behavior to the current canonical evidence and fixes production-state reporting.
+
+Controlled implementation changes from v2:
+
+- runtime `04A6/count13` is now explicit **capture-only / NO ACK** in stage 40;
+- runtime `0834/count18` is removed from the ACK whitelist and fails closed with no TX;
+- runtime `085F/count5` is ACKed only for the two locally proven payload forms: all-zero or third word/register `0861=0x0800`;
+- `080C/0820/0848/0864/0870/0884` are documented in code as locally ACK-proven rather than genuine-capture-only where canonical experiments already established them;
+- runtime qualification is centralized so FC16-first and `0708`-first ordering both converge on the same qualification latch;
+- **Thermia DCM Runtime Active** is false until qualification is actually complete;
+- write arming now requires that explicit runtime-qualified latch in addition to the existing clean-counter guards;
+- controller-recovery arming also requires the explicit qualified latch;
+- the 15-minute soak milestone is re-armed after controller recovery;
+- firmware build label is corrected to `Write Beta v2.1`;
+- the Room Setpoint number entity is genuinely disabled by default;
+- recovery/session diagnostics were added without changing protocol TX behavior.
+
+Static checks after hardening:
+- no duplicate ESPHome IDs;
+- no missing `id(...)` references;
+- every DE-high TX site still contains write + flush + DE-low in the same local path;
+- critical hard-coded CRCs remain unchanged/correct from the proven v2 paths.
+
+**No ESPHome compile was performed in this preparation step.**
+
+## Current experiment
+
+### EXP358 — PREPARED / NOT RUN — v2.1 production regression
+
+**Baseline:** EXP357 COMPLETE / POSITIVE for reusable stale-cache refresh + semantic write; EXP355 COMPLETE / POSITIVE for controller cold-reboot recovery.
+
+**Hypothesis:** the v2.1 safety hardening preserves the already-proven retained runtime, reusable stale-cache refresh and guarded `03F4` write path while removing unsupported/permissive runtime ACK behavior.
+
+**Exact controlled change:** firmware implementation only. No new Thermia semantic target or wire payload is introduced.
+
+**Planned positive criteria:**
+- retained stage 40 qualifies through at least one locally ACK-proven runtime FC16 plus exact `0708/count6`;
+- `Thermia DCM Runtime Active` becomes true only after that qualification;
+- ordinary runtime continues with parser resync/RX drop/peer-responder counters clean;
+- if runtime `04A6/count13` appears, it is logged capture-only with **NO ACK** and runtime continues;
+- `0834/count18`, if encountered, receives **NO ACK** and fails closed;
+- unknown `085F/count5` payload receives **NO ACK** and fails closed; locally proven all-zero / `0861=0800` forms remain serviceable;
+- one stale-cache refresh can again obtain fresh controller `FC16 03E8/count14`;
+- one Room Setpoint write completes through W1 selector -> controller FC03 -> one-word `03F4` desired page -> exact controller republish with zero extra delta words.
+
+**Negative criteria:** any regression in qualification, refresh, selector/pull, exact republish or known runtime service; any TX to runtime `04A6` or `0834`; or any acceptance of an unknown `085F` payload.
+
+**Abort criteria:** parser resync/RX drop delta, external responder, unexpected runtime FC03/FC16 outside explicit handlers, wrong page/count/order during active semantic transaction, or DE not returning low.
+
+**Status:** PREPARED / NOT RUN. Do not promote v2.1 beyond beta until the user supplies the EXP358 result/log or explicitly confirms the run.
+
 # 2026-10-01 — EXP357 COMPLETE / POSITIVE; Write Beta v2 promoted
 
 **Authoritative current state:** EXP357 is **COMPLETE / POSITIVE** from the supplied local XTR M raw log. EXP356 is **SUPERSEDED / NOT RUN** because the user chose to install the next targeted write test instead. EXP355 remains **COMPLETE / POSITIVE** for controller cold-reboot recovery.
@@ -25,7 +86,7 @@
 
 ## Production status
 
-`Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v2.yaml` is now the current production-beta file.
+`Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v2.yaml` was the production-beta baseline promoted after EXP357; it is now superseded by the hardened v2.1 candidate pending EXP358.
 
 It combines:
 - the locally proven retained runtime and Room Setpoint write path;
@@ -55,19 +116,11 @@ No new bus experiment was run. Existing genuine DCM/Online and collaborator Eco5
 
 The production-recovery design remains valid for this XTR M, but documentation/code comments must describe the fixed R1 as a **locally proven replay** rather than the native universal response algorithm. Do not generalize the replay to other Thermia models/firmware. The native challenge-response transform remains unknown.
 
-## Current experiment
+## Historical prepared experiment
 
-### EXP356 — PREPARED / NOT RUN — post-recovery runtime soak
+### EXP356 — SUPERSEDED / NOT RUN — post-recovery runtime soak
 
-**Baseline:** EXP355 COMPLETE / POSITIVE.
-
-**Hypothesis:** after one proven EXP355-style controller cold-reboot recovery, the recovered stage-40 Online/DCM session remains stable for an extended soak under ordinary bus activity.
-
-**Controlled change:** observation/hardening only. Reuse the EXP355 recovery path; introduce no new register, page, 0708 bitmap, R1 payload, ACK shape or semantic write target. No post-recovery Room Setpoint write is part of this experiment.
-
-**Planned positive criteria:** recovered stage 40 remains serviced with known runtime FC16 traffic plus idle `0708/count6`, while unknown FC16/FC03, peer responder, parser resync and RX-drop counters remain zero and no alarm/DCM presentation loss is observed.
-
-**Status:** PREPARED / NOT RUN. Do not infer a result until the user supplies the overnight log or explicitly confirms it.
+EXP356 had been prepared after EXP355 but was never run. The user chose the targeted EXP357 reusable-refresh test instead. No EXP356 result is inferred.
 
 ## Last completed experiment
 
