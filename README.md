@@ -7,11 +7,11 @@ The repository now has two deliberately separated runtime builds:
 | Build | Bus access | Intended use | Current status |
 |---|---|---|---|
 | [Read-only](Read-only/) | RX only | Monitoring, dashboards, register research | Recommended for normal monitoring |
-| [Write (Beta)](Write%20%28Beta%29/) | RX + guarded TX | Native Room Setpoint control | Locally working, still Beta |
+| [Write (Beta)](Write%20%28Beta%29/) | RX + guarded TX | Native multi-setting control | Locally working, still Beta |
 
 The underlying bus is **Modbus RTU, 9600 baud, 8E1**. The read-only integration decodes Thermia values into Home Assistant. The write research has additionally reconstructed enough of the native Thermia/Danfoss Online/DCM path to change one setting safely on the tested unit.
 
-> **Current write status — EXP357 / v2.1 hardening:** Room Setpoint control, reusable stale-cache refresh and one controller cold-reboot recovery are locally confirmed on the tested XTR M. EXP357 provides raw-log proof of repeated refresh/write operation in one ESP boot; EXP355 provides raw-log proof of controller-reboot recovery. The current `Write Beta v2.1` is a conservative hardening revision and is **PREPARED / NOT YET REGRESSION-TESTED**; EXP358 is the next validation run. The build therefore remains **Write (Beta)**.
+> **Current write status — Write Beta v3.0:** the native `03E8/count14` semantic write path is locally confirmed for ten settings on the tested XTR M. EXP374 confirmed serialized multi-register queue behavior and desired-UI preservation; EXP375A/B confirmed Heating Minimum and Room Factor. The build remains Beta because active bus participation and controller-session recovery are model/context-specific.
 
 ## Choose a build
 
@@ -31,21 +31,19 @@ Current XTR files:
 
 See [Read-only/README.md](Read-only/README.md) for installation, wiring and the difference between both variants.
 
-### Write (Beta) — Room Setpoint control
+### Write (Beta) — guarded multi-setting control
 
 Use the [Write (Beta) folder](Write%20%28Beta%29/) only when you intentionally want active control.
 
 Current file:
 
-- `Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v2_1.yaml`
+- `Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v3_0.yaml`
 
-The beta currently enables exactly one semantic setting:
+Write Beta v3.0 uses the locally confirmed native `0x0F` desired-page path for ten settings inside `0x03E8/count14`: Heating Curve, Heating Minimum/Maximum, the three curve corrections, Heating Stop, Reduced Temperature, Room Factor and Room Setpoint.
 
-- **Room Setpoint** — `0x03F4` inside controller page `0x03E8/count14`, whole degrees **10..30 °C**.
+Writes are serialized through a per-register queue. Every transaction starts from a fresh controller page and is considered successful only after an exact controller republish with the selected word changed and no extra deltas. Configuration controls preserve queued user intent while normal sensors remain controller-authoritative.
 
-Changing the Home Assistant number does **not** immediately transmit a write. The transaction starts only when **Thermia Apply Room Setpoint** is pressed.
-
-Write Beta v2.1 adds no new writable setting. It hardens the already-proven implementation: runtime `04A6/count13` is capture-only, `0834/count18` is not ACKed, unknown `085F/count5` payloads fail closed, and runtime readiness is published only after a clean FC16 + `0708` qualification.
+The build remains **Beta** because it actively participates on the internal bus, recovery is model/context-specific, and the genuine challenge-response transform is not reconstructed.
 
 See [Write (Beta)/README.md](Write%20%28Beta%29/README.md) before installing it.
 
