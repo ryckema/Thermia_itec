@@ -8,7 +8,7 @@ These builds do **not** transmit Thermia Modbus frames. GPIO17/TX is intentional
 
 ### Public / optimized
 
-`Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v28.yaml`
+`Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v29.yaml`
 
 Recommended for normal Home Assistant use.
 
@@ -16,7 +16,7 @@ It keeps the useful decoded entities and a small set of diagnostics while removi
 
 ### Research / register mapping
 
-`Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v28.yaml`
+`Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v29.yaml`
 
 Use this when collecting captures or validating additional registers.
 
@@ -27,23 +27,23 @@ It is still completely RX-only and retains the research instrumentation:
 - additional raw diagnostic entities;
 - detailed protocol logging hooks.
 
-**v28 defaults to WARN-only logging**, just like the public build. The DEBUG/VERBOSE research instrumentation is therefore suppressed during normal operation. Temporarily raise only the specific logger categories you need when making a controlled capture, then return them to WARN.
+**v29 defaults to WARN-only logging**, just like the public build. The DEBUG/VERBOSE research instrumentation is therefore suppressed during normal operation. Temporarily raise only the specific logger categories you need when making a controlled capture, then return them to WARN.
 
 New mappings should be verified here before being promoted to the public build.
 
-## v28 changes
+## v29 changes
 
-v28 keeps both XTR builds **strictly RX-only**. It does not import any DCM TX/write code from Write (Beta).
+v29 remains **strictly RX-only**. It does not import the DCM TX/write engine from Write (Beta).
 
-Changes from v27:
+Changes from v28:
 
-- protocol comments are reconciled with the locally proven EXP352 model;
-- `03F4` is documented as the observed room-setpoint field that is semantically controllable only through the separate native DCM desired-page flow, not by direct register overwrite;
-- W3 bit0 → fresh `03E8` controller page and the locally proven `03E8` desired-page path are documented without enabling either action here;
-- EXP353 reusable refresh is noted only at the user-confirmed evidence level;
-- default logging is **WARN-only** in both Public and Research builds;
-- INFO-severity logging calls were removed from v28; detailed research DEBUG/VERBOSE instrumentation remains compiled but is suppressed by the default WARN configuration;
-- the v27 files are retained under `Thermia itec XTR/Old versions/`.
+- passively decodes the now locally proven `042E/count15`, `0442/count13` and `0546/count20` settings fields;
+- adds read-only entities for Hot Water Enabled/Mode, Startup HT, Heating Time, Cooling Enabled/Desired Temperature/Active Above/Time/Room Sensor/Room Hysteresis Low/High, and Operation Mode;
+- enables by default the useful service/read-only entities Expansion Valve Steps, Refrigerant Temperature 1/2, Discharge Gas Temperature, Compressor Temperature and Room Setpoint Mirror;
+- updates protocol comments through EXP380–EXP383 while keeping STRONGLY SUPPORTED TEST mappings out of the normal read-only entity set;
+- keeps the research build's generic mapper and raw capture tooling;
+- keeps WARN-only default logging;
+- retains the v28 files as rollback/history.
 
 No read-only TX pin, DCM emulation, write control or semantic response has been added.
 
@@ -110,12 +110,15 @@ thermia_fallback_password: "..."
 
 ## What is currently decoded?
 
-The shared read-only decoder exposes useful values in these groups:
+The shared v29 read-only decoder exposes useful values in these groups:
 
 - room temperature and room setpoint;
 - outdoor and supply temperature;
 - DHW temperatures and delta-T;
-- heating curve, minimum, maximum, corrections, heating stop and room factor;
+- heating curve, minimum, maximum, corrections, heating stop, reduced temperature and room factor;
+- passive Hot Water settings: Enabled, Mode, Startup HT and Heating Time;
+- passive Cooling settings: Enabled, Desired Temperature, Active Above, Cooling Time, Room Sensor and both room hysteresis values;
+- passive Operation Mode from the proven `0553` field;
 - condenser inlet/outlet temperatures and delta-T;
 - compressor frequency, current and running state;
 - high pressure;
@@ -161,7 +164,7 @@ The research build is deliberately more verbose. It is useful for captures but c
 
 Nothing under this Read-only XTR runtime is intended to emulate the DCM or change a Thermia setting.
 
-Active Room Setpoint control is isolated in the repository's [Write (Beta)](../Write%20%28Beta%29/) folder. Do not add experimental TX to the read-only files; keeping the passive and active builds separate is an intentional safety boundary.
+All active control is isolated in the repository's [Write (Beta)](../Write%20%28Beta%29/) folder. Do not add experimental TX to the read-only files; keeping the passive and active builds separate is an intentional safety boundary.
 
 ## Research documentation
 
