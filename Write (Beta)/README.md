@@ -53,36 +53,23 @@ The exact Home Assistant `entity_id` can be renamed by Home Assistant, so this t
 | number | Thermia Write Room Factor | `0x03F0` |
 | number | Thermia Write Room Setpoint | `0x03F4` |
 
-#### EXP381B — prepared production/UI consolidation
+#### Research controls — locally tested after Write Beta v3.0
 
-EXP381B keeps the proven protocol/write paths unchanged and reorganizes the production-facing Configuration entities to follow the Thermia manual's functional order. EXP381B is **PREPARED / NOT RUN**; these are the prepared display names, not a claim that EXP381B itself has completed its regression test.
+These names currently exist in the EXP378/EXP379 research YAML and are **not yet included in the production Write Beta v3.0 file**.
 
-| Group | Type | Display name | Register | Evidence status |
-|---|---|---|---:|---|
-| Operation | select | 01 Operation \| 01 Mode | `0x0553` | EXP380 COMPLETE / POSITIVE; Auto ↔ Compressor locally confirmed |
-| Heating | number | 02 Heating \| 00 Room Setpoint | `0x03F4` | locally confirmed writable |
-| Heating | number | 02 Heating \| 01 Heating Curve | `0x03E8` | locally confirmed writable |
-| Heating | number | 02 Heating \| 02 Minimum | `0x03E9` | locally confirmed writable |
-| Heating | number | 02 Heating \| 03 Maximum | `0x03EA` | locally confirmed writable |
-| Heating | number | 02 Heating \| 04 Curve Correction +5 | `0x03EB` | locally confirmed writable |
-| Heating | number | 02 Heating \| 05 Curve Correction 0 | `0x03EC` | locally confirmed writable |
-| Heating | number | 02 Heating \| 06 Curve Correction -5 | `0x03ED` | locally confirmed writable |
-| Heating | number | 02 Heating \| 07 Heating Stop | `0x03EE` | locally confirmed writable |
-| Heating | number | 02 Heating \| 08 Reduced Temperature | `0x03EF` | locally confirmed writable |
-| Heating | number | 02 Heating \| 09 Room Factor | `0x03F0` | locally confirmed writable |
-| Heating / Service | number | 02 Heating \| 20 Startup HT | `0x0433` | confirmed persistent write |
-| Heating / Service | number | 02 Heating \| 21 Heating Time | `0x0434` | confirmed persistent write |
-| Hot Water | switch | 03 Hot Water \| 01 Enabled | `0x042E` | confirmed persistent write |
-| Hot Water | select | 03 Hot Water \| 02 Mode | `0x042F` | Eco ↔ Comfort locally confirmed; Vacation Eco remains strongly supported but not write-proven |
-| Cooling | switch | 04 Cooling \| 01 Enabled | `0x0442` | confirmed persistent write |
-| Cooling | number | 04 Cooling \| 02 Desired Temperature | `0x0443` | confirmed persistent write |
-| Cooling | number | 04 Cooling \| 03 Active Above | `0x0445` | mapped; semantic write still needs a valid-above-minimum confirmation |
-| Cooling | number | 04 Cooling \| 04 Cooling Time | `0x0449` | confirmed persistent write |
-| Cooling | switch | 04 Cooling \| 05 Room Sensor | `0x044C` | confirmed persistent write |
-| Cooling | number | 04 Cooling \| 06 Room Hysteresis Low | `0x044D` | mapped; UI 0.5..5.0 °C in 0.1 °C steps; semantic write not yet separately confirmed |
-| Cooling | number | 04 Cooling \| 07 Room Hysteresis High | `0x044E` | mapped; UI 0.5..5.0 °C in 0.1 °C steps; semantic write not yet separately confirmed |
-
-The two `0x0433/0x0434` controls are grouped under **Heating / Service** in EXP381B because the Thermia commissioning manual places OPSTART_HT and VERWARMINGSTIJD under SERVICE → VERWARMING, rather than under Hot Water.
+| Type | Display name | Register | Current local evidence |
+|---|---|---:|---|
+| switch | EXP378 SWW Enabled | `0x042E` | confirmed persistent write |
+| select | EXP378 SWW Mode | `0x042F` | confirmed Eco ↔ Comfort write; Vacation Eco mapping is strongly supported but not yet write-proven |
+| number | EXP378 Opstart HT | `0x0433` | confirmed persistent write; current UI is a restricted whole-minute view |
+| number | EXP378 Verwarmingstijd | `0x0434` | confirmed persistent write |
+| switch | EXP379 Cooling Enabled | `0x0442` | confirmed persistent write |
+| number | EXP379 Desired Cooling Temperature | `0x0443` | confirmed persistent write |
+| number | EXP379 Cooling Active Above | `0x0445` | mapped; current guard enforces `>= max(10 °C, Heating Stop + 3 K)`; semantic write still needs a valid-above-minimum confirmation |
+| number | EXP379 Cooling Time | `0x0449` | confirmed persistent write |
+| switch | EXP379 Cooling Room Sensor | `0x044C` | confirmed persistent write |
+| number | EXP379 Cooling Room Hysteresis Low | `0x044D` | mapped; UI uses 0.1 °C steps; semantic write not yet separately confirmed |
+| number | EXP379 Cooling Room Hysteresis High | `0x044E` | mapped; UI uses 0.1 °C steps; semantic write not yet separately confirmed |
 
 The persistent controls use the same desired-state UI convention: the user-selected new value is shown immediately and remains visible while queued or while a semantic transaction is in progress. A successful controller republish makes that value authoritative; a failed transaction is designed to roll the control back to the last confirmed controller value.
 
