@@ -2,9 +2,9 @@
 
 **Purpose:** canonical dashboard-building reference for this project.
 
-**Source:** generated from `thermia_itec_xtr_m_waveshare_exp381b_production_cleanup.yaml`, prepared from the EXP380 COMPLETE / POSITIVE baseline on 2026-10-01.
+**Source:** synchronized to `Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v4_0.yaml`, derived from EXP383 on the EXP381B COMPLETE / POSITIVE runtime baseline, 2026-10-01.
 
-**EXP381B status:** PREPARED / NOT RUN. This file describes the entities exposed by the prepared YAML; it does **not** promote EXP381B itself to a completed experiment.
+**Runtime baseline:** EXP381B is COMPLETE / POSITIVE. **EXP383 status:** PREPARED / NOT RUN. The seven Configuration entities containing `TEST` are STRONGLY SUPPORTED candidates and are not locally proven merely because they are present in v4.0.
 
 ## How to use this file
 
@@ -15,8 +15,8 @@
 - `entity_category: config` entities are controls shown under Configuration.
 - Entities marked `disabled_by_default` may not exist in the live HA state machine until enabled.
 - Do not infer protocol semantics from an entity name alone. For evidence/confidence, use `PROTOCOL_FINDINGS.md`.
-- EXP381B intentionally keeps historical internal IDs such as `exp378_*`, `exp379_*` and `exp380_*` where changing them would add unnecessary regression risk. The user-facing Configuration names are production-oriented.
-- Configuration display names are prefixed to follow the Thermia manual's functional order: **Operation → Heating → Hot Water → Cooling**.
+- v4.0 intentionally keeps historical internal IDs such as `exp378_*`, `exp379_*` and `exp380_*` where changing them would add unnecessary regression risk. Candidate EXP383 controls use `exp383_*` IDs and include `TEST` in their user-facing names.
+- Configuration display names are prefixed to follow the Thermia manual's functional order: **Operation → Heating → Hot Water → Cooling**. STRONGLY SUPPORTED but unproven candidates are clearly marked **TEST**.
 - `Startup HT` and `Heating Time` are grouped under **Heating / Service**, matching the commissioning manual rather than their earlier experimental grouping.
 - Cooling Room Hysteresis Low/High are exposed at **0.5..5.0 °C**, step **0.1 °C**.
 - The useful read-only entities `Expansion Valve Steps`, `Refrigerant Temperature 1`, `Discharge Gas Temperature`, `Refrigerant Temperature 2`, `Compressor Temperature`, and `Room Setpoint Mirror` are enabled by default in EXP381B.
@@ -24,9 +24,9 @@
 ## Counts
 
 - Core/primary entities: **36**
-- Configuration entities: **22**
+- Configuration entities: **29**
 - Diagnostic entities: **133**
-- Total named HA-exposed entities: **191**
+- Total named HA-exposed entities: **198**
 
 ## Core / primary entities
 
@@ -71,32 +71,40 @@
 
 ## Configuration entities
 
-These are ordered by their prepared production-facing display names.
+These are ordered by their production-facing display names. Entities containing **TEST** come from EXP382/EXP383 evidence classified STRONGLY SUPPORTED and must not be interpreted as locally proven until individually validated.
 
-| Expected HA entity ID | ESPHome name | ESPHome id | Metadata |
+| Expected HA entity ID | ESPHome name | ESPHome id | Metadata / evidence |
 |---|---|---|---|
-| `select.01_operation_01_mode` | 01 Operation | 01 Mode | `exp380_operation_mode_control` | config; options=Uit/Auto/Compressor/Bijverwarmer/Warmwater |
-| `number.02_heating_00_room_setpoint` | 02 Heating | 00 Room Setpoint | `thermia_write_room_setpoint_target_control` | config; 10..30; step=1 |
-| `number.02_heating_01_heating_curve` | 02 Heating | 01 Heating Curve | `thermia_write_heating_curve_target_control` | config; 22..56; step=1 |
-| `number.02_heating_02_minimum` | 02 Heating | 02 Minimum | `thermia_write_heating_min_target_control` | config; 20..40; step=1 |
-| `number.02_heating_03_maximum` | 02 Heating | 03 Maximum | `thermia_write_heating_max_target_control` | config; 40..85; step=1 |
-| `number.02_heating_04_curve_correction_5` | 02 Heating | 04 Curve Correction +5 | `thermia_write_curve_plus5_target_control` | config; -5..5; step=1 |
-| `number.02_heating_05_curve_correction_0` | 02 Heating | 05 Curve Correction 0 | `thermia_write_curve_zero_target_control` | config; -5..5; step=1 |
-| `number.02_heating_06_curve_correction_5` | 02 Heating | 06 Curve Correction -5 | `thermia_write_curve_minus5_target_control` | config; -5..5; step=1 |
-| `number.02_heating_07_heating_stop` | 02 Heating | 07 Heating Stop | `thermia_write_heating_stop_target_control` | config; 0..22; step=1 |
-| `number.02_heating_08_reduced_temperature` | 02 Heating | 08 Reduced Temperature | `thermia_write_reduced_temperature_target_control` | config; 10..30; step=1 |
-| `number.02_heating_09_room_factor` | 02 Heating | 09 Room Factor | `thermia_write_room_factor_target_control` | config; 0..4; step=1 |
-| `number.02_heating_20_startup_ht` | 02 Heating | 20 Startup HT | `exp378_opstart_ht_control` | config; min; 1..30; step=1 |
-| `number.02_heating_21_heating_time` | 02 Heating | 21 Heating Time | `exp378_verwarmingstijd_control` | config; min; 5..40; step=1 |
-| `switch.03_hot_water_01_enabled` | 03 Hot Water | 01 Enabled | `exp378_sww_enabled_control` | config |
-| `select.03_hot_water_02_mode` | 03 Hot Water | 02 Mode | `exp378_sww_mode_control` | config; options=Comfort/Eco/Vakantie Eco |
-| `switch.04_cooling_01_enabled` | 04 Cooling | 01 Enabled | `exp379_cooling_enabled_control` | config |
-| `number.04_cooling_02_desired_temperature` | 04 Cooling | 02 Desired Temperature | `exp379_cooling_temp_control` | config; °C; 7..40; step=1 |
-| `number.04_cooling_03_active_above` | 04 Cooling | 03 Active Above | `exp379_cooling_active_control` | config; °C; 10..50; step=1 |
-| `number.04_cooling_04_cooling_time` | 04 Cooling | 04 Cooling Time | `exp379_cooling_time_control` | config; min; 5..40; step=1 |
-| `switch.04_cooling_05_room_sensor` | 04 Cooling | 05 Room Sensor | `exp379_room_sensor_control` | config |
-| `number.04_cooling_06_room_hysteresis_low` | 04 Cooling | 06 Room Hysteresis Low | `exp379_hyst_low_control` | config; °C; 0.5..5.0; step=0.1 |
-| `number.04_cooling_07_room_hysteresis_high` | 04 Cooling | 07 Room Hysteresis High | `exp379_hyst_high_control` | config; °C; 0.5..5.0; step=0.1 |
+| `select.01_operation_01_mode` | 01 Operation \| 01 Mode | `exp380_operation_mode_control` | config; options=Uit/Auto/Compressor/Bijverwarmer/Warmwater; **PROVEN** |
+| `select.01_operation_02_test_link_integration` | 01 Operation \| 02 TEST Link Integration | `exp383_link_integration_control` | config; options=Light/System; **STRONGLY SUPPORTED / TEST**; test last |
+| `number.02_heating_00_room_setpoint` | 02 Heating \| 00 Room Setpoint | `thermia_write_room_setpoint_target_control` | config; 10..30; step=1; **PROVEN** |
+| `number.02_heating_01_heating_curve` | 02 Heating \| 01 Heating Curve | `thermia_write_heating_curve_target_control` | config; 22..56; step=1; **PROVEN** |
+| `number.02_heating_02_minimum` | 02 Heating \| 02 Minimum | `thermia_write_heating_min_target_control` | config; 20..40; step=1; **PROVEN** |
+| `number.02_heating_03_maximum` | 02 Heating \| 03 Maximum | `thermia_write_heating_max_target_control` | config; 40..85; step=1; **PROVEN** |
+| `number.02_heating_04_curve_correction_5` | 02 Heating \| 04 Curve Correction +5 | `thermia_write_curve_plus5_target_control` | config; -5..5; step=1; **PROVEN** |
+| `number.02_heating_05_curve_correction_0` | 02 Heating \| 05 Curve Correction 0 | `thermia_write_curve_zero_target_control` | config; -5..5; step=1; **PROVEN** |
+| `number.02_heating_06_curve_correction_5` | 02 Heating \| 06 Curve Correction -5 | `thermia_write_curve_minus5_target_control` | config; -5..5; step=1; **PROVEN** |
+| `number.02_heating_07_heating_stop` | 02 Heating \| 07 Heating Stop | `thermia_write_heating_stop_target_control` | config; 0..22; step=1; **PROVEN** |
+| `number.02_heating_08_reduced_temperature` | 02 Heating \| 08 Reduced Temperature | `thermia_write_reduced_temperature_target_control` | config; 10..30; step=1; **PROVEN** |
+| `number.02_heating_09_room_factor` | 02 Heating \| 09 Room Factor | `thermia_write_room_factor_target_control` | config; 0..4; step=1; **PROVEN** |
+| `number.02_heating_20_startup_ht` | 02 Heating \| 20 Startup HT | `exp378_opstart_ht_control` | config; min; 1..30; step=1; **PROVEN** |
+| `number.02_heating_21_heating_time` | 02 Heating \| 21 Heating Time | `exp378_verwarmingstijd_control` | config; min; 5..40; step=1; **PROVEN** |
+| `switch.03_hot_water_01_enabled` | 03 Hot Water \| 01 Enabled | `exp378_sww_enabled_control` | config; **PROVEN** |
+| `select.03_hot_water_02_mode` | 03 Hot Water \| 02 Mode | `exp378_sww_mode_control` | config; options=Comfort/Eco/Vakantie Eco; write path **PROVEN**; not every enum individually exercised |
+| `switch.03_hot_water_03_test_top_up` | 03 Hot Water \| 03 TEST Top-up | `exp383_topup_control` | config; **STRONGLY SUPPORTED / TEST** |
+| `switch.04_cooling_01_enabled` | 04 Cooling \| 01 Enabled | `exp379_cooling_enabled_control` | config; **PROVEN** |
+| `number.04_cooling_02_desired_temperature` | 04 Cooling \| 02 Desired Temperature | `exp379_cooling_temp_control` | config; °C; 7..40; step=1; **PROVEN** |
+| `number.04_cooling_03_active_above` | 04 Cooling \| 03 Active Above | `exp379_cooling_active_control` | config; °C; 10..50; step=1; dynamic minimum guard; **PROVEN** |
+| `number.04_cooling_04_cooling_time` | 04 Cooling \| 04 Cooling Time | `exp379_cooling_time_control` | config; min; 5..40; step=1; **PROVEN** |
+| `switch.04_cooling_05_room_sensor` | 04 Cooling \| 05 Room Sensor | `exp379_room_sensor_control` | config; **PROVEN** |
+| `number.04_cooling_06_room_hysteresis_low` | 04 Cooling \| 06 Room Hysteresis Low | `exp379_hyst_low_control` | config; °C; 0.5..5.0; step=0.1; **PROVEN** |
+| `number.04_cooling_07_room_hysteresis_high` | 04 Cooling \| 07 Room Hysteresis High | `exp379_hyst_high_control` | config; °C; 0.5..5.0; step=0.1; **PROVEN** |
+| `number.04_cooling_08_test_hysteresis` | 04 Cooling \| 08 TEST Hysteresis | `exp383_cooling_hysteresis_control` | config; K; 0.0..12.0; step=0.1; raw×10 hypothesis; **STRONGLY SUPPORTED / TEST** |
+| `select.04_cooling_09_test_configuration` | 04 Cooling \| 09 TEST Configuration | `exp383_cooling_configuration_control` | config; Uit/Actieve koeling/Geïntegreerd in WP; **STRONGLY SUPPORTED / TEST** |
+| `number.04_cooling_10_test_stop_threshold` | 04 Cooling \| 10 TEST Stop Threshold | `exp383_cooling_stop_control` | config; raw 0..100; **STRONGLY SUPPORTED / TEST** |
+| `number.04_cooling_11_test_max_start_temperature` | 04 Cooling \| 11 TEST Max Start Temperature | `exp383_cooling_max_start_control` | config; °C; 5..55; Max Start ≥ current Min Stop; **STRONGLY SUPPORTED / TEST** |
+| `number.04_cooling_12_test_min_stop_temperature` | 04 Cooling \| 12 TEST Min Stop Temperature | `exp383_cooling_min_stop_control` | config; °C; 5..55; Min Stop ≤ current Max Start; **STRONGLY SUPPORTED / TEST** |
+
 
 ## Core diagnostics / non-write entities
 
@@ -247,14 +255,14 @@ These remain diagnostic entities. Historical internal experiment labels are reta
 
 For normal operational dashboards, prefer **Core / primary entities**. Add selected diagnostics only when useful.
 
-For user controls, use the **Configuration entities** section. EXP381B groups them in the same functional order as the Thermia UI/manual:
+For user controls, use the **Configuration entities** section. Write Beta v4.0 keeps them in the same functional order as the Thermia UI/manual:
 
 1. Operation
 2. Heating
 3. Hot Water
 4. Cooling
 
-The ordinary read sensors remain controller-authoritative. Configuration controls can temporarily show queued desired intent while a native semantic write is in progress.
+The ordinary read sensors remain controller-authoritative. Configuration controls can temporarily show queued desired intent while a native semantic write is in progress. Treat every entity containing `TEST` as experimental until its local result is recorded.
 
 `Return Temperature` is still intentionally absent: this project does not yet have a sufficiently reliable locally confirmed Thermia mapping for it.
 
