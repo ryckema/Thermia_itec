@@ -1,5 +1,50 @@
 # THERMIA EXPERIMENT LOG
 
+## EXP375B — Room Factor 03F0 — COMPLETE / POSITIVE
+
+**Status:** COMPLETE / POSITIVE — user-confirmed.
+
+**Baseline:** final EXP374 v4d serialized write engine.
+
+**Target:** `03F0` Room Factor in native `03E8/count14`.
+
+**Result:** the user explicitly confirmed the planned write/rollback test succeeded. No separate raw log for EXP375B was supplied in this turn, so the durable claim is limited to locally confirmed writeability and observed successful rollback, not additional timing details.
+
+**Conclusion:** `03F0` is PROVEN / locally confirmed writable on this XTR M.
+
+## EXP375A — Heating Minimum 03E9 — COMPLETE / POSITIVE
+
+**Status:** COMPLETE / POSITIVE — user-confirmed.
+
+**Baseline:** final EXP374 v4d serialized write engine.
+
+**Target:** `03E9` Heating Minimum in native `03E8/count14`.
+
+**Result:** the user explicitly confirmed the planned write/rollback test succeeded. This supersedes the earlier untested status caused by a local Min<Max implementation guard; that guard was never Thermia protocol evidence.
+
+**Conclusion:** `03E9` is PROVEN / locally confirmed writable on this XTR M.
+
+## EXP374 — queued serialized multi-setting write engine — COMPLETE / POSITIVE
+
+**Status:** COMPLETE / POSITIVE — final v4d behavior explicitly confirmed by the user.
+
+**Hypothesis:** multiple rapid Home Assistant setting changes can be retained and executed safely as separate native semantic writes.
+
+**Development history retained:**
+- initial one-slot queue design was insufficient;
+- config controls initially displayed placeholders rather than authoritative values;
+- autosync required an explicit refresh trigger;
+- one autosync state collided with semantic write state;
+- the first dirty-set dispatcher could remove a pending item before a later guard refused it;
+- v4c fixed synchronous dispatch/latching;
+- v4d changed UI presentation only, preserving active/queued user intent while read sensors stay controller-authoritative.
+
+**Final behavior:** one active transaction; one pending value per supported register; same-register latest value wins; each queued item obtains a fresh `03E8/count14` page; exact one-word republish is required; 2 s settle retained; pending intents remain visible in Configuration instead of temporarily falling back to old controller values.
+
+**Representative user-confirmed result:** rapid Curve Correction requests across `03EB/03EC/03ED` were applied sequentially and the final v4d UI remained stable while the controller caught up. This also locally confirms `03EB` and `03EC` writeability.
+
+**Evidence note:** final v4d result is explicit user confirmation; no standalone final raw log was supplied.
+
 ## EXP374 — queued serialized write safety layer — PREPARED / NOT RUN
 
 **Hypothesis:** serialize rapid Home Assistant write requests without overlapping semantic transactions or reusing stale page state.
