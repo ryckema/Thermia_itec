@@ -1,3 +1,129 @@
+# THERMIA PROTOCOL FINDINGS
+
+# 2026-10-01 — multi-page semantic writes through EXP379
+
+## PROVEN / locally confirmed — native semantic writes now span three settings pages
+
+The same controller-owned full-page desired-state mechanism is locally proven on:
+- `03E8/count14` heating page
+- `042E/count15` DHW/runtime-service page
+- `0442/count13` cooling page
+
+Common flow:
+`fresh controller FC16 page -> desired selector on 0708 -> controller FC03 page -> emulator full page with exactly one intended word changed -> controller FC16 republish -> accept only target match + extraDeltaWords=0`.
+
+This is stronger evidence for a generic native page-cache/control model than for independent register writes.
+
+## PROVEN / locally confirmed — 03E8/count14 writable map
+
+Writable on this XTR M:
+- `03E8` Heating Curve
+- `03E9` Heating Minimum
+- `03EA` Heating Maximum
+- `03EB` Curve Correction +5
+- `03EC` Curve Correction 0
+- `03ED` Curve Correction -5
+- `03EE` Heating Stop
+- `03EF` Reduced Temperature
+- `03F0` Room Factor
+- `03F4` Room Setpoint
+
+Unknown: `03F1`, `03F2`, `03F3`, `03F5`. `03F1` is specifically disproven as the live DHW START mapping on this XTR M.
+
+## PROVEN / locally confirmed — 042E/count15 map and selector
+
+Locally established:
+- `042E` SWW Enabled
+- `042F` SWW Mode
+- `0433` Opstart HT
+- `0434` Verwarmingstijd
+
+Semantic write proof:
+- EXP377 changed `042F: 1 -> 0` with exact controller republish and `extraDeltaWords=0`.
+- EXP378 confirmed `0433: 5 -> 7 -> 5`.
+
+Current/PUSH selector for 042E is W3 bit3:
+`0F030C0000000000000008000000067CB7`.
+
+Desired selector uses W1 bit3 + W3 bit3:
+`0F030C0000000800000008000000061B77`.
+
+`0430` is **HYPOTHESIS** for Extra Hot Water / Top-up only. It is not locally proven.
+`0431` and `0432` are **OPEN / UNKNOWN**; the earlier START/STOP interpretation is rejected.
+
+## PROVEN / locally confirmed — 0442/count13 cooling map
+
+Writable on this XTR M:
+- `0442` Cooling Enabled
+- `0443` Desired Cooling Temperature
+- `0445` Cooling Active Above
+- `0449` Cooling Time
+- `044C` Cooling Room Sensor
+- `044D` Cooling Room Hysteresis Low
+- `044E` Cooling Room Hysteresis High
+
+Unknown: `0444`, `0446`, `0447`, `0448`, `044A`, `044B`.
+
+### Cooling Active Above guard
+
+Locally confirmed guard:
+`minimum Cooling Active Above = max(10 °C, Heating Stop + 3 K)`.
+
+With Heating Stop 22 °C, a requested 24 °C was blocked before semantic TX; 25 °C and 27 °C were accepted in the tested sequence.
+
+### Cooling room hysteresis encoding and limits
+
+Both Low and High use raw/10 °C:
+- raw 10 = 1.0 °C
+- raw 17 = 1.7 °C
+- raw 18 = 1.8 °C
+
+Documented/UI limits are `0.5..5.0 °C`, step `0.1 °C`, therefore raw `5..50`.
+
+## STRONGLY SUPPORTED — 0708 high-half page mapping and 0546 selector basis
+
+Genuine Online/DCM/Eco5 reduction maps the 32 current/PUSH pages across W3 then W2. In particular:
+- W3 bit3 -> 042E
+- W3 bit4 -> 0442
+- W2 bit0 -> 0546
+
+For desired/PULL, low-half pages use W1 and the genuine high-half model mirrors the page bit into W0. Therefore EXP380 is prepared with W0 bit0 + W2 bit0 for 0546 desired selection.
+
+This 0546 desired selector is **not yet locally write-proven**.
+
+## STRONGLY SUPPORTED / local read-side evidence — 0553 Operation Mode
+
+`0553` is word 13 of `0546/count20`.
+
+Local XTR panel-driven evidence confirms:
+- 1 = Auto
+- 2 = Compressor
+with observed `1 -> 2 -> 1`.
+
+Accepted genuine/cross-model working enum for EXP380:
+- 0 = Uit
+- 1 = Auto
+- 2 = Compressor
+- 3 = Bijverwarmer
+- 4 = Warmwater
+
+Active semantic writeability of 0553 remains unproven until EXP380 is run.
+
+## Current remaining high-value unknowns
+
+- `0430` Extra Hot Water / Top-up candidate
+- remaining DHW service settings
+- remaining heating/cooling service settings
+- calendar structure/write semantics
+- auxiliary-heater settings
+- shunt-group settings
+- pool settings
+- optional buffer-tank/accessory settings
+- `03F1/03F2/03F3/03F5` and remaining unknown page words
+- native challenge-response derivation
+
+---
+
 # 2026-10-01 — full confirmed writable core of 03E8/count14
 
 ## PROVEN / locally confirmed — writable settings
