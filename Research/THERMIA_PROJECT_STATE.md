@@ -1,3 +1,67 @@
+# 2026-10-01 — EXP374/375 complete; Write Beta v3.0 production baseline
+
+**Authoritative current state:** EXP374 is **COMPLETE / POSITIVE** by explicit user confirmation of the final v4d behavior. EXP375A and EXP375B are **COMPLETE / POSITIVE** by explicit user confirmation. The production-oriented write baseline is now **Write (Beta) v3.0**, derived from the validated EXP374 v4d engine.
+
+## Last completed experiments
+
+### EXP374 — COMPLETE / POSITIVE — serialized per-register queue + Configuration intent preservation
+
+**Hypothesis:** rapid Home Assistant changes across multiple writable settings can be serialized without overlap, stale-page reuse or loss of distinct register intents.
+
+**Final implementation:** one active semantic transaction plus a bounded per-register dirty-set; same-register latest value wins; different-register intents are preserved. Each dispatched item requires a fresh controller-originated `03E8/count14` page and exact one-word controller republish. Configuration controls show active/queued desired values while ordinary read sensors remain controller-authoritative.
+
+**Result:** user confirmed the final v4d build behaves correctly. In the representative rapid three-control case, requested curve-correction values remained visually stable in Configuration while the controller applied them sequentially. Earlier v4/v4b/v4c implementation defects remain part of the history and are not erased.
+
+**Evidence note:** final v4d success is user-confirmed in chat; no separate raw runtime log for that final run was supplied.
+
+### EXP375A — COMPLETE / POSITIVE — Heating Minimum `03E9`
+
+User explicitly confirmed the planned Heating Minimum write/rollback test succeeded. `03E9` is therefore promoted to **PROVEN / locally confirmed writable** on this XTR M.
+
+### EXP375B — COMPLETE / POSITIVE — Room Factor `03F0`
+
+User explicitly confirmed the planned Room Factor write/rollback test succeeded. `03F0` is therefore promoted to **PROVEN / locally confirmed writable** on this XTR M.
+
+## Current locally proven writable 03E8/count14 fields
+
+- `03E8` Heating Curve
+- `03E9` Heating Minimum
+- `03EA` Heating Maximum
+- `03EB` Curve Correction +5
+- `03EC` Curve Correction 0
+- `03ED` Curve Correction -5
+- `03EE` Heating Stop
+- `03EF` Reduced Temperature
+- `03F0` Room Factor
+- `03F4` Room Setpoint
+
+`03EB` and `03EC` are promoted from the successful rapid multi-setting queue test confirmed by the user. The unknown page words `03F1`, `03F2`, `03F3` and `03F5` remain unknown; prior work specifically disproved `03F1` as live DHW START on this tested XTR M.
+
+## Production write baseline
+
+Current file:
+
+`Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v3_0.yaml`
+
+The production baseline retains the validated native desired-page mechanism, fresh-page provenance for every semantic write, per-register dirty queue, exact republish verification, Configuration autosync, desired-intent UI presentation, bounded values and fail-closed parser/RX/peer guards.
+
+## Current protocol model
+
+1. The native `0x0F` settings exchange is page/state based, not an arbitrary second-master register-write scheme.
+2. A semantic write begins from an authoritative controller `FC16 03E8/count14`.
+3. W3 bit0 obtains the fresh current page; W1 bit0 + W3 bit0 advertises the desired `03E8` page.
+4. The controller pulls `FC03 03E8/count14`; the emulator returns the full page with exactly one selected word changed.
+5. Success requires the controller to republish `FC16 03E8/count14` with that selected value and zero extra changed words.
+6. Multiple user intents are serialized; each queued register gets its own fresh page.
+7. Read sensors remain controller-authoritative even while Configuration shows queued desired intent.
+8. Controller-session recovery remains separately guarded; the genuine challenge-response transform remains unknown.
+
+## Next research direction
+
+Do not broaden writes blindly. The next research step should first identify the remaining unknown words in the current page (`03F1/03F2/03F3/03F5`) passively, or choose one already mapped setting on another native page and establish its exact controller-originated page/ownership before any write test.
+
+---
+
 # 2026-10-01 — EXP374 PREPARED / NOT RUN; EXP373 RUNNING / PARTIAL
 
 **Authoritative current state:** EXP374 is **PREPARED / NOT RUN**. EXP373 is **RUNNING / PARTIAL** from the supplied local XTR M log and contains multiple independently confirmed semantic-write sub-results. EXP371 and EXP372 are **SUPERSEDED / NOT RUN** as distinct experiments. The last fully completed numbered experiment is EXP370 (**COMPLETE / POSITIVE**).
