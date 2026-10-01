@@ -26,8 +26,8 @@ Two variants are maintained:
 
 Current XTR files:
 
-- `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v28.yaml`
-- `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v28.yaml`
+- `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v29.yaml`
+- `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v29.yaml`
 
 See [Read-only/README.md](Read-only/README.md) for installation, wiring and the difference between both variants.
 
@@ -123,7 +123,7 @@ The exact entity catalogue, including TEST status and ESPHome IDs, is maintained
 
 [Research/HOME_ASSISTANT_ENTITIES.md](Research/HOME_ASSISTANT_ENTITIES.md)
 
-Useful read-only entities including expansion-valve steps, refrigerant temperatures, discharge-gas temperature, compressor temperature and Room Setpoint Mirror are enabled by default in the current write baseline.
+Useful read-only entities including expansion-valve steps, refrigerant temperatures, discharge-gas temperature, compressor temperature and Room Setpoint Mirror are enabled by default in both the current Write Beta and Read-only v29 builds. Read-only v29 also passively exposes the locally proven Hot Water, Cooling and Operation settings pages without configuring TX.
 
 `Return Temperature` remains deliberately absent because no sufficiently reliable local XTR M mapping has been proven.
 
