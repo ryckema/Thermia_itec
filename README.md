@@ -2,16 +2,16 @@
 
 Local ESPHome integration and reverse-engineering project for the **Thermia iTec XTR M** internal RS485 bus, tested on an older/non-Genesis controller.
 
-The repository now has two deliberately separated runtime builds:
+The repository has two deliberately separated runtime builds:
 
 | Build | Bus access | Intended use | Current status |
 |---|---|---|---|
 | [Read-only](Read-only/) | RX only | Monitoring, dashboards, register research | Recommended for normal monitoring |
 | [Write (Beta)](Write%20%28Beta%29/) | RX + guarded TX | Native multi-setting control | Locally working, still Beta |
 
-The underlying bus is **Modbus RTU, 9600 baud, 8E1**. The read-only integration decodes Thermia values into Home Assistant. The write research has additionally reconstructed enough of the native Thermia/Danfoss Online/DCM path to change one setting safely on the tested unit.
+The underlying bus is **Modbus RTU-like, 9600 baud, 8E1 with Modbus CRC**.
 
-> **Current write status — Write Beta v3.0:** the native `03E8/count14` semantic write path is locally confirmed for ten settings on the tested XTR M. EXP374 confirmed serialized multi-register queue behavior and desired-UI preservation; EXP375A/B confirmed Heating Minimum and Room Factor. The build remains Beta because active bus participation and controller-session recovery are model/context-specific.
+> **Current write status — Write Beta v4.0:** native page-owned semantic writes are locally confirmed on `03E8/count14`, `042E/count15`, `0442/count13` and `0546/count20`. EXP381B is the current COMPLETE / POSITIVE runtime baseline. v4.0 also contains seven clearly named **TEST** controls from EXP382/EXP383; those mappings are STRONGLY SUPPORTED but not yet locally proven.
 
 ## Choose a build
 
@@ -31,25 +31,40 @@ Current XTR files:
 
 See [Read-only/README.md](Read-only/README.md) for installation, wiring and the difference between both variants.
 
-### Write (Beta) — guarded multi-setting control
-
-Use the [Write (Beta) folder](Write%20%28Beta%29/) only when you intentionally want active control.
+### Write (Beta) — guarded native multi-page control
 
 Current file:
 
-- `Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v3_0.yaml`
+- `Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v4_0.yaml`
 
-Write Beta v3.0 uses the locally confirmed native `0x0F` desired-page path for ten settings inside `0x03E8/count14`: Heating Curve, Heating Minimum/Maximum, the three curve corrections, Heating Stop, Reduced Temperature, Room Factor and Room Setpoint.
+The build follows the native Thermia/Danfoss Online/DCM-style page mechanism rather than issuing speculative direct register writes.
 
-Writes are serialized through a per-register queue. Every transaction starts from a fresh controller page and is considered successful only after an exact controller republish with the selected word changed and no extra deltas. Configuration controls preserve queued user intent while normal sensors remain controller-authoritative.
+Locally proven write scope currently includes:
 
-The build remains **Beta** because it actively participates on the internal bus, recovery is model/context-specific, and the genuine challenge-response transform is not reconstructed.
+- Heating settings on `03E8/count14`
+- Hot Water / service settings on `042E/count15`
+- Cooling settings on `0442/count13`
+- Operation Mode on `0546/count20`
+
+Each write starts from a fresh authoritative controller page. The ESP answers the controller's desired-page pull with a full page containing exactly one intended word change, and success is accepted only after the controller republishes that page with the requested target and `extraDeltaWords=0`.
+
+Write Beta v4.0 also contains seven candidate controls that are **fully implemented but explicitly marked TEST** in Home Assistant:
+
+- `0430` — Hot Water **TEST Top-up**
+- `0444` — Cooling **TEST Hysteresis**
+- `0446` — Cooling **TEST Configuration**
+- `0448` — Cooling **TEST Stop Threshold**
+- `044A` — Cooling **TEST Max Start Temperature**
+- `044B` — Cooling **TEST Min Stop Temperature**
+- `0559` — **TEST Link Integration**
+
+These are STRONGLY SUPPORTED mappings from EXP382. They are not locally proven until their individual EXP383 results are supplied. `0559 Link Integration` should be tested last because it may affect the integration/session itself.
 
 See [Write (Beta)/README.md](Write%20%28Beta%29/README.md) before installing it.
 
 ## Tested hardware
 
-The supplied YAML files target:
+The supplied XTR YAML files target:
 
 - Thermia iTec XTR M with the compatible older/non-Genesis controller
 - Waveshare ESP32-S3-RS485-CAN / ESP32-S3-RS485-CAN-U
@@ -57,7 +72,7 @@ The supplied YAML files target:
 - ESPHome
 - Home Assistant
 
-Other Thermia/Danfoss models are useful cross-model evidence for the research, but compatibility of the write path must **not** be assumed.
+Other Thermia/Danfoss models are useful cross-model evidence, but compatibility must **not** be assumed until validated on the specific supported type.
 
 ## Thermia RS485 connection
 
@@ -72,43 +87,114 @@ The tested Thermia RJ45 connection is:
 
 Power the ESP32 separately over USB-C.
 
-Leave the Waveshare **120 Ω termination jumper open/off** when passively attaching to the existing Thermia bus. Do not power the ESP32 from the Thermia +12 V pins unless that supply has been independently verified for the intended load.
+Leave the Waveshare **120 Ω termination jumper open/off** when attaching to the existing Thermia bus. Do not power the ESP32 from the Thermia +12 V pins unless that supply has been independently verified for the intended load.
 
 ### Bus parameters
 
 ```text
-Modbus RTU
+Modbus RTU-like
 9600 baud
 8 data bits
 Even parity
 1 stop bit
+Modbus CRC
 ```
 
 On the Waveshare build:
 
 - GPIO18 = RS485 RX
-- GPIO17 = RS485 TX in the Write (Beta) build only
+- GPIO17 = RS485 TX in the Write (Beta) build
 - GPIO21 = RS485 DE/direction
 
-The read-only builds intentionally do not configure TX and keep DE low.
+The read-only builds intentionally do not configure Thermia TX and keep DE low.
 
 ## Home Assistant
 
-The integration currently exposes useful values including room, outdoor, supply and DHW temperatures; heating settings; compressor and outdoor-unit telemetry; SG Ready state; operating-state information; and bus/ESP diagnostics.
+The integration exposes operational values including room, outdoor, supply and DHW temperatures; compressor/outdoor-unit telemetry; heating/cooling state; SG Ready state; settings and diagnostics.
 
-The research build exposes additional raw/register diagnostics. The production-oriented Write Beta v3.0 preserves the monitoring functionality and exposes the ten locally confirmed `03E8/count14` heating controls listed in [Write (Beta)/README.md](Write%20%28Beta%29/README.md).
+Write Beta v4.0 Configuration controls are ordered to follow the Thermia manual:
 
-Current research has also locally exercised additional persistent Home Assistant controls beyond Write Beta v3.0:
+1. Operation
+2. Heating
+3. Hot Water
+4. Cooling
 
-- DHW: Enabled, Mode, Opstart HT and Verwarmingstijd on `042E/count15`;
-- Cooling: Enabled, Desired Cooling Temperature, Cooling Time and Cooling Room Sensor on `0442/count13`;
-- Cooling Active Above and the two room-hysteresis controls are mapped/exposed in EXP379 but are still being validated and are not yet part of the production Write Beta build.
+The exact entity catalogue, including TEST status and ESPHome IDs, is maintained in:
 
-See the Write (Beta) README for the exact entity display names and evidence status.
+[Research/HOME_ASSISTANT_ENTITIES.md](Research/HOME_ASSISTANT_ENTITIES.md)
+
+Useful read-only entities including expansion-valve steps, refrigerant temperatures, discharge-gas temperature, compressor temperature and Room Setpoint Mirror are enabled by default in the current write baseline.
+
+`Return Temperature` remains deliberately absent because no sufficiently reliable local XTR M mapping has been proven.
+
+## Current native write model
+
+The current model is controller-owned and page based:
+
+```text
+persistent qualified runtime
+    ↓
+fresh authoritative controller FC16 page
+    ↓
+current-page selector if refresh is required
+    ↓
+desired-page selector
+    ↓
+controller FC03 reads that page
+    ↓
+ESP returns the complete page with exactly one selected word changed
+    ↓
+controller FC16 republishes the page
+    ↓
+target match + extraDeltaWords=0 → transaction confirmed
+```
+
+This mechanism is locally proven on four page families:
+
+- `03E8/count14`
+- `042E/count15`
+- `0442/count13`
+- `0546/count20`
+
+The project does **not** treat a normal Modbus ACK as proof of a semantic setting change.
+
+## Research and evidence
+
+The reverse-engineering history is maintained separately from the runtime builds:
+
+- [THERMIA_PROJECT_STATE.md](Research/THERMIA_PROJECT_STATE.md) — authoritative current state
+- [EXPERIMENT_LOG.md](Research/EXPERIMENT_LOG.md) — complete experiment history, including negative and inconclusive results
+- [PROTOCOL_FINDINGS.md](Research/PROTOCOL_FINDINGS.md) — durable protocol findings and confidence classification
+- [HOME_ASSISTANT_ENTITIES.md](Research/HOME_ASSISTANT_ENTITIES.md) — canonical Home Assistant entity catalogue
+- [EXP382_OFFLINE_GAP_ANALYSIS.md](Research/EXP382_OFFLINE_GAP_ANALYSIS.md) — latest offline controlled-page gap analysis
+
+Evidence is separated into locally confirmed XTR M behavior, genuine Online/DCM capture evidence, firmware-derived evidence, cross-model evidence and hypotheses.
+
+## Current experiment status
+
+- **EXP380 — COMPLETE / POSITIVE:** Operation Mode `0553` native write path locally confirmed.
+- **EXP381B — COMPLETE / POSITIVE:** production/UI consolidation ran successfully and is the current proven runtime baseline.
+- **EXP382 — COMPLETE / POSITIVE, offline:** narrowed remaining controlled-page gaps without bus TX.
+- **EXP383 — PREPARED / NOT RUN:** seven STRONGLY SUPPORTED mappings are exposed as TEST controls in Write Beta v4.0 for one-at-a-time validation.
+
+## Roadmap
+
+The current roadmap after EXP383 validation is:
+
+1. **Kalenderfunctionaliteit**
+2. **Missende entiteiten toevoegen**
+3. **Storingen/alarmen uitlezen**
+4. **Volledige native settings-map afronden**
+5. **Generieke DCM/Online-emulator maken**
+6. **Challenge-response oplossen**
+7. **Defrost + volledig operating-state model**
+8. **Cross-model vergelijking**
+
+The cross-model step is intended as a **supported-types compatibility effort**: establish which Thermia/Danfoss models share the required bus architecture, pages, mappings and safe control behavior rather than assuming compatibility from platform similarity.
 
 ## ESPHome secrets
 
-The YAML files expect these entries in your ESPHome `secrets.yaml`:
+The YAML files expect these entries in `secrets.yaml`:
 
 ```yaml
 wifi_ssid: "..."
@@ -120,47 +206,11 @@ thermia_fallback_password: "..."
 
 Do not commit real credentials to this repository.
 
-## Research and evidence
-
-The reverse-engineering history is kept separately from the runtime builds:
-
-- [THERMIA_PROJECT_STATE.md](Research/THERMIA_PROJECT_STATE.md) — authoritative current state
-- [EXPERIMENT_LOG.md](Research/EXPERIMENT_LOG.md) — experiment history, including negative and inconclusive results
-- [PROTOCOL_FINDINGS.md](Research/PROTOCOL_FINDINGS.md) — durable protocol findings and evidence classification
-
-The project distinguishes local XTR M proof from genuine Online/DCM capture evidence, firmware-derived findings, cross-model Thermia/Danfoss evidence and hypotheses.
-
-## Current write model
-
-The locally established Room Setpoint path is:
-
-```text
-persistent DCM runtime
-    ↓
-fresh 03E8 page when needed
-0708 W3 bit0
-    ↓
-controller FC16 03E8/count14
-    ↓
-0708 W1 bit0 + W3 bit0 selector
-    ↓
-controller FC03 03E8/count14
-    ↓
-response changes only 03F4
-    ↓
-controller FC16 03E8/count14 republish
-    ↓
-republish becomes the source for the next write
-```
-
-Important boundaries remain: only `03F4` is enabled for semantic writes; W5=`0006` is a proven working runtime value but its abstract meaning is unknown; the full W2:W3 page bitmap is not locally active-tested beyond the `03E8` case; and arbitrary fresh controller-session/power-loss recovery is less mature than retained-session operation.
-
 ## Project status
 
-Read-only monitoring is the conservative choice and remains strictly passive.
+Read-only monitoring remains the conservative choice and is strictly passive.
 
-Write support is no longer a speculative direct-register write: it follows the locally proven native Online/DCM mailbox/page mechanism. It is nevertheless intentionally isolated under **Write (Beta)** until longer-running recovery behavior is characterized.
-
+Write support now follows a locally proven native Online/DCM-style page mechanism across multiple setting pages. The active build remains intentionally isolated under **Write (Beta)** because it transmits on the heat-pump bus, controller-session recovery is model/context-specific, the native challenge-response transform is not yet reconstructed, and v4.0 includes clearly marked TEST mappings awaiting local validation.
 
 ## Disclaimer and license
 
