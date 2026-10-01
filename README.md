@@ -11,7 +11,7 @@ The repository now has two deliberately separated runtime builds:
 
 The underlying bus is **Modbus RTU, 9600 baud, 8E1**. The read-only integration decodes Thermia values into Home Assistant. The write research has additionally reconstructed enough of the native Thermia/Danfoss Online/DCM path to change one setting safely on the tested unit.
 
-> **Current write status — EXP353:** Room Setpoint control is locally confirmed on the tested XTR M. EXP352 contains the newest archived raw-log proof of the complete refresh → desired-page write → controller-republish flow. EXP353 was explicitly confirmed successful for reusable refreshes, but its detailed raw log/YAML is not currently archived. For that reason the active build remains **Write (Beta)** rather than being presented as universally production-ready.
+> **Current write status — EXP357 / v2.1 hardening:** Room Setpoint control, reusable stale-cache refresh and one controller cold-reboot recovery are locally confirmed on the tested XTR M. EXP357 provides raw-log proof of repeated refresh/write operation in one ESP boot; EXP355 provides raw-log proof of controller-reboot recovery. The current `Write Beta v2.1` is a conservative hardening revision and is **PREPARED / NOT YET REGRESSION-TESTED**; EXP358 is the next validation run. The build therefore remains **Write (Beta)**.
 
 ## Choose a build
 
@@ -37,13 +37,15 @@ Use the [Write (Beta) folder](Write%20%28Beta%29/) only when you intentionally w
 
 Current file:
 
-- `Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v1.yaml`
+- `Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v2_1.yaml`
 
 The beta currently enables exactly one semantic setting:
 
 - **Room Setpoint** — `0x03F4` inside controller page `0x03E8/count14`, whole degrees **10..30 °C**.
 
 Changing the Home Assistant number does **not** immediately transmit a write. The transaction starts only when **Thermia Apply Room Setpoint** is pressed.
+
+Write Beta v2.1 adds no new writable setting. It hardens the already-proven implementation: runtime `04A6/count13` is capture-only, `0834/count18` is not ACKed, unknown `085F/count5` payloads fail closed, and runtime readiness is published only after a clean FC16 + `0708` qualification.
 
 See [Write (Beta)/README.md](Write%20%28Beta%29/README.md) before installing it.
 
