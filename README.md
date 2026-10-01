@@ -96,7 +96,15 @@ The read-only builds intentionally do not configure TX and keep DE low.
 
 The integration currently exposes useful values including room, outdoor, supply and DHW temperatures; heating settings; compressor and outdoor-unit telemetry; SG Ready state; operating-state information; and bus/ESP diagnostics.
 
-The research build exposes additional raw/register diagnostics. The Write (Beta) build preserves the monitoring functionality and adds the guarded Room Setpoint controls and write-status entities.
+The research build exposes additional raw/register diagnostics. The production-oriented Write Beta v3.0 preserves the monitoring functionality and exposes the ten locally confirmed `03E8/count14` heating controls listed in [Write (Beta)/README.md](Write%20%28Beta%29/README.md).
+
+Current research has also locally exercised additional persistent Home Assistant controls beyond Write Beta v3.0:
+
+- DHW: Enabled, Mode, Opstart HT and Verwarmingstijd on `042E/count15`;
+- Cooling: Enabled, Desired Cooling Temperature, Cooling Time and Cooling Room Sensor on `0442/count13`;
+- Cooling Active Above and the two room-hysteresis controls are mapped/exposed in EXP379 but are still being validated and are not yet part of the production Write Beta build.
+
+See the Write (Beta) README for the exact entity display names and evidence status.
 
 ## ESPHome secrets
 
