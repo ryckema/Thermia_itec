@@ -5526,7 +5526,7 @@ interval:
               id(exp352_write_state)==0 &&
               (now-id(exp352_arm_ms))>=15000UL) {
             id(waveshare_rs485_direction).turn_off(); id(exp352_active)=false; id(exp352_stage)=99; id(exp352_runtime_qualified)=false; id(thermia_write_runtime_active_sensor)->publish_state(false);
-            id(thermia_write_active)->publish_state(false); id(thermia_write_runtime_active_sensor)->publish_state(false);
+            id(thermia_write_active)->publish_state(false);
             if (id(exp352_recovery_in_progress)) {
               id(thermia_write_status)->publish_state("STOPPED / recovered session reached stage40 but did not re-qualify within 15 s");
               id(thermia_write_last_event)->publish_state("post-recovery need >=1 known runtime FC16 ACK and >=1 0708 W5=0006 reply");
@@ -5564,7 +5564,6 @@ interval:
               id(waveshare_rs485_direction).turn_off();
               id(exp352_active)=false; id(exp352_stage)=99; id(exp352_runtime_qualified)=false; id(thermia_write_runtime_active_sensor)->publish_state(false);
               id(thermia_write_active)->publish_state(false);
-              id(thermia_write_runtime_active_sensor)->publish_state(false);
               id(thermia_write_status)->publish_state("STOPPED / second controller bus-loss event requires ESP restart");
               id(thermia_write_stage_text)->publish_state("stage 99 / stopped / DE LOW");
               id(thermia_write_last_event)->publish_state("second >=5 s silence; only one automatic recovery attempt is locally proven per ESP boot");
@@ -5577,7 +5576,6 @@ interval:
               id(waveshare_rs485_direction).turn_off();
               id(exp352_active)=false; id(exp352_stage)=99; id(exp352_runtime_qualified)=false; id(thermia_write_runtime_active_sensor)->publish_state(false);
               id(thermia_write_active)->publish_state(false);
-              id(thermia_write_runtime_active_sensor)->publish_state(false);
               id(thermia_write_status)->publish_state("STOPPED / bus loss outside clean qualified idle runtime");
               id(thermia_write_stage_text)->publish_state("stage 99 / stopped / DE LOW");
               id(thermia_write_last_event)->publish_state(">=5 s silence but runtime not cleanly qualified or semantic transaction active");
@@ -5919,7 +5917,15 @@ interval:
   - interval: 10s
     then:
       - lambda: |-
-          if (!id(exp352_active)) return; const uint32_t now=millis();
+          if (!id(exp352_active)) {
+            id(thermia_write_session_state)->publish_state("inactive / fail closed");
+            if (id(exp352_recovery_in_progress)) {
+              id(thermia_write_last_recovery_result)->publish_state("STOPPED / FAILED; see Thermia DCM Write Last Event");
+              id(exp352_recovery_in_progress)=false;
+            }
+            return;
+          }
+          const uint32_t now=millis();
           const uint32_t elapsed=id(exp352_arm_ms)?now-id(exp352_arm_ms):0;
           const uint32_t boot=id(exp352_boot_ms)?now-id(exp352_boot_ms):0;
           const uint32_t tx=id(exp352_tx_ms)?now-id(exp352_tx_ms):0;
