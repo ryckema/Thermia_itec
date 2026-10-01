@@ -1,3 +1,26 @@
+# Research status — 2026-10-01 — EXP379 COMPLETE / POSITIVE; EXP380 PREPARED / NOT RUN
+
+**Last completed live experiment:** EXP379 — **COMPLETE / POSITIVE**.
+
+**Current experiment:** EXP380 — **PREPARED / NOT RUN**.
+
+The native desired-page write mechanism is now locally proven across three settings pages:
+- `03E8/count14` heating
+- `042E/count15` DHW/runtime-service
+- `0442/count13` cooling
+
+EXP379 completed the persistent cooling-control block. Proven writable cooling fields are 0442, 0443, 0445, 0449, 044C, 044D and 044E. Low/High room hysteresis are raw/10 °C with UI limits 0.5..5.0 °C and 0.1 °C steps. Cooling Active Above is guarded by `max(10, Heating Stop + 3 K)`.
+
+EXP377/378 previously proved semantic control of the 042E page, including 042F SWW Mode and 0433 Opstart HT, and locally confirmed W3 bit3 as the current-refresh selector. 0430 remains only a Top-up / Extra Hot Water hypothesis; 0431 and 0432 remain unknown.
+
+EXP380 adds a persistent Operation Mode select at `0553` / word 13 of `0546/count20`. Auto=1 and Compressor=2 are locally confirmed by panel-driven changes. Uit=0, Bijverwarmer=3 and Warmwater=4 are accepted genuine/cross-model working values for the experiment. The 0546 desired selector is based on the genuine high-half 0708 bitmap model and is not yet locally write-proven.
+
+Most everyday heating/DHW/cooling parameters are now mapped. Remaining research is concentrated in top-up, remaining service settings, calendar, auxiliary heater, shunt groups, pool and optional accessory/buffer settings.
+
+Production/public YAML is unchanged by this research-only update.
+
+---
+
 # Research status — 2026-09-30 — EXP340 COMPLETE / INCONCLUSIVE; native PULL path next
 
 **Last completed live experiment:** EXP340 — **COMPLETE / INCONCLUSIVE**.
