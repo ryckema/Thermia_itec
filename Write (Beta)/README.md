@@ -11,9 +11,11 @@ Unlike the [Read-only](../Read-only/) builds, this firmware configures RS485 TX 
 
 ## Current file
 
-`thermia_itec_xtr_m_waveshare_write_beta_v2.yaml`
+`thermia_itec_xtr_m_waveshare_write_beta_v2_1.yaml`
 
-The previous `thermia_itec_xtr_m_waveshare_write_beta_v1.yaml` is retained as the pre-recovery production-beta baseline.
+Write Beta v2.1 is a **hardening revision** of v2. It adds no new writable register/page and no new protocol payload. It tightens runtime ACK eligibility and runtime qualification before the next regression test.
+
+The previous `thermia_itec_xtr_m_waveshare_write_beta_v2.yaml` is retained as the pre-hardening baseline. `thermia_itec_xtr_m_waveshare_write_beta_v1.yaml` remains the older pre-recovery baseline.
 
 ## Current write scope
 
@@ -48,7 +50,7 @@ Useful status entities include:
 - **Thermia 03E8 Refresh Requests**
 - **Thermia 03E8 Refresh Confirmed**
 
-Additional protocol diagnostics are present but mostly disabled by default.
+Additional protocol diagnostics are present but mostly disabled by default. v2.1 also exposes **Thermia DCM Recovery Count**, **Thermia DCM Session State**, and **Thermia DCM Last Recovery Result** for recovery/qualification visibility.
 
 ## Proven local write path
 
@@ -81,7 +83,7 @@ Native Thermia front-display setpoint changes can also refresh that source cache
 
 ### Controller reboot recovery
 
-Write Beta v2 also contains the locally proven EXP355 recovery path for a Thermia/controller power cycle while the ESP remains powered:
+Write Beta v2.1 retains the locally proven EXP355 recovery path for a Thermia/controller power cycle while the ESP remains powered:
 
 ```text
 qualified stage-40 runtime
@@ -107,7 +109,7 @@ recovered runtime qualified
 
 The fixed 16-byte response is **not** documented as the native Thermia challenge-response algorithm. Genuine gateway captures show different responses for different challenges/sessions. On this XTR M, EXP355 proved that the previously captured response can be replayed successfully under the guarded cold-boot state.
 
-For safety, v2 permits only **one automatic controller recovery attempt per ESP boot**. A second >=5 s controller bus-loss event fails closed and requires an ESP restart. Repeated controller recoveries per ESP boot have not yet been locally proven.
+For safety, v2.1 permits only **one automatic controller recovery attempt per ESP boot**. A second >=5 s controller bus-loss event fails closed and requires an ESP restart. Repeated controller recoveries per ESP boot have not yet been locally proven.
 
 ## Safety model
 
@@ -127,8 +129,26 @@ The write build keeps the following guards:
 - controller-reboot recovery is armed only from a clean, qualified, semantically idle stage-40 runtime;
 - recovery invalidates the old semantic cache before re-entering the fresh-session bootstrap;
 - the recovered session must re-qualify with fresh runtime FC16 service plus a 0708 exchange before writes are allowed again.
+- **Thermia DCM Runtime Active** stays false until that FC16 + `0708` qualification is actually complete;
+- runtime `04A6/count13` is capture-only / NO ACK; this matches the canonical finding that it can be parallel/state-dependent traffic;
+- `0834/count18` is locally unsupported and is never ACKed; if encountered it fails closed;
+- runtime `085F/count5` is ACKed only for the two locally proven payload forms: all-zero or `0861=0x0800`; any other payload fails closed.
 
 The build also services the proven runtime/ACK traffic required by the emulated DCM session. Those protocol frames are part of the active integration even when no Room Setpoint write is pending.
+
+### v2.1 hardening scope
+
+The v2.1 changes come from a static production-code audit against the canonical protocol findings. They deliberately **remove permissive behavior rather than add new protocol capability**:
+
+- remove stage-40 ACK behavior for runtime `04A6/count13`;
+- remove `0834/count18` from the ACK whitelist;
+- qualify `085F/count5` by exact locally proven payload rather than address/count alone;
+- use one runtime-qualified latch for both FC16-first and `0708`-first event ordering;
+- publish **Runtime Active** only after qualification, not merely on stage-40 entry;
+- re-arm the 15-minute soak diagnostic after controller recovery;
+- correct the firmware-build label and the disabled-by-default Room Setpoint number entity.
+
+These changes are **PREPARED / NOT YET LIVE-REGRESSION-TESTED**. EXP358 is the planned regression run. v2.1 therefore remains beta until that result is supplied.
 
 ## Known limitations
 
@@ -183,7 +203,7 @@ Even parity
 ## Installation
 
 1. Start from a known healthy Thermia bus.
-2. Copy `thermia_itec_xtr_m_waveshare_write_beta_v2.yaml` to ESPHome.
+2. Copy `thermia_itec_xtr_m_waveshare_write_beta_v2_1.yaml` to ESPHome.
 3. Add the required credentials to `secrets.yaml`.
 4. Validate/compile the YAML in your own ESPHome installation.
 5. Install the firmware.
@@ -203,7 +223,7 @@ thermia_ota_password: "..."
 thermia_fallback_password: "..."
 ```
 
-The repository release was structurally/YAML checked during preparation, but that check is not a substitute for compiling against the ESPHome version installed on your system.
+Write Beta v2.1 was statically checked for duplicate/missing ESPHome IDs, TX-site DE/write/flush/DE-low structure, and the critical hard-coded Modbus CRCs. It has **not** been ESPHome-compiled in this preparation step, so compile/validate it against the ESPHome version installed on your system before flashing.
 
 ## Normal write behavior
 
@@ -219,7 +239,7 @@ Do not continue semantic writes if the Thermia reports an abnormal Online/Link s
 
 For a conservative rollback, install one of the [Read-only](../Read-only/) YAML files. Those builds do not configure Thermia TX and keep the RS485 driver disabled.
 
-A Thermia controller reboot is not part of the normal write procedure and should not be used merely to force a failed transaction. If a genuine controller power cycle occurs, v2 may perform the one locally proven guarded recovery automatically. If that recovery fails, or a second bus-loss event occurs in the same ESP boot, leave the bus alone and restart/roll back rather than forcing further transmissions.
+A Thermia controller reboot is not part of the normal write procedure and should not be used merely to force a failed transaction. If a genuine controller power cycle occurs, v2.1 may perform the one locally proven guarded recovery automatically. If that recovery fails, or a second bus-loss event occurs in the same ESP boot, leave the bus alone and restart/roll back rather than forcing further transmissions.
 
 ## Evidence
 
@@ -255,7 +275,7 @@ EXP357 removed the obsolete one-refresh-per-ESP-boot experimental limit and loca
 - refresh #2 was followed by a confirmed 22 -> 24 °C Room Setpoint write with `extraDeltaWords=0`;
 - the run reached five confirmed semantic writes while runtime integrity counters remained clean.
 
-This is the evidence used to promote reusable refresh into Write Beta v2.
+This is the evidence used to promote reusable refresh into Write Beta v2. v2.1 keeps that protocol behavior unchanged and only hardens the implementation around it.
 
 See the canonical research files for the full evidence trail:
 
