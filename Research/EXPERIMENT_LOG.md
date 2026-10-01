@@ -1,3 +1,41 @@
+# EXP357 — COMPLETE / POSITIVE — reusable stale-cache refresh + confirmed write
+
+**Date:** 2026-10-01  
+**Status:** COMPLETE / POSITIVE
+
+## PREPARED
+
+**Baseline:** EXP355 COMPLETE / POSITIVE; EXP353 user-confirmed reusable-refresh follow-up.
+
+**Hypothesis:** a second stale-cache refresh later in the same ESP boot can safely reuse the proven W3-bit0 current-page request and then continue through the established `03F4` semantic write path.
+
+**Controlled change:** remove only the one-refresh-per-ESP-boot experimental budget. No new page, register, selector bit, R1 payload or ACK shape.
+
+## RESULT
+
+- First stale/missing-cache Apply requested a fresh `03E8/count14`; controller response arrived in ~120 ms.
+- That fresh page carried `03F4=22`, after which a 22 -> 20 °C write completed and the controller exactly republished the page.
+- Later in the same ESP boot, `refreshNo=2` sent the same W3-bit0 refresh-only mailbox response.
+- Controller again supplied `FC16 03E8/count14`, logged as `REFRESH_CONFIRMED refreshNo=2`, in ~119 ms.
+- The queued 22 -> 24 °C semantic write then completed through W1 selector -> controller FC03 -> one-word-delta desired page -> exact FC16 republish.
+- That write logged `WRITE_CONFIRMED writeNo=3 ... observed03F4=24 extraDeltaWords=0`.
+- The supplied run later reached five confirmed writes.
+- No stale-cache refresh budget refusal occurred; no unknown FC16/FC03, peer responder, parser resync or RX drop issue was observed in the inspected result.
+
+## CONCLUSION
+
+**COMPLETE / POSITIVE.**
+
+Reusable W3-bit0 stale-cache refresh is now **PROVEN / locally confirmed** on this XTR M for multiple refresh cycles in one ESP boot.
+
+---
+
+# EXP356 — SUPERSEDED / NOT RUN — post-recovery soak
+
+EXP356 was prepared but not run. The user chose the targeted EXP357 reusable-refresh test instead. No EXP356 result is inferred.
+
+---
+
 # EXP355 — COMPLETE / POSITIVE — fresh controller-session recovery from retained runtime
 
 **Date:** 2026-09-30  
