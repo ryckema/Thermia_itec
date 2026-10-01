@@ -103,6 +103,14 @@ Current file:
 
 v4.0 contains the EXP381B proven baseline plus the seven clearly marked EXP383 TEST controls. Publication does not change their evidence status.
 
+## Read-only baseline
+
+Current passive build:
+- `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_public_v29.yaml`
+- `Read-only/Thermia itec XTR/thermia_itec_xtr_m_waveshare_research_v29.yaml`
+
+v29 remains strictly RX-only: no Thermia TX pin, no `write_array()` calls, DE forced LOW. It passively decodes the locally proven settings on `042E/count15`, `0442/count13` and `0546/count20`, and enables the useful service/read-only entities aligned with EXP381B. EXP382/EXP383 STRONGLY SUPPORTED candidates remain excluded from normal read-only semantics until locally confirmed.
+
 ## Next roadmap
 
 After EXP383 candidate validation:
