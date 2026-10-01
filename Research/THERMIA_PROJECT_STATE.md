@@ -1,3 +1,126 @@
+# 2026-10-01 — EXP381B complete; EXP382 offline complete; EXP383 prepared
+
+**Authoritative current state:** EXP381B is **COMPLETE / POSITIVE** by explicit user confirmation after running the production/UI consolidation build. EXP382 is **COMPLETE / POSITIVE** as an offline evidence-analysis experiment. EXP383 is **PREPARED / NOT RUN**. The current published active write build is **Write (Beta) v4.0**, derived from EXP383; its seven entities containing `TEST` are intentionally not yet promoted to locally proven mappings.
+
+## Current experiment
+
+### EXP383 — PREPARED / NOT RUN — STRONGLY SUPPORTED candidate controls
+
+**Baseline:** EXP381B **COMPLETE / POSITIVE**. EXP382 **COMPLETE / POSITIVE** offline gap analysis.
+
+**Hypothesis:** seven EXP382 mappings classified **STRONGLY SUPPORTED** can reuse the already proven page-owned native semantic-write mechanisms without changing the established selector/session model.
+
+**Exact controlled change from EXP381B:** add seven user-visible Configuration controls, each explicitly marked `TEST` in its Home Assistant name:
+- `0430` / 042E word2 — **TEST Top-up**
+- `0444` / 0442 word2 — **TEST Cooling Hysteresis**
+- `0446` / 0442 word4 — **TEST Cooling Configuration**
+- `0448` / 0442 word6 — **TEST Stop Threshold**
+- `044A` / 0442 word8 — **TEST Max Start Temperature**
+- `044B` / 0442 word9 — **TEST Min Stop Temperature**
+- `0559` / 0546 word19 — **TEST Link Integration**
+
+No candidate is considered proven merely because it is present in Write Beta v4.0.
+
+**Existing proven page paths reused:**
+- `042E/count15` current/desired selector path
+- `0442/count13` current/desired selector path
+- `0546/count20` current/desired selector path
+
+Each semantic transaction still requires a fresh authoritative controller page, changes one selected word only, and accepts success only after an exact controller FC16 republish with `extraDeltaWords=0`.
+
+**Safety:** test one new candidate at a time and use the smallest reversible change possible. `0559 Link Integration` is the highest-risk candidate because changing integration mode may affect the Online/DCM-style session; test it last. Stop on parser/RX/peer/session fault, timeout, unexpected page/count, unexpected extra delta, or controller behavior inconsistent with the candidate field. No automatic retry after failure.
+
+**Status:** PREPARED / NOT RUN.
+
+## Last completed live experiment
+
+### EXP381B — COMPLETE / POSITIVE — production/UI consolidation
+
+The user explicitly confirmed EXP381B ran successfully. Its behavior-preserving cleanup therefore becomes the current locally proven runtime baseline.
+
+Confirmed scope:
+- manual-aligned Configuration ordering: Operation → Heating → Hot Water → Cooling;
+- Startup HT / Heating Time grouped under Heating / Service;
+- useful read-only entities enabled by default;
+- no change to the proven protocol/write machinery;
+- existing persistent controls retained their working behavior.
+
+EXP381A was superseded by the consolidated EXP381B build and was not separately run.
+
+## Last completed offline experiment
+
+### EXP382 — COMPLETE / POSITIVE — offline controlled-page gap analysis
+
+EXP382 performed no bus TX and made no device change. It compared local XTR results with the commissioning manual, genuine Online/DCM evidence, collaborator captures and public register-index evidence.
+
+New classifications:
+- `0430` Hot Water TOP_UP — **STRONGLY SUPPORTED**
+- `0444` Cooling Hysteresis — **STRONGLY SUPPORTED**
+- `0446` Service Cooling Configuration/Type — **STRONGLY SUPPORTED**
+- `0448` Cooling STOP threshold — **STRONGLY SUPPORTED**
+- `044A` MAX_STARTTEMP — **STRONGLY SUPPORTED**
+- `044B` MIN_STOPTEMP — **STRONGLY SUPPORTED**
+- `0559` Link Integration — **STRONGLY SUPPORTED**
+- `0447` Cooling START threshold — **HYPOTHESIS** only; not included in EXP383.
+
+The full offline analysis is retained in `Research/EXP382_OFFLINE_GAP_ANALYSIS.md`.
+
+## Current proven writable scope
+
+### 03E8/count14 — heating
+Locally proven writable:
+`03E8`, `03E9`, `03EA`, `03EB`, `03EC`, `03ED`, `03EE`, `03EF`, `03F0`, `03F4`.
+
+### 042E/count15 — hot water / service
+Locally proven writable:
+- `042E` Hot Water Enabled
+- `042F` Hot Water Mode
+- `0433` Startup HT
+- `0434` Heating Time
+
+`0430` is STRONGLY SUPPORTED as TOP_UP but remains unproven until EXP383 testing.
+
+### 0442/count13 — cooling
+Locally proven writable:
+- `0442` Cooling Enabled
+- `0443` Desired Cooling Temperature
+- `0445` Cooling Active Above
+- `0449` Cooling Time
+- `044C` Cooling Room Sensor
+- `044D` Cooling Room Hysteresis Low
+- `044E` Cooling Room Hysteresis High
+
+EXP382 candidate mappings `0444/0446/0448/044A/044B` remain STRONGLY SUPPORTED, not locally proven.
+
+### 0546/count20 — system
+- `0553` Operation Mode — **PROVEN / locally confirmed writable** by EXP380 user-confirmed success.
+- `0559` Link Integration — **STRONGLY SUPPORTED**, TEST only in EXP383/v4.0.
+
+## Published Write Beta
+
+Current file:
+`Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v4_0.yaml`
+
+v4.0 contains the EXP381B proven baseline plus the seven clearly marked EXP383 TEST controls. Publication does not change their evidence status.
+
+## Next roadmap
+
+After EXP383 candidate validation:
+1. Calendar functionality
+2. Missing entities
+3. Faults/alarms readout
+4. Complete native settings map
+5. Generic DCM/Online emulator
+6. Solve challenge-response
+7. Defrost + full operating-state model
+8. Cross-model compatibility / supported types
+
+## Safety constraints
+
+Continue one-target-at-a-time writes from fresh controller pages, exact page/count validation, one-word deltas, exact controller republish verification, bounded UI values, no automatic retries, parser/RX/peer fail-close, and DE LOW outside guarded TX. STRONGLY SUPPORTED candidates remain TEST-only until individually confirmed on this XTR M.
+
+---
+
 # 2026-10-01 — EXP379 complete; EXP380 prepared
 
 **Authoritative current state:** EXP379 is **COMPLETE / POSITIVE** from the supplied local XTR M runtime log. EXP380 is **PREPARED / NOT RUN**. The last completed experiment is therefore EXP379.
