@@ -1,3 +1,157 @@
+# 2026-10-01 — EXP379 complete; EXP380 prepared
+
+**Authoritative current state:** EXP379 is **COMPLETE / POSITIVE** from the supplied local XTR M runtime log. EXP380 is **PREPARED / NOT RUN**. The last completed experiment is therefore EXP379.
+
+## Current experiment
+
+### EXP380 — PREPARED / NOT RUN — persistent Operation Mode control on 0546/count20
+
+**Hypothesis:** the native desired-page mechanism can be extended to page `0546/count20` and used to change only `0553` / word 13, the Operation Mode field.
+
+**Accepted working enum for this experiment:**
+- `0 = Uit`
+- `1 = Auto`
+- `2 = Compressor`
+- `3 = Bijverwarmer`
+- `4 = Warmwater`
+
+Local XTR evidence before EXP380 confirms `1 = Auto` and `2 = Compressor` by panel-driven change `0553: 1 -> 2 -> 1`. Values 0/3/4 are accepted as genuine/cross-model evidence for active testing by explicit user instruction, but are not rewritten as historical local proof.
+
+**Exact controlled change from EXP379:** add one persistent Home Assistant `select` under Configuration for `0553`, using the same desired-intent queue/UI model as EXP378/379. No other new target is introduced.
+
+**Planned semantic flow:** fresh controller `FC16 0546/count20` -> desired selector -> controller `FC03 0546/count20` -> emulator returns full page with only word 13 changed -> controller republishes `FC16 0546/count20`.
+
+**Success:** republished word 13 equals target and `extraDeltaWords=0`; transaction closes READY.
+
+**Negative/abort:** wrong page/count, enum outside 0..4, stale source page, parser/RX/peer fault, timeout, target not adopted, or any extra changed word. No automatic retry after failure.
+
+**Status:** PREPARED / NOT RUN. Generated YAML does not count as experiment completion.
+
+## Last completed experiment
+
+### EXP379 — COMPLETE / POSITIVE — persistent cooling controls on 0442/count13
+
+EXP379 v2 locally confirmed persistent semantic writes for every exposed cooling field in the experiment:
+- `0442` Cooling Enabled — PROVEN
+- `0443` Desired Cooling Temperature — PROVEN
+- `0445` Cooling Active Above — PROVEN and reversible
+- `0449` Cooling Time — PROVEN
+- `044C` Cooling Room Sensor — PROVEN and reversible
+- `044D` Cooling Room Hysteresis Low — PROVEN, raw/10 °C, reversible
+- `044E` Cooling Room Hysteresis High — PROVEN, raw/10 °C, reversible
+
+Representative exact confirmations from the supplied runtime log include:
+- 0442: `0 -> 1`, `extraDeltaWords=0`
+- 044C: `0 -> 1`, `extraDeltaWords=0`
+- 044D: raw `10 -> 18 -> 10`, `extraDeltaWords=0`
+- 044E: raw `10 -> 17 -> 10`, `extraDeltaWords=0`
+- 0449: `21 -> 20`, `extraDeltaWords=0`
+- 0443: `17 -> 18`, `extraDeltaWords=0`
+- 0445: `25 -> 27 -> 25`, exact one-word republish, `extraDeltaWords=0`
+
+The dynamic guard for 0445 is also locally confirmed: with Heating Stop 22 °C, the minimum accepted UI target is 25 °C. Requests below `Heating Stop + 3 K` were blocked locally with NO_TX and the authoritative value restored.
+
+**Cooling hysteresis UI bounds:** both Low and High are `0.5..5.0 °C`, step `0.1 °C`, raw `5..50`.
+
+## Recent completed experiments
+
+### EXP378 — COMPLETE / POSITIVE — 042E current refresh + unified desired-state queue UI
+
+- W3-only bit3 current selector was locally confirmed for page `042E/count15`.
+- Current-refresh frame observed/used: `0F030C0000000000000008000000067CB7`.
+- Desired selector for 042E: `0F030C0000000800000008000000061B77`.
+- Rapid desired-state queue behavior worked as intended: UI retains newest desired intent while queued/in-flight and returns to controller authority after success/failure.
+- 0433 was also confirmed reversible `5 -> 7 -> 5`.
+
+### EXP377 — COMPLETE / POSITIVE — first semantic write on 042E/count15
+
+- `042F` SWW Mode was changed `1 -> 0` through the full native desired-page flow.
+- Controller republished the exact target with `extraDeltaWords=0`.
+- This locally proves semantic writeability of page 042E and the selector path.
+
+### EXP376 — RUNNING / PARTIAL — broader native-page mapping
+
+Locally established mappings retained from this mapper:
+- `041D` SWW Start Temperature, controlled `48 -> 47`
+- `041E` Warm Water Time, controlled `30 -> 31`
+- `042E` SWW Enabled
+- `042F` SWW Mode
+- `0433` Opstart HT
+- `0434` Verwarmingstijd
+
+Do not promote `0431` or `0432`: they remain **UNKNOWN**. A prior interpretation as Heating START/STOP was explicitly rejected after checking the actual 042E page values.
+
+## Current locally proven writable settings
+
+### 03E8/count14 heating page
+- `03E8` Heating Curve
+- `03E9` Heating Minimum
+- `03EA` Heating Maximum
+- `03EB` Curve Correction +5
+- `03EC` Curve Correction 0
+- `03ED` Curve Correction -5
+- `03EE` Heating Stop
+- `03EF` Reduced Temperature
+- `03F0` Room Factor
+- `03F4` Room Setpoint
+
+Unknown on this page: `03F1`, `03F2`, `03F3`, `03F5`. `03F1` is specifically not the live DHW START mapping on this XTR M.
+
+### 042E/count15 DHW/runtime-service page
+Proven locally writable:
+- `042E` SWW Enabled
+- `042F` SWW Mode
+- `0433` Opstart HT
+- `0434` Verwarmingstijd
+
+`0430` is a **HYPOTHESIS** for Extra Hot Water / Top-up because it is the still-unmapped word adjacent to SWW Enabled/Mode and normally sits at 0 in known pages. It is not yet locally confirmed. `0431` and `0432` remain UNKNOWN.
+
+### 0442/count13 cooling page
+Proven locally writable:
+- `0442` Cooling Enabled
+- `0443` Desired Cooling Temperature
+- `0445` Cooling Active Above
+- `0449` Cooling Time
+- `044C` Cooling Room Sensor
+- `044D` Cooling Room Hysteresis Low
+- `044E` Cooling Room Hysteresis High
+
+Unknown: `0444`, `0446`, `0447`, `0448`, `044A`, `044B`.
+
+### 0546/count20 mode page
+- `0553` Operation Mode: local read-side/panel evidence confirms Auto=1 and Compressor=2.
+- Active semantic write is **not yet proven**; that is EXP380.
+
+## Current protocol model
+
+1. Native settings control is page-based and controller-owned, not arbitrary second-master register writing.
+2. Each semantic write requires a fresh authoritative controller page.
+3. The desired-page selector causes a controller FC03 pull of that exact page.
+4. The emulator returns the complete page with exactly one intended word changed.
+5. Success is only accepted after an exact controller FC16 republish with the target value and `extraDeltaWords=0`.
+6. The same mechanism is now locally proven on pages `03E8`, `042E` and `0442`.
+7. The W2:W3 32-page current/PUSH bitmap is strongly supported by genuine DCM/Eco5 captures. For page 0546, W2 bit0 is the current/PUSH bit; the mirrored W0 bit0 desired/PULL interpretation is accepted from genuine/cross-model evidence for EXP380 but is not yet a local semantic-write result.
+8. Runtime stage 40 and the serialized desired-state queue remain the known-good experimental foundation.
+
+## Important remaining work
+
+Most everyday XTR M parameters are now mapped. Remaining high-value work is:
+- run EXP380 for persistent Operation Mode;
+- confirm or reject `0430` as Extra Hot Water / Top-up;
+- remaining DHW service settings;
+- remaining heating/cooling service settings;
+- calendar;
+- auxiliary heater;
+- shunt groups;
+- pool;
+- optional buffer-tank/accessory settings where relevant.
+
+## Safety constraints
+
+Continue one-target-at-a-time writes from fresh controller pages, exact page/count validation, one-word deltas, exact controller republish verification, bounded UI values, no automatic retries, parser/RX/peer fail-close, and DE LOW on every abort. Do not promote 0430/0431/0432 or untested Operation Mode values beyond their stated evidence level.
+
+---
+
 # 2026-10-01 — EXP374/375 complete; Write Beta v3.0 production baseline
 
 **Authoritative current state:** EXP374 is **COMPLETE / POSITIVE** by explicit user confirmation of the final v4d behavior. EXP375A and EXP375B are **COMPLETE / POSITIVE** by explicit user confirmation. The production-oriented write baseline is now **Write (Beta) v3.0**, derived from the validated EXP374 v4d engine.
