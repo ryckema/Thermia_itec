@@ -1,0 +1,973 @@
+# ==============================================================================
+# THERMIA iTec XTR M - WRITE (BETA) v3.0
+# ==============================================================================
+#
+# PURPOSE
+# - Production-oriented Write (Beta) build derived from the locally validated
+#   EXP374 v4d multi-setting engine.
+# - Preserves the full Thermia monitoring integration and enables guarded native
+#   semantic control of the locally confirmed settings in controller page
+#   0x03E8/count14.
+#
+# LOCALLY CONFIRMED WRITABLE SETTINGS ON THIS XTR M
+# - 0x03E8 Heating Curve
+# - 0x03E9 Heating Minimum
+# - 0x03EA Heating Maximum
+# - 0x03EB Curve Correction +5
+# - 0x03EC Curve Correction 0
+# - 0x03ED Curve Correction -5
+# - 0x03EE Heating Stop
+# - 0x03EF Reduced Temperature
+# - 0x03F0 Room Factor
+# - 0x03F4 Room Setpoint
+#
+# WRITE MODEL
+# - Every semantic transaction starts from a fresh controller-originated
+#   FC16 0x03E8/count14 page.
+# - W3-bit0 requests the current page.
+# - W1-bit0 + W3-bit0 advertises the desired 0x03E8 page.
+# - The controller pulls FC03 0x03E8/count14.
+# - The ESP returns the full fresh page with exactly ONE selected word changed.
+# - Success requires exact controller FC16 republish with the requested selected
+#   word and zero additional changed words.
+#
+# QUEUE / HOME ASSISTANT
+# - One semantic transaction is active at a time.
+# - Per-register dirty-set queue: one pending desired value per supported setting.
+# - Same-register latest value wins; different register requests are preserved.
+# - Every queued item gets a new fresh controller page and a 2 s settle interval.
+# - Configuration controls show effective user intent:
+#     active target > queued target > controller value.
+# - Ordinary read sensors remain controller-authoritative.
+#
+# SAFETY
+# - Writes remain blocked until Configuration is synchronized from an
+#   authoritative controller FC16 0x03E8/count14 page.
+# - Values are bounded per setting.
+# - No unknown write target or broad register write is enabled.
+# - Parser/RX integrity deltas, peer traffic, unexpected protocol shapes,
+#   timeout or republish mismatch fail closed and clear pending writes.
+# - DE is LOW outside explicit guarded transmissions.
+# - Controller-session recovery retains the locally tested guarded path.
+# - The fixed challenge replay is local-XTR evidence only; the genuine
+#   Thermia/Danfoss challenge transform remains unknown.
+#
+# PROMOTION EVIDENCE
+# - EXP370: reusable serialized writes.
+# - EXP373: extended 03E8 settings.
+# - EXP374: autosync, multi-register dirty queue and desired-UI preservation.
+# - EXP375A: 03E9 Heating Minimum locally confirmed writable.
+# - EXP375B: 03F0 Room Factor locally confirmed writable.
+# - 03EB and 03EC were also locally confirmed through the multi-setting queue.
+#
+# STATUS
+# - Production-oriented Write (Beta) v3.0 for the tested Thermia iTec XTR M.
+# - Active write support remains higher risk than the Read-only build.
+# ==============================================================================
+substitutions:
+  device_name: "thermia-itec-xtr-m"
+  friendly_name: "Thermia iTec XTR M"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  on_boot:
+    - priority: -100
+      then:
+        - delay: 1s
+        - lambda: |-
+            // Restore cached settings only after this device has previously
+            // observed a genuine Thermia 0x0F FC10 03E8..03F5 frame.
+            if (id(thermia_settings_cache_valid)) {
+              id(thermia_heating_curve)->publish_state(id(thermia_heating_curve_saved));
+              id(thermia_heating_min)->publish_state(id(thermia_heating_min_saved));
+              id(thermia_heating_max)->publish_state(id(thermia_heating_max_saved));
+              id(thermia_curve_plus5)->publish_state(id(thermia_curve_plus5_saved));
+              id(thermia_curve_zero)->publish_state(id(thermia_curve_zero_saved));
+              id(thermia_curve_minus5)->publish_state(id(thermia_curve_minus5_saved));
+              id(thermia_heating_stop)->publish_state(id(thermia_heating_stop_saved));
+              id(thermia_reduced_temperature)->publish_state(id(thermia_reduced_temperature_saved));
+              id(thermia_room_factor)->publish_state(id(thermia_room_factor_saved));
+              id(thermia_room_setpoint_mirror)->publish_state(id(thermia_room_setpoint_mirror_saved));
+
+              ESP_LOGI(
+                "thermia_persist",
+                "Restored validated settings cache: curve=%.0f min=%.0f max=%.0f corr=[%.0f,%.0f,%.0f] stop=%.0f reduced=%.0f room_factor=%.0f room_setpoint=%.0f",
+                id(thermia_heating_curve_saved),
+                id(thermia_heating_min_saved),
+                id(thermia_heating_max_saved),
+                id(thermia_curve_plus5_saved),
+                id(thermia_curve_zero_saved),
+                id(thermia_curve_minus5_saved),
+                id(thermia_heating_stop_saved),
+                id(thermia_reduced_temperature_saved),
+                id(thermia_room_factor_saved),
+                id(thermia_room_setpoint_mirror_saved)
+              );
+            } else {
+              ESP_LOGI(
+                "thermia_persist",
+                "No validated settings cache yet; waiting for a live 0x0F FC10 03E8..03F5 frame."
+              );
+            }
+    - priority: -200
+      then:
+        - delay: 5s
+        - lambda: |-
+            id(waveshare_rs485_direction).turn_off();
+            const uint32_t now=millis(), last=id(thermia_last_valid_frame_ms);
+            const uint32_t bus_age=last?(now-last):0xFFFFFFFFUL;
+            if (bus_age>2000UL) {
+              id(write_active)=false; id(write_stage)=0; id(thermia_write_active)->publish_state(false);
+              id(thermia_write_status)->publish_state("ARM REFUSED / current bus not healthy");
+              id(thermia_write_stage_text)->publish_state("idle / DE LOW");
+              id(thermia_write_last_event)->publish_state("valid bus frame older than 2 s");
+              ESP_LOGE("thermia_write","\033[31m[WRITE] ===== AUTO_QUALIFY_REFUSED bus_age=%ums TX=0 DE=LOW =====\033[0m",unsigned(bus_age));
+              return;
+            }
+            // Thermia Write: runtime entry is intentionally NOT gated on a hard-coded
+            // 03E8 page image. Page provenance is handled separately by the
+            // refresh-before-write state machine.
+            id(write_active)=true; id(write_stage)=40; id(write_arm_ms)=now; id(write_boot_ms)=0; id(write_tx_ms)=0; id(write_silence_seen)=false; id(write_tx_used)=false; id(write_ack_used)=false; id(write_ack_ms)=0; id(write_03fc_ack_used)=false; id(write_03fc_ack_ms)=0; id(write_0410_ack_used)=false; id(write_0410_ack_ms)=0; id(write_042e_ack_used)=false; id(write_042e_ack_ms)=0; id(write_0442_ack_used)=false; id(write_0442_ack_ms)=0; id(write_0456_ack_used)=false; id(write_0456_ack_ms)=0; id(write_046a_ack_used)=false; id(write_046a_ack_ms)=0; id(write_047e_ack_used)=false; id(write_047e_ack_ms)=0; id(write_0492_ack_used)=false; id(write_0492_ack_ms)=0; id(write_04a6_ack_used)=false; id(write_04a6_ack_ms)=0; id(write_04ba_ack_used)=false; id(write_04ba_ack_ms)=0; id(write_04d8_ack_used)=false; id(write_04d8_ack_ms)=0; id(write_04f6_ack_used)=false; id(write_04f6_ack_ms)=0; id(write_050a_ack_used)=false; id(write_050a_ack_ms)=0; id(write_051e_ack_used)=false; id(write_051e_ack_ms)=0; id(write_0532_ack_used)=false; id(write_0532_ack_ms)=0; id(write_0546_ack_used)=false; id(write_0546_ack_ms)=0; id(write_055a_ack_used)=false; id(write_055a_ack_ms)=0; id(write_057b_ack_used)=false; id(write_057b_ack_ms)=0; id(write_059c_ack_used)=false; id(write_059c_ack_ms)=0; id(write_05bd_ack_used)=false; id(write_05bd_ack_ms)=0; id(write_05de_ack_used)=false; id(write_05de_ack_ms)=0; id(write_05ff_ack_used)=false; id(write_05ff_ack_ms)=0; id(write_0620_ack_used)=false; id(write_0620_ack_ms)=0; id(write_0641_ack_used)=false; id(write_0641_ack_ms)=0; id(write_0662_ack_used)=false; id(write_0662_ack_ms)=0; id(write_0683_ack_used)=false; id(write_0683_ack_ms)=0; id(write_06a4_ack_used)=false; id(write_06a4_ack_ms)=0; id(write_06c5_ack_used)=false; id(write_06c5_ack_ms)=0; id(write_06ea_ack_used)=false; id(write_06ea_ack_ms)=0; id(write_06f1_ack_used)=false; id(write_06f1_ack_ms)=0; id(write_06f4_ack_used)=false; id(write_06f4_ack_ms)=0;
+            id(write_runtime_085f_acked)=0; id(write_runtime_04a6_acked)=0;
+            id(write_resume_armed)=false; id(write_resume_started)=false; id(write_resume_done)=false;
+            id(write_resume_start_ms)=0; id(write_resume_expected_index)=0; id(write_resume_pages_acked)=0;
+            id(write_resume_runtime_interleaves)=0; id(write_pre_resume_04a6_seen)=0;
+            id(write_runtime_enter_ms)=now; id(write_runtime_last_service_ms)=0;
+            id(write_runtime_fc16_ack_count)=0; id(write_runtime_0708_reply_count)=0;
+            id(write_runtime_unknown_fc16_count)=0; id(write_runtime_unknown_fc03_count)=0;
+            id(write_runtime_last_ack_ms)=0; id(write_runtime_last_ack_start)=0; id(write_runtime_last_ack_count)=0;
+            id(write_runtime_self_echo_ack_count)=0; id(write_soak_15m_passed)=false;
+            id(write_resync_baseline)=id(thermia_parser_resync_count); id(write_drop_baseline)=id(thermia_rx_buffer_drop_count);
+            id(write_challenge_count)=0; id(write_post_tx_challenge_count)=0; id(write_fc16_seen)=0; id(write_03e8_seen)=0; id(write_03fc_seen)=0; id(write_0410_seen)=0; id(write_042e_seen)=0; id(write_same_03e8_after_ack)=0; id(write_same_03fc_after_ack)=0; id(write_same_0410_after_ack)=0;
+            id(write_peer_fc17_count)=0; id(write_peer_fc16_ack_count)=0; id(write_self_echo_count)=0; id(write_self_echo_ack_count)=0; id(write_self_echo_03fc_ack_count)=0; id(write_self_echo_0410_ack_count)=0; id(write_first_challenge_crc)=0;
+            id(write_a80e_known)=false; id(write_a80f_known)=false; id(write_a80e)=0; id(write_a80f)=0;
+            id(thermia_write_challenges)->publish_state(0); id(thermia_write_post_tx_challenges)->publish_state(0);
+            id(thermia_write_fc16_seen_sensor)->publish_state(0); id(thermia_write_03e8_seen_sensor)->publish_state(0); id(thermia_write_03fc_seen_sensor)->publish_state(0); id(thermia_write_0410_seen_sensor)->publish_state(0); id(thermia_write_042e_seen_sensor)->publish_state(0); id(thermia_write_same_03e8_after_ack_sensor)->publish_state(0); id(thermia_write_same_03fc_after_ack_sensor)->publish_state(0); id(thermia_write_same_0410_after_ack_sensor)->publish_state(0);
+            id(thermia_write_peer_fc17)->publish_state(0); id(thermia_write_peer_fc16_ack)->publish_state(0);
+            id(thermia_write_active)->publish_state(true); id(thermia_write_tx_used_sensor)->publish_state(false); id(thermia_write_ack_used_sensor)->publish_state(false); id(thermia_write_03fc_ack_used_sensor)->publish_state(false); id(thermia_write_0410_ack_used_sensor)->publish_state(false); id(thermia_write_042e_ack_used_sensor)->publish_state(false); id(thermia_write_0442_ack_used_sensor)->publish_state(false); id(thermia_write_0456_ack_used_sensor)->publish_state(false); id(thermia_write_046a_ack_used_sensor)->publish_state(false); id(thermia_write_047e_ack_used_sensor)->publish_state(false); id(thermia_write_0492_ack_used_sensor)->publish_state(false); id(thermia_write_04a6_ack_used_sensor)->publish_state(false); id(thermia_write_04ba_ack_used_sensor)->publish_state(false); id(thermia_write_04d8_ack_used_sensor)->publish_state(false); id(thermia_write_04f6_ack_used_sensor)->publish_state(false); id(thermia_write_050a_ack_used_sensor)->publish_state(false); id(thermia_write_051e_ack_used_sensor)->publish_state(false); id(thermia_write_0532_ack_used_sensor)->publish_state(false); id(thermia_write_0546_ack_used_sensor)->publish_state(false); id(thermia_write_055a_ack_used_sensor)->publish_state(false); id(thermia_write_057b_ack_used_sensor)->publish_state(false); id(thermia_write_059c_ack_used_sensor)->publish_state(false); id(thermia_write_05bd_ack_used_sensor)->publish_state(false); id(thermia_write_05de_ack_used_sensor)->publish_state(false); id(thermia_write_05ff_ack_used_sensor)->publish_state(false); id(thermia_write_0620_ack_used_sensor)->publish_state(false); id(thermia_write_0641_ack_used_sensor)->publish_state(false); id(thermia_write_0662_ack_used_sensor)->publish_state(false); id(thermia_write_0683_ack_used_sensor)->publish_state(false); id(thermia_write_06a4_ack_used_sensor)->publish_state(false); id(thermia_write_06c5_ack_used_sensor)->publish_state(false); id(thermia_write_06ea_ack_used_sensor)->publish_state(false); id(thermia_write_06f1_ack_used_sensor)->publish_state(false); id(thermia_write_06f4_ack_used_sensor)->publish_state(false);
+            id(thermia_write_runtime_active_sensor)->publish_state(false);
+            id(thermia_write_soak_15m_passed_sensor)->publish_state(false);
+            id(thermia_write_runtime_085f_acked_sensor)->publish_state(0);
+            id(thermia_write_runtime_04a6_acked_sensor)->publish_state(0);
+            id(thermia_write_runtime_fc16_ack_sensor)->publish_state(0);
+            id(thermia_write_runtime_0708_reply_sensor)->publish_state(0);
+            id(thermia_write_runtime_unknown_fc16_sensor)->publish_state(0);
+            id(thermia_write_runtime_unknown_fc03_sensor)->publish_state(0);
+            id(thermia_write_runtime_self_echo_sensor)->publish_state(0);
+            // Thermia Write: no write-eligible page is seeded at boot.
+            // Runtime emulation is independent from semantic page provenance.
+            id(write_page_cache_valid)=false;
+            id(write_page_cache_ms)=0;
+            id(write_page_w00)=0; id(write_page_w01)=0; id(write_page_w02)=0; id(write_page_w03)=0;
+            id(write_page_w04)=0; id(write_page_w05)=0; id(write_page_w06)=0; id(write_page_w07)=0;
+            id(write_page_w08)=0; id(write_page_w09)=0; id(write_page_w10)=0; id(write_page_w11)=0;
+            id(write_page_w12)=0; id(write_page_w13)=0;
+            id(write_write_state)=0; id(write_original_value)=0; id(write_target_value)=0; id(write_requested_target)=0; id(write_write_word_index)=0; id(write_write_register)=0x03E8;
+            id(write_request_word_index)=0; id(write_request_register)=0x03E8; id(write_request_target)=0; id(write_request_generation)=0;
+            id(write_pending_valid)=false; id(write_pending_word_index)=0; id(write_pending_register)=0x03E8; id(write_pending_target)=0; id(write_pending_generation)=0;
+            id(write_queue_not_before_ms)=0; id(write_last_confirm_ms)=0;
+            id(write_write_arm_ms)=0; id(write_selector_ms)=0; id(write_desired_ms)=0;
+            id(write_semantic_response_count)=0; id(write_confirmed_write_count)=0; id(write_refresh_request_count)=0; id(write_refresh_confirmed_count)=0; id(write_refresh_request_ms)=0;
+            id(write_extra_delta_words)=0;
+            id(write_hot_rejoin_armed)=false; id(write_hot_rejoin_sent)=false;
+            id(write_hot_rejoin_in_progress)=false; id(write_hot_rejoin_export_complete)=false;
+            id(write_hot_rejoin_wait_runtime)=false; id(write_hot_rejoin_tx_ms)=0;
+            id(write_hot_rejoin_complete_ms)=0; id(write_hot_rejoin_challenge_baseline)=0;
+            id(write_boot_observation_15s_noted)=false; id(write_boot_observation_complete)=false;
+            id(write_resume_armed)=false; id(write_resume_started)=false; id(write_resume_done)=false; id(write_resume_start_ms)=0;
+            id(thermia_write_semantic_response_count_sensor)->publish_state(0);
+            id(thermia_write_write_confirmed_sensor)->publish_state(false);
+            id(thermia_write_confirmed_write_count_sensor)->publish_state(0);
+            id(thermia_write_refresh_request_count_sensor)->publish_state(0);
+            id(thermia_write_refresh_confirmed_count_sensor)->publish_state(0);
+            id(thermia_write_status)->publish_state("RUNNING / Thermia Write fresh-ESP observation / wait runtime qualification then bounded target action");
+            id(thermia_write_stage_text)->publish_state("stage 40 / fresh-boot session-resume observation");
+            id(thermia_write_last_event)->publish_state("Thermia Write: no broad bitmap/R1; bounded Heating Curve target 22..56 under Configuration after runtime qualification");
+            ESP_LOGE("thermia_write","\033[31m[WRITE] ===== Thermia Write_READY REUSABLE_SERIALIZED_SLIDERS ALWAYS_FRESH=1 THERMIA_STAYS_ON NO_BROAD_BITMAP=1 NO_R1=1 pageCache=INVALID runtimeWhitelist=exact idle0708=W5_0006 DE=LOW =====\033[0m");
+
+esp32:
+  variant: esp32s3
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+
+# ESP32-S3R8 provides 8 MB octal PSRAM. Explicit PSRAM configuration is
+# required by current ESPHome releases for ESP32-S3.
+psram:
+  mode: octal
+  speed: 80MHz
+
+# Batch preference writes. The persisted Thermia settings change rarely.
+preferences:
+  flash_write_interval: 1min
+
+api:
+  encryption:
+    key: !secret thermia_api_encryption_key
+  # Do not reboot merely because Home Assistant/API is temporarily unreachable.
+  reboot_timeout: 0s
+
+ota:
+  - platform: esphome
+    password: !secret thermia_ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # This controller is continuously powered: prefer reliability over Wi-Fi power saving.
+  power_save_mode: none
+
+  # Keep a network-stack recovery watchdog, but make it much less aggressive
+  # than the ESPHome default. No access-point BSSID is hard-coded.
+  reboot_timeout: 30min
+
+  ap:
+    ssid: "Thermia Fallback Hotspot"
+    password: !secret thermia_fallback_password
+
+captive_portal:
+
+
+# Publish reset/heap/loop diagnostics so Wi-Fi loss can be separated from
+# brownouts, watchdog resets, API loss and parser/resource problems.
+debug:
+  update_interval: 30s
+
+
+# =============================================================================
+# LOGGING
+# =============================================================================
+
+logger:
+  # Production logging stays quiet; Thermia Write emits only write lifecycle events.
+  level: WARN
+  baud_rate: 0
+  logs:
+    thermia: WARN
+    thermia_persist: WARN
+    thermia_write: WARN
+
+
+
+# =============================================================================
+# THERMIA UART
+#
+# Confirmed bus settings: 9600 baud, 8E1, Modbus RTU CRC16.
+#
+# Waveshare ESP32-S3-RS485-CAN:
+# - GPIO18 = RX
+# - GPIO17 = TX (Thermia Write transmits only guarded proven frames)
+# - GPIO21 = DE/direction; LOW except during a guarded write TX frame.
+#
+# EXP322 is strict passive-only; no experimental response is transmitted.
+# No semantic reverse-page response is permitted in this build.
+# =============================================================================
+
+# =============================================================================
+# WAVESHARE RS485 DIRECTION
+# =============================================================================
+
+# SP3485 DE and /RE are controlled by GPIO21 on this board.
+# ALWAYS_OFF => GPIO21 LOW => receiver enabled, driver disabled at boot.
+# Thermia Write raises DE only for the guarded proven response frames.
+# This switch is internal and is not exposed to Home Assistant.
+switch:
+  - platform: gpio
+    id: waveshare_rs485_direction
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin:
+      number: GPIO21
+      inverted: false
+
+
+# =============================================================================
+# BUS HEALTH
+# =============================================================================
+
+globals:
+  - id: thermia_last_valid_frame_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  # Runtime-only parser / freshness diagnostics. These are intentionally
+  # not persisted; they describe the current ESP boot only.
+  - id: thermia_valid_frame_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+
+  # ==========================================================================
+  # Thermia Write - fresh-reboot 071C/0730 one-shot R1 re-approval
+  # ==========================================================================
+  - id: write_active
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_stage
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_arm_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_boot_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_tx_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_silence_seen
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_recovery_in_progress
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_recovery_attempted
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_recovery_success_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_tx_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_03fc_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_03fc_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_0410_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_0410_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_042e_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_042e_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_0442_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_0442_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_0456_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_0456_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_046a_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_046a_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_047e_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_047e_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_0492_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_0492_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_04a6_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_04a6_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_04ba_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_04ba_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_04d8_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_04d8_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_04f6_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_04f6_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_050a_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_050a_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_051e_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_051e_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_0532_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_0532_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_0546_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_0546_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_055a_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_055a_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_057b_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_057b_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_059c_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_059c_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_05bd_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_05bd_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_05de_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_05de_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_05ff_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_05ff_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_0620_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_0620_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_0641_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_0641_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_0662_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_0662_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_0683_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_0683_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_06a4_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_06a4_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_06c5_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_06c5_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_06ea_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_06ea_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_06f1_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_06f1_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_06f4_ack_used
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_06f4_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_runtime_085f_acked
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_runtime_04a6_acked
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_runtime_enter_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_runtime_last_service_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_runtime_fc16_ack_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_runtime_0708_reply_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_runtime_unknown_fc16_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_runtime_unknown_fc03_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_runtime_last_ack_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_runtime_last_ack_start
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_runtime_last_ack_count
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_runtime_self_echo_ack_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_soak_15m_passed
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_042e_seen
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_same_0410_after_ack
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_self_echo_0410_ack_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_0410_seen
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_same_03fc_after_ack
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_self_echo_03fc_ack_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_03fc_seen
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_same_03e8_after_ack
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_self_echo_ack_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_resync_baseline
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_drop_baseline
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_challenge_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_post_tx_challenge_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_fc16_seen
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_03e8_seen
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_peer_fc17_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_peer_fc16_ack_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_self_echo_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_first_challenge_crc
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_a80e_known
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_a80f_known
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_a80e
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_a80f
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+
+  # ==========================================================================
+  # Thermia Write - guarded native desired-page transaction state
+  # ==========================================================================
+  - id: write_page_cache_valid
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  # True only after an authoritative controller-originated FC16 03E8/count14
+  # page has been accepted and published to every Thermia Write Configuration slider.
+  # Unlike page_cache_valid, this remains true while a transaction deliberately
+  # invalidates the page cache to force a fresh-page acquisition.
+  - id: write_config_synced
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_page_cache_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w00
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w01
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w02
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w03
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w04
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w05
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w06
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w07
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w08
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w09
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w10
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w11
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w12
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_page_w13
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  # 0 idle before first write; 1 fresh-cache write queued/wait 0708;
+  # 2 semantic selector sent/wait FC03 03E8;
+  # 3 desired page sent/wait exact FC16 03E8 republish;
+  # 4 last write confirmed / one-shot complete;
+  # 5 stale/missing-cache refresh queued/wait 0708;
+  # 6 refresh-only W3 bit0 sent/wait controller FC16 03E8;
+  # 7 semantic control disabled after refresh-path failure; runtime-only.
+  - id: write_write_state
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_original_value
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_target_value
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_requested_target
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  # Selected word inside 03E8/count14:
+  # 0=03E8 Curve, 1=03E9 Min, 2=03EA Max, 3=03EB Corr+5, 4=03EC Corr0,
+  # 5=03ED Corr-5, 6=03EE Heating Stop, 7=03EF Reduced Temp, 8=03F0 Room Factor, 12=03F4 Room Setpoint.
+  - id: write_write_word_index
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_write_register
+    type: uint16_t
+    restore_value: no
+    initial_value: '0x03E8'
+  - id: write_write_arm_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_selector_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_desired_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_refresh_request_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_refresh_request_count
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_refresh_confirmed_count
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_semantic_response_count
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_confirmed_write_count
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_extra_delta_words
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+
+  # Thermia Write request staging + one-slot last-intent-wins queue.
+  # request_* is UI/debounce staging and never mutates an active transaction.
+  - id: write_request_word_index
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_request_register
+    type: uint16_t
+    restore_value: no
+    initial_value: '0x03E8'
+  - id: write_request_target
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_request_generation
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_pending_valid
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: write_pending_word_index
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_pending_register
+    type: uint16_t
+    restore_value: no
+    initial_value: '0x03E8'
+  - id: write_pending_target
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_pending_generation
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  # Thermia Write v4 per-register dirty-set queue.
+  # Bit numbers are the 03E8 page word indexes.
+  - id: write_dirty_mask
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_dirty_w00
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_dirty_w01
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_dirty_w02
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_dirty_w03
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_dirty_w04
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_dirty_w05
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_dirty_w06
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_dirty_w07
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
+  - id: write_dirty_w08
+    type: uint16_t
+    restore_value: no
+    initial_value: '0'
