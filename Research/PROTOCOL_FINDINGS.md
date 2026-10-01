@@ -1,3 +1,32 @@
+# 2026-10-01 — EXP357 durable findings
+
+## PROVEN / locally confirmed — reusable W3-bit0 stale-cache refresh
+
+The `0708/count6` response:
+
+`W0..W5 = 0000,0000,0000,0001,0000,0006`
+
+can be reused later in the same ESP boot to request another fresh controller-originated `FC16 03E8/count14` page.
+
+EXP357 directly observed:
+- refresh #1 confirmed in ~120 ms;
+- refresh #2 confirmed in ~119 ms later in the same ESP boot.
+
+Therefore the earlier one-refresh-per-boot limit was experimental only and is **DISPROVEN / SUPERSEDED** as a required safety constraint for this XTR M.
+
+## PROVEN / locally confirmed — reusable refresh can safely feed the semantic write path
+
+After refresh #2, the fresh controller `03E8` page became the write source and a 22 -> 24 °C Room Setpoint change completed through:
+`W1-bit0 selector -> controller FC03 03E8/count14 -> one-word 03F4 delta -> exact controller FC16 republish`.
+
+The confirming republish had `extraDeltaWords=0`.
+
+## Production consequence
+
+Write Beta v2 may perform stale-cache refresh whenever the `03E8` cache is missing or older than 300 s, provided no other semantic transaction is active. Each refresh still requires a new controller-originated `FC16 03E8/count14` before any semantic page response is allowed.
+
+---
+
 # 2026-10-01 — offline re-analysis of genuine Online/DCM and Eco5 gateway captures
 
 No new live experiment was performed. These findings come from re-analysis of existing raw captures and are kept separate from the locally active-tested XTR M results.
