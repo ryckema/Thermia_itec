@@ -15,7 +15,12 @@ Unlike the [Read-only](../Read-only/) builds, this firmware configures RS485 TX 
 
 Write Beta v2.1 is a **hardening revision** of v2. It adds no new writable register/page and no new protocol payload. It tightens runtime ACK eligibility and runtime qualification before the next regression test.
 
-The previous `thermia_itec_xtr_m_waveshare_write_beta_v2.yaml` is retained as the pre-hardening baseline. `thermia_itec_xtr_m_waveshare_write_beta_v1.yaml` remains the older pre-recovery baseline.
+Older write builds are archived under `old versions/`:
+
+- `old versions/thermia_itec_xtr_m_waveshare_write_beta_v2.yaml` — pre-hardening v2 baseline;
+- `old versions/thermia_itec_xtr_m_waveshare_write_beta_v1.yaml` — older pre-recovery baseline.
+
+Only the current v2.1 build remains at the top level of the Write (Beta) folder.
 
 ## Current write scope
 
