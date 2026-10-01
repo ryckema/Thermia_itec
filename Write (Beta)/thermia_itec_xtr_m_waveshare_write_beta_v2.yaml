@@ -5441,7 +5441,9 @@ interval:
       - lambda: |-
           if (!id(exp352_active)) return;
           const uint32_t now=millis(), last=id(thermia_last_valid_frame_ms);
-          if (id(exp352_stage)==40 && id(exp352_semantic_response_count)==0 && id(exp352_write_state)==0 &&
+          if (id(exp352_stage)==40 &&
+              (id(exp352_recovery_in_progress) || id(exp352_semantic_response_count)==0) &&
+              id(exp352_write_state)==0 &&
               (now-id(exp352_arm_ms))>=15000UL &&
               (id(exp352_runtime_fc16_ack_count)<1 || id(exp352_runtime_0708_reply_count)<1)) {
             id(waveshare_rs485_direction).turn_off(); id(exp352_active)=false; id(exp352_stage)=99;
