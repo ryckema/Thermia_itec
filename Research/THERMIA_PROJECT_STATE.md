@@ -1,3 +1,112 @@
+# 2026-10-01 — EXP374 PREPARED / NOT RUN; EXP373 RUNNING / PARTIAL
+
+**Authoritative current state:** EXP374 is **PREPARED / NOT RUN**. EXP373 is **RUNNING / PARTIAL** from the supplied local XTR M log and contains multiple independently confirmed semantic-write sub-results. EXP371 and EXP372 are **SUPERSEDED / NOT RUN** as distinct experiments. The last fully completed numbered experiment is EXP370 (**COMPLETE / POSITIVE**).
+
+## Current experiment
+
+### EXP374 — PREPARED / NOT RUN — queued serialized write safety layer
+
+**Baseline:** EXP370 established a reusable serialized semantic-write engine for the native `03E8/count14` settings page. EXP373 then confirmed additional writable settings while keeping the same fresh-page -> selector -> FC03 desired-page -> exact FC16 republish mechanism.
+
+**Hypothesis:** rapid Home Assistant slider changes can be made safer by serializing user intent in a bounded one-slot pending queue without changing any proven Thermia wire frame, register mapping, selector or ACK behavior.
+
+**Exact controlled change from EXP373:** scheduling/safety logic only:
+- one active semantic transaction at a time;
+- at most one pending user request;
+- last user intent wins in the pending slot;
+- no TX when merely storing/replacing a pending request;
+- after exact controller republish, enforce a settle delay before dispatching a queued request;
+- every queued request must obtain a fresh controller-originated `03E8/count14` page before semantic TX;
+- clear pending state on negative/inconclusive result, parser/RX fault, peer traffic, timeout or manual abort;
+- no automatic retry after a failed semantic write.
+
+No new write address or payload is introduced. First planned queue test uses only locally confirmed targets (Heating Stop and Reduced Temperature).
+
+**Positive criterion:** first write closes with exact controller republish and `extraDeltaWords=0`; queued request then starts only after the safety delay, obtains a new fresh page, and independently closes with exact republish. Parser resync/RX drop/peer counters remain clean and DE returns LOW.
+
+**Negative/abort:** any overlap between semantic transactions, queued TX before the first transaction closes, stale-page reuse, wrong page/count/order, extra changed words, peer responder/ACK, parser resync/RX drop delta, timeout or manual abort.
+
+**Status:** PREPARED / NOT RUN. Do not advance on the basis of generated YAML alone.
+
+## Latest experimental evidence
+
+### EXP373 — RUNNING / PARTIAL — extended heating settings sliders
+
+EXP373 reused the established serialized `03E8/count14` semantic-write path and added settings in `03EB..03F0`. The supplied log proves the following local XTR M writes:
+
+- `03ED` Heating Curve Correction -5: `0 -> -5 -> 0`, represented on the wire as signed int16 (`-5 = 0xFFFB`), exact controller republish, `extraDeltaWords=0`.
+- `03EE` Heating Stop: `20 -> 22`, later `22 -> 18 -> 22`, each exact controller republish with `extraDeltaWords=0`.
+- `03EF` Reduced Temperature: `20 -> 22 -> 20`, both directions exact controller republish with `extraDeltaWords=0`.
+- a no-op `03EF` request where current already equaled target correctly returned READY without semantic page TX.
+- in the inspected run, no abort was observed and parser resync/RX drop/challenge/peer-FC17/peer-FC16-ACK counters remained zero.
+
+**Current classification:** the experiment as a whole remains RUNNING / PARTIAL because the complete added target set was not systematically closed in the supplied evidence. The confirmed sub-results above are locally proven.
+
+### EXP370 — COMPLETE / POSITIVE — reusable multi-setting semantic writes
+
+Final conversation-21 interpretation:
+- Heating Curve reusable writes included `35 -> 40 -> 30`, exact one-word controller republish, `extraDeltaWords=0`.
+- Heating Maximum writes included `40 -> 41 -> 58 -> 40`, exact controller republish, `extraDeltaWords=0`.
+- Room Setpoint `20 -> 22` was also confirmed in the reusable engine.
+- Heating Minimum was not semantically tested at the attempted `40` value because a local implementation guard required Minimum < Maximum while Maximum was 40. That guard is not Thermia protocol evidence.
+
+This is the last fully completed numbered experiment before the EXP371/372 superseded preparations and the partial EXP373 run.
+
+## Conversation-21 reconciliation (EXP358–EXP372)
+
+The tests from conversation 21 are retained in the experiment log. Key status chain:
+
+- EXP358 — COMPLETE / POSITIVE: Write Beta v2.1 regression; retained runtime qualification, stale-page refresh and exact Room Setpoint write survived hardening; bus counters clean. Conditional fail-closed branches not all exercised.
+- EXP359 — COMPLETE / POSITIVE: controller cold-reboot recovery repeated successfully after >5 s silence, full ordered initial sync through `06F4/count19`, stage-40 requalification, clean runtime.
+- EXP360 — COMPLETE / INCONCLUSIVE: broad `0708` bitmap `7FFF/FFFF/0000/0006`; intended discriminator not cleanly resolved.
+- EXP361 — COMPLETE / NEGATIVE: expected `0708` event did not occur.
+- EXP362 — COMPLETE / INCONCLUSIVE: intended bitmap was never transmitted.
+- EXP363 — COMPLETE / NEGATIVE for the specific `04A6 -> 0708` hypothesis; however, ACKing exact `04A6/count13` resumed the interleaved export sequence.
+- EXP364 — COMPLETE / INCONCLUSIVE: no `04A6` discriminator occurred; a fresh-boot/hot-rejoin-style runtime without new R1/bitmap remained stable for >5.5 min, but native hot-rejoin semantics were not proven.
+- EXP365 — COMPLETE / POSITIVE: Heating Curve `30 -> 31`, exact republish, one-word delta.
+- EXP366 — COMPLETE / POSITIVE: Heating Curve `31 -> 30`, exact inverse republish.
+- EXP367 — COMPLETE / POSITIVE: Heating Curve `30 -> 35`; one-shot guard blocked a second semantic write.
+- EXP368 — COMPLETE / INCONCLUSIVE: Curve `35 -> 32` itself succeeded, but a verifier-latch bug allowed a later Apply to overwrite the selected register/word before verification.
+- EXP369 — COMPLETE / POSITIVE for the latch-fix objective: Curve `32 -> 35` confirmed; a later Room Setpoint Apply was refused before it could overwrite the active selection. One-shot behavior still prevented a second semantic transaction.
+- EXP370 — COMPLETE / POSITIVE: one-shot restriction removed for the proven serialized engine; reusable Curve, Heating Maximum and Room Setpoint writes confirmed.
+- EXP371 — SUPERSEDED / NOT RUN as a distinct experiment. Its planned unrestricted Min/Max test was absorbed into the later audited build; Maximum results discussed at that point belong to EXP370.
+- EXP372 — SUPERSEDED / NOT RUN. Its added `03EB..03F0` slider design was replaced by EXP373 before a distinct run.
+
+## Current protocol model
+
+1. The controller-to-DCM configuration export and DCM desired-page path are stateful and page-based rather than arbitrary direct register writes.
+2. A semantic write uses a fresh controller-originated `03E8/count14` page as provenance.
+3. The desired-page selector causes the controller FC03 pull; the emulator returns the full page with exactly one intended word changed.
+4. Success requires the controller to republish `FC16 03E8/count14` with exactly the requested word changed and no extra deltas.
+5. This mechanism is reusable within a healthy stage-40 runtime; it is no longer limited to Room Setpoint or to a single semantic write.
+6. Controller cold-reboot recovery and retained-runtime qualification remain separately guarded lifecycle paths.
+7. Queueing/scheduling safety is not yet proven; that is the sole objective of EXP374.
+
+## Locally proven writable settings in the 03E8 page
+
+- `03E8` Heating Curve — PROVEN writable.
+- `03EA` Heating Maximum — PROVEN writable.
+- `03ED` Heating Curve Correction -5 — PROVEN writable, signed int16.
+- `03EE` Heating Stop — PROVEN writable.
+- `03EF` Reduced Temperature — PROVEN writable.
+- `03F4` Room Setpoint mirror/desired value — PROVEN writable through the native desired-page flow.
+
+Read-side mappings for `03E9`, `03EB`, `03EC`, `03F0` remain useful, but writeability is not promoted here without a clean local confirmation.
+
+## Important unknowns
+
+- `03E9` Heating Minimum writeability is still unproven; the only recent attempt was blocked locally before semantic TX.
+- `03EB` Curve Correction +5, `03EC` Curve Correction 0 and `03F0` Room Factor are not yet locally write-confirmed in the supplied EXP373 evidence.
+- Native hot-rejoin/rejoin bitmap behavior remains incompletely understood; EXP360–364 did not prove a general no-R1 shortcut.
+- The native challenge-response transform remains unknown; the fixed R1 is still only a locally proven replay for this XTR M/context.
+- Queue behavior under rapid UI changes remains unproven until EXP374 is run.
+
+## Safety constraints
+
+Continue to use fresh full-page provenance, one-word semantic deltas, exact republish verification, one active transaction, DE-low fail-closed behavior, bounded values, clean parser/RX/peer counters and explicit abort handling. Do not infer Thermia-level ordering constraints such as Minimum < Maximum from a local UI/software guard unless the controller itself demonstrates them.
+
+---
+
 # 2026-10-01 — Write Beta v2.1 hardened; EXP358 PREPARED / NOT RUN
 
 **Authoritative current state:** EXP357 remains the last completed experiment and is **COMPLETE / POSITIVE**. Write Beta v2.1 has been prepared from the v2 production code audit but has **not yet been live-regression-tested**. EXP358 is the next experiment and is **PREPARED / NOT RUN**.
