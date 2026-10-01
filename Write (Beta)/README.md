@@ -32,7 +32,46 @@ These ranges are implementation safety bounds for the tested installation, not u
 
 ## Home Assistant behavior
 
-The write controls are Configuration entities. Values are automatically synchronized from an authoritative controller `FC16 03E8/count14` page before writes are enabled.
+The write controls are Configuration entities. Values are synchronized from authoritative controller pages before writes are enabled.
+
+### Home Assistant Configuration entities
+
+The exact Home Assistant `entity_id` can be renamed by Home Assistant, so this table uses the ESPHome entity type and display name.
+
+#### Write Beta v3.0 — current production-oriented beta
+
+| Type | Display name | Register |
+|---|---|---:|
+| number | Thermia Write Heating Curve | `0x03E8` |
+| number | Thermia Write Heating Minimum | `0x03E9` |
+| number | Thermia Write Heating Maximum | `0x03EA` |
+| number | Thermia Write Curve Correction +5 | `0x03EB` |
+| number | Thermia Write Curve Correction 0 | `0x03EC` |
+| number | Thermia Write Curve Correction -5 | `0x03ED` |
+| number | Thermia Write Heating Stop | `0x03EE` |
+| number | Thermia Write Reduced Temperature | `0x03EF` |
+| number | Thermia Write Room Factor | `0x03F0` |
+| number | Thermia Write Room Setpoint | `0x03F4` |
+
+#### Research controls — locally tested after Write Beta v3.0
+
+These names currently exist in the EXP378/EXP379 research YAML and are **not yet included in the production Write Beta v3.0 file**.
+
+| Type | Display name | Register | Current local evidence |
+|---|---|---:|---|
+| switch | EXP378 SWW Enabled | `0x042E` | confirmed persistent write |
+| select | EXP378 SWW Mode | `0x042F` | confirmed Eco ↔ Comfort write; Vacation Eco mapping is strongly supported but not yet write-proven |
+| number | EXP378 Opstart HT | `0x0433` | confirmed persistent write; current UI is a restricted whole-minute view |
+| number | EXP378 Verwarmingstijd | `0x0434` | confirmed persistent write |
+| switch | EXP379 Cooling Enabled | `0x0442` | confirmed persistent write |
+| number | EXP379 Desired Cooling Temperature | `0x0443` | confirmed persistent write |
+| number | EXP379 Cooling Active Above | `0x0445` | mapped; current guard enforces `>= max(10 °C, Heating Stop + 3 K)`; semantic write still needs a valid-above-minimum confirmation |
+| number | EXP379 Cooling Time | `0x0449` | confirmed persistent write |
+| switch | EXP379 Cooling Room Sensor | `0x044C` | confirmed persistent write |
+| number | EXP379 Cooling Room Hysteresis Low | `0x044D` | mapped; UI uses 0.1 °C steps; semantic write not yet separately confirmed |
+| number | EXP379 Cooling Room Hysteresis High | `0x044E` | mapped; UI uses 0.1 °C steps; semantic write not yet separately confirmed |
+
+The persistent controls use the same desired-state UI convention: the user-selected new value is shown immediately and remains visible while queued or while a semantic transaction is in progress. A successful controller republish makes that value authoritative; a failed transaction is designed to roll the control back to the last confirmed controller value.
 
 Rapid changes are serialized by a per-register dirty-set queue:
 - one semantic transaction is active at a time;
@@ -41,7 +80,7 @@ Rapid changes are serialized by a per-register dirty-set queue:
 - every queued register obtains a new fresh controller page;
 - a 2 s settle interval is retained between confirmed writes.
 
-Configuration controls show the effective requested end state while a queue is pending. Ordinary read sensors continue to show actual controller state, so the controller may visibly catch up over several seconds.
+Ordinary read sensors continue to show actual controller state, so the controller may visibly catch up over several seconds.
 
 ## Proven local write path
 
