@@ -1,3 +1,43 @@
+# EXP358 — PREPARED / NOT RUN — Write Beta v2.1 production regression
+
+**Date:** 2026-10-01  
+**Status:** PREPARED / NOT RUN
+
+## PREPARED
+
+**Baseline:** EXP357 COMPLETE / POSITIVE for reusable stale-cache refresh + confirmed semantic write; EXP355 COMPLETE / POSITIVE for controller cold-reboot recovery.
+
+**Hypothesis:** the v2.1 production hardening preserves the already-proven retained runtime, reusable refresh and `03F4` write path while removing unsupported/permissive runtime ACK behavior.
+
+**Exact controlled change from the previous production beta:**
+- runtime `04A6/count13` becomes capture-only / NO ACK;
+- runtime `0834/count18` is never ACKed and fails closed;
+- runtime `085F/count5` is ACKed only for the two locally proven payloads: all-zero or third word/register `0861=0x0800`;
+- runtime qualification uses one explicit latch, set only after clean locally proven FC16 service plus exact `0708/count6`;
+- **Runtime Active** follows that latch;
+- write/recovery arming requires the qualified latch;
+- no new register/page/bitmap/R1/ACK payload is introduced.
+
+**Transmitted/ACKed frames/registers:** unchanged from the already proven production paths. The semantic target remains page `03E8/count14`, register `03F4`, one controlled integer-degree delta, with W3-bit0 refresh and W1-bit0 desired selector as already proven.
+
+**Positive criteria:**
+- retained stage 40 qualifies with clean counters;
+- runtime `04A6`, if observed, remains NO_TX while runtime continues;
+- no TX is sent to `0834` or unknown `085F` payloads;
+- one stale-cache refresh returns fresh controller `FC16 03E8/count14`;
+- one `03F4` semantic write completes with exact controller republish and `extraDeltaWords=0`;
+- DE returns low after every transmission; parser resync/RX drops/peer responder remain zero.
+
+**Negative criteria:** regression of retained qualification, refresh, selector/pull or exact republish; any ACK to runtime `04A6` or `0834`; or ACKing an unknown `085F` payload.
+
+**Abort criteria:** parser/RX integrity delta, peer FC17/FC16 responder, unexpected runtime FC03/FC16 outside explicit handlers, semantic sequence mismatch, or DE not returning low.
+
+**Recovery procedure:** do not force additional semantic writes after fail-close. Leave the bus passive/DE low and restart or roll back to the previous known-good beta/read-only build if required.
+
+**RESULT:** not run. Do not infer success from YAML generation or GitHub update.
+
+---
+
 # EXP357 — COMPLETE / POSITIVE — reusable stale-cache refresh + confirmed write
 
 **Date:** 2026-10-01  
