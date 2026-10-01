@@ -1,5 +1,92 @@
 # THERMIA EXPERIMENT LOG
 
+## EXP380 — Operation Mode 0553 on 0546/count20 — PREPARED / NOT RUN
+
+**Status:** PREPARED / NOT RUN.
+
+**Baseline:** EXP379 v2 persistent cooling control architecture and the EXP378 unified desired-state queue/UI.
+
+**Hypothesis:** the proven native full-page desired-state write mechanism can be extended to `0546/count20` and used to change only `0553` / word 13.
+
+**Accepted enum for the planned active test:** 0=Uit, 1=Auto, 2=Compressor, 3=Bijverwarmer, 4=Warmwater. Local XTR panel evidence confirms 1 and 2; 0/3/4 are accepted genuine/cross-model working assumptions by explicit user instruction.
+
+**Planned selector model:** current/PUSH uses W2 bit0 for page 0546; desired/PULL mirrors the high-half page bit in W0 while retaining W2 current context. This is based on the genuine 32-page bitmap reduction and is not yet a local semantic-write result.
+
+**Controlled change:** add only one persistent Configuration `select` for Operation Mode. Preserve existing production/heating/DHW/cooling behavior and the queue/UI semantics.
+
+**Positive criterion:** fresh 0546 source page, controller FC03 pull, one-word desired page at word 13, controller FC16 republish with target and `extraDeltaWords=0`.
+
+**Negative/abort:** stale/wrong page, enum outside 0..4, parser/RX/peer fault, timeout, no adoption or any extra changed word. No retry.
+
+## EXP379 — persistent cooling controls — COMPLETE / POSITIVE
+
+**Status:** COMPLETE / POSITIVE from supplied local XTR M runtime log.
+
+**Baseline:** EXP378 current-refresh + desired-state queue architecture.
+
+**Hypothesis:** mapped fields in native `0442/count13` can be exposed as persistent HA controls and written with the same fresh-page -> desired selector -> controller FC03 -> one-word desired page -> exact FC16 republish flow.
+
+**Observed / locally confirmed:**
+- `0442` Cooling Enabled: `0 -> 1`, exact republish, `extraDeltaWords=0`.
+- `0443` Desired Cooling Temperature: `17 -> 18`, exact republish, `extraDeltaWords=0`.
+- `0445` Cooling Active Above: `25 -> 27 -> 25`, reversible, exact republish, `extraDeltaWords=0`.
+- `0449` Cooling Time: `21 -> 20`, exact republish.
+- `044C` Cooling Room Sensor: `0 -> 1`, exact republish.
+- `044D` Cooling Room Hysteresis Low: raw `10 -> 18 -> 10` = `1.0 -> 1.8 -> 1.0 °C`.
+- `044E` Cooling Room Hysteresis High: raw `10 -> 17 -> 10` = `1.0 -> 1.7 -> 1.0 °C`.
+
+**Guard confirmation:** with Heating Stop 22 °C, `Cooling Active Above` dynamically required at least 25 °C. Requests for 24 °C were blocked locally with `NO_TX=1` and the authoritative value restored.
+
+**UI correction:** Low/High room hysteresis limits are `0.5..5.0 °C`, step `0.1 °C`, raw `5..50`.
+
+**Conclusion:** every cooling field exposed by EXP379 v2 is PROVEN / locally confirmed writable on this XTR M.
+
+## EXP378 — 042E current refresh + unified desired queue/UI — COMPLETE / POSITIVE
+
+**Status:** COMPLETE / POSITIVE.
+
+**Hypothesis:** page `042E/count15` can be explicitly refreshed through its current/PUSH bitmap and controlled with the same persistent desired-state UI model as the 03E8 page.
+
+**Observed:**
+- W3-only bit3 current-refresh selector locally worked:
+  `0F030C0000000000000008000000067CB7`.
+- Desired selector with W1/W3 bit3:
+  `0F030C0000000800000008000000061B77`.
+- Rapid desired queue semantics retained the newest requested UI value while queued/in-flight and restored controller authority on completion/failure.
+- `0433` Opstart HT was confirmed reversible `5 -> 7 -> 5`.
+
+**Conclusion:** W3 bit3 is locally confirmed for current refresh of 042E, and the persistent desired-state queue/UI model works on this page.
+
+## EXP377 — first semantic write on 042E/count15 — COMPLETE / POSITIVE
+
+**Status:** COMPLETE / POSITIVE.
+
+**Hypothesis:** the native desired-page mechanism can write a one-word change on the 042E page.
+
+**Controlled target:** `042F` SWW Mode, locally observed original 1.
+
+**Observed:** full native transaction changed `042F: 1 -> 0`; controller republished the exact target with `extraDeltaWords=0`. The Thermia panel reflected Comfort.
+
+**Conclusion:** page 042E semantic writeability and the selector path are locally proven.
+
+## EXP376 — broader native-page mapper — RUNNING / PARTIAL
+
+**Status:** RUNNING / PARTIAL; mapper work was paused after useful mappings were recovered.
+
+**Locally confirmed mappings/results:**
+- `041D` SWW Start Temperature: controlled `48 -> 47`.
+- `041E` Warm Water Time: controlled `30 -> 31`.
+- `042E` SWW Enabled: controlled on/off mapping.
+- `042F` SWW Mode: Auto/Eco mapping established; later EXP377 proved active write.
+- `0433` Opstart HT: controlled and reversible whole-minute behavior.
+- `0434` Verwarmingstijd: controlled and reversible.
+
+**Correction retained:** do not label `0431` or `0432` as Heating START/STOP. Their values in known 042E pages do not match that interpretation. They remain UNKNOWN.
+
+**Open candidate:** `0430` remains a hypothesis for Extra Hot Water / Top-up. No local toggle correlation has yet confirmed it.
+
+---
+
 ## EXP375B — Room Factor 03F0 — COMPLETE / POSITIVE
 
 **Status:** COMPLETE / POSITIVE — user-confirmed.
