@@ -1,3 +1,43 @@
+# THERMIA PROTOCOL FINDINGS
+
+## PROVEN / locally confirmed — EXP386 native DCM controller-restart recovery
+
+The full recovery path is now locally confirmed on the tested Thermia iTec XTR M:
+
+```text
+unqualified stage40
+  -> exact 071C/0730 outside guard: NO TX, remain listening
+  -> >=5 s complete controller bus silence
+  -> stage 1 recovery armed
+  -> first valid frame after silence: BOOT_RETURN -> stage 2
+  -> A80E=0000 / A80F=0005
+  -> exact 071C/0730 challenge
+  -> one proven R1 replay
+  -> first post-R1 FC16 = 03E8/count14
+  -> ordered initial FC16 sync + existing address/count ACK chain
+  -> final initial page = 06F4/count19
+  -> stage40 persistent runtime
+  -> fresh known runtime FC16 ACK
+  -> 0708 idle reply
+  -> runtime qualified / recovery positive
+```
+
+Durable findings:
+- exact `071C/0730` is a necessary observed session event but is not by itself permission for R1;
+- R1 replay remains locally permitted only under known `A80E=0000 / A80F=0005`;
+- challenges seen at `A80E=0008 / A80F=0032` are capture-only and must not trigger R1;
+- >=5 s complete bus silence followed by a valid returning frame is locally confirmed as a usable controller-restart boundary for this implementation;
+- completing the initial FC16 export is not sufficient to call the session recovered: fresh runtime service must subsequently qualify;
+- the successful EXP386 run qualified on fresh runtime FC16 ACK + `0708` idle reply;
+- parser integrity for the successful run remained clean (`resync=0`, `drops=0`);
+- EXP386 changed state gating only; the known R1 and hard-coded FC16 ACK payloads were unchanged.
+
+### STRONGLY SUPPORTED interpretation
+
+The earlier v4.0 DCM activation failures were implementation/session-state regressions, not evidence against the underlying native DCM session model.
+
+---
+
 # 2026-10-01 — EXP380 through EXP383 consolidation
 
 ## PROVEN / locally confirmed — 0546/count20 semantic write path
