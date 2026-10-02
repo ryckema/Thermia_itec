@@ -1,3 +1,54 @@
+# 2026-10-02 addendum — combined approval reduction across both genuine Eco5 gateway logs
+
+This addendum extends the earlier 20260926-only approval analysis with the second genuine capture, `itec_eco5_gateway_20260928.log`.
+
+## Six successful approval-to-03E8 transitions
+
+Across both genuine Eco5 gateway logs there are six successful `071C/0730` challenge -> FC17 gateway-response events. Every response is followed by controller `FC16 03E8/count14`.
+
+| Source | Challenge ordinal | Response latency | First 03E8 latency after response |
+|---|---:|---:|---:|
+| 20260926 | #29 | 61 ms | 92 ms |
+| 20260926 | #29 | 63 ms | 92 ms |
+| 20260928 | #29 | 46 ms | 93 ms |
+| 20260928 | #3 | 30 ms | 482 ms |
+| 20260928 | #3 | 32 ms | 465 ms |
+| 20260928 | #29 | 47 ms | 124 ms |
+
+The six response bodies are all different. This strengthens the interpretation that the gateway computes or selects a session/challenge-specific approval response; the captures do not prove a static universal R1.
+
+## Challenge ordinal
+
+Successful genuine gateway responses are observed at two different positions:
+
+- challenge #29: four sessions;
+- challenge #3: two sessions.
+
+Therefore "respond to the first challenge" is not supported as native Eco gateway behavior.
+
+## 03E8 ACK progression
+
+The 20260928 capture adds two particularly useful windows. After the challenge-#3 gateway responses:
+
+- first `03E8/count14` appears after 482 ms and 465 ms respectively;
+- there is no immediate `03E8` ACK;
+- the controller emits nine `03E8/count14` frames within the following 10 s in each window;
+- no `03FC` progression occurs in that 10 s window.
+
+Where the first `03E8` is immediately ACKed, the established chain proceeds to `03FC/11` and onward.
+
+This is direct genuine-Eco5 evidence that the initial FC16 address/count ACK is part of configuration-sync progression.
+
+## Consequence for iTec Eco active research
+
+The Eco synchronization architecture no longer needs to be treated as the unknown. The remaining prerequisite is narrower:
+
+**OPEN / UNKNOWN:** whether the target Eco controller accepts a known-good response replayed against a non-matching live challenge.
+
+ECO-WRITE-01 is therefore revised before its first run to test that replay property only. It uses challenge #3 because that is an actually observed successful gateway-response ordinal in two genuine Eco5 sessions, while challenges #1 and #2 remain capture-only.
+
+---
+
 # 2026-09-30 addendum — full 0708 mailbox reduction across genuine captures
 
 A systematic offline reduction was run across the six available genuine gateway/DCM capture files (two iTec Eco5 gateway logs and four older genuine ATEC/DCM-family captures). The parser found 327 exact FC03 0708/count6 requests; 302 had paired six-word responses suitable for correlation.
