@@ -1,6 +1,6 @@
-# 2026-10-02 — iTec Eco write sidetrack prepared; no Eco active result yet
+# 2026-10-02 — iTec Eco replay experiment refined from genuine gateway logs; no Eco active result yet
 
-**Cross-model status:** `ECO-WRITE-01` is **PREPARED / NOT RUN** in `Research/iTec Eco/`. This is a separate iTec Eco compatibility track and does not change the authoritative XTR M experiment/result status below.
+**Cross-model status:** `ECO-WRITE-01` remains **PREPARED / NOT RUN** in `Research/iTec Eco/`. The prepared definition was refined before its first run after combined reduction of both genuine Eco5 + Thermia Online captures. This does not change the authoritative XTR M experiment/result status below.
 
 ## iTec Eco active-write baseline
 
@@ -12,25 +12,52 @@ Prepared active artifact:
 
 `Research/iTec Eco/thermia_itec_eco_waveshare_write_exp01.yaml`
 
-### ECO-WRITE-01 hypothesis
+Raw-capture evidence note:
 
-A single captured genuine Eco5 Thermia Online response may be accepted as a replay against the first exact Eco cold-start `071C/0730` challenge and cause the Eco controller to enter native configuration synchronization.
+`Research/iTec Eco/ECO5_GATEWAY_CAPTURE_EVIDENCE.md`
 
-### Exact new variable
+## Current genuine Eco5 protocol model
 
-Only one response is introduced. After manual arm + >=5 s controller-bus silence + boot return + exact challenge, the ESP may transmit once:
+**Observed directly in genuine Eco5 Online captures:**
+
+- six successful exact `071C/0730` challenge -> gateway-response events across the two available Eco5 gateway logs;
+- every successful response is followed by controller `FC16 03E8/count14`;
+- successful responses occur at challenge #29 four times and challenge #3 twice;
+- all six response bodies differ;
+- when `03E8/count14` is immediately ACKed, synchronization advances to `03FC/11` and onward;
+- in two no-immediate-ACK challenge-#3 windows, `03E8/count14` is repeatedly retransmitted and does not progress to `03FC` during the next 10 s.
+
+**Strong conclusion:** the native Eco5 Online approval/synchronization architecture and first page-ACK progression are established by genuine capture evidence. They do not need to be rediscovered by ECO-WRITE-01.
+
+**OPEN / UNKNOWN for the target Eco controller:** whether a previously captured known-good response is accepted against a different live challenge.
+
+## ECO-WRITE-01 hypothesis
+
+The target iTec Eco controller accepts a known-good Eco5 response replayed against a non-matching current challenge.
+
+## Exact new variable
+
+After manual arm + >=5 s controller-bus silence + boot return:
+
+- exact challenge #1: capture-only;
+- exact challenge #2: capture-only;
+- exact challenge #3: replay once:
 
 `0F17101691A5F3F8E8D58738924416E8E6A3D5E227`
 
-No FC16 page ACK, no `0708` reply, no desired-page selector and no semantic setting write are enabled in ECO-WRITE-01.
+Challenge #3 is evidence-based: a genuine Eco5 gateway successfully responds at that ordinal in two captured sessions. The replay body came from another captured challenge/session, making this a deliberate mismatched-replay test.
 
-### Information criterion
+No FC16 page ACK, no `0708` reply, no desired-page selector and no semantic setting write are enabled.
 
-Positive evidence is the first controller-originated `0x0F FC16 03E8/count14` following R1. The ESP deliberately leaves that page unACKed.
+## Information criterion
 
-### Safety
+**Positive:** after the single challenge-#3 replay, the controller sends `0x0F FC16 03E8/count14`.
 
-One R1 maximum per ESP boot; manual arm required; DE LOW otherwise; peer responder or parser CRC/resync/RX-drop integrity change aborts; unexpected traffic is capture-only. If a partial Online/DCM state or alarm persists, return to the passive Eco build and use only the normal controller restart procedure if needed.
+The ESP deliberately leaves that page unACKed because the downstream Eco5 ACK/sync architecture is already genuine-capture evidence.
+
+## Safety
+
+One R1 maximum per ESP boot; manual arm required; DE LOW otherwise; challenge #1/#2 NO TX; peer responder or parser CRC/resync/RX-drop integrity change aborts; unexpected traffic is capture-only. If a partial Online/DCM state or alarm persists, return to the passive Eco build and use only the normal controller restart procedure if needed.
 
 **Do not advance to Eco initial-sync ACKs or semantic writes until an ECO-WRITE-01 result/log is supplied.**
 
