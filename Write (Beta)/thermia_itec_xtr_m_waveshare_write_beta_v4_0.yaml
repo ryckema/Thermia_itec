@@ -6,6 +6,10 @@
 # STATUS: DCM START FIX PREPARED / NOT RUN
 # Controlled change: restore guarded DCM session start from unqualified stage40.
 # Existing semantic controls, page ACK chain, guards and payloads otherwise unchanged.
+# Additional controlled change: startup bus-age >2 s now arms existing stage-1 cold-start wait instead of disarming DCM.
+# Additional controlled change: >=5 s stage40 bus loss while semantic-idle now enters the same stage-1 cold-start path even if runtime was not yet qualified.
+# Additional controlled change: stage40 challenge with guard mismatch now NO_TX + continue listening instead of stopping the session engine.
+# Additional controlled change: this NO_TX guard-wait now applies to every challenge while stage40 is unqualified and semantic-idle, not only challenge #1.
 # BASELINE: EXP381B COMPLETE / POSITIVE
 # OFFLINE BASIS: EXP382 COMPLETE / POSITIVE
 #
@@ -99,11 +103,48 @@ esphome:
             const uint32_t now=millis(), last=id(thermia_last_valid_frame_ms);
             const uint32_t bus_age=last?(now-last):0xFFFFFFFFUL;
             if (bus_age>2000UL) {
-              id(write_active)=false; id(write_stage)=0; id(thermia_write_active)->publish_state(false);
-              id(thermia_write_status)->publish_state("ARM REFUSED / current bus not healthy");
-              id(thermia_write_stage_text)->publish_state("idle / DE LOW");
-              id(thermia_write_last_event)->publish_state("valid bus frame older than 2 s");
-              ESP_LOGE("thermia_write","\033[31m[WRITE] ===== AUTO_QUALIFY_REFUSED bus_age=%ums TX=0 DE=LOW =====\033[0m",unsigned(bus_age));
+              // DCM cold-boot fix:
+              // Do NOT disarm the native-session state machine merely because
+              // the Thermia controller is still booting when this ESP reaches
+              // its 5-second startup check.
+              //
+              // Enter the existing passive stage-1 cold-start wait instead.
+              // No TX occurs here; DE stays LOW. Stage 1 requires >=5 s bus
+              // silence before the first returning valid frame can promote the
+              // state machine to stage 2 and wait for the exact 071C/0730
+              // challenge under the existing A80E/A80F guard.
+              id(waveshare_rs485_direction).turn_off();
+              id(write_active)=true;
+              id(write_stage)=1;
+              id(write_arm_ms)=now;
+              id(write_boot_ms)=0;
+              id(write_tx_ms)=0;
+              id(write_tx_used)=false;
+
+              // If no valid frame has been seen at all during this ESP boot,
+              // the 5-second on_boot delay itself proves >=5 s of silence.
+              // Otherwise only pre-qualify the silence latch when the measured
+              // valid-frame age is already >=5 s; the existing interval logic
+              // will latch it later if needed.
+              id(write_silence_seen)=(!last || bus_age>=5000UL);
+
+              id(write_recovery_in_progress)=false;
+              id(write_recovery_attempted)=false;
+              id(write_first_challenge_crc)=0;
+              id(write_challenge_count)=0;
+              id(write_post_tx_challenge_count)=0;
+              id(write_a80e_known)=false;
+              id(write_a80f_known)=false;
+              id(write_a80e)=0;
+              id(write_a80f)=0;
+
+              id(thermia_write_active)->publish_state(true);
+              id(thermia_write_tx_used_sensor)->publish_state(false);
+              id(thermia_write_status)->publish_state("RUNNING / cold boot wait / controller bus not yet healthy");
+              id(thermia_write_stage_text)->publish_state("stage 1 / cold boot armed / DE LOW");
+              id(thermia_write_last_event)->publish_state("startup bus age >2 s; wait >=5 s silence then controller return; NO TX");
+              ESP_LOGE("thermia_write","\033[31m[WRITE] ===== COLD_BOOT_ARMED bus_age=%ums silenceSeen=%u TX=0 DE=LOW =====\033[0m",
+                unsigned(bus_age),unsigned(id(write_silence_seen)));
               return;
             }
             // Thermia Write: runtime entry is intentionally NOT gated on a hard-coded
@@ -2186,17 +2227,29 @@ uart:
                         id(write_write_state)==0 || id(write_write_state)==4;
 
                       if (!retained_runtime_qualified && semantic_idle &&
-                          !id(write_tx_used) && id(write_challenge_count)==1) {
-                        id(write_first_challenge_crc)=received_crc;
+                          !id(write_tx_used)) {
+                        if (id(write_first_challenge_crc)==0) id(write_first_challenge_crc)=received_crc;
                         const bool state_ok=id(write_a80e_known) && id(write_a80f_known) &&
                           id(write_a80e)==0x0000 && id(write_a80f)==0x0005;
 
                         if (!state_ok) {
-                          ESP_LOGE("thermia_write","\033[31m[WRITE] ===== DCM_START_FALLBACK_REFUSED challenge=1 state_ok=0 A80E_known=%u A80E=%04X A80F_known=%u A80F=%04X NO_TX DE=LOW RAW=%s =====\033[0m",
+                          // DCM guard-wait-all-challenges fix:
+                          // Every exact challenge while stage40 is still unqualified
+                          // and semantic-idle is capture-only unless the proven
+                          // cold-start guard is currently true. Challenge #2, #3, ...
+                          // must not kill the session engine.
+                          //
+                          // Safety is unchanged: NO R1 unless both A80E=0000 and
+                          // A80F=0005 are known. Remaining in stage40 allows a later
+                          // >=5 s controller bus-loss to enter the existing stage1 ->
+                          // stage2 cold-start recovery path.
+                          ESP_LOGE("thermia_write","\033[31m[WRITE] ===== DCM_START_GUARD_WAIT challenge=%u state_ok=0 A80E_known=%u A80E=%04X A80F_known=%u A80F=%04X NO_TX KEEP_STAGE40=1 DE=LOW RAW=%s =====\033[0m",
+                            unsigned(id(write_challenge_count)),
                             unsigned(id(write_a80e_known)),unsigned(id(write_a80e)),
                             unsigned(id(write_a80f_known)),unsigned(id(write_a80f)),raw325);
-                          write_stop("COMPLETE / INCONCLUSIVE / startup challenge seen but cold-start state guard not met",
-                                     "DCM-start fallback refused; A80E/A80F guard failed");
+                          id(thermia_write_status)->publish_state("RUNNING / stage40 challenge ignored / wait valid cold-start guard or bus-loss recovery");
+                          id(thermia_write_stage_text)->publish_state("stage 40 / guard mismatch / NO R1 / continue listening");
+                          id(thermia_write_last_event)->publish_state("071C/0730 challenge outside proven A80E=0000/A80F=0005 guard; NO TX; stage40 retained");
                         } else {
                           // Reuse the exact already-proven R1 frame and the existing
                           // stage-3 -> ordered FC16 ACK chain. No new payload is introduced.
@@ -2204,9 +2257,9 @@ uart:
                           id(thermia_write_tx_used_sensor)->publish_state(true);
                           id(thermia_write_status)->publish_state("RUNNING / DCM start fallback R1 sent / wait exact 03E8-count14");
                           id(thermia_write_stage_text)->publish_state("stage 3 / DCM start fallback / wait exact 03E8-count14");
-                          id(thermia_write_last_event)->publish_state("unqualified stage40 received first exact challenge; proven guarded R1 replay sent");
-                          ESP_LOGE("thermia_write","\033[31m[WRITE] ===== DCM_START_FALLBACK_TX_INTENT challenge=1 runtimeQualified=0 state_ok=1 A80E=0000 A80F=0005 latch=CLOSED R1=1691A5F3F8E8D58738924416E8E6A3D5 RAW_REQUEST=%s =====\033[0m",
-                            raw325);
+                          id(thermia_write_last_event)->publish_state("unqualified stage40 received exact challenge under proven guard; guarded R1 replay sent");
+                          ESP_LOGE("thermia_write","\033[31m[WRITE] ===== DCM_START_FALLBACK_TX_INTENT challenge=%u runtimeQualified=0 state_ok=1 A80E=0000 A80F=0005 latch=CLOSED R1=1691A5F3F8E8D58738924416E8E6A3D5 RAW_REQUEST=%s =====\033[0m",
+                            unsigned(id(write_challenge_count)),raw325);
 
                           static const uint8_t r1_stage40_start[21]={
                             0x0F,0x17,0x10,
@@ -7248,7 +7301,7 @@ text_sensor:
     entity_category: diagnostic
     update_interval: 6h
     lambda: |-
-      return {"Thermia Write v4.0 DCM Start Fix"};
+      return {"Thermia Write v4.0 DCM Guard-Wait All-Challenges Fix"};
 
   - platform: template
     name: "Heating Settings Source"
@@ -8499,16 +8552,27 @@ interval:
               return;
             }
 
-            if (!runtime_qualified || !semantic_idle) {
+            // DCM bus-loss fix:
+            // A semantic transaction in progress is still a hard stop.
+            // However, an UNQUALIFIED stage-40 runtime is no longer refused
+            // after >=5 s complete bus silence. That is exactly the case when
+            // the ESP is already running and the Thermia controller is then
+            // power-cycled before a native DCM runtime has qualified.
+            //
+            // In both qualified-idle and unqualified-idle cases, re-enter the
+            // same existing stage-1 cold-start path. This block itself sends
+            // nothing; DE remains LOW. The later exact 071C/0730 challenge is
+            // still protected by the existing A80E=0000 / A80F=0005 guard.
+            if (!semantic_idle) {
               id(waveshare_rs485_direction).turn_off();
               id(write_active)=false;
               id(write_stage)=99;
               id(thermia_write_active)->publish_state(false);
               id(thermia_write_runtime_active_sensor)->publish_state(false);
-              id(thermia_write_status)->publish_state("COMPLETE / INCONCLUSIVE / bus loss outside clean qualified idle runtime");
+              id(thermia_write_status)->publish_state("COMPLETE / INCONCLUSIVE / bus loss during semantic transaction");
               id(thermia_write_stage_text)->publish_state("stage 99 / stopped / DE LOW");
-              id(thermia_write_last_event)->publish_state(">=5 s silence but runtime not qualified or semantic transaction active");
-              ESP_LOGE("thermia_write","\033[31m[WRITE] ===== RECOVERY_REFUSED runtimeQualified=%u writeState=%u TX=0 DE=LOW =====\033[0m",
+              id(thermia_write_last_event)->publish_state(">=5 s silence while semantic transaction active; recovery refused");
+              ESP_LOGE("thermia_write","\033[31m[WRITE] ===== RECOVERY_REFUSED_SEMANTIC runtimeQualified=%u writeState=%u TX=0 DE=LOW =====\033[0m",
                 unsigned(runtime_qualified),unsigned(ws));
               return;
             }
@@ -8517,6 +8581,9 @@ interval:
             id(waveshare_rs485_direction).turn_off();
             id(write_recovery_attempted)=true;
             id(write_recovery_in_progress)=true;
+
+            ESP_LOGE("thermia_write","\033[31m[WRITE] ===== BUS_LOSS_TO_COLD_START runtimeQualified=%u writeState=%u silenceAge=%ums TX=0 DE=LOW =====\033[0m",
+              unsigned(runtime_qualified),unsigned(ws),unsigned(now-last));
 
             // Re-enter the EXISTING fresh-session state machine. The >=5 s
             // silence condition is already satisfied, so the first valid frame
