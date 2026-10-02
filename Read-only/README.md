@@ -1,6 +1,6 @@
-# Thermia iTec XTR M — Read-only
+# Thermia legacy iTec — Read-only
 
-This folder contains the **passive RX-only** ESPHome builds for monitoring a Thermia iTec XTR M through its internal RS485 bus.
+This folder contains **passive RX-only** ESPHome builds for the legacy/non-Genesis Thermia iTec family through its internal RS485 bus. The main production profile targets the iTec XTR M; a separate iTec Eco compatibility profile is included and keeps unconfirmed cross-model mappings conservative.
 
 These builds do **not** transmit Thermia Modbus frames. GPIO17/TX is intentionally not configured and the RS485 driver-enable line is held low. Use this folder when monitoring is sufficient or when you want the lowest-risk starting point.
 
@@ -13,6 +13,16 @@ These builds do **not** transmit Thermia Modbus frames. GPIO17/TX is intentional
 Recommended for normal Home Assistant use.
 
 It keeps the useful decoded entities and a small set of diagnostics while removing most reverse-engineering overhead. Logging is intentionally quiet and the generic raw-register mapper is not included.
+
+### iTec Eco compatibility profile
+
+`iTec Eco/thermia_itec_eco_waveshare_public_v01.yaml`
+
+Use this for a **Thermia iTec Eco** on the legacy Danfoss DHP-AQ controller family.
+
+It is derived from the XTR public v29 decoder, but adapts the parts that are independently confirmed on iTec Eco hardware/captures: the Eco outdoor-unit `0014` bitfield, `A80F` condenser-pump speed, `03F3` High Power, the shared `03E8` heating/settings page, and the Eco-confirmed compressor/fan/current/EEV fields. XTR-derived fields that are not independently Eco-confirmed are labelled **candidate** and disabled by default where practical.
+
+The Eco profile is also strictly RX-only: GPIO17/TX is not configured and GPIO21/DE is held LOW.
 
 ### Research / register mapping
 
