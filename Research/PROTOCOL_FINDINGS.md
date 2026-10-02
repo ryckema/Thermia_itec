@@ -98,8 +98,6 @@ The equality is repeatedly observed. Its semantic meaning remains **OPEN / UNKNO
 
 ---
 
-# THERMIA PROTOCOL FINDINGS
-
 # 2026-10-02 — combined genuine iTec Eco5 Online approval evidence
 
 ## STRONGLY SUPPORTED / genuine Eco5 Online capture evidence — approval opens configuration synchronization
