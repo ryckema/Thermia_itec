@@ -1,3 +1,41 @@
+# 2026-10-02 — CAL-OFFLINE-01 — calendar structure refinement — RUNNING / PARTIAL
+
+**Track:** offline evidence analysis only. No new ESP calendar TX or semantic write is introduced, and this note does not advance or close any live XTR experiment.
+
+## Current calendar protocol model
+
+New local XTR evidence directly anchors a **WW_GEBLOKKEERD** edit to the native `055A/count33` desired-page path. The complete historical XTR + genuine Eco5 page family has now been re-aligned.
+
+**STRONGLY SUPPORTED structural model:**
+- one calendar record = 12 words;
+- four ordinary logical calendar-function blocks occupy `055A..06E1`;
+- each block = 8 × 12-word records + 2 metadata words = **98 words**;
+- corrected block boundaries are:
+  - F1 `055A..05BB`
+  - F2 `05BC..061D`
+  - F3 `061E..067F`
+  - F4 `0680..06E1`
+- the earlier 99-word-per-function interpretation is **DISPROVEN / SUPERSEDED**;
+- candidate slot-validity/occupancy bitmaps are `05BA`, `061C`, `067E`, `06E0`;
+- `04D8/count27` is **STRONGLY SUPPORTED** as the separate concrete-drying configuration block;
+- `06EA/count7` is **STRONGLY SUPPORTED** as the clock/date block;
+- the separate tail `06E2/06E3` reconstructs `0870 word0` exactly across the compared local XTR and two genuine Eco5 datasets; semantics remain OPEN.
+
+**Locally PROVEN calendar anchor:** F1 participates in WW_GEBLOKKEERD editing through `055A/count33`.  
+**HYPOTHESIS only:** F2=EVU/power limiting, F3=Silent Mode, F4=Temperature Reduction.
+
+## Important calendar unknowns
+
+Exact weekday-bit ordering, live bitmap transition during add/delete, second metadata-word semantics, concrete-drying header words0..4, `06E2..06E5` semantics and multi-page transaction ordering for a record crossing native 33-word boundaries remain open.
+
+## Next calendar experiment
+
+Passive-only local correlation: one WW_GEBLOKKEERD DATE slot with one controlled non-zero minute field, followed by deletion and 60–90 s continued capture. No calendar write from the ESP until record and bitmap behavior are locally confirmed.
+
+Full reduction: `Research/CALENDAR_STRUCTURE_ANALYSIS_20261002.md`.
+
+---
+
 # 2026-10-02 — iTec Eco replay experiment refined from genuine gateway logs; no Eco active result yet
 
 **Cross-model status:** `ECO-WRITE-01` remains **PREPARED / NOT RUN** in `Research/iTec Eco/`. The prepared definition was refined before its first run after combined reduction of both genuine Eco5 + Thermia Online captures. This does not change the authoritative XTR M experiment/result status below.
