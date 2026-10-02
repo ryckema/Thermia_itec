@@ -2,7 +2,7 @@
 # THERMIA ATEC - PASSIVE READ-ONLY ESPHOME v01
 # GitHub-safe passive ATEC-family configuration
 # Passive decoder baseline: Read-only/Danfoss DHP-AQ candidate v02
-# ATEC read-only v01 prepared 2026-10-01 from the existing passive DHP-AQ/ATEC-family decoder
+# ATEC read-only v01 refreshed 2026-10-02 from raw ATEC/Eco gateway captures + current cross-model findings
 #
 # Reference hardware:
 # - Waveshare ESP32-S3-RS485-CAN / ESP32-S3-RS485-CAN-U
@@ -88,6 +88,10 @@
 #   as candidates unless confirmed on the exact ATEC installation.
 # - 0x03F4 is exposed only when a genuine observed 0x0F FC10 03E8/count14 page
 #   appears on the bus. This read-only firmware never requests that page.
+# - 2026-10-02 passive update: exact ATEC/Eco captures also contain controller-
+#   originated 0410/22, 042E/15, 0442/13 and 0546/20 pages. Selected fields whose
+#   semantics are locally proven on XTR and consistent with ATEC/DCM evidence are
+#   exposed here as explicitly named "(Candidate)" diagnostics only.
 # - The Home Assistant "Log 120 Seconds" control changes logging only and never
 #   transmits on RS485.
 # =============================================================================
@@ -1571,6 +1575,95 @@ uart:
                   // mirror because it comes from the settings block rather than
                   // from the room-sensor block.
                   publish_float_if_changed(id(thermia_room_setpoint_mirror), room_setpoint_mirror, 0.5f);
+                }
+
+                // =============================================================
+                // ATEC / DHP-AQ FAMILY SETTINGS PAGES — PASSIVE CANDIDATES
+                // Exact page shapes are present in the supplied ATEC/Eco logs.
+                // Semantics remain Candidate on the target ATEC until locally
+                // correlated. This block NEVER transmits or ACKs.
+                // =============================================================
+
+                // 0410/count22: Discussion #143 maps decimal 1053 / 0x041D
+                // to DHW start. Raw gateway captures repeatedly show 041D=39.
+                if (slave == 0x0F && start == 0x0410 && count >= 22) {
+                  const int16_t dhw_start = reg_s(0x041D);
+                  if (dhw_start >= 0 && dhw_start <= 100)
+                    publish_float_if_changed(id(thermia_atec_dhw_start_candidate), float(dhw_start), 0.5f);
+                }
+
+                // 042E/count15 occurs repeatedly in both gateway logs.
+                // Later XTR-local proof supports the field positions below.
+                if (slave == 0x0F && start == 0x042E && count >= 15) {
+                  const int16_t enabled = reg_s(0x042E);
+                  const int16_t mode = reg_s(0x042F);
+                  const int16_t startup_ht = reg_s(0x0433);
+                  const int16_t heating_time = reg_s(0x0434);
+
+                  if (enabled == 0 || enabled == 1)
+                    publish_bool_if_changed(id(thermia_atec_dhw_enabled_candidate), enabled == 1);
+
+                  if (mode == 0)
+                    publish_text_if_changed(id(thermia_atec_dhw_mode_candidate), "Comfort (candidate)");
+                  else if (mode == 1)
+                    publish_text_if_changed(id(thermia_atec_dhw_mode_candidate), "Eco (candidate)");
+                  else if (mode == 2)
+                    publish_text_if_changed(id(thermia_atec_dhw_mode_candidate), "Vacation Eco (candidate)");
+                  else
+                    publish_text_if_changed(id(thermia_atec_dhw_mode_candidate), "Unknown");
+
+                  if (startup_ht >= 0 && startup_ht <= 120)
+                    publish_float_if_changed(id(thermia_atec_startup_ht_candidate), float(startup_ht), 0.5f);
+                  if (heating_time >= 0 && heating_time <= 180)
+                    publish_float_if_changed(id(thermia_atec_heating_time_candidate), float(heating_time), 0.5f);
+                }
+
+                // 0442/count13 is present in both gateway logs.
+                if (slave == 0x0F && start == 0x0442 && count >= 13) {
+                  const int16_t enabled = reg_s(0x0442);
+                  const int16_t desired_temp = reg_s(0x0443);
+                  const int16_t active_above = reg_s(0x0445);
+                  const int16_t cooling_time = reg_s(0x0449);
+                  const int16_t room_sensor = reg_s(0x044C);
+                  const int16_t hyst_low = reg_s(0x044D);
+                  const int16_t hyst_high = reg_s(0x044E);
+
+                  if (enabled == 0 || enabled == 1)
+                    publish_bool_if_changed(id(thermia_atec_cooling_enabled_candidate), enabled == 1);
+                  if (desired_temp >= -20 && desired_temp <= 80)
+                    publish_float_if_changed(id(thermia_atec_cooling_desired_temperature_candidate), float(desired_temp), 0.5f);
+                  if (active_above >= -20 && active_above <= 80)
+                    publish_float_if_changed(id(thermia_atec_cooling_active_above_candidate), float(active_above), 0.5f);
+                  if (cooling_time >= 0 && cooling_time <= 180)
+                    publish_float_if_changed(id(thermia_atec_cooling_time_candidate), float(cooling_time), 0.5f);
+                  if (room_sensor == 0 || room_sensor == 1)
+                    publish_bool_if_changed(id(thermia_atec_cooling_room_sensor_candidate), room_sensor == 1);
+                  if (hyst_low >= 0 && hyst_low <= 200)
+                    publish_float_if_changed(id(thermia_atec_cooling_room_hyst_low_candidate), float(hyst_low) / 10.0f, 0.05f);
+                  if (hyst_high >= 0 && hyst_high <= 200)
+                    publish_float_if_changed(id(thermia_atec_cooling_room_hyst_high_candidate), float(hyst_high) / 10.0f, 0.05f);
+                }
+
+                // 0546/count20: raw ATEC/Eco captures repeatedly show
+                // 0553=2 and 0559=0. Public Online/DCM evidence + XTR-local
+                // work support Operation Mode and Link Integration respectively.
+                if (slave == 0x0F && start == 0x0546 && count >= 20) {
+                  const int16_t mode = reg_s(0x0553);
+                  const int16_t link = reg_s(0x0559);
+
+                  publish_float_if_changed(id(thermia_atec_operation_mode_raw_candidate), float(mode), 0.5f);
+                  publish_float_if_changed(id(thermia_atec_link_integration_raw_candidate), float(link), 0.5f);
+
+                  if (mode == 0) publish_text_if_changed(id(thermia_atec_operation_mode_candidate), "Off (candidate)");
+                  else if (mode == 1) publish_text_if_changed(id(thermia_atec_operation_mode_candidate), "Auto (candidate)");
+                  else if (mode == 2) publish_text_if_changed(id(thermia_atec_operation_mode_candidate), "Compressor (candidate)");
+                  else if (mode == 3) publish_text_if_changed(id(thermia_atec_operation_mode_candidate), "Aux (candidate)");
+                  else if (mode == 4) publish_text_if_changed(id(thermia_atec_operation_mode_candidate), "Hot water (candidate)");
+                  else publish_text_if_changed(id(thermia_atec_operation_mode_candidate), "Unknown");
+
+                  if (link == 0) publish_text_if_changed(id(thermia_atec_link_integration_candidate), "Light (candidate)");
+                  else if (link == 1) publish_text_if_changed(id(thermia_atec_link_integration_candidate), "System (candidate)");
+                  else publish_text_if_changed(id(thermia_atec_link_integration_candidate), "Unknown");
                 }
 
                 return;
@@ -3117,6 +3210,92 @@ sensor:
 
 
   # ===========================================================================
+  # ATEC 0x0F SETTINGS PAGE CANDIDATES — PASSIVE ONLY
+  # ===========================================================================
+
+  - platform: template
+    id: thermia_atec_dhw_start_candidate
+    name: "ATEC DHW Start 041D (Candidate)"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_startup_ht_candidate
+    name: "ATEC Startup HT 0433 (Candidate)"
+    unit_of_measurement: "min"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_heating_time_candidate
+    name: "ATEC Heating Time 0434 (Candidate)"
+    unit_of_measurement: "min"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_cooling_desired_temperature_candidate
+    name: "ATEC Cooling Desired Temperature 0443 (Candidate)"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_cooling_active_above_candidate
+    name: "ATEC Cooling Active Above 0445 (Candidate)"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_cooling_time_candidate
+    name: "ATEC Cooling Time 0449 (Candidate)"
+    unit_of_measurement: "min"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_cooling_room_hyst_low_candidate
+    name: "ATEC Cooling Room Hysteresis Low 044D (Candidate)"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_cooling_room_hyst_high_candidate
+    name: "ATEC Cooling Room Hysteresis High 044E (Candidate)"
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_operation_mode_raw_candidate
+    name: "ATEC Operation Mode Raw 0553 (Candidate)"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+  - platform: template
+    id: thermia_atec_link_integration_raw_candidate
+    name: "ATEC Link Integration Raw 0559 (Candidate)"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    update_interval: never
+
+
+  # ===========================================================================
   # RAW MODBUS REGISTERS
   # All are diagnostic and disabled by default.
   # Source: 1=FC04 read, 2=FC10 Thermia write, 3=FC17 write part,
@@ -3124,6 +3303,21 @@ sensor:
   # ===========================================================================
 
 binary_sensor:
+
+  - platform: template
+    id: thermia_atec_dhw_enabled_candidate
+    name: "ATEC Hot Water Enabled 042E (Candidate)"
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_atec_cooling_enabled_candidate
+    name: "ATEC Cooling Enabled 0442 (Candidate)"
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_atec_cooling_room_sensor_candidate
+    name: "ATEC Cooling Room Sensor 044C (Candidate)"
+    entity_category: diagnostic
 
   - platform: template
     id: thermia_bus_healthy
@@ -3322,6 +3516,21 @@ text_sensor:
       name: "Thermia WiFi Power Save Mode"
       entity_category: diagnostic
       disabled_by_default: true
+
+  - platform: template
+    id: thermia_atec_dhw_mode_candidate
+    name: "ATEC Hot Water Mode 042F (Candidate)"
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_atec_operation_mode_candidate
+    name: "ATEC Operation Mode 0553 (Candidate)"
+    entity_category: diagnostic
+
+  - platform: template
+    id: thermia_atec_link_integration_candidate
+    name: "ATEC Link Integration 0559 (Candidate)"
+    entity_category: diagnostic
 
   - platform: template
     id: thermia_sg_mode
