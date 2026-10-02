@@ -1,5 +1,60 @@
 # EXPERIMENT LOG
 
+## CAL-OFFLINE-01 — Calendar structure reduction — RUNNING / PARTIAL
+**Status: RUNNING / PARTIAL**  
+**Date: 2026-10-02**  
+**Track:** offline calendar sidetrack; does not advance the numbered live XTR experiment sequence.
+
+### Hypothesis
+
+The ordinary Thermia calendar is a logical record layer spanning the native 33-word `0x0F` pages, with four function blocks containing up to eight records each.
+
+### Baseline / evidence
+
+- user-supplied local XTR capture: WW_GEBLOKKEERD 02-10-2026 18:00 -> 19:00;
+- historical local XTR page snapshots;
+- genuine iTec Eco5 + Thermia Online captures;
+- commissioning-manual calendar limits and concrete-drying structure.
+
+### Controlled change
+
+None on the device. Offline reduction only; no ESP TX.
+
+### Observed facts
+
+- the local WW_GEBLOKKEERD edit produces selector `W0=0002/W2=0002`, FC03 `055A/count33`, then an identical controller FC16 republish;
+- the first 12 words encode the entered start/stop interval;
+- the twelve native pages `055A..06C5`, each count33, cover 396 contiguous registers through `06E5`;
+- exact re-alignment gives four 98-word logical blocks plus a four-word tail;
+- historical XTR occupancy and genuine Eco5 occupancy align with candidate bitmaps `05BA/061C/067E/06E0`;
+- `04D8/count27` contains a 7-word header followed by exactly ten day/temperature pairs, matching the documented concrete-drying shape;
+- `06EA/count7` fits second/minute/hour/day/month/year/weekday;
+- `(06E3 << 8) | 06E2 == 0870.word0` in the local XTR and both genuine Eco5 datasets checked.
+
+### Strong conclusions
+
+- earlier 99-word-per-function calendar model is **SUPERSEDED**;
+- ordinary calendar blocks are **STRONGLY SUPPORTED** as 98 words = 8 × 12-word records + 2 metadata words;
+- native 33-word transport pages do not coincide with logical calendar-function boundaries;
+- `04D8/count27` is a much stronger concrete-drying candidate than the calendar tail.
+
+### Proven / hypotheses / unknowns
+
+**PROVEN / local:** WW_GEBLOKKEERD edit uses the `055A/count33` desired-page path.  
+**STRONGLY SUPPORTED:** 12-word record structure, 98-word logical blocks, occupancy bitmap positions, separate concrete-drying structure, clock block.  
+**HYPOTHESIS:** F2=EVU, F3=Silent Mode, F4=Temperature Reduction; mode0=DATE/mode1=DAYS-WEEK; delete may clear a bitmap while leaving stale record contents.  
+**OPEN:** live delete encoding, weekday bit order, second metadata words, concrete-drying header0..4, `06E2..06E5` semantics.
+
+### Next / stop criteria
+
+Next calendar work remains passive-only: one controlled non-zero minute in a WW_GEBLOKKEERD DATE entry, observe the slot and candidate bitmap, delete the same entry, continue capture 60–90 s. Unexpected traffic is capture-only. Do not implement an ESP calendar writer yet.
+
+Full analysis: `Research/CALENDAR_STRUCTURE_ANALYSIS_20261002.md`.
+
+---
+
+# EXPERIMENT LOG
+
 ## ECO-WRITE-01 — iTec Eco mismatched R1 replay acceptance — PREPARED / NOT RUN
 **Status: PREPARED / NOT RUN**  
 **Date: 2026-10-02**  
