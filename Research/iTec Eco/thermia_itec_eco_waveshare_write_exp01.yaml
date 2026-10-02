@@ -1,22 +1,46 @@
 # =============================================================================
 # THERMIA iTec Eco — WRITE RESEARCH EXP01
-# ECO-WRITE-01 — native Online/DCM session-bootstrap compatibility test
-# Prepared 2026-10-02
+# ECO-WRITE-01 — known-good Eco5 R1 replay acceptance test
+# Revised 2026-10-02 after combined raw Eco5 gateway-capture reduction
 # STATUS: PREPARED / NOT RUN
 #
 # BASELINE
 # --------
 # Read-only/iTec Eco/thermia_itec_eco_waveshare_public_v01.yaml
 #
+# WHAT THE GENUINE ECO5 LOGS ALREADY PROVE
+# ----------------------------------------
+# Across the two genuine iTec Eco 5 + Thermia Online captures there are six
+# successful 071C/0730 approval responses. Every one is followed by controller
+# FC16 03E8/count14. Successful gateway responses occurred on challenge #29
+# four times and on challenge #3 twice.
+#
+# The six challenge bodies and six response bodies differ. Therefore the Eco5
+# captures prove the native approval->sync architecture, but do NOT prove that
+# an old response can be replayed against a different live challenge.
+#
+# In two captured windows where 03E8/count14 was not immediately ACKed, the
+# controller repeatedly retransmitted 03E8 and did not progress to 03FC during
+# the observed 10 s window. Therefore downstream page-ACK behavior no longer
+# needs to be guessed; it is deliberately excluded from EXP01.
+#
 # HYPOTHESIS
 # ----------
-# A single genuine Eco5 Thermia Online gateway response, replayed once against
-# the first exact Eco cold-start 071C/0730 challenge, is sufficient for an
-# iTec Eco controller to enter the native Online/DCM synchronization path.
+# An iTec Eco controller will accept a previously captured known-good Eco5
+# gateway response even when it does not match the current live challenge.
+#
+# To avoid inventing a challenge timing point, EXP01 uses challenge ordinal #3:
+# a genuine Eco5 gateway successfully responded at #3 in two captured sessions.
+# Challenges #1 and #2 are capture-only. The replay body used here originally
+# belonged to a different challenge (#29 in another genuine Eco5 session), so
+# this is an explicit non-matching replay test.
 #
 # EXACT CONTROLLED CHANGE FROM THE READ-ONLY BASELINE
 # ---------------------------------------------------
 # - Add GPIO17 TX and one manually armed, one-shot FC17 response.
+# - Require >=5 s complete bus silence and controller return.
+# - Capture exact challenge #1 and #2 with NO TX.
+# - On exact challenge #3 only, replay one known-good Eco5 gateway response.
 # - Do NOT ACK any following FC16 page.
 # - Do NOT answer 0708.
 # - Do NOT send a desired-page selector.
@@ -28,55 +52,73 @@
 #   read  0x0730 count 8
 #   write 0x071C count 8
 #   byte count 16
+# and it must be exact challenge ordinal #3 after the qualified boot return.
 #
-# One captured genuine Eco5 gateway response is replayed:
+# Replayed genuine Eco5 gateway response:
 #   0F 17 10 16 91 A5 F3 F8 E8 D5 87 38 92 44 16 E8 E6 A3 D5 E2 27
 # Body: 1691A5F3F8E8D58738924416E8E6A3D5
 # CRC:  E227 (Modbus wire order; calculated CRC value 0x27E2)
 #
-# EVIDENCE SOURCE
-# ---------------
-# - Genuine iTec Eco 5 + Thermia Online capture: challenge/response family.
-# - The exact replay body above was accepted on the locally tested XTR M
-#   against a different live challenge, proving replay acceptance on XTR only.
-# - Acceptance on iTec Eco is NOT yet proven; this experiment exists to test it.
+# SOURCE / EVIDENCE CLASSIFICATION
+# --------------------------------
+# - Genuine Online/DCM capture evidence on iTec Eco 5:
+#     approval response -> FC16 03E8/count14 is directly observed six times.
+# - Genuine Eco5 capture evidence:
+#     challenge ordinal #3 is a real successful gateway-response point twice.
+# - Genuine Eco5 capture evidence:
+#     responses vary with sessions/challenges; constant-response behavior is
+#     NOT proven.
+# - Locally confirmed XTR M evidence:
+#     the exact replay body above was accepted against a different challenge,
+#     proving replay tolerance on XTR only.
+# - OPEN / UNKNOWN:
+#     replay tolerance on the target iTec Eco controller.
 #
 # SUCCESS
 # -------
-# After the one R1 replay, observe a controller-originated:
+# After the one challenge-#3 replay, observe a controller-originated:
 #   0x0F FC16 start=0x03E8 count=14 byte_count=28
-# No ACK is sent. Seeing that first config page is enough for EXP01 success.
+# No ACK is sent. Seeing that page is enough for EXP01 success because the
+# downstream Eco5 synchronization/ACK architecture is already genuine-capture
+# evidence.
 #
 # NEGATIVE
 # --------
-# No exact 03E8/count14 FC16 appears within 10 s after R1, or only challenge
-# retries continue. The build sends no second R1 in the same ESP boot.
+# Challenge #3 was reached, R1 was transmitted, but no exact 03E8/count14 FC16
+# appears within 10 s after R1. No second R1 is sent in the same ESP boot.
+#
+# INCONCLUSIVE
+# ------------
+# The qualified boot returns but challenge #3 is not reached within 30 s, or
+# no usable silence->boot-return sequence occurs within the arm window.
 #
 # ABORT
 # -----
 # - a peer 0x0F FC17 response is observed (another gateway/responder);
-# - a new CRC failure occurs after controller return / before completion;
-# - the exact cold-start sequence is not observed within the bounded window.
+# - a peer 0x0F FC16 ACK-shaped response is observed;
+# - parser CRC/resync/RX-drop integrity changes after controller return;
+# - the user cancels.
 #
 # SAFETY / RECOVERY
 # -----------------
 # - Must be manually armed from Home Assistant Configuration BEFORE a normal
 #   Thermia controller power-cycle.
-# - Requires >=5 s complete bus silence and controller return before R1.
 # - One R1 maximum per ESP boot.
+# - One active variable only: mismatched R1 replay acceptance.
 # - DE is LOW outside the single guarded response.
 # - Unexpected traffic is capture-only.
-# - Plausible unintended effect: a partial Online/DCM session, retries, or an
-#   Online communication alarm because EXP01 intentionally does not ACK FC16.
-# - Recovery: no further TX occurs. Cancel the experiment or flash the read-only
-#   Eco build. If the controller does not naturally leave the partial session,
-#   perform only the normal controller restart procedure; do not add extra writes.
+# - Plausible unintended effect: a temporary partial Online/DCM session,
+#   repeated 03E8 configuration pushes, or an Online communication alarm
+#   because EXP01 intentionally does not ACK FC16.
+# - Recovery: no further TX occurs. Cancel or flash the read-only Eco build.
+#   If the controller does not naturally leave the partial session, use only
+#   the normal controller restart procedure; do not add speculative ACKs.
 #
 # IMPORTANT
 # ---------
-# This is NOT a general iTec Eco write build yet. It is the first staged active
-# compatibility experiment required before safely enabling the proven XTR
-# page-cache semantic write engine on Eco hardware.
+# This is NOT a general iTec Eco write build yet. The genuine Eco5 logs already
+# establish the native session/sync architecture; EXP01 tests only the one
+# remaining prerequisite before porting that known architecture to Eco.
 #
 # ESPHome compile verification is NOT claimed unless actually compiled.
 # =============================================================================
@@ -429,6 +471,7 @@ uart:
               "thermia",
               "RX stream buffer exceeded 4096 bytes; clearing buffer to recover."
             );
+            id(eco_exp01_rx_drop_count)++;
             pending.clear();
             return;
           }
@@ -609,8 +652,8 @@ uart:
                 if (id(eco_exp01_stage)==1 && id(eco_exp01_silence_seen)) {
                   id(eco_exp01_stage)=2;
                   id(eco_exp01_boot_return_ms)=eco_now_ms;
-                  id(eco_exp01_status)->publish_state("RUNNING / controller returned / waiting exact 071C-0730 challenge");
-                  id(eco_exp01_stage_text)->publish_state("stage 2 / boot returned / challenge wait");
+                  id(eco_exp01_status)->publish_state("RUNNING / controller returned / waiting exact 071C-0730 challenge #3");
+                  id(eco_exp01_stage_text)->publish_state("stage 2 / boot returned / capture #1-2 / replay #3");
                   id(eco_exp01_last_event)->publish_state("BOOT_RETURN after >=5 s complete bus silence");
                   ESP_LOGE("thermia_eco_write",
                     "\033[31m[ECO-WRITE-01] ===== BOOT_RETURN TX=0 DE=LOW =====\033[0m");
@@ -662,47 +705,59 @@ uart:
 
                 if (id(eco_exp01_armed) && exact_challenge) {
                   id(eco_exp01_challenge_count)++;
+                  const uint16_t challenge_no=id(eco_exp01_challenge_count);
 
                   if (id(eco_exp01_stage)==2 && !id(eco_exp01_tx_used)) {
-                    if (id(eco_exp01_bad_crc_count) != id(eco_exp01_bad_crc_baseline)) {
+                    if (challenge_no < 3) {
+                      id(eco_exp01_status)->publish_state("RUNNING / genuine challenge captured / waiting target challenge #3");
+                      id(eco_exp01_stage_text)->publish_state("stage 2 / challenge #1-2 capture-only / NO TX");
+                      id(eco_exp01_last_event)->publish_state("pre-target 071C/0730 challenge captured; replay deliberately withheld");
                       ESP_LOGE("thermia_eco_write",
-                        "\033[31m[ECO-WRITE-01] ===== ABORT CRC_DELTA_BEFORE_R1 NO_TX DE=LOW =====\033[0m");
-                      eco_finish(
-                        "ABORTED / CRC integrity changed before R1",
-                        "stage 5 / aborted / DE LOW",
-                        "new CRC failure after arm; R1 withheld",
-                        5
-                      );
-                    } else {
-                      // Latch CLOSED before DE rises: one R1 maximum per ESP boot.
-                      id(eco_exp01_tx_used)=true;
-                      id(eco_exp01_tx_ever_used)=true;
-                      id(eco_exp01_stage)=3;
-                      id(eco_exp01_r1_ms)=eco_now_ms;
+                        "\033[38;5;130m[ECO-WRITE-01] ===== PRE_TARGET_CHALLENGE n=%u target=3 NO_TX DE=LOW =====\033[0m",
+                        unsigned(challenge_no));
+                    } else if (challenge_no == 3) {
+                      if (id(eco_exp01_bad_crc_count) != id(eco_exp01_bad_crc_baseline) ||
+                          id(eco_exp01_stream_resync_count) != id(eco_exp01_stream_resync_baseline) ||
+                          id(eco_exp01_rx_drop_count) != id(eco_exp01_rx_drop_baseline)) {
+                        ESP_LOGE("thermia_eco_write",
+                          "\033[31m[ECO-WRITE-01] ===== ABORT INTEGRITY_DELTA_BEFORE_R1 NO_TX DE=LOW =====\033[0m");
+                        eco_finish(
+                          "ABORTED / parser-RX integrity changed before R1",
+                          "stage 5 / aborted / DE LOW",
+                          "CRC/resync/drop integrity changed after arm; challenge #3 replay withheld",
+                          5
+                        );
+                      } else {
+                        // Latch CLOSED before DE rises: one R1 maximum per ESP boot.
+                        id(eco_exp01_tx_used)=true;
+                        id(eco_exp01_tx_ever_used)=true;
+                        id(eco_exp01_stage)=3;
+                        id(eco_exp01_r1_ms)=eco_now_ms;
 
-                      id(eco_exp01_status)->publish_state("RUNNING / one R1 replay sent / waiting first FC16 03E8-count14");
-                      id(eco_exp01_stage_text)->publish_state("stage 3 / R1 sent / NO FC16 ACK");
-                      id(eco_exp01_last_event)->publish_state("one genuine Eco5 gateway response replayed; no further TX permitted");
+                        id(eco_exp01_status)->publish_state("RUNNING / challenge #3 mismatched R1 replay sent / waiting FC16 03E8-count14");
+                        id(eco_exp01_stage_text)->publish_state("stage 3 / R1 replay sent on #3 / NO FC16 ACK");
+                        id(eco_exp01_last_event)->publish_state("known-good Eco5 R1 from another challenge replayed on live challenge #3; no further TX permitted");
 
-                      ESP_LOGE("thermia_eco_write",
-                        "\033[31m[ECO-WRITE-01] ===== TX_INTENT ONE_R1 request=071C/0730 responseBody=1691A5F3F8E8D58738924416E8E6A3D5 =====\033[0m");
+                        ESP_LOGE("thermia_eco_write",
+                          "\033[31m[ECO-WRITE-01] ===== TX_INTENT challenge=3 MISMATCHED_REPLAY=1 responseBody=1691A5F3F8E8D58738924416E8E6A3D5 =====\033[0m");
 
-                      static const uint8_t eco_r1[21]={
-                        0x0F,0x17,0x10,
-                        0x16,0x91,0xA5,0xF3,0xF8,0xE8,0xD5,0x87,
-                        0x38,0x92,0x44,0x16,0xE8,0xE6,0xA3,0xD5,
-                        0xE2,0x27
-                      };
+                        static const uint8_t eco_r1[21]={
+                          0x0F,0x17,0x10,
+                          0x16,0x91,0xA5,0xF3,0xF8,0xE8,0xD5,0x87,
+                          0x38,0x92,0x44,0x16,0xE8,0xE6,0xA3,0xD5,
+                          0xE2,0x27
+                        };
 
-                      id(waveshare_rs485_direction).turn_on();
-                      delay_microseconds_safe(1000);
-                      id(thermia_uart).write_array(eco_r1,sizeof(eco_r1));
-                      id(thermia_uart).flush();
-                      delay_microseconds_safe(1000);
-                      id(waveshare_rs485_direction).turn_off();
+                        id(waveshare_rs485_direction).turn_on();
+                        delay_microseconds_safe(1000);
+                        id(thermia_uart).write_array(eco_r1,sizeof(eco_r1));
+                        id(thermia_uart).flush();
+                        delay_microseconds_safe(1000);
+                        id(waveshare_rs485_direction).turn_off();
 
-                      ESP_LOGE("thermia_eco_write",
-                        "\033[31m[ECO-WRITE-01] ===== TX_EXECUTED ONE_R1 frame=0F17101691A5F3F8E8D58738924416E8E6A3D5E227 DE=LOW LATCH=CLOSED =====\033[0m");
+                        ESP_LOGE("thermia_eco_write",
+                          "\033[31m[ECO-WRITE-01] ===== TX_EXECUTED challenge=3 ONE_R1 MISMATCHED_REPLAY=1 frame=0F17101691A5F3F8E8D58738924416E8E6A3D5E227 DE=LOW LATCH=CLOSED =====\033[0m");
+                      }
                     }
                   } else if (id(eco_exp01_stage)==3) {
                     ESP_LOGE("thermia_eco_write",
@@ -2293,12 +2348,12 @@ button:
           id(eco_exp01_rx_drop_baseline)=id(eco_exp01_rx_drop_count);
 
           id(eco_exp01_armed_sensor)->publish_state(true);
-          id(eco_exp01_status)->publish_state("ARMED / power-cycle Thermia controller / waiting >=5 s complete bus silence");
+          id(eco_exp01_status)->publish_state("ARMED / power-cycle Thermia controller / target is exact challenge #3");
           id(eco_exp01_stage_text)->publish_state("stage 1 / armed / silence wait / TX=0");
-          id(eco_exp01_last_event)->publish_state("manual arm accepted; power-cycle controller while ESP remains powered");
+          id(eco_exp01_last_event)->publish_state("manual arm accepted; after boot return capture challenge #1-2 and replay once on #3");
 
           ESP_LOGE("thermia_eco_write",
-            "\033[31m[ECO-WRITE-01] ===== ARM ACCEPTED wait>=5s_bus_silence ONE_R1_MAX TX=0 DE=LOW =====\033[0m");
+            "\033[31m[ECO-WRITE-01] ===== ARM ACCEPTED targetChallenge=3 wait>=5s_bus_silence ONE_R1_MAX TX=0 DE=LOW =====\033[0m");
 
   - platform: template
     id: eco_exp01_cancel_button
@@ -3128,9 +3183,10 @@ interval:
               id(eco_exp01_boot_return_ms)!=0 &&
               (now-id(eco_exp01_boot_return_ms))>30000UL) {
             ESP_LOGE("thermia_eco_write",
-              "\033[31m[ECO-WRITE-01] ===== COMPLETE / NEGATIVE no exact challenge within 30 s TX=0 =====\033[0m");
-            stop_exp("COMPLETE / NEGATIVE / no exact 071C-0730 challenge within 30 s",
-                     "controller returned but did not present the expected native challenge");
+              "\033[31m[ECO-WRITE-01] ===== COMPLETE / INCONCLUSIVE target challenge #3 not reached within 30 s seen=%u TX=0 =====\033[0m",
+              unsigned(id(eco_exp01_challenge_count)));
+            stop_exp("COMPLETE / INCONCLUSIVE / target challenge #3 not reached within 30 s",
+                     "controller returned, but the evidence-based challenge #3 replay point was not reached");
             return;
           }
 
