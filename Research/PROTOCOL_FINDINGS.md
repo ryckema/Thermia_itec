@@ -1,5 +1,105 @@
 # THERMIA PROTOCOL FINDINGS
 
+# 2026-10-02 — Calendar structure refinement from local XTR + genuine Eco5 evidence
+
+## PROVEN / locally confirmed — WW_GEBLOKKEERD uses 055A desired-page path
+
+A local XTR M calendar edit for WW_GEBLOKKEERD is directly correlated with:
+`0708/count6 -> W0 bit1 + W2 bit1 -> FC03 055A/count33 -> controller FC16 republish`.
+
+This locally anchors the Hot Water Blocked calendar function to the native `055A` page-owned desired-state mechanism.
+
+## STRONGLY SUPPORTED — corrected 98-word ordinary-calendar blocks
+
+The 12 native count33 pages from `055A` through `06C5` cover 396 contiguous words through `06E5`.
+
+The best structural reduction is:
+
+```text
+F1 055A..05BB
+F2 05BC..061D
+F3 061E..067F
+F4 0680..06E1
+tail 06E2..06E5
+```
+
+Each F block is exactly 98 words:
+`8 × 12-word records + 2 metadata words`.
+
+The prior interpretation of three native pages = one 99-word calendar function is **DISPROVEN / SUPERSEDED**. Logical function and record boundaries cross native 33-word transport-page boundaries.
+
+## STRONGLY SUPPORTED — 12-word record and occupancy metadata
+
+Best record layout:
+
+```text
+mode,
+start minute/hour/day/month/year,
+stop minute/hour/day/month/year,
+weekday/recurrence mask
+```
+
+Local date-mode entry:
+`0,0,18,2,10,26,0,19,2,10,26,0`.
+
+Genuine weekly-looking records use mode `1` and can end in `127`, compatible with a seven-day mask.
+
+Candidate 8-bit slot-validity/occupancy words:
+`05BA`, `061C`, `067E`, `06E0`.
+
+Observed occupancy counts match these bitmaps in historical local XTR and genuine Eco5 snapshots. An inactive group can retain record-shaped residue while its candidate bitmap is zero, strengthening the validity-bit interpretation.
+
+## HYPOTHESIS — function ordering
+
+Only F1 is locally anchored:
+- F1 = WW_GEBLOKKEERD — local anchor.
+
+Manual-order candidates only:
+- F2 = EVU / power limiting;
+- F3 = Silent Mode;
+- F4 = Temperature Reduction.
+
+F2-F4 remain **HYPOTHESIS** until local UI correlation.
+
+## STRONGLY SUPPORTED — concrete drying at 04D8/count27
+
+`04D8/count27` contains a 7-word header followed by exactly ten `(day/point index, supply temperature)` pairs.
+
+This matches the commissioning manual's maximum ten concrete-drying points, day range 1..40, temperature range 15..55 °C and hysteresis factory value 2.
+
+Current status:
+- block identity as concrete-drying configuration: **STRONGLY SUPPORTED**;
+- ten point pairs: **STRONGLY SUPPORTED**;
+- header word5=hysteresis and word6=point count: **STRONGLY SUPPORTED**;
+- header words0..4: **OPEN / UNKNOWN**.
+
+## STRONGLY SUPPORTED — 06EA clock/date block
+
+`06EA/count7` fits:
+`second, minute, hour, day, month, year, weekday`
+across local XTR and genuine Eco5 snapshots.
+
+It should no longer be treated as ordinary calendar or concrete-drying storage.
+
+## STRONGLY SUPPORTED observed relation / OPEN semantics — 06E2..06E5
+
+Across the local XTR and both genuine Eco5 datasets checked:
+
+```text
+(06E3 << 8) | 06E2 == 0870.word0
+```
+
+Examples:
+- XTR: `00CE,0055 -> 55CE`;
+- Eco5: `006B,0004 -> 046B`;
+- Eco5: `006C,0004 -> 046C`.
+
+The equality is repeatedly observed. Its semantic meaning remains **OPEN / UNKNOWN**; do not label it as checksum, pointer or calendar ID.
+
+---
+
+# THERMIA PROTOCOL FINDINGS
+
 # 2026-10-02 — combined genuine iTec Eco5 Online approval evidence
 
 ## STRONGLY SUPPORTED / genuine Eco5 Online capture evidence — approval opens configuration synchronization
