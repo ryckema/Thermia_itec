@@ -101,7 +101,8 @@ The experiment was armed but no qualified silence → controller-return → chal
 **ABORT**
 
 - another response-shaped `0x0F FC17` peer is observed;
-- a new CRC failure occurs after controller return and before completion;
+- another `0x0F FC16` ACK-shaped peer response is observed;
+- CRC, stream-resync or RX-drop integrity changes after controller return and before completion;
 - the user presses Cancel.
 
 Unexpected traffic that is not part of the explicit criterion is capture-only.
@@ -117,7 +118,8 @@ The experiment has several hard guards:
 - DE is LOW outside the guarded response;
 - no FC16 ACK is transmitted;
 - no semantic page/write transaction exists in this build;
-- another apparent `0x0F` responder aborts the experiment.
+- another apparent `0x0F` responder aborts the experiment;
+- parser CRC/resync/RX-drop changes abort the active observation window.
 
 Plausible unintended effects are a temporary partial Online/DCM session, repeated `03E8` configuration writes from the controller, or an Online communication alarm because this experiment deliberately stops after proving entry into the sync path.
 
