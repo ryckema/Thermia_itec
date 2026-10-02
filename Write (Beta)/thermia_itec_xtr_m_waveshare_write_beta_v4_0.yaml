@@ -1,10 +1,10 @@
 # =============================================================================
-# THERMIA iTec XTR M — EXP383 / Write Beta v4.0 — DCM START FIX
+# THERMIA iTec XTR M — Write Beta v4.0 — EXP383 controls + EXP386 DCM recovery baseline
 #
 # EXP383 — staged candidate controls from EXP382 offline gap analysis
 #
-# STATUS: DCM START FIX PREPARED / NOT RUN
-# Controlled change: restore guarded DCM session start from unqualified stage40.
+# SESSION STATUS: EXP386 COMPLETE / POSITIVE (locally confirmed 2026-10-02)
+# EXP386 result: guarded controller-restart recovery is locally confirmed end-to-end.
 # Existing semantic controls, page ACK chain, guards and payloads otherwise unchanged.
 # Additional controlled change: startup bus-age >2 s now arms existing stage-1 cold-start wait instead of disarming DCM.
 # Additional controlled change: >=5 s stage40 bus loss while semantic-idle now enters the same stage-1 cold-start path even if runtime was not yet qualified.
@@ -12,6 +12,7 @@
 # Additional controlled change: this NO_TX guard-wait now applies to every challenge while stage40 is unqualified and semantic-idle, not only challenge #1.
 # BASELINE: EXP381B COMPLETE / POSITIVE
 # OFFLINE BASIS: EXP382 COMPLETE / POSITIVE
+# EXP383 STATUS: PREPARED / NOT RUN — TEST controls are not promoted by EXP386
 #
 # Hypothesis
 # ----------
