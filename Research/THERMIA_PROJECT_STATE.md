@@ -30,7 +30,7 @@ Positive evidence is the first controller-originated `0x0F FC16 03E8/count14` fo
 
 ### Safety
 
-One R1 maximum per ESP boot; manual arm required; DE LOW otherwise; peer responder or CRC integrity change aborts; unexpected traffic is capture-only. If a partial Online/DCM state or alarm persists, return to the passive Eco build and use only the normal controller restart procedure if needed.
+One R1 maximum per ESP boot; manual arm required; DE LOW otherwise; peer responder or parser CRC/resync/RX-drop integrity change aborts; unexpected traffic is capture-only. If a partial Online/DCM state or alarm persists, return to the passive Eco build and use only the normal controller restart procedure if needed.
 
 **Do not advance to Eco initial-sync ACKs or semantic writes until an ECO-WRITE-01 result/log is supplied.**
 
