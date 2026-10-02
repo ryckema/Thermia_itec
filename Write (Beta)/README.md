@@ -7,22 +7,29 @@ This folder contains the active native-control build for the tested XTR M. Read-
 
 ## Current file
 
-`thermia_itec_xtr_m_waveshare_write_beta_v4_0.yaml`
+`thermia_itec_xtr_m_waveshare_write_beta_v4_1.yaml`
 
-Write Beta v4.0 contains the **EXP381B COMPLETE / POSITIVE** production/UI baseline, the seven **EXP383 TEST controls** from the EXP382 offline gap analysis, and the **EXP386 COMPLETE / POSITIVE** native DCM controller-restart recovery state machine. EXP386 changes session-state gating only; it does not promote any EXP383 TEST mapping to proven.
+Write Beta v4.1 keeps the **EXP381B COMPLETE / POSITIVE** production/UI baseline and the seven **EXP383 TEST controls**, and adds the session/write-stability work from EXP386–EXP388.
+
+Current evidence status:
+
+- **EXP386 — COMPLETE / POSITIVE:** guarded native DCM controller-restart recovery is locally confirmed end-to-end.
+- **EXP387 — COMPLETE / POSITIVE:** the delayed-`0708` semantic re-arm is locally confirmed; Room Setpoint writes recover after the mailbox wait instead of being permanently disabled.
+- **EXP388 — RUNNING / PARTIAL:** two consecutive Thermia controller restarts recovered successfully without rebooting the ESP, and semantic Room Setpoint control remained functional. The additional pre-semantic/refresh-only cancellation branches are present but have not yet been independently live-exercised.
+- **EXP383 — PREPARED / NOT RUN:** the seven TEST mappings are still not promoted to locally proven behavior.
 
 Important distinction:
 
 - the established controls listed as **PROVEN** below have local XTR M write evidence;
 - entities containing **TEST** are only **STRONGLY SUPPORTED** mappings;
-- publishing them in v4.0 does **not** promote them to proven protocol behavior;
-- EXP383 itself is **PREPARED / NOT RUN** until individual results are supplied.
+- publishing them in v4.1 does **not** promote them to proven protocol behavior;
+- session-stability evidence does not validate EXP383 semantic mappings.
 
-The previous v3.0 build remains useful as a rollback point before the EXP383 candidate controls were added.
+Write Beta v4.0 has been moved to [old versions](./old%20versions/) and is the direct rollback point for the v4.1 session-stability changes. The older v3.0 build remains useful as a pre-EXP383 rollback point.
 
 ## Native DCM session/recovery status
 
-EXP386 is **COMPLETE / POSITIVE** on the tested XTR M. The current v4.0 build now has a locally confirmed recovery path for the case where the ESP is already running and the Thermia controller is power-cycled.
+The v4.1 session path keeps the proven EXP386 cold-start sequence and adds EXP387/EXP388 recovery hardening.
 
 The confirmed sequence is:
 
@@ -38,7 +45,12 @@ stage40
   -> ordered FC16 initial sync through 06F4
   -> fresh runtime FC16 ACK + 0708 idle reply
   -> persistent runtime qualified
+  -> recovery latch re-armed only after RECOVERY_POSITIVE
 ```
+
+In the EXP388 run, this full sequence completed twice in succession after two separate controller restarts while the ESP remained powered. The second recovery reached `RECOVERY_POSITIVE success=2 ... recoveryRearmed=1`, with parser resync and RX-drop counters still clean.
+
+v4.1 also treats a genuine controller restart as an authority boundary. In recoverable pre-semantic or refresh-only states, unconfirmed queued intents are cancelled and semantic caches are invalidated before the new session is built. If a semantic selector/page transaction is already in-flight, recovery remains fail-closed. The cancellation paths beyond the idle case are still **not independently live-confirmed**.
 
 Do not treat every `071C/0730` challenge as permission to transmit. The R1 replay remains restricted to the proven cold-start guard.
 
@@ -48,7 +60,7 @@ The following controls are locally confirmed writable through the native control
 
 ### Heating — `03E8/count14`
 
-| Home Assistant control | Register | Range used in v4.0 | Evidence |
+| Home Assistant control | Register | Range used in v4.1 | Evidence |
 |---|---:|---:|---|
 | 02 Heating \| 00 Room Setpoint | `0x03F4` | 10..30 °C | PROVEN |
 | 02 Heating \| 01 Heating Curve | `0x03E8` | 22..56 | PROVEN |
@@ -161,7 +173,7 @@ The exact entity catalogue is maintained in:
 
 ## Safety model
 
-The v4.0 build retains the existing fail-closed guards:
+The v4.1 build retains the existing fail-closed guards and adds session-recovery hardening:
 
 - authoritative current page required before semantic TX;
 - one selected word changed per semantic transaction;
@@ -175,6 +187,9 @@ The v4.0 build retains the existing fail-closed guards:
 - no automatic semantic retry after failure;
 - driver-enable remains LOW outside guarded TX;
 - controller-session recovery remains separately guarded;
+- after a fully qualified recovery, the recovery latch is re-armed for a later independent controller restart;
+- a recoverable controller-loss boundary cancels unconfirmed intents and invalidates semantic caches rather than replaying stale work;
+- selector/page-in-flight semantic states still fail closed;
 - the fixed challenge replay is only locally validated behavior, not the recovered native challenge-response algorithm.
 
 For the EXP383 candidate controls, add this rule:
@@ -259,11 +274,11 @@ Do not disconnect the room sensor or other normal Thermia bus participants for t
 
 Copy:
 
-`thermia_itec_xtr_m_waveshare_write_beta_v4_0.yaml`
+`thermia_itec_xtr_m_waveshare_write_beta_v4_1.yaml`
 
 into your ESPHome configuration directory.
 
-The successful EXP386 run was made with ESPHome **2026.9.0**. That is the locally observed environment, not a declared minimum-version requirement.
+The successful EXP386/EXP388 session-recovery runs were made in the same locally tested ESPHome 2026.9.x environment used during this research. This is observed test context, not a declared minimum-version requirement.
 
 ### 3. Configure secrets
 
@@ -304,10 +319,12 @@ For the locally validated fresh-session recovery procedure:
 3. Power-cycle/restart the Thermia controller once using the same normal controller power procedure you would otherwise use.
 4. Leave the ESP powered during the controller restart.
 5. Watch for the recovery chain.
+6. Once `RECOVERY_POSITIVE` is reached, the recovery latch is re-armed. A later independent controller restart can use the same guarded path again without rebooting the ESP.
 
 Expected successful markers include:
 
 ```text
+RECOVERY_INTENTS_CANCELLED
 BUS_LOSS_TO_COLD_START
 RECOVERY_ARMED
 BOOT_RETURN
@@ -318,8 +335,8 @@ TX_EXECUTED ONE-SHOT R1
 ...
 INITIAL_SYNC_COMPLETE
 RUNTIME_FC16_ACK_EXECUTED
-RECOVERY_POSITIVE
-COMPLETE / POSITIVE / fresh controller session recovered
+RECOVERY_POSITIVE ... recoveryRearmed=1
+COMPLETE / POSITIVE / fresh controller session recovered / recovery re-armed
 ```
 
 The exact intermediate FC16 pages form the existing ordered native initial-sync chain and finish at `06F4/count19`.
@@ -333,6 +350,7 @@ Before changing settings in Home Assistant, confirm:
 - the status reaches a positive/qualified stage40 state;
 - at least one fresh runtime FC16 has been ACKed;
 - at least one `0708` idle reply has been observed;
+- after a recovery, `RECOVERY_POSITIVE ... recoveryRearmed=1` is present;
 - parser/RX integrity remains clean.
 
 If the build reports STOP, ABORT, REFUSED, stage 99, unknown runtime traffic, peer responder activity, parser resyncs or RX drops, do not use semantic controls until the cause is understood.
@@ -351,7 +369,7 @@ Do not start with `0559 Link Integration`; keep that candidate last because it m
 
 If normal bus behavior does not recover or you want a passive setup, flash one of the repository's [Read-only](../Read-only/) configurations.
 
-The previous v3.0 write build can also serve as a pre-EXP383 rollback point, but the read-only build is the conservative fallback when active control is not required.
+For an active-write rollback, v4.0 is archived in [old versions](./old%20versions/) and is the direct pre-v4.1 baseline. The older v3.0 write build remains the pre-EXP383 rollback point. The read-only build is the conservative fallback when active control is not required.
 
 ## Recovery / stop criteria
 
