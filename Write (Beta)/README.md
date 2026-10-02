@@ -90,6 +90,8 @@ The following controls are locally confirmed writable through the native control
 | 02 Heating \| 20 Startup HT | `0x0433` | PROVEN |
 | 02 Heating \| 21 Heating Time | `0x0434` | PROVEN |
 
+Hot Water Mode labels: `Comfort` (0), `Eco` (1), `Holiday Eco` (2).
+
 ### Cooling — `0442/count13`
 
 | Home Assistant control | Register | Evidence |
@@ -108,6 +110,8 @@ The following controls are locally confirmed writable through the native control
 |---|---:|---|
 | 01 Operation \| 01 Mode | `0x0553` | PROVEN by EXP380; not every enum value individually exercised |
 
+Home Assistant labels: `Off` (0), `Auto` (1), `Compressor` (2), `Auxiliary Heater` (3), `Hot Water` (4).
+
 ## EXP383 TEST controls
 
 These seven controls are fully wired into the existing native semantic-write engines but remain **STRONGLY SUPPORTED / TEST** until local XTR M validation.
@@ -116,11 +120,11 @@ These seven controls are fully wired into the existing native semantic-write eng
 |---|---:|---|---|
 | 03 Hot Water \| 03 **TEST** Top-up | `0x0430` | Hot Water TOP_UP | switch 0/1 |
 | 04 Cooling \| 08 **TEST** Hysteresis | `0x0444` | INFORMATION Cooling Hysteresis | 0.0..12.0 K, step 0.1, tentative raw×10 |
-| 04 Cooling \| 09 **TEST** Configuration | `0x0446` | SERVICE Cooling type | Uit / Actieve koeling / Geïntegreerd in WP |
+| 04 Cooling \| 09 **TEST** Configuration | `0x0446` | SERVICE Cooling type | Off / Active Cooling / Integrated in Heat Pump |
 | 04 Cooling \| 10 **TEST** Stop Threshold | `0x0448` | SERVICE Cooling STOP threshold | raw 0..100 |
 | 04 Cooling \| 11 **TEST** Max Start Temperature | `0x044A` | MAX_STARTTEMP | 5..55 °C; guarded against current Min Stop |
 | 04 Cooling \| 12 **TEST** Min Stop Temperature | `0x044B` | MIN_STOPTEMP | 5..55 °C; guarded against current Max Start |
-| 01 Operation \| 02 **TEST** Link Integration | `0x0559` | Link Integration | Light / System |
+| 01 Operation \| 02 **TEST** Link Integration | `0x0559` | Link Integration | Light / System; **disabled by default in Home Assistant** |
 
 ### Test order
 
@@ -130,7 +134,7 @@ Recommended order:
 
 `0430 → 0444 → 0446 → 0448 → 044A → 044B → 0559`
 
-`0559 Link Integration` is intentionally last. Changing the integration mode may plausibly affect the Online/DCM-style session itself. If the session or normal bus behavior changes unexpectedly after this test, stop and do not retry automatically.
+`0559 Link Integration` is intentionally last and is **disabled by default in Home Assistant**. Enabling the entity does not force either Light or System; the controller remains authoritative until the user explicitly changes it. Changing the integration mode may plausibly affect the Online/DCM-style session itself. If the session or normal bus behavior changes unexpectedly after this test, stop and do not retry automatically.
 
 ## Native write model
 
