@@ -1,3 +1,49 @@
+# 2026-10-02 — EXP386 complete; native DCM session recovery locally confirmed
+
+**Authoritative current state:** EXP386 is **COMPLETE / POSITIVE** from the supplied local Thermia iTec XTR M runtime log. There is no newly promoted live experiment. EXP383 remains **PREPARED / NOT RUN** for the seven semantic candidate controls; the DCM/session-recovery work did not validate those mappings.
+
+## Current DCM/session baseline
+
+Current published write file:
+
+`Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v4_0.yaml`
+
+The v4.0 session state machine is now locally confirmed to recover a native DCM-style session after a real controller power-cycle while the ESP remains running.
+
+Locally confirmed EXP386 flow:
+- repeated exact `071C/0730` challenges outside the proven cold-start guard are **NO TX / capture-only** and no longer stop unqualified stage40;
+- >=5 s complete bus silence transitions unqualified semantic-idle stage40 into the existing stage-1 cold-start recovery path;
+- first valid frame after silence produces `BOOT_RETURN` and stage 2;
+- R1 is allowed only when the controller state is known as `A80E=0000 / A80F=0005`;
+- one already-proven R1 is transmitted on the exact challenge;
+- the first post-R1 FC16 is `03E8/count14`;
+- the complete ordered initial FC16 sync runs through `06F4/count19`;
+- persistent stage40 runtime then qualifies with a fresh known runtime FC16 ACK plus a `0708` idle reply;
+- the successful run ended with `COMPLETE / POSITIVE / fresh controller session recovered`;
+- parser integrity remained clean in that run: `resync=0`, `drops=0`.
+
+No hard-coded R1, page-ACK or selector payload was changed by EXP386. The controlled changes were session-state transitions only.
+
+## Current protocol model additions
+
+1. An exact `071C/0730` challenge by itself is not permission to transmit.
+2. On this XTR M, the locally proven R1 replay permission remains the known `A80E=0000 / A80F=0005` cold-start state.
+3. Challenges observed outside that guard, including `A80E=0008 / A80F=0032`, are capture-only.
+4. A real controller restart can be detected by >=5 s complete bus silence followed by boot return.
+5. Initial settings synchronization and persistent runtime qualification are separate phases; the session is only considered recovered after fresh runtime service evidence.
+
+## Current experiment status
+
+- **EXP386 — COMPLETE / POSITIVE**
+- **EXP383 — PREPARED / NOT RUN**
+- Calendar track remains parked unless explicitly reopened.
+
+## Safety
+
+Keep semantic writes separate from session activation. Do not relax the R1 guard, do not invent challenge responses, do not broad-scan or write unknown registers, and do not use the EXP383 TEST controls as if they were proven mappings.
+
+---
+
 # 2026-10-01 — EXP381B complete; EXP382 offline complete; EXP383 prepared
 
 **Authoritative current state:** EXP381B is **COMPLETE / POSITIVE** by explicit user confirmation after running the production/UI consolidation build. EXP382 is **COMPLETE / POSITIVE** as an offline evidence-analysis experiment. EXP383 is **PREPARED / NOT RUN**. The current published active write build is **Write (Beta) v4.0**, derived from EXP383; its seven entities containing `TEST` are intentionally not yet promoted to locally proven mappings.
