@@ -1,9 +1,11 @@
 # =============================================================================
-# THERMIA iTec XTR M — EXP383
+# THERMIA iTec XTR M — EXP383 / Write Beta v4.0 — DCM START FIX
 #
 # EXP383 — staged candidate controls from EXP382 offline gap analysis
 #
-# STATUS: PREPARED / NOT RUN
+# STATUS: DCM START FIX PREPARED / NOT RUN
+# Controlled change: restore guarded DCM session start from unqualified stage40.
+# Existing semantic controls, page ACK chain, guards and payloads otherwise unchanged.
 # BASELINE: EXP381B COMPLETE / POSITIVE
 # OFFLINE BASIS: EXP382 COMPLETE / POSITIVE
 #
@@ -2161,10 +2163,69 @@ uart:
                       write_stop("COMPLETE / INCONCLUSIVE / challenge appeared during hot-rejoin",
                                   "challenge captured during hot-rejoin; R1 deliberately withheld");
                     } else if (id(write_stage)==40) {
-                      ESP_LOGE("thermia_write","\033[31m[WRITE] ===== RETAINED_SESSION_RESTART_DETECTED exact_071C_0730_challenge n=%u NO_R1 NO_TX DE=LOW RAW=%s =====\033[0m",
-                        unsigned(id(write_challenge_count)),raw325);
-                      write_stop("COMPLETE / INCONCLUSIVE / retained session restart detected",
-                                  "exact 071C/0730 challenge appeared; retained test sends no R1");
+                      // v4.0 DCM-start fix:
+                      // Stage 40 is entered optimistically after ESP boot so an already
+                      // retained controller/DCM runtime can continue without replaying R1.
+                      // If that runtime has NOT actually qualified yet and the controller
+                      // presents the exact native 071C/0730 challenge, allow the same
+                      // guarded one-shot cold-start R1 path that is already proven below.
+                      //
+                      // If runtime IS already qualified, preserve the existing fail-closed
+                      // behavior: a later challenge is treated as a session restart and no
+                      // R1 is sent automatically.
+                      const bool retained_runtime_qualified =
+                        id(write_runtime_fc16_ack_count)>=1 &&
+                        id(write_runtime_0708_reply_count)>=1 &&
+                        id(write_runtime_unknown_fc16_count)==0 &&
+                        id(write_runtime_unknown_fc03_count)==0 &&
+                        id(write_peer_fc17_count)==0 &&
+                        id(write_peer_fc16_ack_count)==0 &&
+                        (id(thermia_parser_resync_count)-id(write_resync_baseline))==0 &&
+                        (id(thermia_rx_buffer_drop_count)-id(write_drop_baseline))==0;
+                      const bool semantic_idle =
+                        id(write_write_state)==0 || id(write_write_state)==4;
+
+                      if (!retained_runtime_qualified && semantic_idle &&
+                          !id(write_tx_used) && id(write_challenge_count)==1) {
+                        id(write_first_challenge_crc)=received_crc;
+                        const bool state_ok=id(write_a80e_known) && id(write_a80f_known) &&
+                          id(write_a80e)==0x0000 && id(write_a80f)==0x0005;
+
+                        if (!state_ok) {
+                          ESP_LOGE("thermia_write","\033[31m[WRITE] ===== DCM_START_FALLBACK_REFUSED challenge=1 state_ok=0 A80E_known=%u A80E=%04X A80F_known=%u A80F=%04X NO_TX DE=LOW RAW=%s =====\033[0m",
+                            unsigned(id(write_a80e_known)),unsigned(id(write_a80e)),
+                            unsigned(id(write_a80f_known)),unsigned(id(write_a80f)),raw325);
+                          write_stop("COMPLETE / INCONCLUSIVE / startup challenge seen but cold-start state guard not met",
+                                     "DCM-start fallback refused; A80E/A80F guard failed");
+                        } else {
+                          // Reuse the exact already-proven R1 frame and the existing
+                          // stage-3 -> ordered FC16 ACK chain. No new payload is introduced.
+                          id(write_tx_used)=true; id(write_tx_ms)=millis(); id(write_stage)=3;
+                          id(thermia_write_tx_used_sensor)->publish_state(true);
+                          id(thermia_write_status)->publish_state("RUNNING / DCM start fallback R1 sent / wait exact 03E8-count14");
+                          id(thermia_write_stage_text)->publish_state("stage 3 / DCM start fallback / wait exact 03E8-count14");
+                          id(thermia_write_last_event)->publish_state("unqualified stage40 received first exact challenge; proven guarded R1 replay sent");
+                          ESP_LOGE("thermia_write","\033[31m[WRITE] ===== DCM_START_FALLBACK_TX_INTENT challenge=1 runtimeQualified=0 state_ok=1 A80E=0000 A80F=0005 latch=CLOSED R1=1691A5F3F8E8D58738924416E8E6A3D5 RAW_REQUEST=%s =====\033[0m",
+                            raw325);
+
+                          static const uint8_t r1_stage40_start[21]={
+                            0x0F,0x17,0x10,
+                            0x16,0x91,0xA5,0xF3,0xF8,0xE8,0xD5,0x87,
+                            0x38,0x92,0x44,0x16,0xE8,0xE6,0xA3,0xD5,
+                            0xE2,0x27
+                          };
+                          id(waveshare_rs485_direction).turn_on(); delay_microseconds_safe(1000);
+                          id(thermia_uart).write_array(r1_stage40_start,sizeof(r1_stage40_start)); id(thermia_uart).flush();
+                          delay_microseconds_safe(1000); id(waveshare_rs485_direction).turn_off();
+                          ESP_LOGE("thermia_write","\033[31m[WRITE] ===== DCM_START_FALLBACK_TX_EXECUTED frame=0F17101691A5F3F8E8D58738924416E8E6A3D5E227 DE=LOW latch=CLOSED =====\033[0m");
+                        }
+                      } else {
+                        ESP_LOGE("thermia_write","\033[31m[WRITE] ===== RETAINED_SESSION_RESTART_DETECTED exact_071C_0730_challenge n=%u runtimeQualified=%u semanticIdle=%u NO_R1 NO_TX DE=LOW RAW=%s =====\033[0m",
+                          unsigned(id(write_challenge_count)),
+                          unsigned(retained_runtime_qualified),unsigned(semantic_idle),raw325);
+                        write_stop("COMPLETE / INCONCLUSIVE / retained session restart detected",
+                                   "exact 071C/0730 challenge appeared after qualified/unsafe stage40; no automatic R1");
+                      }
                     } else if (!id(write_tx_used) && id(write_challenge_count)==1) {
                       id(write_first_challenge_crc)=received_crc;
                       const bool state_ok=id(write_a80e_known) && id(write_a80f_known) &&
@@ -7187,7 +7248,7 @@ text_sensor:
     entity_category: diagnostic
     update_interval: 6h
     lambda: |-
-      return {"Thermia Write Native Hot-Rejoin"};
+      return {"Thermia Write v4.0 DCM Start Fix"};
 
   - platform: template
     name: "Heating Settings Source"
