@@ -1,5 +1,47 @@
 # THERMIA PROTOCOL FINDINGS
 
+# 2026-10-02 — combined genuine iTec Eco5 Online approval evidence
+
+## STRONGLY SUPPORTED / genuine Eco5 Online capture evidence — approval opens configuration synchronization
+
+This is **not local XTR M or local Eco8 proof**. It is direct raw-capture evidence from two genuine iTec Eco 5 installations with a Thermia Online gateway.
+
+Across `itec_eco5_gateway_20260926.log` and `itec_eco5_gateway_20260928.log`:
+
+- six successful exact `0x0F FC17` `071C/0730` approval responses are observed;
+- every successful gateway response is followed by controller `FC16 03E8/count14`;
+- response -> first-`03E8` delay is 92..482 ms;
+- successful responses occur at challenge ordinal #29 four times and #3 twice;
+- the six response bodies are different.
+
+### Strong conclusion
+
+For the captured Eco5 systems, native Online session entry is directly tied to the `071C/0730` approval exchange and the configuration synchronization path starts at `03E8/count14`.
+
+The captures do **not** support a universal static FC17 response and do not reveal the challenge-response derivation.
+
+## STRONGLY SUPPORTED / genuine Eco5 Online capture evidence — FC16 ACK controls initial page progression
+
+Where the first `03E8/count14` page is immediately ACKed, the controller proceeds:
+
+`03E8/14 -> ACK -> 03FC/11 -> ACK -> 0410/22 -> ACK -> 042E/15 -> ...`
+
+Two challenge-#3 sessions in the 20260928 capture have no immediate `03E8` ACK. In each window, the controller emits nine `03E8/count14` frames during the following 10 s and does not progress to `03FC` during that window.
+
+This directly supports the address/count ACK as part of initial synchronization progression on genuine Eco5 Online traffic.
+
+## OPEN / UNKNOWN — mismatched replay acceptance on iTec Eco
+
+The exact response `1691A5F3F8E8D58738924416E8E6A3D5` is a genuine Eco5 gateway response to one specific challenge.
+
+Local XTR M work proves that this recorded response can be accepted there against a different live challenge. The genuine Eco5 captures do **not** prove that Eco itself tolerates such a mismatch.
+
+ECO-WRITE-01 is therefore narrowed to this single unknown. Challenge #3 is used because it is an actually successful genuine Eco5 gateway-response ordinal in two captured sessions; challenges #1 and #2 remain capture-only.
+
+No Eco semantic write is promoted by this offline evidence.
+
+---
+
 ## PROVEN / locally confirmed — EXP386 native DCM controller-restart recovery
 
 The full recovery path is now locally confirmed on the tested Thermia iTec XTR M:
