@@ -997,7 +997,8 @@ globals:
   - id: write_semantic_response_count
     type: uint8_t
     restore_value: no
-    initial_value: '0'  - id: write_confirmed_write_count
+    initial_value: '0'  
+  - id: write_confirmed_write_count
     type: uint8_t
     restore_value: no
     initial_value: '0'
@@ -7990,7 +7991,8 @@ select:
       - "Uit"
       - "Actieve koeling"
       - "Geïntegreerd in WP"
-    set_action:      - lambda: |-
+    set_action:      
+      - lambda: |-
           uint16_t target=0xFFFF;
           if (x=="Uit") target=0;
           else if (x=="Actieve koeling") target=1;
