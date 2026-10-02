@@ -10,7 +10,7 @@ This folder contains the active native-control build for the tested XTR M. Read-
 
 ## Known issues
 - Some limits are still incorrect, if the value is outside of the limits the write will not be accepted.
-- Writes take 7 second, up to 10 writes can be queued 
+- Writes take 7 seconds per write, up to 10 writes can be queued 
  
 
 ## Current file
