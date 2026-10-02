@@ -1,5 +1,44 @@
 # EXPERIMENT LOG
 
+## PROTO-OFFLINE-01 — Native unknown-page correlation — COMPLETE / POSITIVE
+**Status: COMPLETE / POSITIVE**  
+**Date: 2026-10-02**  
+**Track:** offline evidence analysis; no device TX and no numbered live-XTR experiment advancement.
+
+### Hypothesis
+
+Existing local XTR logs, genuine iTec Eco5 + Thermia Online captures and the cross-model register table can materially narrow `04A6/count13`, `0424` within `0410/count22`, and `06F4/count19`.
+
+### Controlled change
+
+None. Existing captures/logs only.
+
+### Observed facts
+
+- later local XTR runtime SG transitions correlate with Normal -> `04A6=0000/04A7=0000`, Enhanced -> `0041/0001`, Blocked -> `0042/0001`, and return to Normal -> `0000/0000`;
+- genuine Eco5 Online approvals occur with both zero and non-zero `04A6`, excluding it as a simple Online approval flag;
+- an older local XTR capture contains a substantially different `04A6/count13` payload regime, preserved as historical/contextual evidence;
+- the cross-model contiguous service sequence is locally anchored by confirmed XTR registers `041D` and `041E`, placing `0424` at Returnline Temperature Max Limit;
+- across local XTR and the compared genuine Eco5 frames: `06F4=A80C`, `06F5=A80D`, `06F6=A80E`, `06F7=A80F`, `06F8=A810`, and `0701=AFDC`.
+
+### Conclusions
+
+**STRONGLY SUPPORTED / locally correlated:** `04A6/04A7` encode SG/operational-state information in the later local XTR runtime; `0424` = Returnline Temperature Max Limit.
+
+**PROVEN / directly observed structural relation:** the `06F4..06F8` and `0701` mirror relationships above.
+
+**HYPOTHESIS:** low bits of non-zero `04A6` may encode the two SG inputs; unobserved `0x0043` for `(1-1)` is not promoted.
+
+**OPEN / UNKNOWN:** historical alternate `04A6/count13` regime, exact `04B0` semantics, genuine Eco5 `04A6=0044` meaning, and the remaining `06F4/count19` words.
+
+### Result
+
+**COMPLETE / POSITIVE** as an offline evidence-reduction task. No live XTR experiment status changes.
+
+Full report: `Research/protocol reduction/PROTO_OFFLINE_01_UNKNOWN_PAGE_CORRELATION_20261002.md`.
+
+---
+
 ## CAL-OFFLINE-01 — Calendar structure reduction — RUNNING / PARTIAL
 **Status: RUNNING / PARTIAL**  
 **Date: 2026-10-02**  
