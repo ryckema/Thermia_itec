@@ -5,6 +5,13 @@
 
 This folder contains the active native-control build for the tested XTR M. Read-only remains the conservative choice when control is not required.
 
+> [!WARNING]
+> **Read the install instruction.** After flashing the ESP you will need to restart your Thermia heat pump, getting a stable session is still a bit tricky
+
+## Known issues
+- Some limits are still incorrect, if the value is outside of the limits the write will not be accepted.
+ 
+
 ## Current file
 
 `thermia_itec_xtr_m_waveshare_write_beta_v4_1.yaml`
@@ -249,7 +256,7 @@ This section describes the setup that has actually been used for the XTR M resea
 
 ### 1. Hardware
 
-The tested board is a **Waveshare ESP32-S3-RS485-CAN / ESP32-S3-RS485-CAN-U**. Power the board separately over USB-C; do not power it from the Thermia RJ45 connector.
+The tested board is a **Waveshare ESP32-S3-RS485-CAN / ESP32-S3-RS485-CAN-U**. Power the board separately over USB-C; Powering it from the Thermia RJ45 connector is untested and may not work.
 
 Tested connection:
 
