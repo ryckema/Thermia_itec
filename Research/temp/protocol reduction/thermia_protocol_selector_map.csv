@@ -1,0 +1,33 @@
+index,page_start_hex,count_current_v41,current_push_word,desired_pull_word,bit,mask_hex,semantic_group,evidence
+0,0x03E8,14,W3,W1,0,0x0001,Heating settings,STRONGLY SUPPORTED overall; selected paths have local proof
+1,0x03FC,11,W3,W1,1,0x0002,Unknown configuration,STRONGLY SUPPORTED overall; selected paths have local proof
+2,0x0410,22,W3,W1,2,0x0004,Hot-water/service settings (partial map),STRONGLY SUPPORTED overall; selected paths have local proof
+3,0x042E,15,W3,W1,3,0x0008,Hot-water settings/service,STRONGLY SUPPORTED overall; selected paths have local proof
+4,0x0442,13,W3,W1,4,0x0010,Cooling settings,STRONGLY SUPPORTED overall; selected paths have local proof
+5,0x0456,12,W3,W1,5,0x0020,Unknown configuration,STRONGLY SUPPORTED overall; selected paths have local proof
+6,0x046A,18,W3,W1,6,0x0040,Unknown configuration,STRONGLY SUPPORTED overall; selected paths have local proof
+7,0x047E,19,W3,W1,7,0x0080,Unknown configuration,STRONGLY SUPPORTED overall; selected paths have local proof
+8,0x0492,11,W3,W1,8,0x0100,Unknown configuration,STRONGLY SUPPORTED overall; selected paths have local proof
+9,0x04A6,13,W3,W1,9,0x0200,Unknown / high-frequency native page,STRONGLY SUPPORTED overall; selected paths have local proof
+10,0x04BA,22,W3,W1,10,0x0400,Unknown configuration,STRONGLY SUPPORTED overall; selected paths have local proof
+11,0x04D8,27,W3,W1,11,0x0800,Concrete-drying configuration candidate,STRONGLY SUPPORTED overall; selected paths have local proof
+12,0x04F6,14,W3,W1,12,0x1000,Unknown configuration,STRONGLY SUPPORTED overall; selected paths have local proof
+13,0x050A,19,W3,W1,13,0x2000,Unknown configuration,STRONGLY SUPPORTED overall; selected paths have local proof
+14,0x051E,10,W3,W1,14,0x4000,Unknown configuration,STRONGLY SUPPORTED overall; selected paths have local proof
+15,0x0532,18,W3,W1,15,0x8000,Unknown configuration,STRONGLY SUPPORTED overall; selected paths have local proof
+16,0x0546,20,W2,W0,0,0x0001,System / operation / integration,STRONGLY SUPPORTED overall; selected paths have local proof
+17,0x055A,33,W2,W0,1,0x0002,Calendar transport region,STRONGLY SUPPORTED overall; selected paths have local proof
+18,0x057B,33,W2,W0,2,0x0004,Calendar transport region,STRONGLY SUPPORTED overall; selected paths have local proof
+19,0x059C,33,W2,W0,3,0x0008,Calendar transport region,STRONGLY SUPPORTED overall; selected paths have local proof
+20,0x05BD,33,W2,W0,4,0x0010,Calendar transport region,STRONGLY SUPPORTED overall; selected paths have local proof
+21,0x05DE,33,W2,W0,5,0x0020,Calendar transport region,STRONGLY SUPPORTED overall; selected paths have local proof
+22,0x05FF,33,W2,W0,6,0x0040,Calendar transport region,STRONGLY SUPPORTED overall; selected paths have local proof
+23,0x0620,33,W2,W0,7,0x0080,Calendar transport region,STRONGLY SUPPORTED overall; selected paths have local proof
+24,0x0641,33,W2,W0,8,0x0100,Calendar transport region,STRONGLY SUPPORTED overall; selected paths have local proof
+25,0x0662,33,W2,W0,9,0x0200,Calendar transport region,STRONGLY SUPPORTED overall; selected paths have local proof
+26,0x0683,33,W2,W0,10,0x0400,Calendar transport region,STRONGLY SUPPORTED overall; selected paths have local proof
+27,0x06A4,33,W2,W0,11,0x0800,Calendar transport region,STRONGLY SUPPORTED overall; selected paths have local proof
+28,0x06C5,33,W2,W0,12,0x1000,Calendar transport region,STRONGLY SUPPORTED overall; selected paths have local proof
+29,0x06EA,7,W2,W0,13,0x2000,Clock/date block,STRONGLY SUPPORTED overall; selected paths have local proof
+30,0x06F1,3,W2,W0,14,0x4000,Unknown configuration,STRONGLY SUPPORTED overall; selected paths have local proof
+31,0x06F4,19,W2,W0,15,0x8000,Final initial-sync / unknown configuration,STRONGLY SUPPORTED overall; selected paths have local proof

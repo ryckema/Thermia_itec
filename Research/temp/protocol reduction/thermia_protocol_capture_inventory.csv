@@ -1,0 +1,7 @@
+file,source_class,frames,crc_failures,duration_s,max_interframe_gap_s,gaps_ge_5s
+thermia_capture_20260924_210001(1).log,local_xtr,394,0,45.574,0.835,0
+thermia_capture_20260925_071517.log,local_xtr,674,0,79.325,1.001,0
+thermia_capture_20260925_090209.log,local_xtr,491,0,55.066,0.889,0
+thermia_capture_20260925_090550.log,local_xtr,892,0,106.351,0.932,0
+itec_eco5_gateway_20260926.log,genuine_eco5_online,10719,0,1482.107,36.283,3
+itec_eco5_gateway_20260928.log,genuine_eco5_online,9174,0,1211.446,16.369,4
