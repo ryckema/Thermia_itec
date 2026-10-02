@@ -3,81 +3,115 @@
 > [!WARNING]
 > This folder contains **active RS485 experiments** for the legacy/non-Genesis Thermia iTec Eco / Danfoss DHP-AQ family. These files can transmit on the internal Thermia bus. They are not production write builds.
 
-The passive compatibility profile remains:
+Passive baseline:
 
 `Read-only/iTec Eco/thermia_itec_eco_waveshare_public_v01.yaml`
 
-The current active Eco experiment is:
+Current active experiment:
 
 `thermia_itec_eco_waveshare_write_exp01.yaml`
 
-## ECO-WRITE-01 — PREPARED / NOT RUN
+Combined genuine gateway evidence:
 
-### Hypothesis
+`ECO5_GATEWAY_CAPTURE_EVIDENCE.md`
 
-A single genuine iTec Eco 5 Thermia Online gateway response, replayed once against the first exact `0x0F` cold-start `071C/0730` challenge, may be sufficient for an iTec Eco controller to enter the native Online/DCM synchronization path.
+## Current status
 
-This is deliberately narrower than the XTR M Write Beta. It does **not** yet attempt a setting change.
+**ECO-WRITE-01 — PREPARED / NOT RUN**
 
-### Baseline
+No iTec Eco active result has been supplied yet. Generating or updating the YAML does not count as experiment completion.
 
-`Read-only/iTec Eco/thermia_itec_eco_waveshare_public_v01.yaml`
+## What is already established from genuine Eco5 logs
 
-The passive decoder and normal Home Assistant monitoring remain intact.
+Re-analysis of both genuine iTec Eco 5 + Thermia Online captures found **six successful approval responses**.
 
-### Exact controlled change
+All six have the same architecture:
 
-Only the following active behavior is added:
+`071C/0730 challenge -> gateway FC17 response -> controller FC16 03E8/count14`
+
+Observed first-`03E8` delay after the gateway response is **92–482 ms**.
+
+The successful gateway response occurred:
+
+- on challenge **#29** in four captured sessions;
+- on challenge **#3** in two captured sessions.
+
+The six challenge bodies and six response bodies differ. Therefore the captures directly establish the Eco5 approval/synchronization architecture, but do **not** establish a constant response or the native challenge-response derivation.
+
+The captures also directly establish the downstream ACK behavior. When `03E8/count14` is immediately ACKed, the controller proceeds into:
+
+`03E8/14 -> ACK -> 03FC/11 -> ACK -> 0410/22 -> ACK -> 042E/15 -> ...`
+
+In two captured challenge-#3 sessions without an immediate `03E8` ACK, the controller retransmitted `03E8/count14` nine times within the next 10 seconds and did not progress to `03FC` during that window.
+
+So the ACK chain is **not** the main unknown for Eco anymore.
+
+## Remaining question
+
+The key unresolved prerequisite is now:
+
+> **Will an iTec Eco controller accept a known-good Eco5 gateway response replayed against a different current challenge?**
+
+That behavior is already locally proven on the XTR M: the captured Eco5 response body `1691A5F3F8E8D58738924416E8E6A3D5` was accepted there against a non-matching live challenge.
+
+That XTR result is important cross-model evidence, but it is **not** proof of Eco replay tolerance.
+
+## ECO-WRITE-01 hypothesis
+
+An iTec Eco controller accepts the known-good captured Eco5 R1 even though it does not correspond to the current live challenge.
+
+### Why challenge #3
+
+The earlier draft answered the first challenge. The raw Eco5 captures do not support that choice: no successful gateway response occurs on challenge #1.
+
+Challenge #3 is now used because a genuine Eco5 gateway successfully responded at challenge #3 in **two** captured sessions. Challenges #1 and #2 are therefore capture-only.
+
+The replay body used by ECO-WRITE-01 came from a different challenge/session — a #29 response — so the experiment explicitly tests **mismatched replay acceptance**.
+
+## Exact controlled change
+
+Relative to the passive Eco build, only this active behavior is added:
 
 1. GPIO17 TX is configured.
 2. A Home Assistant **Configuration** button manually arms ECO-WRITE-01.
-3. The ESP waits for at least **5 seconds of complete bus silence** and then for the controller to return.
-4. It waits for the exact native challenge shape:
-   - slave `0x0F`
-   - FC17 / `0x17`
-   - read `0x0730`, count 8
-   - write `0x071C`, count 8
-   - byte count 16
-5. On the first qualifying challenge it transmits exactly **one** captured gateway response.
-6. It then returns to observation only.
+3. The ESP requires at least **5 seconds of complete controller-bus silence** followed by controller return.
+4. It recognizes the exact native `0x0F FC17` challenge shape:
+   - read `0x0730`, count 8;
+   - write `0x071C`, count 8;
+   - byte count 16.
+5. Exact challenge #1: capture only, **NO TX**.
+6. Exact challenge #2: capture only, **NO TX**.
+7. Exact challenge #3: transmit exactly one captured known-good Eco5 gateway response.
+8. Return to observation only.
 
-The experiment does **not** ACK the following FC16 configuration page, does not answer `0708`, does not send a desired-page selector, and does not modify any heating, hot-water, cooling or operation setting.
+There is:
 
-### Transmitted payload
+- no FC16 ACK;
+- no `0708` reply;
+- no desired-page selector;
+- no heating/DHW/cooling/operation setting write.
 
-The single response frame is:
+## Transmitted payload
+
+Exactly one active frame is permitted per ESP boot:
 
 ```text
 0F 17 10 16 91 A5 F3 F8 E8 D5 87 38 92 44 16 E8 E6 A3 D5 E2 27
 ```
 
-Response body:
+Body:
 
 ```text
 1691A5F3F8E8D58738924416E8E6A3D5
 ```
 
-CRC bytes:
+CRC bytes are `E2 27`; calculated Modbus CRC value is `0x27E2`.
 
-```text
-E2 27
-```
-
-The calculated Modbus CRC value is `0x27E2`.
-
-### Evidence source
-
-The response body comes from a **genuine iTec Eco 5 + Thermia Online gateway capture**.
-
-Cross-model XTR M work showed that this recorded response can be accepted against a different live challenge and can open the native synchronization path on that XTR M. That does **not** prove the same behavior on an iTec Eco 8 or another Eco controller; ECO-WRITE-01 exists specifically to test that compatibility.
-
-Passive Eco 8 evidence already shows that an unpaired controller emits the same `071C/0730` challenge family during cold start, but the Eco 8 challenge payloads vary and its challenge window is shorter than on the tested XTR M.
-
-## Success, negative and abort criteria
+## Result criteria
 
 **COMPLETE / POSITIVE**
 
-After the one R1 replay, the controller sends:
+Challenge #3 is reached, the one R1 replay is transmitted, and the controller then sends:
 
 ```text
 slave 0x0F
@@ -87,78 +121,74 @@ count 14
 byte_count 28
 ```
 
-That first configuration page is enough to prove session-entry compatibility for this experiment. The ESP intentionally does **not** ACK it.
+That is enough for EXP01. The controller page is intentionally **not ACKed**.
 
 **COMPLETE / NEGATIVE**
 
-- no `03E8/count14` FC16 appears within 10 seconds after R1; or
-- only challenge retries continue.
+Challenge #3 is reached and R1 is transmitted, but no `03E8/count14` appears within 10 seconds.
 
 **COMPLETE / INCONCLUSIVE**
 
-The experiment was armed but no qualified silence → controller-return → challenge sequence occurred within 180 seconds.
+- the controller returns but challenge #3 is not reached within 30 seconds; or
+- no qualified silence -> boot-return sequence occurs inside the arm window.
 
 **ABORT**
 
-- another response-shaped `0x0F FC17` peer is observed;
-- another `0x0F FC16` ACK-shaped peer response is observed;
-- CRC, stream-resync or RX-drop integrity changes after controller return and before completion;
+- another response-shaped `0x0F FC17` peer appears;
+- another `0x0F FC16` ACK-shaped responder appears;
+- CRC/resync/RX-drop integrity changes after controller return;
 - the user presses Cancel.
 
-Unexpected traffic that is not part of the explicit criterion is capture-only.
+Unexpected traffic is capture-only.
 
 ## Safety and recovery
 
-The experiment has several hard guards:
+- manual arm required;
+- real >=5 s controller-bus silence required;
+- one R1 maximum per ESP boot;
+- one-shot latch closes before DE rises;
+- DE is LOW outside that one frame;
+- no setting register is modified;
+- no FC16 ACK or semantic page transaction exists in EXP01;
+- peer responder or parser-integrity changes abort;
+- no automatic retry.
 
-- manual arm is required;
-- a real controller-off interval of at least 5 seconds is required;
-- exactly one R1 is allowed per ESP boot;
-- the one-shot latch is closed **before** driver enable;
-- DE is LOW outside the guarded response;
-- no FC16 ACK is transmitted;
-- no semantic page/write transaction exists in this build;
-- another apparent `0x0F` responder aborts the experiment;
-- parser CRC/resync/RX-drop changes abort the active observation window.
+Plausible unintended effects are a temporary partial Online/DCM session, repeated `03E8` pushes, or an Online communication alarm because EXP01 deliberately stops before ACKing the first configuration page.
 
-Plausible unintended effects are a temporary partial Online/DCM session, repeated `03E8` configuration writes from the controller, or an Online communication alarm because this experiment deliberately stops after proving entry into the sync path.
+Recovery is passive: the ESP sends nothing else. Cancel if still armed or flash the read-only Eco profile. If the controller does not naturally leave the partial session, use only its normal controller restart procedure.
 
-Recovery is therefore passive: the ESP sends nothing else. Use the Cancel button if still armed, or flash the read-only Eco profile. If the Thermia controller does not naturally leave the partial session, use its normal controller restart procedure. Do not add speculative ACKs or setting writes to recover it.
+## How to run
 
-## How to run ECO-WRITE-01
-
-1. Flash the experimental YAML.
-2. Verify normal passive sensor updates first.
+1. Flash `thermia_itec_eco_waveshare_write_exp01.yaml`.
+2. Verify normal passive sensor updates.
 3. Open the ESPHome log.
-4. In Home Assistant, press **ECO-WRITE-01 | Arm Session Bootstrap Test** under Configuration.
-5. Power-cycle the Thermia controller using the normal procedure while keeping the ESP powered.
+4. Press **ECO-WRITE-01 | Arm Session Bootstrap Test** under Configuration.
+5. Power-cycle the Thermia controller while keeping the ESP powered.
 6. Do not change any Thermia setting during the run.
-7. Wait for a terminal `COMPLETE`, `ABORTED`, or `INCONCLUSIVE` marker.
-8. Return the complete log from:
-   - `[ECO-WRITE-01] ===== ARM ACCEPTED`
-   through
-   - the terminal ECO-WRITE-01 marker,
-   plus roughly 10–20 seconds of following passive traffic if available.
+7. Wait for a terminal ECO-WRITE-01 marker.
+8. Return the log from `ARM ACCEPTED` through the terminal marker, plus roughly 10–20 seconds of following passive traffic if available.
 
-Do **not** run it a second time in the same ESP boot. The YAML refuses a second active replay until the ESP has rebooted.
+The build refuses a second active replay in the same ESP boot.
 
-## What comes next
+## Next experiment
 
-Do not advance merely because this YAML exists.
+Do not advance before an ECO-WRITE-01 result is supplied.
 
-If ECO-WRITE-01 is **COMPLETE / POSITIVE**, the next controlled experiment should add only the known initial FC16 ACK chain and test whether the Eco controller completes the genuine Online synchronization sequence.
+If ECO-WRITE-01 is **COMPLETE / POSITIVE**, the next controlled step can reuse the **already genuine-Eco5-proven** initial FC16 address/count ACK sequence. That experiment should still add ACK stages incrementally and stop on any page/count divergence.
 
-Only after session synchronization is locally confirmed should an Eco experiment expose a semantic setting write. The preferred first semantic target is `03F4` Room Setpoint because its meaning is independently established on both the XTR M and iTec Eco family and it provides a conservative cross-check before testing settings that lack another known control path.
+Only after local Eco session synchronization is confirmed should a semantic setting write be exposed. `03F4` Room Setpoint remains the preferred first semantic target because its meaning is independently established across the XTR M and iTec Eco evidence.
 
 ## Validation status
 
-Static checks performed when the file was created:
+After this revision:
 
-- all `id(...)` references resolve;
+- all YAML `id(...)` references resolve;
 - all substitutions resolve;
-- GPIO17 TX exists only in the active experiment;
-- the hard-coded R1 frame has a valid Modbus CRC;
-- there is no FC16 ACK path in ECO-WRITE-01;
-- there is no semantic settings-write control.
+- exactly one `write_array()` TX call remains;
+- the R1 hard-coded frame CRC validates;
+- there is no FC16 ACK path;
+- there is no semantic settings-write control;
+- challenge #1 and #2 are capture-only;
+- only exact challenge #3 can use the one-shot R1 latch.
 
 **ESPHome compile verification has not been performed.**
