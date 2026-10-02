@@ -1,5 +1,50 @@
 # THERMIA PROTOCOL FINDINGS
 
+# 2026-10-02 — PROTO-OFFLINE-01 unknown-page correlation
+
+## STRONGLY SUPPORTED / locally correlated — 04A6/04A7 follow SG operating state
+
+In the later local XTR DCM-style runtime:
+```text
+SG Normal   (0-0) -> 04A6=0000, 04A7=0000
+SG Enhanced (0-1) -> 04A6=0041, 04A7=0001
+SG Blocked  (1-0) -> 04A6=0042, 04A7=0001
+```
+
+Returning to Normal returns the pair to `0000/0000`.
+
+This is a strong local SG/operational-state correlation. It is **not** an Online/DCM approval marker: genuine Eco5 approval/challenge activity is observed with both zero and non-zero `04A6`.
+
+An older local XTR capture contains the radically different `04A6/count13` payload `0000,0003,0004,0002,003F,0050,003C,0002,0000,003C,000F,001E,0000`. Therefore the complete page must not be assigned one fixed SG-only schema across all historical/session contexts.
+
+### HYPOTHESIS retained
+
+The low two bits of a non-zero `04A6` may encode the SG input combination, suggesting `0043` as a possible `(1-1)` state. This value has not been observed.
+
+## STRONGLY SUPPORTED — 0424 = Returnline Temperature Max Limit
+
+The external DHP/AQ contiguous service sequence is independently anchored on this XTR by `041D` = Hot Water Start Temperature and `041E` = Hot Water Operating Time. Continuing that same sequence places `0424` at Returnline Temperature Max Limit. Observed local/genuine values are plausible, but no controlled XTR UI change has yet made this local proof.
+
+## PROVEN / directly observed structural relation — 06F4 context mirror
+
+Across local XTR evidence and all compared genuine Eco5 `06F4/count19` frames:
+```text
+06F4 = A80C
+06F5 = A80D
+06F6 = A80E
+06F7 = A80F
+06F8 = A810
+0701 = AFDC
+```
+
+This proves the copy/mirror relationship only; it does not independently establish the semantic meaning of the source fields.
+
+### Strong conclusion
+
+`06F4/count19` is at least partly a controller/integration-context snapshot in the native `0x0F` page family, not merely a static configuration page. The remaining `06F4` words stay OPEN / UNKNOWN.
+
+---
+
 # 2026-10-02 — Calendar structure refinement from local XTR + genuine Eco5 evidence
 
 ## PROVEN / locally confirmed — WW_GEBLOKKEERD uses 055A desired-page path
