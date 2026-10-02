@@ -9,7 +9,7 @@ This folder contains the active native-control build for the tested XTR M. Read-
 
 `thermia_itec_xtr_m_waveshare_write_beta_v4_0.yaml`
 
-Write Beta v4.0 is based on the **EXP381B COMPLETE / POSITIVE** runtime baseline and the EXP382 offline gap analysis. It also contains the seven **EXP383 TEST controls** requested for staged validation.
+Write Beta v4.0 contains the **EXP381B COMPLETE / POSITIVE** production/UI baseline, the seven **EXP383 TEST controls** from the EXP382 offline gap analysis, and the **EXP386 COMPLETE / POSITIVE** native DCM controller-restart recovery state machine. EXP386 changes session-state gating only; it does not promote any EXP383 TEST mapping to proven.
 
 Important distinction:
 
@@ -19,6 +19,28 @@ Important distinction:
 - EXP383 itself is **PREPARED / NOT RUN** until individual results are supplied.
 
 The previous v3.0 build remains useful as a rollback point before the EXP383 candidate controls were added.
+
+## Native DCM session/recovery status
+
+EXP386 is **COMPLETE / POSITIVE** on the tested XTR M. The current v4.0 build now has a locally confirmed recovery path for the case where the ESP is already running and the Thermia controller is power-cycled.
+
+The confirmed sequence is:
+
+```text
+stage40
+  -> non-permitted 071C/0730 challenges: NO TX, keep listening
+  -> >=5 s complete bus silence
+  -> cold-start recovery
+  -> BOOT_RETURN
+  -> A80E=0000 / A80F=0005
+  -> exact 071C/0730
+  -> one proven R1
+  -> ordered FC16 initial sync through 06F4
+  -> fresh runtime FC16 ACK + 0708 idle reply
+  -> persistent runtime qualified
+```
+
+Do not treat every `071C/0730` challenge as permission to transmit. The R1 replay remains restricted to the proven cold-start guard.
 
 ## Proven write scope
 
@@ -208,16 +230,44 @@ Even parity
 
 ## Installation
 
-1. Start from a healthy Thermia bus and a known working EXP381B/v4-compatible configuration.
-2. Copy `thermia_itec_xtr_m_waveshare_write_beta_v4_0.yaml` into ESPHome.
-3. Add the required secrets.
-4. Validate and compile against your installed ESPHome version.
-5. Flash the firmware.
-6. Confirm that normal read entities update and the persistent runtime qualifies before changing any setting.
-7. First verify one already-PROVEN control.
-8. Only then test the TEST controls, one at a time.
+This section describes the setup that has actually been used for the XTR M research build. It is not a generic Thermia wiring guide.
 
-Required secrets:
+### 1. Hardware
+
+The tested board is a **Waveshare ESP32-S3-RS485-CAN / ESP32-S3-RS485-CAN-U**. Power the board separately over USB-C; do not power it from the Thermia RJ45 connector.
+
+Tested connection:
+
+| Thermia RJ45 | Waveshare |
+|---|---|
+| pin 1 — RS485 A | A+ |
+| pin 3 — RS485 B | B- |
+| pin 5 — bus reference | not connected in the tested setup |
+| pins 7/8 — +12 V | not connected |
+
+Leave the Waveshare **120 Ω termination jumper open/off** when joining the existing Thermia bus.
+
+The write build uses:
+- GPIO18 = RX
+- GPIO17 = TX
+- GPIO21 = DE/direction
+- 9600 baud, 8 data bits, even parity, 1 stop bit
+
+Do not disconnect the room sensor or other normal Thermia bus participants for this installation.
+
+### 2. Add the YAML to ESPHome
+
+Copy:
+
+`thermia_itec_xtr_m_waveshare_write_beta_v4_0.yaml`
+
+into your ESPHome configuration directory.
+
+The successful EXP386 run was made with ESPHome **2026.9.0**. That is the locally observed environment, not a declared minimum-version requirement.
+
+### 3. Configure secrets
+
+The YAML expects these secrets:
 
 ```yaml
 wifi_ssid: "..."
@@ -227,7 +277,81 @@ thermia_ota_password: "..."
 thermia_fallback_password: "..."
 ```
 
-The EXP383/v4.0 YAML was statically checked during preparation for YAML parsing, duplicate ESPHome IDs and missing `id(...)` references. The existing page selector frames were deliberately retained. **No ESPHome compile was run during preparation**, so compile/validate it locally before flashing.
+Create/update your ESPHome `secrets.yaml` with your own values. Do not commit real credentials to this repository.
+
+### 4. Validate and flash
+
+Run ESPHome validation/compile in your own environment and resolve any board/framework differences before flashing.
+
+For a new board, a first USB flash is the conservative option. Once ESPHome API/OTA access works reliably, later builds can be installed OTA.
+
+After flashing, verify that:
+- the ESP connects normally;
+- read-only Thermia entities continue updating;
+- DE is LOW outside guarded transmissions;
+- parser resync and RX-drop counters do not start increasing unexpectedly.
+
+Do **not** change any Home Assistant write control yet.
+
+### 5. Establish or recover the native DCM session
+
+If the controller already has a qualified session, the ESP can remain in persistent stage40.
+
+For the locally validated fresh-session recovery procedure:
+
+1. Keep the ESP powered and running.
+2. Start the ESPHome log.
+3. Power-cycle/restart the Thermia controller once using the same normal controller power procedure you would otherwise use.
+4. Leave the ESP powered during the controller restart.
+5. Watch for the recovery chain.
+
+Expected successful markers include:
+
+```text
+BUS_LOSS_TO_COLD_START
+RECOVERY_ARMED
+BOOT_RETURN
+STATE_GUARD A80E=0000 A80F=0005
+TX_INTENT ... R1
+TX_EXECUTED ONE-SHOT R1
+03E8_ACK_TX_EXECUTED
+...
+INITIAL_SYNC_COMPLETE
+RUNTIME_FC16_ACK_EXECUTED
+RECOVERY_POSITIVE
+COMPLETE / POSITIVE / fresh controller session recovered
+```
+
+The exact intermediate FC16 pages form the existing ordered native initial-sync chain and finish at `06F4/count19`.
+
+A challenge outside the proven guard, for example while `A80E=0008 / A80F=0032`, should be logged as guard-wait/capture-only with **NO TX**. Do not weaken that guard to make activation happen sooner.
+
+### 6. Verify runtime before using controls
+
+Before changing settings in Home Assistant, confirm:
+- `Thermia Write Persistent Runtime Active` is ON;
+- the status reaches a positive/qualified stage40 state;
+- at least one fresh runtime FC16 has been ACKed;
+- at least one `0708` idle reply has been observed;
+- parser/RX integrity remains clean.
+
+If the build reports STOP, ABORT, REFUSED, stage 99, unknown runtime traffic, peer responder activity, parser resyncs or RX drops, do not use semantic controls until the cause is understood.
+
+### 7. Test control conservatively
+
+First use an already **PROVEN** control and make the smallest reversible change. Wait for the exact controller republish/confirmation before issuing another change.
+
+The seven EXP383 controls containing **TEST** are still **PREPARED / NOT RUN** as semantic validation experiments. Test them only one at a time and correlate both:
+1. the exact controller republish with no unrelated delta; and
+2. the actual Thermia/front-panel semantic effect.
+
+Do not start with `0559 Link Integration`; keep that candidate last because it may affect the Online/DCM-style session itself.
+
+### 8. Rollback
+
+If normal bus behavior does not recover or you want a passive setup, flash one of the repository's [Read-only](../Read-only/) configurations.
+
+The previous v3.0 write build can also serve as a pre-EXP383 rollback point, but the read-only build is the conservative fallback when active control is not required.
 
 ## Recovery / stop criteria
 
