@@ -9,6 +9,7 @@ This folder contains the active native-control build for the tested XTR M. Read-
 > **Read the install instruction.** After flashing the ESP you will need to restart your Thermia heat pump, getting a stable session is still a bit tricky
 
 ## Known issues
+- IT tends to lose write connection over time requiring a restart of the ESP
 - Some limits are still incorrect, if the value is outside of the limits the write will not be accepted.
 - Writes take 7 seconds per write, up to 10 writes can be queued 
  
