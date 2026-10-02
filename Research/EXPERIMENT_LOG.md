@@ -1,5 +1,71 @@
 # EXPERIMENT LOG
 
+## ECO-WRITE-01 — iTec Eco native session-bootstrap replay — PREPARED / NOT RUN
+**Status: PREPARED / NOT RUN**  
+**Date: 2026-10-02**  
+**Track:** cross-model iTec Eco sidetrack; does not advance the XTR M EXP-number sequence.
+
+### Hypothesis
+
+A single genuine iTec Eco 5 Thermia Online gateway response, replayed once against the first exact iTec Eco cold-start `0x0F FC17 071C/0730` challenge, may be sufficient to make the Eco controller enter the native Online/DCM configuration-synchronization path.
+
+### Baseline
+
+`Read-only/iTec Eco/thermia_itec_eco_waveshare_public_v01.yaml`
+
+Passive Eco compatibility remains the known-safe baseline.
+
+### Exact controlled change
+
+Only one active variable is introduced:
+
+- configure GPIO17 TX;
+- require manual Home Assistant arming;
+- require >=5 s complete controller-bus silence followed by controller return;
+- on the first exact challenge (`read 0730/count8; write 071C/count8; byte_count16`) transmit exactly one captured genuine Eco5 gateway response;
+- perform no further TX.
+
+Hard-coded one-shot response:
+
+`0F17101691A5F3F8E8D58738924416E8E6A3D5E227`
+
+No FC16 ACK, no `0708` response, no desired-page selector and no settings write are included.
+
+### Evidence basis
+
+- Genuine Eco5 + Thermia Online captures establish the native `071C/0730` challenge/response family and show that accepted gateway entry is followed by controller `FC16 03E8/count14`.
+- Passive Eco8 evidence shows the same challenge family during cold start.
+- The exact recorded response above is locally proven to be accepted as a replay against a different challenge on the XTR M, but replay acceptance is **not** yet proven on an Eco controller.
+
+### Success / negative / abort
+
+**Success:** first controller-originated `0x0F FC16 03E8/count14` appears after the one replay. The experiment deliberately does not ACK it.
+
+**Negative:** no `03E8/count14` appears within 10 s after R1, or only challenge retries continue.
+
+**Inconclusive:** no qualified silence -> boot-return -> challenge sequence occurs within 180 s.
+
+**Abort:** another response-shaped `0x0F FC17` peer is seen, a new CRC failure occurs after boot return, or the user cancels.
+
+Unexpected traffic is capture-only.
+
+### Safety / recovery
+
+- one R1 maximum per ESP boot;
+- DE LOW outside the single guarded response;
+- no setting register is modified;
+- plausible unintended effect is a temporary partial Online/DCM session or Online communication alarm because the expected FC16 page is intentionally left unACKed;
+- after the one response the build is passive again;
+- conservative rollback is the read-only iTec Eco profile.
+
+### Prepared artifact
+
+`Research/iTec Eco/thermia_itec_eco_waveshare_write_exp01.yaml`
+
+Generated YAML does **not** count as experiment completion. Await a real Eco log/result before preparing the next active stage.
+
+---
+
 ## EXP386 — Native DCM session activation/recovery from unqualified stage40
 **Status: COMPLETE / POSITIVE**  
 **Date: 2026-10-02**
