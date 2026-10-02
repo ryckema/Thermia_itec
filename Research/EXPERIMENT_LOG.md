@@ -45,7 +45,7 @@ No FC16 ACK, no `0708` response, no desired-page selector and no settings write 
 
 **Inconclusive:** no qualified silence -> boot-return -> challenge sequence occurs within 180 s.
 
-**Abort:** another response-shaped `0x0F FC17` peer is seen, a new CRC failure occurs after boot return, or the user cancels.
+**Abort:** another response-shaped `0x0F FC17` peer or `0x0F FC16` ACK-shaped peer is seen, parser CRC/resync/RX-drop integrity changes after boot return, or the user cancels.
 
 Unexpected traffic is capture-only.
 
