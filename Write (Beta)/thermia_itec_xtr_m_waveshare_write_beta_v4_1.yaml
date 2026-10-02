@@ -51,7 +51,7 @@
 # - stop on parser/RX/peer/session fault, timeout, unexpected page/count,
 #   extraDeltaWords != 0, or controller behavior not matching the expected field;
 # - do not automatically retry a failed semantic transaction;
-# - 0559 Link Integration is the highest-risk candidate and should be tested last.
+# - 0559 Link Integration is the highest-risk candidate, disabled by default in Home Assistant, and should be tested last.
 #
 # ESPHome compile verification is NOT claimed unless actually compiled.
 # =============================================================================
@@ -3495,7 +3495,7 @@ uart:
                           if (!(id(exp378_dirty_mask)&(1u<<1)) && !(active378 && active_word==1)) {
                             if (e378[1]==0) id(exp378_sww_mode_control).publish_state("Comfort");
                             else if (e378[1]==1) id(exp378_sww_mode_control).publish_state("Eco");
-                            else if (e378[1]==2) id(exp378_sww_mode_control).publish_state("Vakantie Eco");
+                            else if (e378[1]==2) id(exp378_sww_mode_control).publish_state("Holiday Eco");
                           }
                           if (e378[2]<=1) {
                             id(exp378_confirmed_w02)=e378[2];
@@ -3530,7 +3530,7 @@ uart:
                                 id(exp378_sww_enabled_control).publish_state(id(exp378_confirmed_w00)==1);
                                 if (id(exp378_confirmed_w01)==0) id(exp378_sww_mode_control).publish_state("Comfort");
                                 else if (id(exp378_confirmed_w01)==1) id(exp378_sww_mode_control).publish_state("Eco");
-                                else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Vakantie Eco");
+                                else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Holiday Eco");
                                 if (id(exp378_confirmed_w02)<=1) id(exp383_topup_control).publish_state(id(exp378_confirmed_w02)==1);
                                 id(exp378_opstart_ht_control).publish_state(float(id(exp378_confirmed_w05)));
                                 id(exp378_verwarmingstijd_control).publish_state(float(id(exp378_confirmed_w06)));
@@ -3552,7 +3552,7 @@ uart:
                                   id(exp378_sww_enabled_control).publish_state(id(exp378_confirmed_w00)==1);
                                   if (id(exp378_confirmed_w01)==0) id(exp378_sww_mode_control).publish_state("Comfort");
                                   else if (id(exp378_confirmed_w01)==1) id(exp378_sww_mode_control).publish_state("Eco");
-                                  else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Vakantie Eco");
+                                  else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Holiday Eco");
                                   id(exp378_opstart_ht_control).publish_state(float(id(exp378_confirmed_w05)));
                                   id(exp378_verwarmingstijd_control).publish_state(float(id(exp378_confirmed_w06)));
                                 }
@@ -3563,7 +3563,7 @@ uart:
                                 id(exp378_state)=0; id(exp378_refresh_for_write)=false; id(exp378_arm_ms)=0; id(exp378_cache_ms)=0;
                                 if (!(id(exp378_dirty_mask)&uint16_t(1u<<tw))) {
                                   if (tw==0) id(exp378_sww_enabled_control).publish_state(tv==1);
-                                  else if (tw==1) { if (tv==0) id(exp378_sww_mode_control).publish_state("Comfort"); else if (tv==1) id(exp378_sww_mode_control).publish_state("Eco"); else id(exp378_sww_mode_control).publish_state("Vakantie Eco"); }
+                                  else if (tw==1) { if (tv==0) id(exp378_sww_mode_control).publish_state("Comfort"); else if (tv==1) id(exp378_sww_mode_control).publish_state("Eco"); else id(exp378_sww_mode_control).publish_state("Holiday Eco"); }
                                   else if (tw==2) id(exp383_topup_control).publish_state(tv==1);
                                   else if (tw==5) id(exp378_opstart_ht_control).publish_state(float(tv));
                                   else if (tw==6) id(exp378_verwarmingstijd_control).publish_state(float(tv));
@@ -3596,7 +3596,7 @@ uart:
                               id(exp378_state)=0; id(exp378_refresh_for_write)=false; id(exp378_arm_ms)=0; id(exp378_selector_ms)=0; id(exp378_desired_ms)=0; id(exp378_cache_ms)=0;
                               if (!(id(exp378_dirty_mask)&uint16_t(1u<<tw))) {
                                 if (tw==0) id(exp378_sww_enabled_control).publish_state(target==1);
-                                else if (tw==1) { if (target==0) id(exp378_sww_mode_control).publish_state("Comfort"); else if (target==1) id(exp378_sww_mode_control).publish_state("Eco"); else id(exp378_sww_mode_control).publish_state("Vakantie Eco"); }
+                                else if (tw==1) { if (target==0) id(exp378_sww_mode_control).publish_state("Comfort"); else if (target==1) id(exp378_sww_mode_control).publish_state("Eco"); else id(exp378_sww_mode_control).publish_state("Holiday Eco"); }
                                 else if (tw==2) { id(exp378_confirmed_w02)=target; id(exp383_topup_control).publish_state(target==1); }
                                 else if (tw==5) id(exp378_opstart_ht_control).publish_state(float(target));
                                 else if (tw==6) id(exp378_verwarmingstijd_control).publish_state(float(target));
@@ -3613,7 +3613,7 @@ uart:
                                 id(exp378_sww_enabled_control).publish_state(id(exp378_confirmed_w00)==1);
                                 if (id(exp378_confirmed_w01)==0) id(exp378_sww_mode_control).publish_state("Comfort");
                                 else if (id(exp378_confirmed_w01)==1) id(exp378_sww_mode_control).publish_state("Eco");
-                                else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Vakantie Eco");
+                                else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Holiday Eco");
                                 if (id(exp378_confirmed_w02)<=1) id(exp383_topup_control).publish_state(id(exp378_confirmed_w02)==1);
                                 id(exp378_opstart_ht_control).publish_state(float(id(exp378_confirmed_w05)));
                                 id(exp378_verwarmingstijd_control).publish_state(float(id(exp378_confirmed_w06)));
@@ -3653,9 +3653,9 @@ uart:
                           if (!(id(exp379_dirty_mask)&(1u<<2)) && !(active379 && aw==2) && e379[2]<=120) id(exp383_cooling_hysteresis_control).publish_state(float(e379[2])/10.0f);
                           id(exp379_confirmed_w04)=e379[4];
                           if (!(id(exp379_dirty_mask)&(1u<<4)) && !(active379 && aw==4) && e379[4]<=2) {
-                            if (e379[4]==0) id(exp383_cooling_configuration_control).publish_state("Uit");
-                            else if (e379[4]==1) id(exp383_cooling_configuration_control).publish_state("Actieve koeling");
-                            else id(exp383_cooling_configuration_control).publish_state("Geïntegreerd in WP");
+                            if (e379[4]==0) id(exp383_cooling_configuration_control).publish_state("Off");
+                            else if (e379[4]==1) id(exp383_cooling_configuration_control).publish_state("Active Cooling");
+                            else id(exp383_cooling_configuration_control).publish_state("Integrated in Heat Pump");
                           }
                           id(exp379_confirmed_w06)=e379[6];
                           if (!(id(exp379_dirty_mask)&(1u<<6)) && !(active379 && aw==6) && e379[6]<=100) id(exp383_cooling_stop_control).publish_state(float(e379[6]));
@@ -3716,7 +3716,7 @@ uart:
                                   else if (tw==1) id(exp379_cooling_temp_control).publish_state(float(tv));
                                   else if (tw==2) id(exp383_cooling_hysteresis_control).publish_state(float(tv)/10.0f);
                                   else if (tw==3) id(exp379_cooling_active_control).publish_state(float(tv));
-                                  else if (tw==4) { if (tv==0) id(exp383_cooling_configuration_control).publish_state("Uit"); else if (tv==1) id(exp383_cooling_configuration_control).publish_state("Actieve koeling"); else if (tv==2) id(exp383_cooling_configuration_control).publish_state("Geïntegreerd in WP"); }
+                                  else if (tw==4) { if (tv==0) id(exp383_cooling_configuration_control).publish_state("Off"); else if (tv==1) id(exp383_cooling_configuration_control).publish_state("Active Cooling"); else if (tv==2) id(exp383_cooling_configuration_control).publish_state("Integrated in Heat Pump"); }
                                   else if (tw==6) id(exp383_cooling_stop_control).publish_state(float(tv));
                                   else if (tw==7) id(exp379_cooling_time_control).publish_state(float(tv));
                                   else if (tw==8) id(exp383_cooling_max_start_control).publish_state(float(tv));
@@ -3748,7 +3748,7 @@ uart:
                                 else if (tw==1) id(exp379_cooling_temp_control).publish_state(float(target));
                                 else if (tw==2) { id(exp379_confirmed_w02)=target; id(exp383_cooling_hysteresis_control).publish_state(float(target)/10.0f); }
                                 else if (tw==3) id(exp379_cooling_active_control).publish_state(float(target));
-                                else if (tw==4) { id(exp379_confirmed_w04)=target; if (target==0) id(exp383_cooling_configuration_control).publish_state("Uit"); else if (target==1) id(exp383_cooling_configuration_control).publish_state("Actieve koeling"); else id(exp383_cooling_configuration_control).publish_state("Geïntegreerd in WP"); }
+                                else if (tw==4) { id(exp379_confirmed_w04)=target; if (target==0) id(exp383_cooling_configuration_control).publish_state("Off"); else if (target==1) id(exp383_cooling_configuration_control).publish_state("Active Cooling"); else id(exp383_cooling_configuration_control).publish_state("Integrated in Heat Pump"); }
                                 else if (tw==6) { id(exp379_confirmed_w06)=target; id(exp383_cooling_stop_control).publish_state(float(target)); }
                                 else if (tw==7) id(exp379_cooling_time_control).publish_state(float(target));
                                 else if (tw==8) { id(exp379_confirmed_w08)=target; id(exp383_cooling_max_start_control).publish_state(float(target)); }
@@ -3795,22 +3795,22 @@ uart:
                           const uint8_t active_word=id(exp380_target_word);
 
                           if (!id(exp380_dirty) && !(active380 && active_word==13) && e380[13]<=4) {
-                            if (e380[13]==0) id(exp380_operation_mode_control).publish_state("Uit");
+                            if (e380[13]==0) id(exp380_operation_mode_control).publish_state("Off");
                             else if (e380[13]==1) id(exp380_operation_mode_control).publish_state("Auto");
                             else if (e380[13]==2) id(exp380_operation_mode_control).publish_state("Compressor");
-                            else if (e380[13]==3) id(exp380_operation_mode_control).publish_state("Bijverwarmer");
-                            else if (e380[13]==4) id(exp380_operation_mode_control).publish_state("Warmwater");
+                            else if (e380[13]==3) id(exp380_operation_mode_control).publish_state("Auxiliary Heater");
+                            else if (e380[13]==4) id(exp380_operation_mode_control).publish_state("Hot Water");
                           }
                           if (!id(exp383_link_dirty) && !(active380 && active_word==19) && e380[19]<=1)
                             id(exp383_link_integration_control).publish_state(e380[19]==1 ? "System" : "Light");
 
                           auto rollback380=[&]() {
                             if (!id(exp380_sync_valid)) return;
-                            if (id(exp380_confirmed_mode)==0) id(exp380_operation_mode_control).publish_state("Uit");
+                            if (id(exp380_confirmed_mode)==0) id(exp380_operation_mode_control).publish_state("Off");
                             else if (id(exp380_confirmed_mode)==1) id(exp380_operation_mode_control).publish_state("Auto");
                             else if (id(exp380_confirmed_mode)==2) id(exp380_operation_mode_control).publish_state("Compressor");
-                            else if (id(exp380_confirmed_mode)==3) id(exp380_operation_mode_control).publish_state("Bijverwarmer");
-                            else if (id(exp380_confirmed_mode)==4) id(exp380_operation_mode_control).publish_state("Warmwater");
+                            else if (id(exp380_confirmed_mode)==3) id(exp380_operation_mode_control).publish_state("Auxiliary Heater");
+                            else if (id(exp380_confirmed_mode)==4) id(exp380_operation_mode_control).publish_state("Hot Water");
                             if (id(exp383_confirmed_link)<=1) id(exp383_link_integration_control).publish_state(id(exp383_confirmed_link)==1 ? "System" : "Light");
                           };
 
@@ -3848,11 +3848,11 @@ uart:
                               if (cur==target) {
                                 id(exp380_state)=0; id(exp380_refresh_for_write)=false;
                                 if (tw==13 && !id(exp380_dirty)) {
-                                  if (target==0) id(exp380_operation_mode_control).publish_state("Uit");
+                                  if (target==0) id(exp380_operation_mode_control).publish_state("Off");
                                   else if (target==1) id(exp380_operation_mode_control).publish_state("Auto");
                                   else if (target==2) id(exp380_operation_mode_control).publish_state("Compressor");
-                                  else if (target==3) id(exp380_operation_mode_control).publish_state("Bijverwarmer");
-                                  else id(exp380_operation_mode_control).publish_state("Warmwater");
+                                  else if (target==3) id(exp380_operation_mode_control).publish_state("Auxiliary Heater");
+                                  else id(exp380_operation_mode_control).publish_state("Hot Water");
                                 } else if (tw==19 && !id(exp383_link_dirty)) {
                                   id(exp383_link_integration_control).publish_state(target==1 ? "System" : "Light");
                                 }
@@ -3888,11 +3888,11 @@ uart:
                               id(exp380_state)=0; id(exp380_refresh_for_write)=false;
                               id(exp380_arm_ms)=0; id(exp380_selector_ms)=0; id(exp380_desired_ms)=0; id(exp380_cache_ms)=0;
                               if (tw==13 && !id(exp380_dirty)) {
-                                if (target==0) id(exp380_operation_mode_control).publish_state("Uit");
+                                if (target==0) id(exp380_operation_mode_control).publish_state("Off");
                                 else if (target==1) id(exp380_operation_mode_control).publish_state("Auto");
                                 else if (target==2) id(exp380_operation_mode_control).publish_state("Compressor");
-                                else if (target==3) id(exp380_operation_mode_control).publish_state("Bijverwarmer");
-                                else id(exp380_operation_mode_control).publish_state("Warmwater");
+                                else if (target==3) id(exp380_operation_mode_control).publish_state("Auxiliary Heater");
+                                else id(exp380_operation_mode_control).publish_state("Hot Water");
                               } else if (tw==19 && !id(exp383_link_dirty)) {
                                 id(exp383_link_integration_control).publish_state(target==1 ? "System" : "Light");
                               }
@@ -4201,7 +4201,7 @@ uart:
                               id(exp378_sww_enabled_control).publish_state(id(exp378_confirmed_w00)==1);
                               if (id(exp378_confirmed_w01)==0) id(exp378_sww_mode_control).publish_state("Comfort");
                               else if (id(exp378_confirmed_w01)==1) id(exp378_sww_mode_control).publish_state("Eco");
-                              else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Vakantie Eco");
+                              else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Holiday Eco");
                               id(exp378_opstart_ht_control).publish_state(float(id(exp378_confirmed_w05)));
                               id(exp378_verwarmingstijd_control).publish_state(float(id(exp378_confirmed_w06)));
                             }
@@ -4334,11 +4334,11 @@ uart:
                           if (cache_age>15000UL || id(write_write_state)!=0 || id(write_dirty_mask)!=0) {
                             id(exp380_state)=5; id(exp380_dirty)=false; id(exp383_link_dirty)=false;
                             if (id(exp380_sync_valid)) {
-                              if (id(exp380_confirmed_mode)==0) id(exp380_operation_mode_control).publish_state("Uit");
+                              if (id(exp380_confirmed_mode)==0) id(exp380_operation_mode_control).publish_state("Off");
                               else if (id(exp380_confirmed_mode)==1) id(exp380_operation_mode_control).publish_state("Auto");
                               else if (id(exp380_confirmed_mode)==2) id(exp380_operation_mode_control).publish_state("Compressor");
-                              else if (id(exp380_confirmed_mode)==3) id(exp380_operation_mode_control).publish_state("Bijverwarmer");
-                              else if (id(exp380_confirmed_mode)==4) id(exp380_operation_mode_control).publish_state("Warmwater");
+                              else if (id(exp380_confirmed_mode)==3) id(exp380_operation_mode_control).publish_state("Auxiliary Heater");
+                              else if (id(exp380_confirmed_mode)==4) id(exp380_operation_mode_control).publish_state("Hot Water");
                             }
                             id(exp380_status)->publish_state("COMPLETE / INCONCLUSIVE / selector guard failed / EXP380 disabled");
                             ESP_LOGE("thermia_exp380","\033[31m[EXP380] ===== SELECTOR_REFUSED cacheAge=%ums writeState=%u prodDirty=%04X NO_TX EXP380_DISABLED =====\033[0m",
@@ -4489,7 +4489,7 @@ uart:
                             id(exp378_sww_enabled_control).publish_state(id(exp378_confirmed_w00)==1);
                             if (id(exp378_confirmed_w01)==0) id(exp378_sww_mode_control).publish_state("Comfort");
                             else if (id(exp378_confirmed_w01)==1) id(exp378_sww_mode_control).publish_state("Eco");
-                            else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Vakantie Eco");
+                            else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Holiday Eco");
                             id(exp378_opstart_ht_control).publish_state(float(id(exp378_confirmed_w05)));
                             id(exp378_verwarmingstijd_control).publish_state(float(id(exp378_confirmed_w06)));
                           }
@@ -4563,11 +4563,11 @@ uart:
                             !((id(exp378_state)==0)||(id(exp378_state)==5)) || !((id(exp379_state)==0)||(id(exp379_state)==5))) {
                           id(exp380_state)=5; id(exp380_dirty)=false; id(exp383_link_dirty)=false;
                           if (id(exp380_sync_valid)) {
-                            if (id(exp380_confirmed_mode)==0) id(exp380_operation_mode_control).publish_state("Uit");
+                            if (id(exp380_confirmed_mode)==0) id(exp380_operation_mode_control).publish_state("Off");
                             else if (id(exp380_confirmed_mode)==1) id(exp380_operation_mode_control).publish_state("Auto");
                             else if (id(exp380_confirmed_mode)==2) id(exp380_operation_mode_control).publish_state("Compressor");
-                            else if (id(exp380_confirmed_mode)==3) id(exp380_operation_mode_control).publish_state("Bijverwarmer");
-                            else if (id(exp380_confirmed_mode)==4) id(exp380_operation_mode_control).publish_state("Warmwater");
+                            else if (id(exp380_confirmed_mode)==3) id(exp380_operation_mode_control).publish_state("Auxiliary Heater");
+                            else if (id(exp380_confirmed_mode)==4) id(exp380_operation_mode_control).publish_state("Hot Water");
                           }
                           id(exp380_status)->publish_state("COMPLETE / INCONCLUSIVE / desired-page guard failed / EXP380 disabled");
                           ESP_LOGE("thermia_exp380","\033[31m[EXP380] ===== DESIRED_PAGE_REFUSED page=0546 cacheAge=%ums semanticResponses=%u writeState=%u prodDirty=%04X NO_TX =====\033[0m",
@@ -4583,11 +4583,11 @@ uart:
                           if (!(tw==13 || tw==19)) {
                             id(exp380_state)=5; id(exp380_dirty)=false; id(exp383_link_dirty)=false;
                             if (id(exp380_sync_valid)) {
-                              if (id(exp380_confirmed_mode)==0) id(exp380_operation_mode_control).publish_state("Uit");
+                              if (id(exp380_confirmed_mode)==0) id(exp380_operation_mode_control).publish_state("Off");
                               else if (id(exp380_confirmed_mode)==1) id(exp380_operation_mode_control).publish_state("Auto");
                               else if (id(exp380_confirmed_mode)==2) id(exp380_operation_mode_control).publish_state("Compressor");
-                              else if (id(exp380_confirmed_mode)==3) id(exp380_operation_mode_control).publish_state("Bijverwarmer");
-                              else if (id(exp380_confirmed_mode)==4) id(exp380_operation_mode_control).publish_state("Warmwater");
+                              else if (id(exp380_confirmed_mode)==3) id(exp380_operation_mode_control).publish_state("Auxiliary Heater");
+                              else if (id(exp380_confirmed_mode)==4) id(exp380_operation_mode_control).publish_state("Hot Water");
                               if (id(exp383_confirmed_link)<=1) id(exp383_link_integration_control).publish_state(id(exp383_confirmed_link)==1 ? "System" : "Light");
                             }
                             id(exp380_status)->publish_state("COMPLETE / INCONCLUSIVE / invalid 0546 target word");
@@ -8123,20 +8123,20 @@ select:
     options:
       - "Comfort"
       - "Eco"
-      - "Vakantie Eco"
+      - "Holiday Eco"
     set_action:
       - lambda: |-
           uint16_t target=0xFFFF;
           if (x=="Comfort") target=0;
           else if (x=="Eco") target=1;
-          else if (x=="Vakantie Eco") target=2;
+          else if (x=="Holiday Eco") target=2;
           else return;
           const uint16_t bit=uint16_t(1u<<1);
           if (!id(exp378_sync_valid) || !id(write_active) || id(write_stage)!=40 || id(exp378_state)==5) {
             if (id(exp378_sync_valid)) {
               if (id(exp378_confirmed_w01)==0) id(exp378_sww_mode_control).publish_state("Comfort");
               else if (id(exp378_confirmed_w01)==1) id(exp378_sww_mode_control).publish_state("Eco");
-              else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Vakantie Eco");
+              else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Holiday Eco");
             }
             id(exp378_status)->publish_state("BLOCKED / Hot Water control unavailable / authoritative value restored");
             return;
@@ -8156,22 +8156,22 @@ select:
     optimistic: false
     restore_value: false
     options:
-      - "Uit"
-      - "Actieve koeling"
-      - "Geïntegreerd in WP"
+      - "Off"
+      - "Active Cooling"
+      - "Integrated in Heat Pump"
     set_action:      
       - lambda: |-
           uint16_t target=0xFFFF;
-          if (x=="Uit") target=0;
-          else if (x=="Actieve koeling") target=1;
-          else if (x=="Geïntegreerd in WP") target=2;
+          if (x=="Off") target=0;
+          else if (x=="Active Cooling") target=1;
+          else if (x=="Integrated in Heat Pump") target=2;
           else return;
           const uint16_t bit=uint16_t(1u<<4);
           if (!id(exp379_sync_valid) || !id(write_config_synced) || !id(write_active) || id(write_stage)!=40 || id(exp379_state)==5) {
             if (id(exp379_sync_valid)) {
-              if (id(exp379_confirmed_w04)==0) id(exp383_cooling_configuration_control).publish_state("Uit");
-              else if (id(exp379_confirmed_w04)==1) id(exp383_cooling_configuration_control).publish_state("Actieve koeling");
-              else if (id(exp379_confirmed_w04)==2) id(exp383_cooling_configuration_control).publish_state("Geïntegreerd in WP");
+              if (id(exp379_confirmed_w04)==0) id(exp383_cooling_configuration_control).publish_state("Off");
+              else if (id(exp379_confirmed_w04)==1) id(exp383_cooling_configuration_control).publish_state("Active Cooling");
+              else if (id(exp379_confirmed_w04)==2) id(exp383_cooling_configuration_control).publish_state("Integrated in Heat Pump");
             }
             id(exp379_status)->publish_state("BLOCKED / TEST Cooling Configuration unavailable");
             return;
@@ -8185,6 +8185,7 @@ select:
     id: exp383_link_integration_control
     name: "01 Operation | 02 TEST Link Integration"
     entity_category: config
+    disabled_by_default: true
     icon: mdi:link-variant
     optimistic: false
     restore_value: false
@@ -8216,28 +8217,28 @@ select:
     optimistic: false
     restore_value: false
     options:
-      - "Uit"
+      - "Off"
       - "Auto"
       - "Compressor"
-      - "Bijverwarmer"
-      - "Warmwater"
+      - "Auxiliary Heater"
+      - "Hot Water"
     set_action:
       - lambda: |-
           uint16_t target=0xFFFF;
-          if (x=="Uit") target=0;
+          if (x=="Off") target=0;
           else if (x=="Auto") target=1;
           else if (x=="Compressor") target=2;
-          else if (x=="Bijverwarmer") target=3;
-          else if (x=="Warmwater") target=4;
+          else if (x=="Auxiliary Heater") target=3;
+          else if (x=="Hot Water") target=4;
           else return;
 
           auto publish_confirmed=[&]() {
             if (!id(exp380_sync_valid)) return;
-            if (id(exp380_confirmed_mode)==0) id(exp380_operation_mode_control).publish_state("Uit");
+            if (id(exp380_confirmed_mode)==0) id(exp380_operation_mode_control).publish_state("Off");
             else if (id(exp380_confirmed_mode)==1) id(exp380_operation_mode_control).publish_state("Auto");
             else if (id(exp380_confirmed_mode)==2) id(exp380_operation_mode_control).publish_state("Compressor");
-            else if (id(exp380_confirmed_mode)==3) id(exp380_operation_mode_control).publish_state("Bijverwarmer");
-            else if (id(exp380_confirmed_mode)==4) id(exp380_operation_mode_control).publish_state("Warmwater");
+            else if (id(exp380_confirmed_mode)==3) id(exp380_operation_mode_control).publish_state("Auxiliary Heater");
+            else if (id(exp380_confirmed_mode)==4) id(exp380_operation_mode_control).publish_state("Hot Water");
           };
 
           if (!id(exp380_sync_valid) || !id(write_config_synced) || !id(write_active) || id(write_stage)!=40 || id(exp380_state)==5) {
@@ -8278,11 +8279,11 @@ interval:
             if (id(write_stage)!=40 || er || ed || ep17 || ep16 || age>limit) {
               id(exp380_state)=5; id(exp380_dirty)=false; id(exp383_link_dirty)=false; id(exp380_refresh_for_write)=false;
               if (id(exp380_sync_valid)) {
-                if (id(exp380_confirmed_mode)==0) id(exp380_operation_mode_control).publish_state("Uit");
+                if (id(exp380_confirmed_mode)==0) id(exp380_operation_mode_control).publish_state("Off");
                 else if (id(exp380_confirmed_mode)==1) id(exp380_operation_mode_control).publish_state("Auto");
                 else if (id(exp380_confirmed_mode)==2) id(exp380_operation_mode_control).publish_state("Compressor");
-                else if (id(exp380_confirmed_mode)==3) id(exp380_operation_mode_control).publish_state("Bijverwarmer");
-                else if (id(exp380_confirmed_mode)==4) id(exp380_operation_mode_control).publish_state("Warmwater");
+                else if (id(exp380_confirmed_mode)==3) id(exp380_operation_mode_control).publish_state("Auxiliary Heater");
+                else if (id(exp380_confirmed_mode)==4) id(exp380_operation_mode_control).publish_state("Hot Water");
                 if (id(exp383_confirmed_link)<=1) id(exp383_link_integration_control).publish_state(id(exp383_confirmed_link)==1 ? "System" : "Light");
               }
               id(exp380_status)->publish_state("COMPLETE / INCONCLUSIVE / EXP380 guard or timeout / disabled until reboot");
@@ -8349,9 +8350,9 @@ interval:
                 id(exp379_cooling_enabled_control).publish_state(id(exp379_confirmed_w00)==1);
                 id(exp379_cooling_temp_control).publish_state(float(id(exp379_confirmed_w01)));
                 id(exp383_cooling_hysteresis_control).publish_state(float(id(exp379_confirmed_w02))/10.0f);
-                if (id(exp379_confirmed_w04)==0) id(exp383_cooling_configuration_control).publish_state("Uit");
-                else if (id(exp379_confirmed_w04)==1) id(exp383_cooling_configuration_control).publish_state("Actieve koeling");
-                else if (id(exp379_confirmed_w04)==2) id(exp383_cooling_configuration_control).publish_state("Geïntegreerd in WP");
+                if (id(exp379_confirmed_w04)==0) id(exp383_cooling_configuration_control).publish_state("Off");
+                else if (id(exp379_confirmed_w04)==1) id(exp383_cooling_configuration_control).publish_state("Active Cooling");
+                else if (id(exp379_confirmed_w04)==2) id(exp383_cooling_configuration_control).publish_state("Integrated in Heat Pump");
                 id(exp379_cooling_active_control).publish_state(float(id(exp379_confirmed_w03)));
                 id(exp383_cooling_stop_control).publish_state(float(id(exp379_confirmed_w06)));
                 id(exp379_cooling_time_control).publish_state(float(id(exp379_confirmed_w07)));
@@ -8421,7 +8422,7 @@ interval:
                 id(exp378_sww_enabled_control).publish_state(id(exp378_confirmed_w00)==1);
                 if (id(exp378_confirmed_w01)==0) id(exp378_sww_mode_control).publish_state("Comfort");
                 else if (id(exp378_confirmed_w01)==1) id(exp378_sww_mode_control).publish_state("Eco");
-                else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Vakantie Eco");
+                else if (id(exp378_confirmed_w01)==2) id(exp378_sww_mode_control).publish_state("Holiday Eco");
                 if (id(exp378_confirmed_w02)<=1) id(exp383_topup_control).publish_state(id(exp378_confirmed_w02)==1);
                 id(exp378_opstart_ht_control).publish_state(float(id(exp378_confirmed_w05)));
                 id(exp378_verwarmingstijd_control).publish_state(float(id(exp378_confirmed_w06)));
