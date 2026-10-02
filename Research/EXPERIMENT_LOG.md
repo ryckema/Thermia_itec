@@ -53,8 +53,6 @@ Full analysis: `Research/CALENDAR_STRUCTURE_ANALYSIS_20261002.md`.
 
 ---
 
-# EXPERIMENT LOG
-
 ## ECO-WRITE-01 — iTec Eco mismatched R1 replay acceptance — PREPARED / NOT RUN
 **Status: PREPARED / NOT RUN**  
 **Date: 2026-10-02**  
