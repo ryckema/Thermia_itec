@@ -1,3 +1,66 @@
+# EXPERIMENT LOG
+
+## EXP386 — Native DCM session activation/recovery from unqualified stage40
+**Status: COMPLETE / POSITIVE**  
+**Date: 2026-10-02**
+
+### Hypothesis
+
+The v4.0 DCM activation failures were session-state-machine regressions rather than a failure of the already-proven R1 and ordered native sync. If unqualified stage40 remains passive through guard-mismatched challenges and can re-enter the cold-start path after a real controller restart, the existing guarded R1 + ordered FC16 ACK chain should recover a persistent native DCM session.
+
+### Baseline
+
+- EXP381B — **COMPLETE / POSITIVE** production/UI baseline.
+- Existing native session mechanics and page ACK chain already locally established by the preceding write experiments.
+- EXP383 semantic candidate controls remain **PREPARED / NOT RUN** and were not exercised by EXP386.
+
+### Exact controlled changes
+
+Only session-state transitions changed:
+1. startup bus age >2 s arms the existing stage-1 cold-start wait instead of disarming the engine;
+2. >=5 s bus loss in unqualified semantic-idle stage40 re-enters cold-start recovery instead of stopping;
+3. exact `071C/0730` challenges outside the proven guard are NO_TX/capture-only and do not stop stage40;
+4. that guard-wait behavior applies to every challenge number, not only challenge #1.
+
+No hard-coded TX frame array was changed.
+
+### Safety / transmit scope
+
+- New write register/page: **none**.
+- R1 allowed only under known `A80E=0000 / A80F=0005`.
+- Guard mismatch: **NO TX**.
+- Semantic transaction active during bus loss: fail closed.
+- Existing R1 and ordered FC16 ACK frames unchanged.
+
+### Observed facts
+
+- Pre-reboot challenge #2 at `A80E=0008 / A80F=0032` logged `NO_TX KEEP_STAGE40=1`.
+- >=5 s complete bus silence produced `BUS_LOSS_TO_COLD_START`.
+- First returning valid frame produced `BOOT_RETURN`.
+- State guard reached `A80E=0000 / A80F=0005`.
+- First exact challenge under that guard transmitted one R1.
+- First post-R1 FC16 was exact `03E8/count14` and received the existing address/count ACK.
+- Ordered sync continued through `06F4/count19`.
+- Persistent stage40 resumed.
+- Fresh runtime `085F/count5` FC16 was ACKed.
+- A `0708` idle reply was observed.
+- Firmware reported `RECOVERY_POSITIVE` and `COMPLETE / POSITIVE / fresh controller session recovered`.
+- Parser integrity remained clean: `resync=0`, `drops=0`.
+
+### Strong conclusion
+
+**PROVEN / locally confirmed on this Thermia iTec XTR M:** the current ESP implementation can recover the native DCM-style session after a real controller power-cycle by remaining passive through non-permitted challenges, detecting controller bus loss/return, replaying the already-proven R1 only under the cold-start guard, completing the ordered initial FC16 synchronization and then qualifying persistent runtime with fresh FC16 + `0708` evidence.
+
+### Result
+
+**COMPLETE / POSITIVE**
+
+### New baseline
+
+`Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v4_0.yaml`
+
+---
+
 # EXP383 — STRONGLY SUPPORTED candidate controls — PREPARED / NOT RUN
 
 **Date:** 2026-10-01  
