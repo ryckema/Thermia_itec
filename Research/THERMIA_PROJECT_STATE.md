@@ -1,3 +1,63 @@
+# 2026-10-02 — PROTO-OFFLINE-01 — unknown-page correlation — COMPLETE / POSITIVE
+
+**Track:** offline evidence analysis only. No heat-pump TX, no new native write target and no live experiment advancement.
+
+## Authoritative current live XTR status
+
+This entry reconciles the canonical state with the current published Write Beta v4.1 header:
+
+- **EXP386 — COMPLETE / POSITIVE** — guarded controller-restart recovery locally confirmed end-to-end.
+- **EXP387 — COMPLETE / POSITIVE** — delayed `0708` semantic re-arm locally confirmed with Room Setpoint write.
+- **EXP388 — RUNNING / PARTIAL** — repeated controller-restart recovery locally confirmed twice without ESP reboot; pre-semantic and refresh-only controller-loss cancellation branches are not independently live-exercised.
+- **EXP383 — PREPARED / NOT RUN** — the seven TEST candidate controls remain unpromoted.
+- **CAL-OFFLINE-01 — RUNNING / PARTIAL** — passive calendar reduction remains open.
+
+Current published active write baseline:
+`Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v4_1.yaml`
+
+Older state sections below are retained as historical snapshots and must not override this newer status.
+
+## PROTO-OFFLINE-01 durable results
+
+### STRONGLY SUPPORTED / locally correlated — 04A6/04A7 and SG operating state
+
+In the later local XTR DCM-style runtime:
+- SG Normal `(0-0)` -> `04A6=0000, 04A7=0000`
+- SG Enhanced `(0-1)` -> `04A6=0041, 04A7=0001`
+- SG Blocked `(1-0)` -> `04A6=0042, 04A7=0001`
+- returning to Normal returns the pair to `0000/0000`.
+
+`04A6/04A7` are therefore strongly linked to SG/operational state in that runtime context. Genuine Eco5 approval events occur with both zero and non-zero `04A6`, so this is not an Online/DCM approval flag.
+
+An older local XTR capture contains a radically different `04A6/count13` payload, so the whole page must not be treated as one fixed SG-only schema across all historical/session contexts.
+
+### STRONGLY SUPPORTED — 0424 Returnline Temperature Max Limit
+
+The cross-model DHP/AQ contiguous register sequence is locally anchored by the already-confirmed `041D` Hot Water Start Temperature and `041E` Hot Water Operating Time. Continuing that sequence places `0424` at **Returnline Temperature Max Limit**. No one-variable XTR UI correlation has yet promoted it to local proof.
+
+### PROVEN / directly observed structural relation — 06F4 context mirror
+
+Across local XTR evidence and all compared genuine Eco5 `06F4/count19` frames:
+- `06F4 = A80C`
+- `06F5 = A80D`
+- `06F6 = A80E`
+- `06F7 = A80F`
+- `06F8 = A810`
+- `0701 = AFDC`
+
+This proves the mirror relationship only; it does not promote the underlying semantic meanings of A80C/A80E/A80F/AFDC beyond their existing evidence levels.
+
+**Strong conclusion:** `06F4/count19` is at least partly a controller/integration-context snapshot inside the native `0x0F` page family rather than a purely static configuration page.
+
+## Current strongest offline unknown
+
+Why `04A6/count13` has a radically different historical local payload regime remains OPEN. Investigate this together with the already-observed historical/current page-shape drift rather than forcing one fixed schema across all captures.
+
+Full report:
+`Research/protocol reduction/PROTO_OFFLINE_01_UNKNOWN_PAGE_CORRELATION_20261002.md`
+
+---
+
 # 2026-10-02 — CAL-OFFLINE-01 — calendar structure refinement — RUNNING / PARTIAL
 
 **Track:** offline evidence analysis only. No new ESP calendar TX or semantic write is introduced, and this note does not advance or close any live XTR experiment.
