@@ -1,19 +1,34 @@
 # EXPERIMENT LOG
 
-## ECO-WRITE-01 — iTec Eco native session-bootstrap replay — PREPARED / NOT RUN
+## ECO-WRITE-01 — iTec Eco mismatched R1 replay acceptance — PREPARED / NOT RUN
 **Status: PREPARED / NOT RUN**  
 **Date: 2026-10-02**  
-**Track:** cross-model iTec Eco sidetrack; does not advance the XTR M EXP-number sequence.
+**Track:** cross-model iTec Eco sidetrack; does not advance the XTR M EXP-number sequence.  
+**Revision:** PREPARED definition refined before first run after combined raw reduction of both genuine Eco5 gateway captures.
 
 ### Hypothesis
 
-A single genuine iTec Eco 5 Thermia Online gateway response, replayed once against the first exact iTec Eco cold-start `0x0F FC17 071C/0730` challenge, may be sufficient to make the Eco controller enter the native Online/DCM configuration-synchronization path.
+The target iTec Eco controller accepts a previously captured known-good Eco5 Thermia Online FC17 response even when that response does not correspond to the current live `071C/0730` challenge.
 
 ### Baseline
 
 `Read-only/iTec Eco/thermia_itec_eco_waveshare_public_v01.yaml`
 
 Passive Eco compatibility remains the known-safe baseline.
+
+### Genuine Eco5 evidence already established
+
+Across `itec_eco5_gateway_20260926.log` and `itec_eco5_gateway_20260928.log`:
+
+- six successful exact `071C/0730` challenge -> gateway-response events are present;
+- every successful response is followed by controller `FC16 03E8/count14`;
+- first `03E8` follows the response after 92..482 ms;
+- four successful gateway responses occur at challenge #29;
+- two successful gateway responses occur at challenge #3;
+- all six gateway response bodies differ;
+- in two challenge-#3 windows without an immediate `03E8` ACK, the controller emits nine `03E8/count14` frames within the next 10 s and does not advance to `03FC` during that window.
+
+Therefore the native Eco5 approval -> configuration-sync architecture and first page-ACK progression are genuine-capture evidence. The unresolved point is replay tolerance, not the downstream sync shape.
 
 ### Exact controlled change
 
@@ -22,28 +37,30 @@ Only one active variable is introduced:
 - configure GPIO17 TX;
 - require manual Home Assistant arming;
 - require >=5 s complete controller-bus silence followed by controller return;
-- on the first exact challenge (`read 0730/count8; write 071C/count8; byte_count16`) transmit exactly one captured genuine Eco5 gateway response;
+- recognize only the exact `read 0730/count8; write 071C/count8; byte_count16` challenge;
+- challenge #1 and #2: capture-only / NO TX;
+- challenge #3: transmit exactly one captured known-good Eco5 response;
 - perform no further TX.
 
 Hard-coded one-shot response:
 
 `0F17101691A5F3F8E8D58738924416E8E6A3D5E227`
 
+That response came from a different genuine Eco5 challenge/session (#29), so transmitting it on live challenge #3 is an explicit mismatched-replay test.
+
 No FC16 ACK, no `0708` response, no desired-page selector and no settings write are included.
 
-### Evidence basis
+### Why challenge #3
 
-- Genuine Eco5 + Thermia Online captures establish the native `071C/0730` challenge/response family and show that accepted gateway entry is followed by controller `FC16 03E8/count14`.
-- Passive Eco8 evidence shows the same challenge family during cold start.
-- The exact recorded response above is locally proven to be accepted as a replay against a different challenge on the XTR M, but replay acceptance is **not** yet proven on an Eco controller.
+Challenge #3 is not guessed: the genuine Eco5 gateway successfully answered challenge #3 in two captured sessions. The earlier "first challenge" draft was superseded before any run because the raw logs do not show successful native Eco gateway responses at challenge #1.
 
-### Success / negative / abort
+### Success / negative / inconclusive / abort
 
-**Success:** first controller-originated `0x0F FC16 03E8/count14` appears after the one replay. The experiment deliberately does not ACK it.
+**Success:** challenge #3 is reached, the single R1 replay is sent, and controller `0x0F FC16 03E8/count14` follows. EXP01 deliberately does not ACK it.
 
-**Negative:** no `03E8/count14` appears within 10 s after R1, or only challenge retries continue.
+**Negative:** challenge #3 is reached and R1 is transmitted, but no `03E8/count14` appears within 10 s.
 
-**Inconclusive:** no qualified silence -> boot-return -> challenge sequence occurs within 180 s.
+**Inconclusive:** the controller returns but challenge #3 is not reached within 30 s, or no qualified silence -> boot-return sequence occurs within 180 s.
 
 **Abort:** another response-shaped `0x0F FC17` peer or `0x0F FC16` ACK-shaped peer is seen, parser CRC/resync/RX-drop integrity changes after boot return, or the user cancels.
 
@@ -54,7 +71,8 @@ Unexpected traffic is capture-only.
 - one R1 maximum per ESP boot;
 - DE LOW outside the single guarded response;
 - no setting register is modified;
-- plausible unintended effect is a temporary partial Online/DCM session or Online communication alarm because the expected FC16 page is intentionally left unACKed;
+- no FC16 ACK or semantic page mechanism exists in this build;
+- plausible unintended effect is a temporary partial Online/DCM session, repeated `03E8` pushes or an Online communication alarm because the expected first page is intentionally left unACKed;
 - after the one response the build is passive again;
 - conservative rollback is the read-only iTec Eco profile.
 
