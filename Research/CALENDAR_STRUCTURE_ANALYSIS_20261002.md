@@ -2,7 +2,10 @@
 
 **Date:** 2026-10-02  
 **Scope:** passive/local XTR M calendar correlation plus comparison with existing genuine Thermia Online / iTec Eco5 captures  
-**Status:** analysis note; no new ESP write target and no new active calendar write experiment
+**Track:** CAL-OFFLINE-01  
+**Status:** RUNNING / PARTIAL — offline evidence reduction only; no new ESP calendar write target
+
+> **Revision:** the earlier 99-word-per-function interpretation is superseded. Re-aligning the complete 12-page region supports four logical **98-word** calendar blocks (8 × 12-word records + 2 metadata words), followed by a separate 4-word tail.
 
 ## Capture context
 
@@ -161,173 +164,266 @@ The heat-pump internal clock in this capture appears to be several minutes ahead
 
 ---
 
-## 4. The calendar region has a strong 8 x 12 + 3 structure
+## 4. Corrected calendar region: four 98-word logical function blocks
 
-The known native configuration pages in this range are:
-
-```text
-055A / count33
-057B / count33
-059C / count33
-
-05BD / count33
-05DE / count33
-05FF / count33
-
-0620 / count33
-0641 / count33
-0662 / count33
-
-0683 / count33
-06A4 / count33
-06C5 / count33
-```
-
-Each group of three pages is exactly:
+The native transport pages are:
 
 ```text
-3 x 33 = 99 words
+055A/33  057B/33  059C/33
+05BD/33  05DE/33  05FF/33
+0620/33  0641/33  0662/33
+0683/33  06A4/33  06C5/33
 ```
 
-The commissioning manual documents up to eight calendar slots. A structure of:
+Together these pages cover **396 contiguous registers** from `055A` through `06E5`.
+
+Re-aligning the full region gives a substantially better fit than the earlier three-pages-per-function model:
 
 ```text
-8 slots x 12 words = 96 words
-+ 3 group metadata words
-= 99 words
+4 × 98 words = 392 words
++ 4 trailing words = 396 words
 ```
 
-fits the transport layout exactly.
-
-### Candidate group layout
+Each 98-word logical calendar-function block is:
 
 ```text
-055A..05BC   group 1 — locally anchored to a WW_GEBLOKKEERD edit
-05BD..061F   group 2 — calendar-function candidate
-0620..0682   group 3 — calendar-function candidate
-0683..06E5   group 4 — calendar-function candidate
+8 slots × 12 words = 96
++ 2 metadata words
+= 98 words
 ```
 
-Because the commissioning manual lists four normal schedule functions before the separate concrete-drying program, the following mapping is structurally attractive:
+Corrected logical boundaries:
 
-```text
-055A..05BC   WW_GEBLOKKEERD
-05BD..061F   EVU / power limiting
-0620..0682   Silent Mode
-0683..06E5   Temperature Reduction
-```
+| Logical block | Range | Record area | Metadata |
+|---|---|---|---|
+| F1 | `055A..05BB` | `055A..05B9` | `05BA..05BB` |
+| F2 | `05BC..061D` | `05BC..061B` | `061C..061D` |
+| F3 | `061E..067F` | `061E..067D` | `067E..067F` |
+| F4 | `0680..06E1` | `0680..06DF` | `06E0..06E1` |
+| trailing | `06E2..06E5` | — | separate four-word region |
 
-Only the first group is locally anchored by the supplied XTR M edit.
+### Strong conclusion
 
-**Status of groups 2-4: HYPOTHESIS / structural candidate only.**
+The previous 99-word grouping followed transport-page boundaries rather than the logical calendar structure.
 
-Do not expose these mappings as established XTR semantics until each is locally correlated.
+Native 33-word page boundaries cut **through** logical functions and records. For example, F2 begins at `05BC`, the last word of native page `059C/count33`, and continues in page `05BD/count33`.
+
+**Status: STRONGLY SUPPORTED** by exact structural alignment in the local XTR and genuine Eco5 captures.
 
 ---
 
-## 5. Slot boundaries do not match native page boundaries
+## 5. Slot occupancy / validity bitmap candidates
 
-Assuming the 12-word slot model, the first group divides as:
-
-```text
-slot 0: 055A..0565
-slot 1: 0566..0571
-slot 2: 0572..057D
-slot 3: 057E..0589
-slot 4: 058A..0595
-slot 5: 0596..05A1
-slot 6: 05A2..05AD
-slot 7: 05AE..05B9
-group metadata: 05BA..05BC
-```
-
-Transport pages are instead:
+The first metadata word of each 98-word block correlates strongly with populated slot count:
 
 ```text
-055A..057A
-057B..059B
-059C..05BC
+F1 -> 05BA
+F2 -> 061C
+F3 -> 067E
+F4 -> 06E0
 ```
 
-Therefore calendar records can cross native page boundaries. For example, slot 2 would begin at `0572` in the first page and continue through `057D` in the second page.
+Observed historical local XTR snapshot:
 
-This is important for any future calendar writer: a calendar slot must not be assumed to map one-to-one to a single 33-word native page.
+```text
+05BA = 003F   -> bits 0..5 set; six populated F1 records
+06E0 = 000F   -> bits 0..3 set; four populated F4 records
+```
+
+Observed genuine Eco5 + Online snapshot:
+
+```text
+05BA = 0003   -> bits 0..1 set; two populated F1 records
+06E0 = 0003   -> bits 0..1 set; two populated F4 records
+```
+
+F2/F3 candidate bitmaps are zero in the compared Eco5 snapshot. Importantly, F3 still contains a record-shaped residual pattern while `067E=0`. That is consistent with slot contents remaining in memory after a slot is inactive and with the bitmap carrying the configured/valid state.
+
+### Classification
+
+`05BA`, `061C`, `067E`, `06E0` as eight-bit slot-validity/occupancy bitmaps:
+
+**STRONGLY SUPPORTED**, not yet locally PROVEN by a controlled one-bit add/delete transition.
+
+The second metadata word of every logical block (`05BB`, `061D`, `067F`, `06E1`) is zero in the compared snapshots. Its semantics remain **OPEN / UNKNOWN**.
 
 ---
 
-## 6. Existing XTR and genuine Eco5 captures support an active-slot bitmap
+## 6. Record-mode and weekday fields
 
-An older local XTR capture contains the same three-page `055A/057B/059C` family. Its first 96 words contain multiple non-empty 12-word records, and the final three-word metadata region includes:
-
-```text
-003F 0000 0000
-```
-
-`0x003F = 0b00111111`, which is compatible with six active slots.
-
-A genuine iTec Eco5 + Thermia Online capture contains the same page family and shows:
+The current best 12-word record model is:
 
 ```text
-0003 0000 0000
+word 0      schedule-mode metadata
+word 1      start minute
+word 2      start hour
+word 3      start day
+word 4      start month
+word 5      start year
+word 6      stop minute
+word 7      stop hour
+word 8      stop day
+word 9      stop month
+word 10     stop year
+word 11     weekday / recurrence mask
 ```
 
-at the corresponding group tail.
-
-`0x0003 = 0b00000011`, which is compatible with two active slots.
-
-### Strongly supported interpretation
-
-`05BA`, the first word of the three-word group metadata tail, is a strong candidate for an 8-bit slot-active / slot-valid bitmap:
+The local DATE entry uses:
 
 ```text
-bit0 = slot 0
-bit1 = slot 1
-...
-bit7 = slot 7
+0, 0,18,2,10,26, 0,19,2,10,26, 0
 ```
 
-**Status: STRONGLY SUPPORTED**
+Genuine Eco5 + Online contains weekly-looking records such as:
 
-This is supported by both local XTR structure and genuine Online/Eco5 structure, but it is not yet locally proven by observing one slot bit change during a controlled add/delete sequence.
+```text
+1, 0,21,31,12,0, 59,23,31,12,0, 127
+```
+
+`127 = 0b1111111`, exactly compatible with seven selected weekdays.
+
+The repeated empty-record form:
+
+```text
+0,0,0,31,12,0,0,0,31,12,0,0
+```
+
+supports `31/12/00` as an unset/sentinel date.
+
+Current classification:
+- minute/hour/day/month/year ordering: **STRONGLY SUPPORTED**;
+- word0 as DATE versus DAYS/WEEK mode: **STRONGLY SUPPORTED**, not locally proven;
+- word11 as weekday mask: **STRONGLY SUPPORTED by genuine Online/Eco5 evidence**, not locally proven;
+- exact weekday bit ordering: **OPEN / UNKNOWN**.
 
 ---
 
-## 7. Candidate recurrence / weekday metadata
+## 7. Probable function mapping
 
-Existing genuine Online/Eco5 calendar records contain structures such as:
-
-```text
-1, 0, 21, 31, 12, 0,
-59, 23, 31, 12, 0, 127
-```
-
-The final value `127 = 0b1111111` is compatible with a seven-day weekday mask.
-
-The locally added one-shot record is:
+The commissioning manual lists four ordinary schedule functions plus a separate concrete-drying program:
 
 ```text
-0, 0, 18, 2, 10, 26,
-0, 19, 2, 10, 26, 0
+WW_GEBLOKKEERD
+EVU / power limiting
+Silent Mode
+Temperature Reduction
+Concrete Drying Program
 ```
 
-This suggests, but does not prove, that the two metadata words surrounding the two five-word timestamps may encode schedule mode/recurrence and weekday selection.
-
-Candidate model:
+F1 is locally anchored by the supplied edit:
 
 ```text
-word 0     recurrence / date-mode metadata
-words 1-5  start minute/hour/day/month/year
-words 6-10 end minute/hour/day/month/year
-word 11    weekday / recurrence mask metadata
+F1 055A..05BB = WW_GEBLOKKEERD
 ```
 
-**Status: HYPOTHESIS**, with the weekday-mask interpretation supported by the `0x007F` genuine Online examples.
+The remaining order is structurally attractive:
 
-A controlled recurring schedule with selected weekdays is required before promotion.
+```text
+F2 05BC..061D = EVU / power limiting
+F3 061E..067F = Silent Mode
+F4 0680..06E1 = Temperature Reduction
+```
+
+**F2-F4 remain HYPOTHESIS only** until each is locally correlated.
 
 ---
 
-## 8. Deletion is still inconclusive in the supplied local capture
+## 8. Concrete Drying is strongly indicated at 04D8/count27
+
+The separate native `04D8/count27` block matches the documented concrete-drying structure closely.
+
+Local XTR example:
+
+```text
+1,1,12,0,0,2,2,
+1,25, 2,20, 3,20, 4,20, 5,20,
+6,20, 7,20, 8,20, 9,20, 10,20
+```
+
+Genuine Eco5 + Online example:
+
+```text
+6,2,25,0,12,2,10,
+1,20, 2,25, 3,30, 4,35, 5,40,
+6,40, 7,35, 8,30, 9,25, 10,20
+```
+
+The last 20 words are exactly ten `(day/point index, supply temperature)` pairs.
+
+The commissioning manual independently specifies:
+- maximum 10 points;
+- day value 1..40;
+- supply temperature 15..55 °C;
+- hysteresis factory 2, range 1..5.
+
+Current classification:
+- `04D8/count27` = concrete-drying configuration: **STRONGLY SUPPORTED**;
+- words7..26 = ten day/temperature pairs: **STRONGLY SUPPORTED**;
+- header word5 = hysteresis and word6 = configured-point count: **STRONGLY SUPPORTED**, not locally correlated;
+- header words0..4: **OPEN / UNKNOWN**.
+
+Do not label header words0..4 as a start date/time without a controlled correlation.
+
+---
+
+## 9. 06EA/count7 is clock/date, not concrete-drying storage
+
+Observed examples fit:
+
+```text
+second, minute, hour, day, month, year, weekday
+```
+
+including local XTR:
+
+```text
+14,11,8,25,9,26,4
+```
+
+and genuine Eco5 examples on their respective capture dates.
+
+**Status: STRONGLY SUPPORTED.**
+
+Therefore the earlier idea that `06EA/06F1/06F4` might simply be the continuation of the ordinary calendar-function store is not supported for `06EA`.
+
+---
+
+## 10. Separate trailing region 06E2..06E5 and exact 0870 relationship
+
+The corrected four-block model leaves four words:
+
+```text
+06E2 06E3 06E4 06E5
+```
+
+Across three compared datasets:
+
+```text
+Local XTR:
+06E2=00CE, 06E3=0055 -> 0x55CE
+0870 word0 = 0x55CE
+
+Eco5 20260926:
+06E2=006B, 06E3=0004 -> 0x046B
+0870 word0 = 0x046B
+
+Eco5 20260928:
+06E2=006C, 06E3=0004 -> 0x046C
+0870 word0 = 0x046C
+```
+
+`06E4` and `06E5` are zero in these snapshots.
+
+The byte-pair reconstruction `(06E3 << 8) | 06E2` therefore equals `0870 word0` in every compared dataset.
+
+**Observed relationship: STRONGLY SUPPORTED / repeatedly observed.**  
+**Semantic meaning: OPEN / UNKNOWN.**
+
+Do not call it a checksum, pointer or calendar identifier without further evidence.
+
+---
+
+## 11. Deletion is still inconclusive in the supplied local capture
 
 The user deleted the same calendar entry around t=120 s.
 
@@ -356,37 +452,37 @@ If `05BA` is indeed the slot-active bitmap, a delete may only require clearing t
 
 ### PROVEN / locally confirmed on this XTR M
 
-- A WW_GEBLOKKEERD calendar edit triggers the native `055A/count33` page family.
-- `W0 bit1` can select `055A` on the desired/PULL side of the `0708` mechanism.
-- The controller requests `055A/count33` via FC03, accepts a complete 33-word page, and republishes that identical page with FC16.
-- The full-page desired-state architecture is therefore not limited to the previously proven heating/DHW/cooling/operation settings pages.
+- a WW_GEBLOKKEERD edit triggers the native `055A/count33` desired-page path;
+- `W0 bit1` participates in desired/PULL selection for page `055A`;
+- the controller requests a 33-word desired page and republishes the accepted image through FC16.
 
 ### STRONGLY SUPPORTED
 
-- The first 12 words form one calendar record.
-- The record contains two five-word date/time structures corresponding to the entered start and end.
-- The likely order is minute, hour, day, month, year.
-- Each normal calendar-function group occupies 99 words = eight 12-word records + three metadata words.
-- `05BA` is likely the active-slot bitmap for the first calendar group.
-- The four 99-word groups are likely the four ordinary calendar functions listed in the manual.
+- one logical calendar record is 12 words;
+- words1..10 hold start/stop date-time fields in minute/hour/day/month/year order;
+- word0 is schedule-mode metadata and word11 is recurrence/weekday metadata;
+- the ordinary calendar store is four logical 98-word blocks = eight 12-word records + two metadata words;
+- `05BA/061C/067E/06E0` are slot-validity/occupancy bitmap candidates;
+- `04D8/count27` is the separate concrete-drying configuration structure;
+- `06EA/count7` is a clock/date block;
+- `06E2/06E3` reconstruct `0870 word0` across the compared datasets.
 
 ### HYPOTHESIS
 
-- `055A` record word0 is recurrence/date-mode metadata.
-- record word11 is a weekday/recurrence mask.
-- groups 2-4 map, in manual order, to EVU/power limiting, Silent Mode and Temperature Reduction.
-- deletion may clear only a slot-valid bit rather than zeroing the slot contents.
-- the remaining `06EA/06F1/06F4` area may relate to concrete-drying or other calendar metadata; no promotion is justified yet.
+- F2 = EVU / power limiting;
+- F3 = Silent Mode;
+- F4 = Temperature Reduction;
+- schedule-mode 0 = DATE and 1 = DAYS/WEEK;
+- deletion may clear a slot-validity bit while leaving stale record data.
 
 ### OPEN / UNKNOWN
 
-- exact meaning of record words 0 and 11;
-- exact minute-field proof using non-zero minutes;
-- exact slot-bitmap location/behavior during controlled add/delete;
-- whether empty/deleted slot contents are preserved;
-- mapping of groups 2-4;
-- concrete-drying storage layout;
-- whether writes spanning a slot across two native pages require ordered multi-page desired-state transactions.
+- exact meaning of the second metadata word in each function block;
+- exact weekday-bit order;
+- live local bitmap transition on add/delete;
+- exact meaning of concrete-drying header words0..4;
+- semantics of `06E2..06E5`;
+- transaction ordering when one logical record crosses two native 33-word pages.
 
 ---
 
@@ -396,15 +492,12 @@ A passive-only follow-up has the highest value.
 
 Suggested controlled action:
 
-1. create exactly one WW_GEBLOKKEERD item with non-zero minutes, for example 18:15 -> 19:30;
-2. wait long enough to capture the complete `055A/057B/059C` activity;
-3. delete the same item;
-4. continue logging for at least 60 seconds;
-5. compare:
-   - `055B` and `0560` for minute values;
-   - the first 12-word record before/after;
-   - `05BA` for a one-bit slot validity change;
-   - all three pages for any additional metadata delta.
+1. create one WW_GEBLOKKEERD DATE item while changing only one previously-zero minute field, e.g. start 18:15 with the remaining date/time values controlled;
+2. note the exact UI slot used;
+3. wait until relevant calendar-page traffic has settled;
+4. delete that same item;
+5. continue logging for 60–90 seconds;
+6. compare the predicted minute word, the corresponding slot record and the candidate bitmap at `05BA`.
 
 ### Positive evidence
 
@@ -429,4 +522,4 @@ No active ESP protocol action is required. Unexpected bus traffic remains captur
 
 The calendar path is now a realistic future extension of the native Thermia Online/DCM emulation architecture, but it should not yet be implemented as a production Home Assistant writer.
 
-The immediate durable result is structural: **the XTR M calendar participates in the same native page-owned desired-state synchronization system as the already controlled settings pages, and the first WW calendar record is directly visible in the 055A page family.**
+The immediate durable result is structural: **the XTR M calendar participates in the same native page-owned desired-state synchronization system as the already controlled settings pages, while its logical 12-word records and 98-word function blocks cross the native 33-word transport-page boundaries.**
