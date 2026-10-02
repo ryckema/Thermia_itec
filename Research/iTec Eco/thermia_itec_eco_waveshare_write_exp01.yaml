@@ -303,6 +303,26 @@ globals:
     restore_value: no
     initial_value: '0'
 
+  - id: eco_exp01_stream_resync_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: eco_exp01_stream_resync_baseline
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: eco_exp01_rx_drop_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: eco_exp01_rx_drop_baseline
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
   # Persisted copies of the known 0x0F heating/settings block.
   # Values are never published after a fresh install until cache_valid has
   # been set by a genuine live Thermia settings frame.
@@ -620,6 +640,18 @@ uart:
                   }
                 }
 
+                if (id(eco_exp01_armed) &&
+                    slave==0x0F && fc==0x10 && bytes.size()==8) {
+                  ESP_LOGE("thermia_eco_write",
+                    "\033[31m[ECO-WRITE-01] ===== ABORT PEER_0F_FC16_ACK NO_TX DE=LOW =====\033[0m");
+                  eco_finish(
+                    "ABORTED / peer 0x0F FC16 ACK responder observed",
+                    "stage 5 / aborted / DE LOW",
+                    "another Online/DCM-style responder ACKed FC16; active test stopped",
+                    5
+                  );
+                }
+
                 const bool exact_challenge =
                   slave==0x0F && fc==0x17 && bytes.size()==29 &&
                   bytes[2]==0x07 && bytes[3]==0x30 &&
@@ -663,10 +695,10 @@ uart:
                       };
 
                       id(waveshare_rs485_direction).turn_on();
-                      delayMicroseconds(1000);
+                      delay_microseconds_safe(1000);
                       id(thermia_uart).write_array(eco_r1,sizeof(eco_r1));
                       id(thermia_uart).flush();
-                      delayMicroseconds(1000);
+                      delay_microseconds_safe(1000);
                       id(waveshare_rs485_direction).turn_off();
 
                       ESP_LOGE("thermia_eco_write",
@@ -2213,12 +2245,14 @@ uart:
             if (waiting) break;
 
             ESP_LOGW("thermia_stream", "CRC resync at 0x%02X 0x%02X", slave, fn);
+            id(eco_exp01_stream_resync_count)++;
             pending.erase(pending.begin());
           }
 
           if (pending.size() > 512) {
             ESP_LOGW("thermia_stream", "Dropping pending buffer (%u bytes)",
                      (unsigned) pending.size());
+            id(eco_exp01_rx_drop_count)++;
             pending.clear();
           }
 
@@ -2255,6 +2289,8 @@ button:
           id(eco_exp01_r1_ms)=0;
           id(eco_exp01_challenge_count)=0;
           id(eco_exp01_bad_crc_baseline)=id(eco_exp01_bad_crc_count);
+          id(eco_exp01_stream_resync_baseline)=id(eco_exp01_stream_resync_count);
+          id(eco_exp01_rx_drop_baseline)=id(eco_exp01_rx_drop_count);
 
           id(eco_exp01_armed_sensor)->publish_state(true);
           id(eco_exp01_status)->publish_state("ARMED / power-cycle Thermia controller / waiting >=5 s complete bus silence");
@@ -3066,11 +3102,16 @@ interval:
           }
 
           if (id(eco_exp01_stage)>=2 &&
-              id(eco_exp01_bad_crc_count)!=id(eco_exp01_bad_crc_baseline)) {
+              (id(eco_exp01_bad_crc_count)!=id(eco_exp01_bad_crc_baseline) ||
+               id(eco_exp01_stream_resync_count)!=id(eco_exp01_stream_resync_baseline) ||
+               id(eco_exp01_rx_drop_count)!=id(eco_exp01_rx_drop_baseline))) {
             ESP_LOGE("thermia_eco_write",
-              "\033[31m[ECO-WRITE-01] ===== ABORT CRC_DELTA_AFTER_BOOT TX=0 DE=LOW =====\033[0m");
-            stop_exp("ABORTED / CRC integrity changed after boot return",
-                     "new CRC failure during active observation window");
+              "\033[31m[ECO-WRITE-01] ===== ABORT PARSER_RX_INTEGRITY_DELTA crc=%u/%u resync=%u/%u drops=%u/%u TX=0 DE=LOW =====\033[0m",
+              unsigned(id(eco_exp01_bad_crc_count)),unsigned(id(eco_exp01_bad_crc_baseline)),
+              unsigned(id(eco_exp01_stream_resync_count)),unsigned(id(eco_exp01_stream_resync_baseline)),
+              unsigned(id(eco_exp01_rx_drop_count)),unsigned(id(eco_exp01_rx_drop_baseline)));
+            stop_exp("ABORTED / parser-RX integrity changed after boot return",
+                     "CRC/resync/drop counter changed during active observation window");
             return;
           }
 
