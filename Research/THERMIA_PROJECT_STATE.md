@@ -1,3 +1,41 @@
+# 2026-10-02 — iTec Eco write sidetrack prepared; no Eco active result yet
+
+**Cross-model status:** `ECO-WRITE-01` is **PREPARED / NOT RUN** in `Research/iTec Eco/`. This is a separate iTec Eco compatibility track and does not change the authoritative XTR M experiment/result status below.
+
+## iTec Eco active-write baseline
+
+Passive baseline:
+
+`Read-only/iTec Eco/thermia_itec_eco_waveshare_public_v01.yaml`
+
+Prepared active artifact:
+
+`Research/iTec Eco/thermia_itec_eco_waveshare_write_exp01.yaml`
+
+### ECO-WRITE-01 hypothesis
+
+A single captured genuine Eco5 Thermia Online response may be accepted as a replay against the first exact Eco cold-start `071C/0730` challenge and cause the Eco controller to enter native configuration synchronization.
+
+### Exact new variable
+
+Only one response is introduced. After manual arm + >=5 s controller-bus silence + boot return + exact challenge, the ESP may transmit once:
+
+`0F17101691A5F3F8E8D58738924416E8E6A3D5E227`
+
+No FC16 page ACK, no `0708` reply, no desired-page selector and no semantic setting write are enabled in ECO-WRITE-01.
+
+### Information criterion
+
+Positive evidence is the first controller-originated `0x0F FC16 03E8/count14` following R1. The ESP deliberately leaves that page unACKed.
+
+### Safety
+
+One R1 maximum per ESP boot; manual arm required; DE LOW otherwise; peer responder or CRC integrity change aborts; unexpected traffic is capture-only. If a partial Online/DCM state or alarm persists, return to the passive Eco build and use only the normal controller restart procedure if needed.
+
+**Do not advance to Eco initial-sync ACKs or semantic writes until an ECO-WRITE-01 result/log is supplied.**
+
+---
+
 # 2026-10-02 — EXP386 complete; native DCM session recovery locally confirmed
 
 **Authoritative current state:** EXP386 is **COMPLETE / POSITIVE** from the supplied local Thermia iTec XTR M runtime log. There is no newly promoted live experiment. EXP383 remains **PREPARED / NOT RUN** for the seven semantic candidate controls; the DCM/session-recovery work did not validate those mappings.
