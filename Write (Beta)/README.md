@@ -1,7 +1,7 @@
 # Thermia iTec XTR M — Write (Beta)
 
 > [!WARNING]
-> **Active control software.** This build transmits on the Thermia internal RS485 bus and can change heat-pump settings. It has been locally tested only on the documented Thermia iTec XTR M configuration. Verify wiring and safeguards and do not assume cross-model compatibility.
+> **Active control software.** This build transmits on the Thermia internal RS485 bus and can change heat-pump settings. It has been locally tested only on the documented Thermia iTec XTR configuration. Verify wiring and safeguards and do not assume cross-model compatibility.
 
 This folder contains the active native-control build for the tested XTR M. Read-only remains the conservative choice when control is not required.
 
@@ -267,13 +267,8 @@ Tested connection:
 | pin 5 — bus reference | not connected in the tested setup |
 | pins 7/8 — +12 V | not connected |
 
-Leave the Waveshare **120 Ω termination jumper open/off** when joining the existing Thermia bus.
-
-The write build uses:
-- GPIO18 = RX
-- GPIO17 = TX
-- GPIO21 = DE/direction
-- 9600 baud, 8 data bits, even parity, 1 stop bit
+In my test I leave the Waveshare **120 Ω termination jumper open/off** when joining the existing Thermia bus, 
+You will need to open the Waveshare and change the position of the jumper cap just above the A/B connector.
 
 Do not disconnect the room sensor or other normal Thermia bus participants for this installation.
 
