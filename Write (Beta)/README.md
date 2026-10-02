@@ -10,6 +10,7 @@ This folder contains the active native-control build for the tested XTR M. Read-
 
 ## Known issues
 - Some limits are still incorrect, if the value is outside of the limits the write will not be accepted.
+- Writes take 7 second, up to 10 writes can be queued 
  
 
 ## Current file
@@ -256,7 +257,7 @@ This section describes the setup that has actually been used for the XTR M resea
 
 ### 1. Hardware
 
-The tested board is a **Waveshare ESP32-S3-RS485-CAN / ESP32-S3-RS485-CAN-U**. Power the board separately over USB-C; Powering it from the Thermia RJ45 connector is untested and may not work.
+The tested board is a **Waveshare ESP32-S3-RS485-CAN / ESP32-S3-RS485-CAN-U**. Power the board separately over USB-C as the ESP needs to be running while the Thermia reboots to establish a session ; Powering it from the Thermia RJ45 connector is untested and may not work.
 
 Tested connection:
 
