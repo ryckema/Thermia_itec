@@ -1,208 +1,255 @@
-# Thermia ATEC / DHP-AQ experimental ESPHome path
+# Thermia ATEC / DHP-AQ experimental path
 
-> **Status: PREPARED / NOT RUN**
+Last updated: **2026-10-02**
+
+> **ATEC-EXP1 status: PREPARED / NOT RUN**
 >
-> This folder is an experimental ATEC/DHP-AQ side branch of the main Thermia iTec XTR M research. It is **not a production integration** and it has not yet been confirmed on the target ATEC installation.
+> This folder is a separate ATEC/DHP-AQ side branch of the Thermia reverse-engineering project. It is not the XTR canonical experiment series and it is not a production integration.
 
-The goal of this version is to reproduce only the parts of the native Thermia Online/DCM exchange that are supported by captured bus traffic, then test one tightly bounded semantic write: the room setpoint at `0x03F4`.
-
-Current implementation:
+Current experimental implementation:
 
 [`thermia_atec_waveshare_atec_exp1_queued_room_setpoint.yaml`](./thermia_atec_waveshare_atec_exp1_queued_room_setpoint.yaml)
 
-## Evidence basis
+Machine-oriented continuation notes:
 
-ATEC-EXP1 was built by comparing the available ATEC/DHP-AQ / iTec Eco gateway captures with the write path developed in the XTR research. The ATEC version does **not** simply reuse XTR wire behaviour.
+[`AI_HANDOVER.md`](./AI_HANDOVER.md)
 
-The strongest capture-backed sequence used here is:
+Strict passive build:
+
+[`../../Read-only/ATEC/thermia_atec_waveshare_readonly_v01.yaml`](../../Read-only/ATEC/thermia_atec_waveshare_readonly_v01.yaml)
+
+## Goal
+
+The ATEC branch investigates the native Thermia/Danfoss Online/DCM path on the ATEC/DHP-AQ family.
+
+ATEC-EXP1 tests one bounded semantic target:
+
+`0x03F4` / decimal 1012 / page `03E8` word 12 / room thermostat-setpoint candidate.
+
+The experiment does **not** perform arbitrary register writes. It reproduces only capture-backed page-oriented traffic.
+
+## Source discipline
+
+For ATEC wire behaviour, prefer:
+
+1. raw ATEC/Eco gateway captures;
+2. a new live ATEC result supplied by the user;
+3. current main project canonical state/findings;
+4. genuine Online/DCM-family captures;
+5. Discussion #143 and other external interpretation;
+6. cross-model XTR mappings;
+7. speculation.
+
+Do not promote an XTR-local result to proven ATEC behaviour without an ATEC confirmation.
+
+## Primary captures
+
+- `itec_eco5_gateway_20260926.log`
+- `itec_eco5_gateway_20260928.log`
+
+Additional genuine Online/DCM-family captures available in the project:
+
+- `thermia_capture_20260924_210001(1).log`
+- `thermia_capture_20260925_071517.log`
+- `thermia_capture_20260925_090209.log`
+- `thermia_capture_20260925_090550.log`
+
+External supporting discussion:
+
+- [klejejs/ha-thermia-heat-pump-integration Discussion #143](https://github.com/klejejs/ha-thermia-heat-pump-integration/discussions/143)
+
+## 2026-10-02 raw-log recheck
+
+The two primary gateway logs were reparsed directly.
+
+### 0708 mailbox
+
+Combined paired `0x0F FC03 0708/count6` replies: **264**.
+
+Exact six-zero replies:
+
+- 155/183 in the 2026-09-26 log;
+- 42/81 in the 2026-09-28 log;
+- **197/264 combined**.
+
+Therefore:
+
+```text
+0000 0000 0000 0000 0000 0000
+```
+
+is well supported as the **dominant steady-state idle reply**, but not as a universal lifecycle state.
+
+Transient fifth-word/W4 values also occur, including raw big-endian values `0x0100`, `0x03DC`, `0x03D8`, `0x03D0`, `0x038C`, `0x0380`, `0x0300`, `0x0200`, and `0x0000`.
+
+The exact captured `03E8` desired-page selector is:
+
+```text
+0000 0001 0000 0001 0000 0000
+```
+
+A separate captured `042E` desired-page selector is:
+
+```text
+0000 0008 0000 0008 0000 0000
+```
+
+This reinforces the page-oriented model: W1 behaves as desired-page/PULL selection while W2:W3 carry current-page PUSH/refresh selection.
+
+### 03E8/count14
+
+The two gateway logs contain **216** controller FC16 `03E8/count14` pages.
+
+There are only two unique controller payloads in that set:
+
+- dominant `03F4=20`;
+- one republished `03F4=30`.
+
+The captured desired-page transaction changes only word 12 / `03F4`, then the controller republishes that page.
+
+Discussion #143 independently identifies decimal 1012 / `0x03F4` as the room thermostat field.
+
+This remains the strongest ATEC-EXP1 semantic target.
+
+### Other directly observed page shapes
+
+Exact controller FC16 shapes repeatedly present in the ATEC/Eco logs include:
+
+- `0410/count22`
+- `042E/count15`
+- `0442/count13`
+- `0546/count20`
+
+Selected observations:
+
+- `041D=39` in the captured `0410` page; Discussion #143 maps decimal 1053 / `0x041D` to DHW Start.
+- `042E/count15` has three observed payload states; `042E` changes 1→0 and `042F` changes 0↔1.
+- `0442/count13` is stable in the two primary captures and numerically matches the later XTR-proven cooling page layout.
+- `0546/count20` is stable with `0553=2` and `0559=0`.
+
+Later XTR work locally proved `0553` as Operation Mode and strongly supports `0559` as Link Integration. Public Online/DCM evidence uses the same register indexes.
+
+On ATEC these remain cross-model/capture-backed candidates until locally correlated. The read-only ATEC YAML exposes selected candidates passively; ATEC-EXP1 does **not** add new write targets for them.
+
+### FC17 approval/session traffic
+
+Across the two primary gateway logs:
+
+- exact `071C/0730` challenges: **163**
+- exact 16-byte FC17 responses: **6**
+  - 2 in the 2026-09-26 log
+  - 4 in the 2026-09-28 log
+
+This materially strengthens the conclusion that FC17 is part of session establishment.
+
+It still does not reveal a general challenge-response transform.
+
+ATEC-EXP1 therefore keeps `0x0F FC17` **capture-only / NO TX**.
+
+The current XTR branch has since locally proven guarded native DCM session recovery through EXP386. That is useful architectural evidence, but the XTR R1 permission guard is not automatically transferable to ATEC and is deliberately not imported here.
+
+## ATEC-EXP1 controlled experiment
+
+### Hypothesis
+
+With the native Online/DCM responder absent, the ATEC/DHP-AQ controller can be serviced on logical endpoint `0x0F` using only exact frame shapes observed in the supplied captures, and a fresh `03E8/count14` page can be changed at exactly `03F4` through the captured desired-page mechanism.
+
+### Exact controlled semantic variable
+
+Only:
+
+`0x03F4` / page word12 / room setpoint.
+
+No other setting is part of ATEC-EXP1.
+
+### Desired-page flow
 
 ```text
 controller -> 0x0F FC03 0708/count6
-gateway    -> 0708 mailbox response
+emulator   -> 0000 0001 0000 0001 0000 0000
 
 controller -> 0x0F FC03 03E8/count14
-gateway    -> 14-word desired 03E8 page
+emulator   -> complete cached 03E8 page with only 03F4 changed
 
 controller -> 0x0F FC16 03E8/count14
-gateway    -> FC16 ACK
+emulator   -> standard address/count ACK
+
+decision   -> compare controller republish against cached original + target
 ```
 
-In the supplied capture, word 12 of the `03E8/count14` page — address `0x03F4`, decimal 1012 — changes between 20 and 30 and is then republished by the controller. Discussion #143 independently identifies decimal 1012 as the room thermostat / room setpoint field.
+The ACK is transport-level only. The controller republish is the semantic acceptance signal.
 
-The same captures also show the larger settings-export family beginning at `03E8`, followed by pages such as `03FC`, `0410`, and later pages through `06F4`, plus recurring runtime pages in the `07D0..` / `08xx` area.
+## Safety
 
-Supporting analysis:
+ATEC-EXP1:
 
-- [External iTec Eco 5 full capture analysis](../EXTERNAL_ITEC_ECO5_FULL_CAPTURE_ANALYSIS.md)
-- [Original Discussion #143](https://github.com/klejejs/ha-thermia-heat-pump-integration/discussions/143)
+- sends nothing for the first 10 seconds;
+- stops if a pre-existing `0x0F` responder is seen;
+- stops on later peer-response evidence;
+- stops on parser resync or RX-buffer-drop delta;
+- leaves unknown `0x0F` traffic capture-only;
+- leaves all FC17 traffic capture-only;
+- requires a fresh controller-originated `03E8/count14` cache <=60 s;
+- reconstructs the desired page from that exact cache;
+- allows only word12 to differ;
+- disables semantic writes after a republish mismatch;
+- uses one pending request maximum and latest-intent-wins;
+- waits at least 2 seconds after a completed transaction before dispatching another.
 
-## What ATEC-EXP1 changes compared with the XTR write branch
+## Manual settings snapshot
 
-The ATEC build keeps the conservative queued-write safety design from XTR EXP374, but removes XTR-specific session assumptions.
-
-| Area | ATEC-EXP1 behaviour |
-| --- | --- |
-| Startup | 10 s passive-only peer-responder check |
-| Active slave path | `0x0F` only |
-| Mailbox poll | `0708/count6` |
-| Normal idle reply | six zero words |
-| Room-page selector | `0000,0001,0000,0001,0000,0000` |
-| Semantic page | `03E8/count14` |
-| Writable field | only word 12 = `0x03F4` |
-| Write range | 20–30 °C, integer steps only |
-| Queue | one pending request, last user intent wins |
-| Post-write settle | at least 2 s |
-| Unknown `0x0F` traffic | capture-only |
-| `0x0F FC17` | capture-only; no ATEC response is synthesized |
-| `0x041D` DHW start | diagnostic/read mapping only; not writable |
-
-The XTR-specific cold-boot/R1 replay, A80E/A80F guard, hot-rejoin logic and other semantic write targets are deliberately absent.
-
-## Hardware/config assumptions
-
-The YAML is currently written for the same ESP32-S3/Waveshare-style RS485 setup used during the research:
+**ATEC Request Settings Snapshot** arms one exact captured broad refresh response:
 
 ```text
-UART baud: 9600
-Data bits: 8
-Parity: EVEN
-Stop bits: 1
-
-TX: GPIO17
-RX: GPIO18
-RS485 direction / DE: GPIO21
+0000 0000 FFFF 867F 03DF 0000
 ```
 
-These GPIO numbers are **implementation settings in this YAML**, not a claimed universal Thermia ATEC pinout. Verify them against the actual ESP32/RS485 hardware before flashing.
+This asks the controller to export the known settings page family through `06F4`.
 
-Required ESPHome secrets are:
+It does not inject setting values, but it is still an active gateway-emulation action because the ESP responds and ACKs known page shapes.
 
-```text
-wifi_ssid
-wifi_password
-thermia_api_encryption_key
-thermia_ota_password
-thermia_fallback_password
-```
+## First live run
 
-The YAML has been structurally checked, but this ATEC version has **not yet been ESPHome compile-verified or run on the target heat pump**.
+Do not begin with a room write.
 
-## Safety model
-
-ATEC-EXP1 is intentionally fail-closed.
-
-During the first 10 seconds after boot, DE remains LOW and the ESP transmits nothing. If another device already answers as slave `0x0F`, the experiment stops rather than competing on the bus.
-
-After activation, the firmware only responds to frame shapes that were explicitly included from the capture analysis. Unknown `0x0F` traffic remains capture-only.
-
-A semantic room-setpoint transaction additionally requires a fresh `03E8/count14` page cached within the previous 60 seconds. The outgoing desired page is reconstructed from that exact cache and only word 12 may differ.
-
-The semantic write path is disabled if the controller republish does not exactly match the requested page, if another word changes unexpectedly, if a peer responder appears, if parser resync/RX-drop counters change, or if the transaction times out.
-
-The Home Assistant **ATEC Abort Experiment** button immediately disables experiment TX and returns DE LOW.
-
-## Home Assistant controls
-
-Experimental controls are placed under **Configuration**.
-
-| Entity | Purpose |
-| --- | --- |
-| `ATEC-EXP1 Room Setpoint` | Experimental 20–30 °C room-setpoint target |
-| `ATEC Request Settings Snapshot` | Manually requests the captured broad settings export |
-| `ATEC Abort Experiment` | Stops the experiment and disables TX |
-
-Important diagnostics include `ATEC-EXP1 Status`, `ATEC-EXP1 Stage`, `ATEC-EXP1 Last Event`, the current cached room setpoint, cache age, peer-response count, parser/resync counters and confirmed-write count.
-
-`ATEC DHW Start (0x041D mapped)` is deliberately diagnostic only. No DHW write is implemented in EXP1.
-
-## First test procedure
-
-1. Boot the ESP and do not touch any control during the passive preflight.
-2. Confirm a clean log marker:
+1. Boot and leave controls untouched during passive preflight.
+2. Require:
    ```text
    PREFLIGHT_PASSED peer=0 busFresh=1 ENTER_STAGE40 DE=LOW
    ```
-3. Press **ATEC Request Settings Snapshot**.
-4. Wait for:
+3. Observe clean runtime.
+4. Press **ATEC Request Settings Snapshot**.
+5. Require:
    ```text
    SETTINGS_SNAPSHOT_COMPLETE
    ```
-   The status should report a fresh `03E8` cache and expose the current room value.
-5. Before any write, record the current `ATEC Room Setpoint Current`.
-6. Change the experimental setpoint by only **1 °C**, staying inside the 20–30 °C guard.
-7. A positive result requires:
-   ```text
-   WRITE_CONFIRMED reg=03F4 ... extraDeltaWords=0
-   ```
-   together with zero parser resyncs, zero RX drops and zero peer responses.
-8. Restore the original room setpoint using the same control after a confirmed test.
+6. Record the current cached room setpoint and any unknown `0x0F` traffic.
+7. Only if clean, request a **1 °C** room-setpoint change.
+8. Wait for one terminal result.
+9. If positive, restore the original value using the same path.
 
-Do not stress-test the queue on the first run. First establish that passive preflight, runtime servicing, the manual settings snapshot and one single-step room-setpoint transaction behave exactly as expected.
+Do not stress-test the queue in the first run.
 
-## Result classification
+## Result criteria
 
-**COMPLETE / POSITIVE** means the controller republishes `03E8/count14` with exactly the requested `0x03F4` value and no other changed words.
+**COMPLETE / POSITIVE**
 
-**COMPLETE / NEGATIVE** means the controller republishes the original `0x03F4` value unchanged while the transaction otherwise remains clean.
+Controller republishes `03E8/count14` with the requested `03F4`, every other word matches the cached original, and peer/resync/drop counters remain clean.
 
-**COMPLETE / INCONCLUSIVE** is used for a timeout, unexpected page sequence, stale cache, parser/RX integrity problem or any result that does not cleanly establish acceptance or rejection.
+**COMPLETE / NEGATIVE**
 
-A peer responder, unexpected semantic delta or integrity fault is an abort condition, not a reason to widen the experiment.
+Controller cleanly republishes the original `03F4` unchanged.
 
-## What to capture after the first run
+**COMPLETE / INCONCLUSIVE**
 
-Return the log from:
+Timeout, stale cache, unexpected page sequence, ambiguous republish, extra changed word, peer evidence, or parser/RX integrity fault.
 
-```text
-PREFLIGHT_PASSED
-```
+Until a live target log is supplied, the experiment remains **PREPARED / NOT RUN**.
 
-through the end of the settings snapshot and, if a write was attempted, through the first `WRITE_CONFIRMED`, negative result, timeout or abort marker.
+## Read-only branch
 
-For the first ATEC run, the most useful sequence is therefore:
+For passive monitoring use:
 
-```text
-PREFLIGHT_PASSED
--> SETTINGS_SNAPSHOT_ARMED
--> settings page ACK sequence
--> SETTINGS_SNAPSHOT_COMPLETE
--> ROOM_WRITE_ARM
--> 0708_SELECTOR_TX
--> desired 03E8 page
--> controller 03E8 republish
--> final result
-```
+`Read-only/ATEC/thermia_atec_waveshare_readonly_v01.yaml`
 
-## Evidence status
-
-### Observed in supplied external captures
-
-- `0x0F` carries mailbox/settings traffic.
-- `0708/count6` participates in selecting desired pages.
-- `03E8/count14` is fetched and later republished by the controller.
-- `0x03F4` changes in captured room-setpoint round trips.
-- broad settings-export and recurring runtime page families are present.
-
-### Strongly supported
-
-- `0x03F4` is the room thermostat / room setpoint field for this ATEC/DHP-AQ-family path.
-- a desired-page pull is a more faithful write mechanism than a speculative direct register write.
-
-### Still a hypothesis until ATEC-EXP1 is run
-
-- this ESPHome implementation can replace the absent native responder safely on the target ATEC installation;
-- the captured selector and desired-page sequence will be accepted unchanged by that target;
-- the controller will adopt the requested `0x03F4` value and republish it exactly.
-
-### Not implemented / not proven
-
-- arbitrary register writes;
-- DHW writes;
-- calendar functions;
-- emulation of the full Thermia Online service;
-- ATEC `0x0F FC17` session-response generation;
-- portability to every ATEC/iTec/DHP-AQ firmware revision.
-
----
-
-This branch should remain separate from the XTR canonical experiment history. Cross-model agreement is useful evidence, but ATEC results must not be promoted to locally proven XTR behaviour without an independent XTR confirmation.
+The 2026-10-02 passive refresh adds Candidate diagnostics for selected fields in `0410`, `042E`, `0442`, and `0546` while preserving strict RX-only operation.

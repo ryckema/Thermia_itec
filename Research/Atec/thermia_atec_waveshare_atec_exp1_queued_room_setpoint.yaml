@@ -1,9 +1,10 @@
 # =============================================================================
 # ATEC-EXP1 — ATEC/DHP-AQ 0x0F RUNTIME + QUEUED ROOM-SETPOINT WRITE
 # STATUS: PREPARED / NOT RUN
+# EVIDENCE REFRESH: 2026-10-02 / WIRE BEHAVIOR UNCHANGED
 #
 # Baseline / evidence
-# - Derived from the XTR EXP374 queued-write safety architecture.
+# - Safety architecture originally derived from XTR EXP374. The main XTR branch has since reached EXP386, but EXP386 session-recovery/R1 rules are XTR-local and are NOT imported into this ATEC experiment.
 # - ATEC/Eco capture 2026-09-26 shows exact native/emulated mailbox transaction:
 #     0F 03 0708 0006
 #     -> 0F 03 response words 0000,0001,0000,0001,0000,0000
@@ -14,6 +15,13 @@
 # - Discussion #143 independently labels decimal 1012 / 0x03F4 as room thermostat.
 # - ATEC captures show the full 03E8..06F4 config-export page shape family and
 #   runtime 0x0F FC16 pages including 0834/count18.
+# - Direct raw comparison also confirms repeated ATEC/Eco FC16 page shapes
+#   0410/count22, 042E/count15, 0442/count13 and 0546/count20.
+# - In the two primary gateway logs, 264 exact 0708/count6 replies were paired;
+#   197 are all-zero. Non-zero W4 lifecycle/status states also occur, so the
+#   six-zero response is dominant steady-state evidence, not a universal value.
+# - Across the two gateway logs there are 163 exact 071C/0730 challenges and
+#   six exact 16-byte FC17 responses (2 + 4). The transform remains unknown.
 #
 # Hypothesis
 # - With the native Online/DCM responder absent, the ATEC/DHP-AQ controller can
@@ -27,7 +35,7 @@
 # - REMOVE XTR-specific cold-boot/R1 replay, A80E/A80F guard, hot-rejoin and
 #   XTR-only semantic write targets.
 # - ADD 10 s passive peer-responder qualification before any TX.
-# - USE ATEC idle 0708 response: 0000,0000,0000,0000,0000,0000.
+# - USE the dominant captured steady-state ATEC 0708 idle response: 0000,0000,0000,0000,0000,0000. Transient non-zero lifecycle/status states are not synthesized.
 # - USE exact ATEC 03E8 selector: 0000,0001,0000,0001,0000,0000.
 # - ADD exact ATEC runtime FC16 0834/count18 ACK support.
 # - KEEP 04A6 capture-only outside an explicitly requested settings snapshot.
@@ -915,8 +923,10 @@ uart:
                   return;
                 }
 
-                // Exact dominant ATEC idle response in both supplied logs:
-                // six zero words.
+                // Dominant steady-state ATEC idle response:
+                // 197/264 paired 0708 replies in the two primary gateway logs
+                // are six zero words. Transient non-zero W4 lifecycle/status
+                // states exist; EXP1 deliberately does not synthesize them.
                 static const uint8_t idle_rsp[17] = {
                   0x0F,0x03,0x0C,
                   0x00,0x00, 0x00,0x00, 0x00,0x00,
@@ -1006,8 +1016,11 @@ uart:
               return;
             }
 
-            // Exact 0x0F FC17 request is deliberately capture-only in ATEC-EXP1.
-            // No R1 replay is used.
+            // 0x0F FC17 remains deliberately capture-only in ATEC-EXP1.
+            // Raw comparison found six exact challenge->response pairs across
+            // the two primary gateway logs, but no reusable transform.
+            // XTR EXP386's guarded R1/session recovery is XTR-local evidence
+            // and is intentionally NOT imported here. No R1 replay is used.
             if (slave == 0x0F && fc == 0x17) {
               ESP_LOGE(
                 "thermia_atec1",
@@ -1218,7 +1231,7 @@ sensor:
 
   - platform: template
     id: thermia_atec_dhw_start_candidate
-    name: "ATEC DHW Start (0x041D mapped)"
+    name: "ATEC DHW Start 041D (Candidate)"
     unit_of_measurement: "°C"
     accuracy_decimals: 0
     entity_category: diagnostic
