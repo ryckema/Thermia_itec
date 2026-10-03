@@ -1,3 +1,49 @@
+# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-44
+
+**Authoritative status:** this section supersedes older offline/current-state summaries below where they conflict. Historical text remains unchanged below.
+
+## Current live XTR status — unchanged
+
+- **EXP387 — COMPLETE / POSITIVE** — last fully completed local XTR experiment.
+- **EXP388 — RUNNING / PARTIAL** — repeated controller-restart recovery succeeded twice without ESP reboot; remaining pre-semantic and refresh-only cancellation branches are still not independently live-exercised.
+- **EXP383 — PREPARED / NOT RUN** — TEST-candidate bundle remains unpromoted except where later experiments separately established a target.
+- No PROTO-OFFLINE-40..44 result advances the live experiment state.
+
+## Newly reconciled offline tracks
+
+- **PROTO-OFFLINE-40 — COMPLETE / NEGATIVE for tested simple-transform families** — seven CRC-valid challenge/response pairs (six Eco5, one ATEC/DCM03) reject fixed XOR/add masks, fixed byte/word permutation+mask families, rotations and simple unkeyed MD5/SHA candidates. Exact challenge-response algorithm remains OPEN.
+- **PROTO-OFFLINE-41 — COMPLETE / POSITIVE** — four bracketed genuine Eco5 one-word desired deltas all receive exact controller FC16 republish in 0.491..0.571 s; one genuine ATEC exact no-op `0546` desired pull receives no same-page FC16 republish over 226.677 s. Missing republish after an exact no-op is therefore not automatic failure.
+- **PROTO-OFFLINE-42 — COMPLETE / POSITIVE** — genuine desired transactions reuse bus-visible same-page current images aged 67.084, 319.512, 374.586 and 87.609 s on Eco5; ATEC no-op age 65.425 s. The current corpus establishes a >=374.586 s lower bound for bus-visible same-page cache reuse in genuine Eco5, without authorizing relaxation of local XTR safety guards.
+- **PROTO-OFFLINE-43 — COMPLETE / POSITIVE** — ACK permission is state-qualified rather than shape/payload-qualified. `085F/count5`: 331 publications, 20 ACKed, 311 unACKed. `0870/count17`: 95 publications, 64 ACKed, 31 unACKed; all 31 belong to one reconnect retry window. Known config-page shape likewise does not imply ACK permission.
+- **PROTO-OFFLINE-44 — COMPLETE / POSITIVE WITH HARDENING REQUIREMENTS** — the seven-capture state graph is coherent as APPROVAL -> optional WAIT_PAGE_SERVICE -> BOOTSTRAP -> POST_BOOT_SERVICE -> NORMAL_RUNTIME with CONFIG_REFRESH, SERVICE_REFRESH, DESIRED_PULL and RECOVERY_REJOIN branches. Write Beta v4.1 is structurally aligned, but ACK authorization remains broader than the newest evidence model for `085F`, `0870` and generic runtime config pages.
+
+## Protocol-model consequences
+
+1. The challenge-response mechanism is no longer a useful target for simple request->response algebra from the current corpus; keyed/stateful/proprietary mechanisms remain OPEN.
+2. Desired-state confirmation is delta-sensitive in the current genuine corpus: semantic deltas republish exactly; an exact no-op may not.
+3. Immediate same-page refresh is not a universal gateway prerequisite. Local freshness guards remain a safety policy and must not be relaxed from cross-model evidence alone.
+4. Page recognition and permission to ACK are separate concepts. ACK authority belongs to an owning protocol state.
+5. Runtime state model now explicitly separates approval, page-service wait, bootstrap, post-bootstrap handoff, normal runtime, config refresh, service refresh/overlay, desired pull and retained/reconnect recovery.
+6. `0834/count18` remains a deliberate conservative local gap: genuine references ACK 63/64, but local XTR ACK safety is not proven.
+
+## Future hardening requirements — not yet implemented
+
+1. gate `085F` ACK by explicit locally proven service/recovery context;
+2. gate `0870` ACK by qualified normal runtime or explicit recovery state;
+3. remove generic runtime config-page ACK-by-shape fallback and require bootstrap/refresh/confirmation/resume ownership;
+4. keep `0834` capture-only until separately locally tested.
+
+## Safety constraints retained
+
+- No Write Beta YAML behavior changed by PROTO40..44.
+- Do not relax local page-cache freshness solely because genuine Eco5 reused a bus-visible image for >=374.586 s.
+- Do not infer a universal no-op rule beyond the current cross-profile evidence.
+- Do not broaden `0834` ACK permission from cross-model evidence alone.
+- Any future ACK hardening should change one permission class at a time and be live-regressed separately.
+- EXP388 remains **RUNNING / PARTIAL**.
+
+---
+
 # 2026-10-03 — ATEC/DCM03 cold-start reconciliation
 
 **Authoritative status:** this section supersedes older ATEC/DCM03 assumptions below where they conflict. Historical text remains unchanged below.
