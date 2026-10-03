@@ -68,6 +68,14 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - **OBSERVED:** Thermia Online has a public XAPK acquisition surface and verifiable package hashes/metadata.
 - **INCONCLUSIVE:** no APK/XAPK/firmware bytes were recovered in the current environment, so local Connect endpoints, protocol-package manifests and serializer code remain untested.
 
+## PROTO-OFFLINE-28 selector provenance
+
+- **GENUINE + LOCAL desired proof:** `03E8/W1 bit0`, `042E/W1 bit3`.
+- **LOCAL XTR desired proof only:** `0442/W1 bit4`, `0546/W0 bit0`, `055A/W0 bit1`.
+- **GENUINE CURRENT bitmap proof:** W2/W3 page-index geometry remains valid.
+- **NOT PROVEN:** all other desired bits; do not promote by symmetry.
+- `W0` is therefore locally proven on XTR but remains unobserved in the genuine Eco5 Online capture corpus.
+
 ## OPEN / UNKNOWN after reconciliation
 
 - exact gateway-internal readiness condition;

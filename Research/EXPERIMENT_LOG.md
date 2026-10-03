@@ -46,6 +46,12 @@
 
 ---
 
+### PROTO-OFFLINE-28 — desired-selector provenance — COMPLETE / POSITIVE
+- genuine desired selector proof: 03E8/W1b0 and 042E/W1b3;
+- local XTR additional desired proof: 0442/W1b4, 0546/W0b0, 055A/W0b1;
+- remaining desired bits are structural symmetry only and remain NO-TX by default;
+- selector CSV rewritten to carry current-selector evidence and desired-selector evidence separately.
+
 # EXPERIMENT LOG
 
 ## 2026-10-03 — canonical reconciliation of recent offline tracks
