@@ -1,9 +1,10 @@
 {
-  "schema_version": "2026-10-03-proto30",
+  "schema_version": "2026-10-03-proto30+atec-coldstart01",
   "source_tracks": [
     "PROTO-OFFLINE-19",
     "PROTO-OFFLINE-28",
-    "PROTO-OFFLINE-29"
+    "PROTO-OFFLINE-29",
+    "ATEC-COLDSTART-01"
   ],
   "bootstrap": [
     {
@@ -306,7 +307,7 @@
       "desired": {
         "word": "W0",
         "bit": 0,
-        "proof": "local-only"
+        "proof": "local-xtr+genuine-atec-dcm03"
       }
     },
     {
@@ -335,5 +336,34 @@
     ],
     "semantic_write": "fresh authoritative full page + one intended word + exact FC16 republish",
     "live_experiment_status": "EXP388 RUNNING / PARTIAL"
+  },
+  "profile_notes": {
+    "ATEC_DCM03_20261003": {
+      "bootstrap": "full 32-page ACK-gated bootstrap 03E8..06F4",
+      "profile_specific_counts": {
+        "03E8": 13,
+        "0410": 21,
+        "0492": 9,
+        "051E": 9
+      },
+      "first_mailbox": [
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "07FF",
+        "0006"
+      ],
+      "steady_mailbox": [
+        "0000",
+        "0000",
+        "0000",
+        "0000",
+        "077F",
+        "0006"
+      ],
+      "genuine_desired_selector": "W0 bit0 -> 0546/count20",
+      "note": "Do not replace the modern/Eco5 bootstrap geometry above with these ATEC counts; page counts are profile-specific."
+    }
   }
 }

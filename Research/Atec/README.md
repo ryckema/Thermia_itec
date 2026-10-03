@@ -1,3 +1,44 @@
+# CURRENT ATEC STATUS — 2026-10-03
+
+> **ATEC-COLDSTART-01 — COMPLETE / POSITIVE**  
+> Complete native ATEC + classic DCM03 cold start from first bus traffic.
+>
+> **ATEC-EXP1 — SUPERSEDED / NOT RUN**  
+> Historical v0.2 heat-pump write candidate. **Do not run it.**
+>
+> **ATEC-EXP2 — PREPARED / NOT RUN**  
+> Next action is an **isolated DCM03 bench challenge test**, not a heat-pump write.
+
+New evidence:
+- [ATEC_DCM03_COLD_START_20261003.md](./ATEC_DCM03_COLD_START_20261003.md)
+- [ATEC_EXP2_DCM03_CROSS_CONTROLLER_CHALLENGE.md](./ATEC_EXP2_DCM03_CROSS_CONTROLLER_CHALLENGE.md)
+- [ATEC_PAGE_GEOMETRY_20261003.csv](./ATEC_PAGE_GEOMETRY_20261003.csv)
+
+Strict passive HP build remains:
+[`../../Read-only/ATEC/thermia_atec_waveshare_readonly_v01.yaml`](../../Read-only/ATEC/thermia_atec_waveshare_readonly_v01.yaml)
+
+Historical superseded EXP1 YAML:
+[`thermia_atec_waveshare_atec_exp1_queued_room_setpoint.yaml`](./thermia_atec_waveshare_atec_exp1_queued_room_setpoint.yaml)
+
+## Why EXP1 is superseded before it was run
+
+The complete cold start proves:
+1. ATEC is **FC17 challenge-gated** and native DCM03 answers immediately.
+2. Initial ATEC sync is a **32-page bootstrap**, not the Eco5-derived 26-page refresh used by EXP1.
+3. ATEC geometry is profile-specific: e.g. `03E8/13`, `0410/21`, `0492/9`, `051E/9`.
+
+Therefore there is currently **no promoted active ATEC heat-pump write YAML**. A replacement writer would be premature until approval is solved or a DCM03-assisted path is proven.
+
+## New selector result
+
+Native DCM03 returns `W0=0001`, after which the controller pulls `0546/count20`. The returned desired page exactly matches the earlier controller page and includes `0553=4`.
+
+This proves `W0 bit0 -> 0546` in a genuine ATEC/DCM03 session. It does **not** prove a mode change because this event is a no-op and there is no subsequent `0546` republish.
+
+---
+
+# HISTORICAL README BELOW — retained for provenance
+
 # Thermia ATEC / DHP-AQ experimental path
 
 Last updated: **2026-10-02**

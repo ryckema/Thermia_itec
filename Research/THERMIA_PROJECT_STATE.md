@@ -1,3 +1,60 @@
+# 2026-10-03 — ATEC/DCM03 cold-start reconciliation
+
+**Authoritative status:** this section supersedes older ATEC/DCM03 assumptions below where they conflict. Historical text remains unchanged below.
+
+## Current live XTR status — unchanged
+
+- **EXP387 — COMPLETE / POSITIVE** — last fully completed local XTR experiment.
+- **EXP388 — RUNNING / PARTIAL** — repeated controller-restart recovery succeeded twice without ESP reboot; remaining cancellation branches are still not independently live-exercised.
+- **EXP383 — PREPARED / NOT RUN** — historical TEST-candidate bundle remains unpromoted except where later experiments individually established a target.
+- The ATEC/DCM03 evidence below does **not** advance the local XTR live experiment.
+
+## ATEC side branch
+
+- **ATEC-COLDSTART-01 — COMPLETE / POSITIVE** — genuine collaborator ATEC + classic DCM03 cold start captured from the first bus traffic, with DCM03 already powered/listening before HP power-up.
+- **ATEC-EXP1 — SUPERSEDED / NOT RUN** — v0.2 was never run. Its 26-page Eco5-derived snapshot geometry and no-FC17 session assumption are incompatible with the complete ATEC ground truth. Keep it as historical code only; do not run it.
+- **ATEC-EXP2 — PREPARED / NOT RUN** — isolated DCM03 cross-controller challenge-compatibility bench test. The heat-pump/controller must be absent from the bench bus. This is active FC17 DCM-only traffic, not read-only.
+
+## ATEC-COLDSTART-01 observed facts
+
+- First captured bus frame: **26.480 s**.
+- Exact ATEC approval challenge at **27.400 s**: `0F 17 0730/0008 071C/0008 10 2EE156572B8B84A0BC7A65C72D56185D`.
+- Classic DCM03 response at **27.429 s**, **29 ms** later: `0F 17 10 20B8F28A236F28FA0339669E2C6F600D`.
+- First controller page `03E8/count13` starts at **29.262 s**, **1.833 s after the DCM03 response**. The Eco5 ~120 s page-service delay is therefore not an ATEC/DCM03 requirement.
+- ATEC then performs a complete **32-page ACK-gated bootstrap** `03E8..06F4`; every observed page receives the ordinary address/count ACK.
+- ATEC page geometry is profile-specific. Concrete differences from modern Eco5 include `03E8/count13`, `0410/count21`, `0492/count9`, and `051E/count9`.
+- After `06F4`, `085F/count5` is published/ACKed and the first `0708/count6` response is `0000 0000 0000 0000 07FF 0006`. Steady state then uses `W4=077F, W5=0006`.
+- Exactly one non-zero genuine high-half desired selector is present: `W0=0001` at 111.327 s. The controller immediately pulls `0546/count20`.
+- The DCM03's returned `0546` desired image is byte-for-byte equal to the earlier controller `0546` image and contains `0553=0004`. This proves **genuine ATEC/DCM03 `W0 bit0 -> FC03 0546`**, but it is a no-op desired pull and does **not** prove an Operation Mode change.
+- No later `FC16 0546` republish occurs after that no-op pull.
+- This known ATEC uses `0867=0000`; the older-reference `0867=0016` value must not be universalized to every legacy ATEC/DCM03 system.
+
+## Protocol-model consequences
+
+1. A classic DCM03 is directly observed as the slave-`0x0F` device answering the native `071C/0730` approval challenge. DCM03 is therefore a first-class challenge-response firmware/hardware target, not merely an architectural inference.
+2. Approval-to-page-service timing is profile/gateway dependent.
+3. ATEC and modern Eco5 share the 32-page index and runtime-family architecture but **not all page counts/payload ABIs**.
+4. `W0 bit0 -> 0546` is now proven in both local XTR emulation and a genuine ATEC/DCM03 native session. No other new W0 bit is promoted by symmetry.
+5. ATEC-EXP1's heat-pump TX assumptions are superseded. No replacement HP-write YAML is promoted until the ATEC approval gate is solved or a native DCM03-assisted path is demonstrated.
+6. Immediate controlled next test: ATEC-EXP2 on an isolated DCM03 bench, using the captured ATEC challenge as a positive control before interpreting any Eco8 foreign challenge.
+
+## Strongest ATEC/DCM03 unknowns
+
+- whether standalone DCM03 answers a challenge captured from another controller generation;
+- whether response depends only on request + DCM credential or also prior bus/session/pairing state;
+- response algorithm/key material;
+- remaining genuine W0/high-half desired selectors;
+- whether a future non-no-op `0546` desired pull is followed by controller FC16 republish.
+
+## Safety constraints added
+
+- Do **not** run historical ATEC-EXP1 v0.2.
+- ATEC-EXP2 must run with heat-pump/controller physically absent from the test bus.
+- FC17 writes eight words at `071C` while reading eight at `0730`; classify it as active DCM TX.
+- If the captured ATEC positive-control challenge does not produce a valid DCM response on the isolated bench, stop and record **COMPLETE / INCONCLUSIVE** rather than interpreting foreign-challenge silence as pairing proof.
+
+---
+
 # 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-39
 
 **Authoritative status:** this section supersedes older current-state headers below where they conflict. Historical text remains unchanged below.

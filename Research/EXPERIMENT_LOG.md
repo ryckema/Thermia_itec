@@ -1,3 +1,70 @@
+# 2026-10-03 — ATEC-COLDSTART-01 / ATEC-EXP1 supersession / ATEC-EXP2 preparation
+
+**Local XTR live state remains unchanged:** EXP387 COMPLETE / POSITIVE; EXP388 RUNNING / PARTIAL.
+
+## ATEC-COLDSTART-01 — genuine ATEC + classic DCM03 cold start
+
+**Status:** **COMPLETE / POSITIVE** — collaborator capture analysis.  
+**Hypothesis:** a capture started before HP power-up with DCM03 already powered/listening will expose the complete native ATEC approval/bootstrap/runtime transition.  
+**Controlled change:** offline analysis only; no project device TX, no YAML execution, no XTR reboot/write.
+
+### Observed facts
+
+- first bus frame 26.480 s;
+- one exact slave-`0x0F` FC17 challenge at 27.400 s, read `0730/count8`, write `071C/count8`, body `2EE156572B8B84A0BC7A65C72D56185D`;
+- classic DCM03 response at 27.429 s, 29 ms later, body `20B8F28A236F28FA0339669E2C6F600D`;
+- first `03E8/count13` export at 29.262 s, 1.833 s after response;
+- complete 32-page bootstrap `03E8 -> ... -> 06F4`, every page ACKed;
+- ATEC-specific count differences include `03E8/13`, `0410/21`, `0492/9`, `051E/9`;
+- first `0708` response `0000 0000 0000 0000 07FF 0006`; steady replies use `W4=077F, W5=0006`;
+- one genuine desired event: `W0=0001` -> controller `FC03 0546/count20`;
+- returned `0546` desired image exactly equals the bootstrap current image and contains `0553=0004`; no later `0546` FC16 republish occurs, so this is selector proof/no-op desired state, not proof of a mode change;
+- `0867=0000` here, refining the older `0867=0016` legacy-reference fingerprint.
+
+### Strong conclusions
+
+- classic DCM03 is directly observed answering native ATEC approval;
+- ATEC page service can begin almost immediately after approval;
+- 32-page bootstrap/page-index architecture is genuine across another generation while counts remain profile-specific;
+- `W0 bit0 -> 0546` is now genuine cross-model selector evidence.
+
+---
+
+## ATEC-EXP1 — historical heat-pump write candidate
+
+**Previous status:** PREPARED / NOT RUN.  
+**New status:** **SUPERSEDED / NOT RUN**.
+
+Reason:
+- never executed;
+- used Eco5-derived 26-page refresh geometry and modern counts such as `03E8/count14`;
+- left FC17 unanswered, while the new cold start proves ATEC is challenge-gated.
+
+Historical YAML remains for provenance with a superseded/do-not-run header.
+
+---
+
+## ATEC-EXP2 — isolated DCM03 cross-controller challenge compatibility
+
+**Status:** **PREPARED / NOT RUN**.  
+**Hypothesis:** a classic DCM03 that answers its captured ATEC challenge on an isolated bench may also generate a valid `0F 17 10 <16 bytes>` response to a foreign Eco8 challenge.
+
+**Exact controlled change:** remove the HP/controller from RS485 and send only bounded known FC17 probes to DCM03. First replay the exact captured ATEC challenge as positive control. Only after control success test the six captured Eco8 challenges.
+
+**Active target:** slave `0x0F`; FC17 read `0730/count8`; write `071C/count8`; bytecount 16.  
+**Known current value:** unknown/opaque DCM03 mailbox state.  
+**Expected effect:** DCM03 returns `0F 17 10 <16-byte body> <CRC>` within ~200 ms.  
+**Plausible unintended effects:** DCM03 internal session/binding state may change; HP effect impossible because HP/controller must be absent.  
+**Recovery:** stop TX, power-cycle DCM03, restore isolated bench, rerun control.
+
+**Positive:** control succeeds and at least one Eco8 challenge gets valid response.  
+**Negative:** control succeeds but all bounded Eco8 probes are silent/invalid; negative only for tested standalone context.  
+**Inconclusive/abort:** control fails, TX unverified, bus not isolated, malformed frame/CRC, DCM reset/error.
+
+No HP semantic write, FC16 page ACK or `0708` emulation belongs to ATEC-EXP2.
+
+---
+
 # 2026-10-03 — PROTO-OFFLINE-22 canonical reconciliation
 
 **Status:** **COMPLETE / POSITIVE** — documentation/database reconciliation only.  

@@ -1,6 +1,13 @@
 # =============================================================================
 # THERMIA ATEC / DHP-AQ — ATEC-EXP1 integrated write candidate v0.2
-# STATUS: PREPARED / NOT RUN
+# STATUS: SUPERSEDED / NOT RUN
+#
+# DO NOT RUN THIS HISTORICAL BUILD.
+# Complete genuine ATEC + DCM03 cold-start evidence (2026-10-03) supersedes
+# its session and geometry assumptions: ATEC is FC17 challenge-gated; native
+# startup is a 32-page bootstrap; and profile counts include 03E8/13,
+# 0410/21, 0492/9 and 051E/9. Code below is intentionally retained unchanged
+# as historical PREPARED code. Current next action is ATEC-EXP2 isolated DCM03 bench testing.
 # IMPLEMENTATION REFRESH: 2026-10-02
 #
 # BASELINE

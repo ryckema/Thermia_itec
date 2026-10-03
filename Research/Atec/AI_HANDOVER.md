@@ -1,3 +1,75 @@
+# AI HANDOVER — ATEC/DCM03 current override
+
+Last updated: **2026-10-03**
+
+This section supersedes older ATEC-EXP1 continuation notes below where they conflict. Historical material is retained.
+
+## Current ATEC state
+
+- **ATEC-COLDSTART-01 — COMPLETE / POSITIVE**
+- **ATEC-EXP1 — SUPERSEDED / NOT RUN**
+- **ATEC-EXP2 — PREPARED / NOT RUN**
+- Local XTR state unchanged: **EXP388 RUNNING / PARTIAL**.
+
+Do not run `thermia_atec_waveshare_atec_exp1_queued_room_setpoint.yaml`; historical prepared code only.
+
+## New ground truth
+
+Genuine ATEC + classic DCM03 cold start, with DCM03 powered/listening before HP power-up:
+
+- first bus traffic 26.480 s;
+- challenge 27.400 s;
+- DCM03 response 27.429 s (+29 ms);
+- first `03E8/count13` 29.262 s (+1.833 s);
+- complete 32-page bootstrap through `06F4`, every page ACKed;
+- `085F/count5`;
+- first `0708` 64.923 s -> `0000 0000 0000 0000 07FF 0006`;
+- steady `0708`: `W4=077F, W5=0006`;
+- 111.327 s: `W0=0001`; 111.366 s pull `0546/count20`; DCM response exactly equals earlier bootstrap `0546`.
+
+ATEC bootstrap geometry:
+`03E8/13, 03FC/11, 0410/21, 042E/15, 0442/13, 0456/12, 046A/18, 047E/19, 0492/9, 04A6/13, 04BA/22, 04D8/27, 04F6/14, 050A/19, 051E/9, 0532/18, 0546/20, 055A/33, 057B/33, 059C/33, 05BD/33, 05DE/33, 05FF/33, 0620/33, 0641/33, 0662/33, 0683/33, 06A4/33, 06C5/33, 06EA/7, 06F1/3, 06F4/19`.
+
+## Interpretation boundary
+
+Observed:
+- DCM03 answered ATEC FC17.
+- W0b0 selected 0546.
+- desired 0546 == prior current 0546.
+- 0553 was 4 in both images.
+- known ATEC has `0867=0000`.
+
+Strong:
+- classic DCM03 is a native approval responder and direct research target.
+- ATEC/Eco5 share architecture but not all page geometry.
+
+Do not infer:
+- arbitrary/foreign challenges accepted;
+- 0553 changed here;
+- unobserved W0 bits by symmetry;
+- `0867=0016` universal legacy identity.
+
+## Next experiment: ATEC-EXP2
+
+Use `ATEC_EXP2_DCM03_CROSS_CONTROLLER_CHALLENGE.md`.
+
+Design:
+1. isolated DCM03 only; HP/controller absent;
+2. replay exact captured ATEC challenge as positive control;
+3. require valid DCM response;
+4. only then test six Eco8 foreign challenges;
+5. if control fails, result is INCONCLUSIVE, not negative.
+
+FC17 is active read/write traffic to DCM03.
+
+## No replacement HP writer yet
+
+Do not generate/promote a new ATEC HP semantic-write YAML until approval is resolved. EXP1 cannot be repaired merely by changing counts; its session premise itself is superseded.
+
+---
+
+# HISTORICAL HANDOVER BELOW — retained for provenance
+
 # AI HANDOVER — Thermia ATEC / DHP-AQ side branch
 
 Last updated: **2026-10-02**

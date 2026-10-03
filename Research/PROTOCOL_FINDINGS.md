@@ -1,3 +1,47 @@
+# 2026-10-03 — ATEC/DCM03 cold-start durable findings
+
+## PROVEN / genuine ATEC + classic DCM03
+
+- ATEC sends native slave-`0x0F` FC17 approval with read `0730/count8` and write `071C/count8`; classic DCM03 answers with `0F 17 10 <16-byte body>` 29 ms later.
+- Native ATEC configuration service begins 1.833 s after that response. The genuine Eco5 ~120 s page-service boundary is **not** universal.
+- ATEC performs complete ordered **32-page ACK-gated bootstrap** `03E8..06F4` before normal mailbox/runtime service.
+- Page counts are profile-specific. This ATEC uses at least `03E8/13`, `0410/21`, `0492/9`, `051E/9`.
+- First ATEC mailbox state is `0000 0000 0000 0000 07FF 0006`; steady state in the supplied capture uses `W4=077F, W5=0006`.
+- **Genuine high-half desired selector proof:** `W0 bit0 -> controller FC03 0546/count20`.
+- In that event DCM03 returns a `0546` image exactly equal to the controller's prior image; `0553=0004` is present in both. This is a **no-op desired pull**, not proof of an Operation Mode change.
+- `0867=0000` in this known ATEC/DCM03 capture. `0867=0016` from the older legacy-reference corpus is therefore a corpus/profile fingerprint, not universal legacy identity.
+
+## STRONGLY SUPPORTED
+
+- Classic DCM03 is a first-class target for recovering or using the native challenge-response mechanism; Thermia Connect is not the only observed device class answering the approval gate.
+- A hardware-oracle/bridge route becomes a genuine candidate only if ATEC-EXP2 shows DCM03 answers a foreign Eco8 challenge in controlled standalone context.
+
+## SELECTOR PROVENANCE UPDATE
+
+- `03E8/W1 bit0`: genuine Online + local XTR proof retained.
+- `042E/W1 bit3`: genuine Online + local XTR proof retained.
+- `0442/W1 bit4`: local XTR only.
+- **`0546/W0 bit0`: now local XTR + genuine ATEC/DCM03 proof.**
+- `055A/W0 bit1`: local XTR only.
+- All unobserved desired bits remain deny-by-default.
+
+## DISPROVEN / SUPERSEDED
+
+- “classic ATEC does not send the challenge” — disproven.
+- “Thermia Connect is the only observed device answering the challenge” — disproven; classic DCM03 answers ATEC.
+- ATEC-EXP1 v0.2 no-FC17 + Eco5-derived 26-page/count14 assumptions — superseded before live execution.
+- `0867=0016` as a universal legacy/ATEC fingerprint — superseded.
+
+## OPEN / UNKNOWN
+
+- whether standalone DCM03 can answer Eco8/foreign challenges;
+- request-only/credential response vs prior bus/session/pairing dependence;
+- response algorithm/key material;
+- genuine W0 bits beyond bit0;
+- whether a future non-no-op ATEC `0546` pull gets controller FC16 republish.
+
+---
+
 # 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-39
 
 ## PROVEN / genuine Eco5 Online structural

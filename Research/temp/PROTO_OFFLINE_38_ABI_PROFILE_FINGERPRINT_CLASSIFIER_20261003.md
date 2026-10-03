@@ -1,3 +1,6 @@
+> **Current-status refinement — ATEC-COLDSTART-01 (2026-10-03).**  
+> A newly supplied genuine ATEC + classic DCM03 cold start has the legacy/A5 + `03E8/count13` + `W5=0006` characteristics, but its `0864/count4` payload is all-zero, so `0867=0000`. Therefore the original six-capture `0867=0016` feature remains valid for that older reference corpus but is **not a universal legacy/ATEC requirement**. Treat `0867` as a profile/corpus feature, not a hard family discriminator. The historical six-capture regression below is preserved.
+
 # PROTO-OFFLINE-38 — ABI/profile fingerprint classifier
 
 **Date:** 2026-10-03  
