@@ -46,6 +46,13 @@
 
 ---
 
+### PROTO-OFFLINE-39 — experiment evidence/coverage audit — COMPLETE / POSITIVE
+- 139 unique numeric EXP IDs are present in the canonical log; 249 IDs in 1..388 are absent and are not reconstructed;
+- newest-record evidence basis is inventoried separately from historical PREPARED/RESULT duplicate headers;
+- EXP373/376 historical partial headers do not override the current top-level live state;
+- EXP388 remains the only active live experiment; EXP383 remains PREPARED / NOT RUN;
+- future runtime-ACK hardening is recorded as a candidate only, not promoted to a live experiment.
+
 ### PROTO-OFFLINE-38 — ABI/profile fingerprint classifier — COMPLETE / POSITIVE
 - deterministic feature classifier added using A5/1E backend presence, 03E8 page shape, 0867 fingerprint and W5 profile values;
 - 4/4 older genuine references classify LEGACY_DCM_A5;

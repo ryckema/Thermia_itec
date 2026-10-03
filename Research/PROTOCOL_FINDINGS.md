@@ -1,4 +1,4 @@
-# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-38
+# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-39
 
 ## PROVEN / genuine Eco5 Online structural
 
@@ -136,6 +136,13 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - **PROVEN regression:** A5/03E8-count13/0867=0016/W5=6-7 fingerprints separate the four older genuine captures from the two modern 0x1E/03E8-count14/0867=00E8/W5=0 captures.
 - The classifier identifies **ABI/topology family only**, not exact model.
 - Mixed modern-topology + local-XTR W5=6 behavior must not be misclassified as proof of a legacy physical platform.
+
+## PROTO-OFFLINE-39 evidence coverage
+
+- Canonical experiment numbering is **not continuous**: 139 numeric EXP IDs are present and missing ranges are preserved rather than reconstructed.
+- Historical PREPARED/RUNNING headers deeper in the log do not override the top canonical current-state overlay.
+- EXP388 remains the current active live experiment; EXP383 remains PREPARED / NOT RUN.
+- Runtime config-page ACK qualification from PROTO37 remains a future hardening candidate requiring a live regression.
 
 ## OPEN / UNKNOWN after reconciliation
 

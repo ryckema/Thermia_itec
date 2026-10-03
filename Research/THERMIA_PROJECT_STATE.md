@@ -1,4 +1,4 @@
-# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-38
+# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-39
 
 **Authoritative status:** this section supersedes older current-state headers below where they conflict. Historical text remains unchanged below.
 
@@ -49,6 +49,8 @@
 - **PROTO-OFFLINE-37 — COMPLETE / POSITIVE with hardening candidate** — Write Beta v4.1 TX provenance audited. No uncontrolled/unknown semantic TX found; stale EXP379/EXP352/EXP380 evidence labels were corrected without behavior changes. Generic runtime config-page ACK-by-shape remains a future hardening candidate because recognition is broader than scheduler-qualified permission.
 
 - **PROTO-OFFLINE-38 — COMPLETE / POSITIVE** — deterministic ABI/topology classifier separates all six genuine references: 4/4 legacy A5 Online/DCM and 2/2 modern 0x1E Online, with no ambiguous capture. It classifies topology/ABI, not exact Thermia model identity.
+
+- **PROTO-OFFLINE-39 — COMPLETE / POSITIVE** — canonical experiment coverage audit records 139 present numeric EXP IDs and preserves 249 missing IDs as explicit gaps. Newest-record provenance is inventoried without reconstructing history. The only current active live experiment remains EXP388; EXP383 remains PREPARED / NOT RUN.
 
 ## Current protocol model additions
 
