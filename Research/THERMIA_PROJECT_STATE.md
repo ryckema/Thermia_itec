@@ -1,4 +1,4 @@
-# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-32
+# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-33
 
 **Authoritative status:** this section supersedes older current-state headers below where they conflict. Historical text remains unchanged below.
 
@@ -28,7 +28,19 @@
 
 - **PROTO-OFFLINE-27 — COMPLETE / INCONCLUSIVE** — current OnSite/Online public metadata and package acquisition surfaces were rechecked. OnSite Android permissions fit local Wi-Fi commissioning; Thermia Online exposes a concrete XAPK download surface, but no app binary could be retrieved into the analysis environment, so endpoint/manifest/static-code analysis remains untested.
 
-- **PROTO-OFFLINE-28 — COMPLETE / POSITIVE** — selector provenance is now split explicitly: genuine desired proof exists for 03E8/W1b0 and 042E/W1b3; local XTR additionally proves 0442/W1b4, 0546/W0b0 and 055A/W0b1. All remaining desired bits are geometry/symmetry only.\n\n- **PROTO-OFFLINE-29 — COMPLETE / POSITIVE** — runtime grammar reduced to a normal A→B→C→D→E publication ring plus W4 service-refresh state and recurrent overlays. W4 is not exclusive scheduling; 085F is mostly unACKed and requires context-specific permission.\n\n- **PROTO-OFFLINE-30 — COMPLETE / POSITIVE** — current page geometry, selector provenance and runtime ACK rules are now encoded in a deny-by-default machine-readable schema with a static YAML linter. Current Write Beta v4.1 produced no hard protocol-schema errors; TEST candidates remain explicitly marked.\n\n- **PROTO-OFFLINE-31 — COMPLETE / NEGATIVE** — raw 0884 event-ID archaeology found no safe public decoder. Numeric collisions with Genesis alarm addresses exist, but larger modern IDs and profile mismatch disprove a universal direct-address mapping.\n\n- **PROTO-OFFLINE-32 — COMPLETE / NEGATIVE** — 163 genuine Eco5 challenge bodies show high diffusion, balanced bits and no stable counter/timestamp byte field. The one exact consecutive duplicate disproves nonce uniqueness; local-XTR structured request bytes must not be universalized to Eco5.\n\n## Current protocol model additions
+- **PROTO-OFFLINE-28 — COMPLETE / POSITIVE** — selector provenance is now split explicitly: genuine desired proof exists for 03E8/W1b0 and 042E/W1b3; local XTR additionally proves 0442/W1b4, 0546/W0b0 and 055A/W0b1. All remaining desired bits are geometry/symmetry only.
+
+- **PROTO-OFFLINE-29 — COMPLETE / POSITIVE** — runtime grammar reduced to a normal A→B→C→D→E publication ring plus W4 service-refresh state and recurrent overlays. W4 is not exclusive scheduling; 085F is mostly unACKed and requires context-specific permission.
+
+- **PROTO-OFFLINE-30 — COMPLETE / POSITIVE** — current page geometry, selector provenance and runtime ACK rules are now encoded in a deny-by-default machine-readable schema with a static YAML linter. Current Write Beta v4.1 produced no hard protocol-schema errors; TEST candidates remain explicitly marked.
+
+- **PROTO-OFFLINE-31 — COMPLETE / NEGATIVE** — raw 0884 event-ID archaeology found no safe public decoder. Numeric collisions with Genesis alarm addresses exist, but larger modern IDs and profile mismatch disprove a universal direct-address mapping.
+
+- **PROTO-OFFLINE-32 — COMPLETE / NEGATIVE** — 163 genuine Eco5 challenge bodies show high diffusion, balanced bits and no stable counter/timestamp byte field. The one exact consecutive duplicate disproves nonce uniqueness; local-XTR structured request bytes must not be universalized to Eco5.
+
+- **PROTO-OFFLINE-33 — COMPLETE / POSITIVE** — Thermia Connect hardware fingerprint narrowed to exact part IDs 206495/355202/357577, 12 V gateway, USB/Ethernet/two communication ports, 2.4 GHz Wi-Fi/WPA-PSK and regulatory radio-standard set. No OEM/SoC/module identity was recovered; cellular certification must not be interpreted as proof of a built-in active modem because Thermia documents external 3G/4G modem use for no-broadband installations.
+
+## Current protocol model additions
 
 1. Treat **APPROVAL**, **WAITING_FOR_PAGE_SERVICE**, **BOOTSTRAP**, and **RUNTIME/MAILBOX** as separate protocol states.
 2. Do not encode the genuine Eco5 ~120 s page-service boundary as a universal Thermia controller requirement.

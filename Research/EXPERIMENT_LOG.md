@@ -46,6 +46,12 @@
 
 ---
 
+### PROTO-OFFLINE-33 — Connect hardware / OEM fingerprint — COMPLETE / POSITIVE
+- exact official hardware IDs and interface/power fingerprint consolidated;
+- RED declaration includes Wi-Fi and cellular-family standards, but current Thermia connectivity documentation describes Wi-Fi/Ethernet plus an external 3G/4G modem option, so built-in cellular remains OPEN;
+- no public OEM, SoC, radio-module or independent regulatory-module identity recovered;
+- generic OEM searching is now lower value than obtaining APK/firmware/protocol-package bytes or physical gateway hardware.
+
 ### PROTO-OFFLINE-32 — challenge generator deep reduction — COMPLETE / NEGATIVE
 - 163 genuine Eco5 request bodies analysed; bit fraction 0.4936 and mean consecutive Hamming distance 64.30/128;
 - no fixed/low-cardinality byte, stable ordinal counter or fixed timestamp field was recovered;

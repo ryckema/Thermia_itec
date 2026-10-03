@@ -1,4 +1,4 @@
-# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-22
+# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-33
 
 ## PROVEN / genuine Eco5 Online structural
 
@@ -99,6 +99,13 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - Genuine Eco5 request bodies are high-diffusion; no stable counter/timestamp byte field is identified.
 - The local-XTR structured/timestamp-related request layout is **profile-specific evidence**, not a universal challenge format.
 - Fresh nonce uniqueness per request remains disproven by the exact duplicate identified in PROTO26.
+
+## PROTO-OFFLINE-33 Connect hardware fingerprint
+
+- **PROVEN / official:** Connect kit `206495`, gateway `355202`, PSU `357577`; gateway is 12 VDC and exposes USB, Ethernet, pump communication, a second documented-unused communication port, LED and reset.
+- **PROVEN / official:** 2.4 GHz IEEE 802.11 b/g/n with WPA-PSK AP; Wi-Fi/Ethernet are the normal network paths.
+- **OPEN:** built-in cellular capability. Cellular-family standards occur in the EU declaration, while Thermia's public Online documentation describes a separate external 3G/4G modem when broadband is unavailable.
+- **NOT RECOVERED:** OEM, SoC/MCU, radio module identity, bootloader/update transport.
 
 ## OPEN / UNKNOWN after reconciliation
 

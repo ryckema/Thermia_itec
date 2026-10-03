@@ -1,0 +1,24 @@
+property,value,evidence,status
+Thermia Connect kit art.no.,206495,Official Thermia EU Declaration,PROVEN official
+Gateway art.no.,355202,Official Thermia EU Declaration,PROVEN official
+Internal PSU art.no.,357577,Official Thermia EU Declaration,PROVEN official
+Declaration ID,086L6646 rev01,Official Thermia EU Declaration,PROVEN official
+Gateway supply,12 VDC,Official declaration + installation guide,PROVEN official
+PSU,230 VAC -> 12 VDC 20 W,Official product specifications,PROVEN official
+Gateway max power,20 W,Official product specifications,PROVEN official
+Wi-Fi,IEEE 802.11 b/g/n 2.4 GHz,Official product specifications,PROVEN official
+AP security,WPA-PSK,Official product specifications,PROVEN official
+Ethernet,Present,Official installation guide,PROVEN official
+USB,Present; not used in documented installation,Official installation guide,PROVEN official
+Heat-pump communication port,Present for Legend/Diplomat/iTec/Atec,Official installation guide,PROVEN official
+Second communication port,Connected but unused in documented installation,Official installation guide,PROVEN official
+Reset button,Present; >=10 s documented reset,Official installation guide,PROVEN official
+RED Wi-Fi standard,EN 300 328,Official EU Declaration,PROVEN official
+RED cellular-family standards,"EN 301 908-1; EN 301 908-13; EN 301 511",Official EU Declaration,PROVEN certification scope
+Normal Internet path,Wi-Fi or Ethernet,Official Thermia product pages,PROVEN official
+No-broadband path,External mobile 3G/4G modem from local provider,Official Thermia Online product page,PROVEN documentation
+Built-in cellular modem,Unknown,"Certification vs product-description mismatch",OPEN — do not infer
+OEM,Unknown,Targeted exact-ID/regulatory search,NOT RECOVERED
+SoC/MCU,Unknown,Targeted exact-ID/regulatory search,NOT RECOVERED
+Radio module / FCC-style ID,Unknown,Targeted exact-ID/regulatory search,NOT RECOVERED
+Protocol package implementation,Unknown,Official commissioning wording only,OPEN
