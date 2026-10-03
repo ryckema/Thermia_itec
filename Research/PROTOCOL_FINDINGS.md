@@ -1,3 +1,58 @@
+# 2026-10-03 — durable findings through PROTO-OFFLINE-44
+
+## DISPROVEN / SUPERSEDED — challenge-response simple transforms
+
+Across seven CRC-valid approval request/response pairs, no fixed XOR mask, fixed byte-wise add/sub mask, fixed byte/word permutation+mask, simple rotation+mask, direct/reversed MD5, or truncated SHA-1/SHA-256 relation explains the response. The exact DCM03/Connect response function remains OPEN and may be keyed/stateful/proprietary.
+
+## PROVEN / genuine Eco5 desired-state confirmation
+
+Four fully bracketed one-word semantic desired-state deltas are each followed by an exact controller FC16 republish of the desired image after 0.491..0.571 s.
+
+## STRONGLY SUPPORTED / cross-profile no-op behavior
+
+A genuine ATEC/DCM03 `W0 bit0 -> FC03 0546/count20` pull returns an image exactly equal to the controller's prior page and is not followed by same-page FC16 republish over 226.677 s. Missing republish after an exact no-op must not be treated as universal write failure. This remains cross-profile evidence, not a locally proven XTR rule.
+
+## PROVEN / genuine gateway cache reuse
+
+In the bracketed Eco5 desired transactions, the latest bus-visible same-page controller image was 67.084, 319.512, 374.586 and 87.609 s old. Therefore immediate same-page refresh is not a universal protocol requirement. The current local XTR freshness guard remains a conservative safety policy.
+
+## PROVEN / genuine ACK-context behavior
+
+- `085F/count5`: 331 publications, 20 ACKed, 311 unACKed. Repeated address/payload identity does not determine permission to ACK.
+- `0870/count17`: 95 publications, 64 ACKed, 31 unACKed. All 31 unACKed belong to one reconnect retry window; a later ACK participates in transition to `0708` rejoin/export.
+- known configuration-page shape does not imply ACK permission: large unACKed populations exist for `03E8`, `04A6` and `04BA`.
+
+## STRONGLY SUPPORTED — protocol state model
+
+Current genuine evidence supports distinct states:
+
+`APPROVAL -> optional WAIT_PAGE_SERVICE -> BOOTSTRAP -> POST_BOOT_SERVICE -> NORMAL_RUNTIME`
+
+with separate runtime branches for `CONFIG_REFRESH`, `SERVICE_REFRESH`, `DESIRED_PULL`, and `RECOVERY_REJOIN`.
+
+ACK permission should be associated with an owning state rather than with page shape/payload alone.
+
+## LOCAL XTR implementation consequence — not yet changed
+
+Write Beta v4.1 remains structurally aligned with the genuine protocol, but three ACK permissions are broader than the newest evidence model:
+
+1. known `085F` payload as generic runtime ACK permission;
+2. `0870` page shape as generic runtime ACK permission;
+3. generic known configuration-page ACK outside an owning bootstrap/refresh/confirmation/resume state.
+
+These are future hardening requirements, not completed local behavior changes.
+
+## OPEN / UNKNOWN
+
+- exact challenge-response algorithm/key/credential/session dependence;
+- universal no-op confirmation behavior across XTR and other profiles;
+- local XTR maximum safe page-cache age;
+- exact local XTR service/recovery predicate for `085F`;
+- local XTR qualification rule for reconnect `0870`;
+- local XTR ACK safety for `0834/count18`.
+
+---
+
 # 2026-10-03 — ATEC/DCM03 cold-start durable findings
 
 ## PROVEN / genuine ATEC + classic DCM03
