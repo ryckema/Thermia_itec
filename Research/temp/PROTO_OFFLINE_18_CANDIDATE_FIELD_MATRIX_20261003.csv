@@ -1,0 +1,14 @@
+candidate,present_in_corpus,readiness_link,failed_boot_control,result,notes
+A80C..A812 / slave 0x02 FC17 write payload,yes,no,yes,REJECTED as readiness discriminator,Same state vector occurs at ~120 s in successful and failed 20260926 boots; transitions occur much earlier.
+slave 0x02 FC17 response payload,yes,no,yes,REJECTED,No readiness-linked transition; successful and failed 20260926 snapshots are identical.
+AFDC..AFE0 / slave 0x06 FC17 write payload,yes,no,yes,REJECTED,Same payload appears in successful and failed 20260926 boots; main changes occur around ~60/80/128 s independently.
+slave 0x1E FC04 response 0000/count22,yes,no,comparable dynamics,REJECTED,Thermal/process values drift; no common transition within 10 s of first ACK. Failed boot also changes near ~120 s.
+slave 0x1E FC04 response 001E/count6,yes,no,yes,REJECTED,Stable/common; no readiness-linked change.
+slave 0x1E FC16 request payloads 0000/9 and 0014/3,yes,no,yes,REJECTED,No common pre-readiness change.
+0x0F page 04A6/count13,yes,no,yes,REJECTED,SG/context values differ across operating state; same non-zero 04A6 state occurs in a successful and failed 20260926 boot.
+0x0F page 085F/count5,yes,no,yes,REJECTED,Zero page near the compared readiness windows in both success and failure.
+0x0708 mailbox,post-sync only,,absent in failed boot,NOT A PRE-READINESS PREDICTOR,First polls occur well after initial configuration sync (~154-187 s after boot in successful sessions).
+0xA5 traffic,no,,,NOT EVALUABLE IN THIS CORPUS,No slave-0xA5 frames occur in either genuine Eco5 capture.
+071C/0730 approval accepted,yes,"yes, as prerequisite",no in failed boot,"NECESSARY GATE, NOT SERVICE-READY FIELD",Early approval opens 03E8 retry phase ~108.5 s before page service becomes ready.
+boot age,yes,"yes, jointly with approval","yes, but insufficient alone",STRONGLY SUPPORTED JOINT CONDITION,All six first 03E8 ACKs occur at 118.478..120.296 s after bus return; failed boot passes 120 s without approval and never enters sync.
+first 03E8/count14 FC16 ACK,yes,yes,absent,"OBSERVED TRANSITION MARKER, NOT PREDICTOR",This is the first direct bus-visible evidence that native configuration service is ready.
