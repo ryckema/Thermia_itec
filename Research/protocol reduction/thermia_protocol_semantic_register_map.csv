@@ -523,7 +523,7 @@ slave,register_hex,register_dec,page_start_hex,offset,semantic,evidence,access,e
 0x0F,0x0872,2162,0x0870,2,Heating Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
 0x0F,0x0873,2163,0x0870,3,Cooling Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
 0x0F,0x0874,2164,0x0870,4,Unknown,OPEN / UNKNOWN,read,,PROTO-OFFLINE-16/20,Do not force old contiguous-counter interpretation
-0x0F,0x0875,2165,0x0870,5,Unknown,OPEN / UNKNOWN,read,,PROTO-OFFLINE-16/20,Do not force old contiguous-counter interpretation
+0x0F,0x0875,2165,0x0870,5,Unknown; exact value mirror of 0873 in current reference corpus,OPEN / UNKNOWN; PROVEN structural equality,read,uint16,PROTO-OFFLINE-25,0875==0873 in 83/83 legacy+Eco5 reference frames; semantic reason open
 0x0F,0x0876,2166,0x0870,6,Hot Water Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
 0x0F,0x0877,2167,0x0870,7,Aux/Immersion Heater 1 Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
 0x0F,0x0878,2168,0x0870,8,Aux/Immersion Heater 2 Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,

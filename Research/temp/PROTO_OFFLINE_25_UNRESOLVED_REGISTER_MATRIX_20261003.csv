@@ -1,0 +1,11 @@
+register,legacy_reference_values,eco5_values,current_result
+03F1,40,40,"OPEN; stable config-like value; HotWaterStart disproven locally"
+03F2,30,30,"OPEN; stable cross-topology config-like value"
+03F3,60,1,"OPEN; strong profile/generation drift"
+03F5,absent due legacy 03E8/count13,2,"OPEN; modern count14 page extension"
+0431,12,20,"OPEN; profile-dependent; old Heating START label rejected"
+0432,60,-10,"OPEN; signed/profile-dependent; old Heating STOP label rejected"
+0447,35,-8,"HYPOTHESIS Cooling START only; strong profile/encoding drift"
+0874,10,437,"OPEN"
+0875,10 and equal to 0873,423 and equal to 0873,"PROVEN structural equality 0875==0873 in 83/83 reference frames; semantic reason open"
+087D,15462 stable in short legacy windows,30729..30734 on 20260926; 30811 on 20260928,"STRONGLY SUPPORTED running-time accumulator; five observed +1 edges occur with 0865 compressor-running=1; minute-scale tick plausible but exact scaling not promoted"
