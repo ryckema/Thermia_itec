@@ -1,0 +1,9 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_16_PROFILE_DRIFT_MATRIX_20261003.csv>index,address_or_semantic,decimal,ATEC_DHP_AQ,iTec,older_Diplomat,NCP,interpretation
+0,042E,1070,REG_SER_HEATING_INTEGRALA1,REG_HOT_WATER_STATUS,,,Direct semantic conflict; proves profile-specific mapping
+1,0553,1363,REG_OPERATIONMODE,REG_OPERATIONMODE,51.0,151.0,Same semantic moves to different indices on older/NCP profiles
+2,0559,1369,REG_LINK_INTEGRATION,REG_LINK_INTEGRATION,1369.0,,Cross-family semantic appears unusually stable here
+3,Hot Water Status,—,not at 042E in ATEC,042E,,1059.0,Same semantic at different index by profile
+4,Return temperature,—,07D1,07D2,,,Runtime address drift
+5,Outdoor temperature,—,07E7,07DA,,,Runtime address drift
+6,0848,2120,Integral LSD,PID,,,"Same address, different semantic label"

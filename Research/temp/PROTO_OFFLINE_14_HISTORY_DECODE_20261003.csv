@@ -1,0 +1,30 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_14_HISTORY_DECODE_20261003.csv>index,source,record_index,start_register,raw_a_hex,raw_b_hex,minute,hour,day,month,year_2digit,decoded_timestamp,record_layout,semantic_name_status
+0,legacy genuine Online/DCM,0,0884,0002,,47.0,10.0,27.0,8.0,26.0,2026-08-27 10:47,10x6,raw identifier only; alarm/event name unresolved
+1,legacy genuine Online/DCM,1,088A,0029,,28.0,10.0,27.0,8.0,26.0,2026-08-27 10:28,10x6,raw identifier only; alarm/event name unresolved
+2,legacy genuine Online/DCM,2,0890,002A,,28.0,10.0,27.0,8.0,26.0,2026-08-27 10:28,10x6,raw identifier only; alarm/event name unresolved
+3,legacy genuine Online/DCM,3,0896,0002,,5.0,10.0,27.0,8.0,26.0,2026-08-27 10:05,10x6,raw identifier only; alarm/event name unresolved
+4,legacy genuine Online/DCM,4,089C,0029,,5.0,10.0,27.0,8.0,26.0,2026-08-27 10:05,10x6,raw identifier only; alarm/event name unresolved
+5,legacy genuine Online/DCM,5,08A2,002A,,5.0,10.0,27.0,8.0,26.0,2026-08-27 10:05,10x6,raw identifier only; alarm/event name unresolved
+6,legacy genuine Online/DCM,6,08A8,002C,,4.0,10.0,27.0,8.0,26.0,2026-08-27 10:04,10x6,raw identifier only; alarm/event name unresolved
+7,legacy genuine Online/DCM,7,08AE,002C,,43.0,9.0,27.0,8.0,26.0,2026-08-27 09:43,10x6,raw identifier only; alarm/event name unresolved
+8,legacy genuine Online/DCM,8,08B4,002A,,43.0,9.0,27.0,8.0,26.0,2026-08-27 09:43,10x6,raw identifier only; alarm/event name unresolved
+9,legacy genuine Online/DCM,9,08BA,0002,,41.0,9.0,27.0,8.0,26.0,2026-08-27 09:41,10x6,raw identifier only; alarm/event name unresolved
+10,Eco5 genuine Online,0,0884,002C,0.0,45.0,14.0,26.0,9.0,26.0,2026-09-26 14:45,8x7+4,raw identifier only; alarm/event name unresolved
+11,Eco5 genuine Online,1,088B,002C,0.0,32.0,9.0,23.0,9.0,26.0,2026-09-23 09:32,8x7+4,raw identifier only; alarm/event name unresolved
+12,Eco5 genuine Online,2,0892,002C,0.0,0.0,10.0,11.0,9.0,26.0,2026-09-11 10:00,8x7+4,raw identifier only; alarm/event name unresolved
+13,Eco5 genuine Online,3,0899,002C,0.0,0.0,11.0,4.0,9.0,26.0,2026-09-04 11:00,8x7+4,raw identifier only; alarm/event name unresolved
+14,Eco5 genuine Online,4,08A0,002C,0.0,0.0,7.0,29.0,8.0,26.0,2026-08-29 07:00,8x7+4,raw identifier only; alarm/event name unresolved
+15,Eco5 genuine Online,5,08A7,1400,0.0,44.0,16.0,15.0,8.0,26.0,2026-08-15 16:44,8x7+4,raw identifier only; alarm/event name unresolved
+16,Eco5 genuine Online,6,08AE,0172,0.0,0.0,9.0,14.0,8.0,26.0,2026-08-14 09:00,8x7+4,raw identifier only; alarm/event name unresolved
+17,Eco5 genuine Online,7,08B5,0019,0.0,0.0,12.0,27.0,6.0,26.0,2026-06-27 12:00,8x7+4,raw identifier only; alarm/event name unresolved
+18,XTR local stage40,0,0884,002C,0.0,5.0,12.0,1.0,10.0,26.0,2026-10-01 12:05,8x7+4,raw identifier only; alarm/event name unresolved
+19,XTR local stage40,1,088B,002C,0.0,28.0,11.0,1.0,10.0,26.0,2026-10-01 11:28,8x7+4,raw identifier only; alarm/event name unresolved
+20,XTR local stage40,2,0892,002C,0.0,0.0,22.0,30.0,9.0,26.0,2026-09-30 22:00,8x7+4,raw identifier only; alarm/event name unresolved
+21,XTR local stage40,3,0899,002C,0.0,0.0,20.0,30.0,9.0,26.0,2026-09-30 20:00,8x7+4,raw identifier only; alarm/event name unresolved
+22,XTR local stage40,4,08A0,002C,0.0,0.0,19.0,30.0,9.0,26.0,2026-09-30 19:00,8x7+4,raw identifier only; alarm/event name unresolved
+23,XTR local stage40,5,08A7,2D00,0.0,0.0,18.0,30.0,9.0,26.0,2026-09-30 18:00,8x7+4,raw identifier only; alarm/event name unresolved
+24,XTR local stage40,6,08AE,0000,0.0,0.0,17.0,30.0,9.0,26.0,2026-09-30 17:00,8x7+4,raw identifier only; alarm/event name unresolved
+25,XTR local stage40,7,08B5,001E,0.0,0.0,17.0,30.0,9.0,26.0,2026-09-30 17:00,8x7+4,raw identifier only; alarm/event name unresolved
+26,Eco5 genuine Online,trailer,08BC,,,,,,,,,0000 0000 0000 000F,trailer metadata OPEN
+27,XTR local stage40,trailer,08BC,,,,,,,,,0000 0000 0000 0010,trailer metadata OPEN

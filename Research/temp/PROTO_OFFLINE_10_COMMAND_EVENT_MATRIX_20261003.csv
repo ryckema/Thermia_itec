@@ -1,0 +1,8 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_10_COMMAND_EVENT_MATRIX_20261003.csv>index,event,source,page,count,selector,changed_address,before,desired,changed_words,result_confirmation,0708_response_to_fc03_request_ms,fc03_request_to_response_ms,desired_response_to_fc16_result_ms
+0,O1,older genuine Online/DCM,03E8,13,W1 bit0,03E8,0x17,0x16,,no clean adjacent FC16 result in capture,~41,~39,
+1,O2,older genuine Online/DCM,03E8,13,W1 bit0,03E8,0x17,0x16,,no clean adjacent FC16 result in capture,~39,~42,
+2,E1,Eco5 + Online,03E8,14,W1 bit0,03F4,20,30,1.0,exact; controller page == desired page,46,45,524.0
+3,E2,Eco5 + Online,03E8,14,W1 bit0,03F4,30,20,1.0,exact; controller page == desired page,46,45,571.0
+4,E3,Eco5 + Online,042E,15,W1 bit3,042F,1,0,1.0,exact; controller page == desired page,31,61,491.0
+5,E4,Eco5 + Online,042E,15,W1 bit3,042E,1,0,1.0,exact; controller page == desired page,47,46,491.0

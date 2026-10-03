@@ -1,0 +1,68 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_13_CROSS_TOPOLOGY_MAPPING_20261003.csv>index,runtime_field,logical_semantic,topology,physical_source,transform,portability_class,evidence
+0,07D0,Supply Temperature,legacy,A7F8,exact,portable direct,PROVEN structural
+1,07D0,Supply Temperature,modern,A7F8,exact,portable direct,PROVEN structural
+2,07D1,Return Line Temperature,legacy,A7F9,exact,source substitution,PROVEN 8/8
+3,07D1,Return Line Temperature,modern,1E:0000,signed / 10,source substitution,PROVEN 101/101
+4,07D3,DHW upper temperature,both,A7FB,exact,portable direct,PROVEN structural
+5,07D4,DHW main temperature,both,A7FC,exact,portable direct,PROVEN structural
+6,07DA,Outdoor Temperature instantaneous,both,A802,exact,portable direct,PROVEN structural
+7,07DD..07E1,controller context,both,A80C..A810,exact,portable direct,PROVEN structural
+8,07E2,controller context normalized,both,A811,FFFF->0000 else observed identity,portable normalized,PROVEN structural
+9,07E4,Average Outdoor Temperature,legacy,04:ABE0,exact,source substitution,PROVEN 8/8
+10,07E4,Average Outdoor Temperature,modern,1E:0005,signed / 10,source substitution,PROVEN 96/96
+11,07E7,Outdoor Temperature instantaneous,both,A802,exact,portable direct,PROVEN 104/104 combined
+12,07E8,modern topology metadata,modern,1E:001C,exact,identity/capability,PROVEN 83/83 source-qualified
+13,07E9,modern topology metadata,modern,1E:001D,exact,identity/capability,PROVEN 83/83 source-qualified
+14,07EA,modern topology metadata,modern,1E:0016,exact,identity/capability,PROVEN 83/83 source-qualified
+15,07EB,modern topology metadata,modern,1E:0017,exact,identity/capability,PROVEN 83/83 source-qualified
+16,0807,legacy outdoor-temperature compatibility slot,legacy,A802 / legacy path,exact observed value,legacy compatibility,STRONGLY SUPPORTED
+17,0807,unused in Eco5 corpus,modern,—,zero,legacy compatibility,OBSERVED 70/70 zero
+18,080C,unknown constant,both,—,00C8,portable constant,OBSERVED
+19,0819,profile/topology constant,legacy,—,0000,identity/capability,OBSERVED 6/6
+20,0819,profile/topology constant,modern,—,0014,identity/capability,OBSERVED 65/65
+21,081A,accessory/controller lifecycle,both,AFDC,exact,portable direct,PROVEN structural
+22,0820,outdoor logical slot 0,legacy,A5:0000,exact,outdoor adapter,PROVEN 6/6
+23,0820,condenser inlet,modern,1E:0000,exact,outdoor adapter,PROVEN 47/47
+24,0821,outdoor logical slot 1,legacy,A5:0001,exact,outdoor adapter,PROVEN 6/6
+25,0821,condenser outlet,modern,1E:0001,exact,outdoor adapter,PROVEN 47/47
+26,0822,legacy outdoor slot 2,legacy,A5:0002,byte swap,outdoor adapter,PROVEN 6/6
+27,0822,refrigerant temp 1,modern,1E:0002,exact,outdoor adapter,PROVEN 47/47
+28,0823,unavailable/zero,legacy,—,zero,optional extension,OBSERVED
+29,0823,discharge gas,modern,1E:0003,exact,optional extension,PROVEN 47/47
+30,0824,unavailable/zero,legacy,—,zero,optional extension,OBSERVED
+31,0824,refrigerant temp 2,modern,1E:0004,exact,optional extension,PROVEN 47/47
+32,0825,average outdoor slot,legacy,A5:0005,exact,outdoor adapter,PROVEN 6/6
+33,0825,average outdoor,modern,1E:0005,exact,outdoor adapter,PROVEN 47/47
+34,0826,compressor-temperature slot,legacy,A5:0006,exact,outdoor adapter,PROVEN 6/6
+35,0826,compressor temperature,modern,1E:0006,exact,outdoor adapter,PROVEN 47/47
+36,0827,target/request slot,legacy,A5:0007,exact,outdoor adapter,PROVEN 6/6
+37,0827,requested/target temperature,modern,1E:000A,exact,outdoor adapter,PROVEN 47/47
+38,0828,unavailable/zero,legacy,—,zero,optional extension,OBSERVED
+39,0828,compressor frequency,modern,1E:000B,exact,optional extension,PROVEN 47/47
+40,082A,unavailable/zero,legacy,—,zero,optional extension,OBSERVED
+41,082A,compressor current,modern,1E:000D,exact,optional extension,PROVEN 47/47
+42,082B,unavailable/zero,legacy,—,zero,optional extension,OBSERVED
+43,082B,outdoor fan rpm,modern,1E:000E,exact,optional extension,PROVEN 47/47
+44,082C,legacy tail slot,legacy,A5:0032,exact,generation-specific tail,PROVEN 6/6
+45,082C,reserved zero,modern,—,zero,generation-specific tail,OBSERVED
+46,082D,legacy tail slot,legacy,A5:0033,exact,generation-specific tail,PROVEN 6/6
+47,082D,expansion valve,modern,1E:0010,exact,generation-specific tail,PROVEN 47/47
+48,082E,legacy tail slot,legacy,A5:0034,exact,generation-specific tail,PROVEN 6/6
+49,082E,outdoor operating state,modern,1E:0014,exact,generation-specific tail,PROVEN 47/47
+50,082F,legacy tail slot,legacy,A5:0035,exact,generation-specific tail,PROVEN 6/6
+51,082F,outdoor status flags,modern,1E:0015,exact,generation-specific tail,PROVEN 47/47
+52,0830,legacy tail metadata,legacy,A5:0036,exact,identity/capability tail,PROVEN 6/6
+53,0830,modern topology metadata,modern,1E:0016,exact,identity/capability tail,PROVEN 33/33 source-qualified
+54,0831,legacy tail metadata,legacy,A5:0037,exact,identity/capability tail,PROVEN 6/6
+55,0831,modern topology metadata,modern,1E:0017,exact,identity/capability tail,PROVEN 33/33 source-qualified
+56,0858..085E,clock/date tuple,legacy,controller clock,"sec,min,hour,day,month,year,weekday",portable ABI,PROVEN 7/7
+57,0858..085E,clock/date tuple,modern,controller clock,"sec,min,hour,day,month,year,weekday",portable ABI,PROVEN 47/47
+58,085E,weekday enumeration,both,calendar date,Monday=0 .. Sunday=6,portable ABI,PROVEN 54/54
+59,0865,compressor running,modern,1E:000B > 0,boolean derived,modern derived runtime,PROVEN Eco5
+60,0866,start-pending,modern,cmd7 && cmd8 && freq==0,boolean derived,modern derived runtime,STRONGLY SUPPORTED
+61,0867,topology/platform fingerprint,legacy,—,0016,identity/capability,STRONGLY SUPPORTED
+62,0867,topology/platform fingerprint,modern,—,00E8,identity/capability,STRONGLY SUPPORTED
+63,0870,context packing,both,06E2/06E3,(06E3<<8)|06E2,portable transform,PROVEN structural
+64,0872..0878,seven-value service group,both,—,same slot geometry,service counters,STRONGLY SUPPORTED group; labels HYPOTHESIS
+65,087B..087D,three-value service group,both,—,same slot geometry,service counters,STRONGLY SUPPORTED group; labels HYPOTHESIS
