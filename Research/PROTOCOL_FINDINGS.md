@@ -43,7 +43,32 @@ Official Connect evidence now anchors:
 
 No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK, Online APK/XAPK or DCM03 firmware image has been recovered.
 
-## PROTO-OFFLINE-24 current-alarm bridge\n\n- **PROVEN in available corpus:** 339/339 observed `085F/count5` payloads are all-zero.\n- **DISPROVEN:** `085F` as a direct mirror of the newest `0884` history entry; non-empty history exists while `085F` is zero.\n- **OPEN:** whether `085F` changes only during an active alarm/service condition; no labelled alarm edge exists in the current corpus.\n\n## PROTO-OFFLINE-25 unresolved-field refinements\n\n- **PROVEN structural:** `0875 == 0873` in 83/83 reference `0870/count17` frames across legacy and Eco5; semantic reason remains OPEN.\n- **STRONGLY SUPPORTED:** `087D` is a running-time accumulator; observed +1 edges in Eco5 occur while `0865` compressor-running is active. Exact raw unit/scaling remains OPEN.\n- **PROFILE/GENERATION DRIFT:** `03F3`, `0431`, `0432`, and `0447` have materially different legacy vs Eco5 value domains.\n- **STRUCTURAL:** `03F5` exists in modern `03E8/count14` but not legacy `03E8/count13`.\n\n## PROTO-OFFLINE-26 challenge/session refinements\n\n- **PROVEN in genuine Eco5 corpus:** 163 challenge requests contain 162 unique bodies; one 16-byte body repeats on consecutive polls. Fresh nonce uniqueness per poll is therefore disproven.\n- **STRONGLY SUPPORTED:** challenge #3 and #29 are timing landmarks at approximately 10 s and 120 s after bus return.\n- **NEGATIVE:** simple challenge-body features and recent prior gateway bus activity do not explain #3/#29/no-response behavior.\n\n## PROTO-OFFLINE-27 app-artifact status\n\n- **OBSERVED:** OnSite Android public metadata includes Wi-Fi/network-control permissions consistent with the official local-AP commissioning flow.\n- **OBSERVED:** Thermia Online has a public XAPK acquisition surface and verifiable package hashes/metadata.\n- **INCONCLUSIVE:** no APK/XAPK/firmware bytes were recovered in the current environment, so local Connect endpoints, protocol-package manifests and serializer code remain untested.\n\n## OPEN / UNKNOWN after reconciliation
+## PROTO-OFFLINE-24 current-alarm bridge
+
+- **PROVEN in available corpus:** 339/339 observed `085F/count5` payloads are all-zero.
+- **DISPROVEN:** `085F` as a direct mirror of the newest `0884` history entry; non-empty history exists while `085F` is zero.
+- **OPEN:** whether `085F` changes only during an active alarm/service condition; no labelled alarm edge exists in the current corpus.
+
+## PROTO-OFFLINE-25 unresolved-field refinements
+
+- **PROVEN structural:** `0875 == 0873` in 83/83 reference `0870/count17` frames across legacy and Eco5; semantic reason remains OPEN.
+- **STRONGLY SUPPORTED:** `087D` is a running-time accumulator; observed +1 edges in Eco5 occur while `0865` compressor-running is active. Exact raw unit/scaling remains OPEN.
+- **PROFILE/GENERATION DRIFT:** `03F3`, `0431`, `0432`, and `0447` have materially different legacy vs Eco5 value domains.
+- **STRUCTURAL:** `03F5` exists in modern `03E8/count14` but not legacy `03E8/count13`.
+
+## PROTO-OFFLINE-26 challenge/session refinements
+
+- **PROVEN in genuine Eco5 corpus:** 163 challenge requests contain 162 unique bodies; one 16-byte body repeats on consecutive polls. Fresh nonce uniqueness per poll is therefore disproven.
+- **STRONGLY SUPPORTED:** challenge #3 and #29 are timing landmarks at approximately 10 s and 120 s after bus return.
+- **NEGATIVE:** simple challenge-body features and recent prior gateway bus activity do not explain #3/#29/no-response behavior.
+
+## PROTO-OFFLINE-27 app-artifact status
+
+- **OBSERVED:** OnSite Android public metadata includes Wi-Fi/network-control permissions consistent with the official local-AP commissioning flow.
+- **OBSERVED:** Thermia Online has a public XAPK acquisition surface and verifiable package hashes/metadata.
+- **INCONCLUSIVE:** no APK/XAPK/firmware bytes were recovered in the current environment, so local Connect endpoints, protocol-package manifests and serializer code remain untested.
+
+## OPEN / UNKNOWN after reconciliation
 
 - exact gateway-internal readiness condition;
 - genuine W0/high-half desired-selector behavior and unobserved W1 bits;
