@@ -30,6 +30,12 @@
 
 ---
 
+### PROTO-OFFLINE-39 — experiment evidence / coverage audit — COMPLETE / POSITIVE
+- 139 unique numbered experiment IDs catalogued from the canonical log; absent numeric IDs are not treated as lost runs;
+- 63 IDs contain complete-result raw/protocol detail; 10 contain explicit user-confirmation wording;
+- old EXP92..107/134 status wording is preserved rather than rewritten;
+- future live priority: finish EXP388 recovery branches, then runtime ACK-context evidence, then EXP383 candidates if still useful.
+
 ### PROTO-OFFLINE-37 — Write Beta v4.1 safety/provenance audit — COMPLETE / POSITIVE WITH SAFETY DEBT
 - 58 explicit write_array TX sites reduced to bounded protocol action classes;
 - R1/bootstrap/semantic-page write guards remain evidence-backed and fail-closed;

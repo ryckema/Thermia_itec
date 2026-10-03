@@ -42,7 +42,7 @@
 
 ---
 
-# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-38
+# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-39
 
 ## PROVEN / genuine Eco5 Online structural
 
