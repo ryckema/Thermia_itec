@@ -46,6 +46,12 @@
 
 ---
 
+### PROTO-OFFLINE-32 — challenge generator deep reduction — COMPLETE / NEGATIVE
+- 163 genuine Eco5 request bodies analysed; bit fraction 0.4936 and mean consecutive Hamming distance 64.30/128;
+- no fixed/low-cardinality byte, stable ordinal counter or fixed timestamp field was recovered;
+- local-XTR structured challenge-byte interpretation is not portable to genuine Eco5;
+- further request-body-only algebra is deprioritized in favor of firmware/app acquisition.
+
 ### PROTO-OFFLINE-31 — 0884 event-ID archaeology — COMPLETE / NEGATIVE
 - public iTec Online profile exposes an empty REG_ERROR_CODES group;
 - some raw IDs numerically collide with Genesis alarm addresses, but the mapping fails across the full observed ID domain;

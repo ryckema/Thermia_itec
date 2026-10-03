@@ -94,6 +94,12 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - Numeric collisions exist for some low values, but modern values such as `0x0172` and `0x1400` exceed that domain and the public iTec Online error-code group is empty.
 - Raw event identity remains OPEN pending labelled alarm/firmware evidence.
 
+## PROTO-OFFLINE-32 challenge generator
+
+- Genuine Eco5 request bodies are high-diffusion; no stable counter/timestamp byte field is identified.
+- The local-XTR structured/timestamp-related request layout is **profile-specific evidence**, not a universal challenge format.
+- Fresh nonce uniqueness per request remains disproven by the exact duplicate identified in PROTO26.
+
 ## OPEN / UNKNOWN after reconciliation
 
 - exact gateway-internal readiness condition;
