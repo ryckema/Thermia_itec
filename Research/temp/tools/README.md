@@ -84,3 +84,4 @@ python3 Research/tools/compare_0546_page.py exp219.log
 ```
 
 This tool is offline-only and has no transport code.
+\n\n## proto23_capture_regression.py\n\nOffline regression suite for the current reference-model capture invariants. It validates the 32-page Eco5 bootstrap, 26-page FFFF/867F refresh, genuine desired transactions and W0-negative evidence across the six genuine reference captures. It performs no bus/network TX.\n

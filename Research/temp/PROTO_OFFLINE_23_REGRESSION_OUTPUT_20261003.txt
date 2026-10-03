@@ -1,0 +1,33 @@
+SUMMARY
+thermia_capture_20260924_210001(1).log {'frames': 394, 'crc_bad': 0, '0708': 11, 'w0_nonzero': 0}
+thermia_capture_20260925_071517.log {'frames': 674, 'crc_bad': 0, '0708': 18, 'w0_nonzero': 0}
+thermia_capture_20260925_090209.log {'frames': 491, 'crc_bad': 0, '0708': 6, 'w0_nonzero': 0}
+thermia_capture_20260925_090550.log {'frames': 892, 'crc_bad': 0, '0708': 3, 'w0_nonzero': 0}
+itec_eco5_gateway_20260926.log {'frames': 10719, 'crc_bad': 0, '0708': 183, 'w0_nonzero': 0}
+itec_eco5_gateway_20260928.log {'frames': 9174, 'crc_bad': 0, '0708': 81, 'w0_nonzero': 0}
+
+BOOTSTRAPS 6
+itec_eco5_gateway_20260926.log 303.707 pages 32 order True first0708_after 1.381
+itec_eco5_gateway_20260926.log 723.378 pages 32 order True first0708_after 4.108
+itec_eco5_gateway_20260928.log 313.821 pages 32 order True first0708_after 3.61
+itec_eco5_gateway_20260928.log 556.416 pages 32 order True first0708_after 1.361
+itec_eco5_gateway_20260928.log 852.829 pages 32 order True first0708_after 4.213
+itec_eco5_gateway_20260928.log 1094.841 pages 32 order True first0708_after 3.648
+
+REFRESH WINDOWS 7
+all seven detected FFFF/867F windows contain exactly 26 selected pages, exact set and exact ascending order.
+
+DESIRED EVENTS 4
+all four fully bracketed Eco5 events have exactly one changed word and an exact following FC16 confirmation image.
+
+OVERLAY ACK RATIOS ECO
+20260926: 04A6 6/357 ACKed; 085F 4/197 ACKed
+20260928: 04A6 10/226 ACKed; 085F 4/122 ACKed
+
+CHECKS
+six_bootstraps=True
+all_bootstrap_32_exact=True
+0708_after_bootstrap=True
+all_genuine_w0_zero=True
+desired_clean=True
+refresh_at_least_six_exact=True
