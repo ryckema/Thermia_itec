@@ -1,0 +1,7 @@
+capture,frames,A5_frames,1E_frames,03E8_count13,03E8_count14,W5_values,0867_values,0884_frames,legacy_score,modern_score,class
+thermia_capture_20260924_210001(1).log,394,132,0,0,0,"6:11","0x0016",2,9,0,LEGACY_DCM_A5
+thermia_capture_20260925_071517.log,674,224,0,2,0,"6:18","0x0016",4,12,0,LEGACY_DCM_A5
+thermia_capture_20260925_090209.log,491,156,0,0,0,"6:6","0x0016",1,9,0,LEGACY_DCM_A5
+thermia_capture_20260925_090550.log,892,306,0,1,0,"7:1;6:2","",1,9,0,LEGACY_DCM_A5
+itec_eco5_gateway_20260926.log,10719,0,5350,0,5,"0:183","0x00E8",1,0,12,MODERN_1E_ONLINE
+itec_eco5_gateway_20260928.log,9174,0,4509,0,211,"0:81","0x00E8",0,0,12,MODERN_1E_ONLINE

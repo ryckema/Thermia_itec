@@ -1,4 +1,4 @@
-# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-37
+# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-38
 
 ## PROVEN / genuine Eco5 Online structural
 
@@ -130,6 +130,12 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - Current v4.1 contains no generic unknown semantic write path: desired responses are full-page cached mutations on proven/local-proven selectors with exact republish checks.
 - Runtime `04A6`, `0834`, `085F` policies remain deliberately context/payload scoped.
 - **HARDENING CANDIDATE:** known config-page shape currently contributes to runtime ACK permission outside explicit resume; future tightening must be live-regressed rather than changed from offline evidence alone.
+
+## PROTO-OFFLINE-38 ABI classifier
+
+- **PROVEN regression:** A5/03E8-count13/0867=0016/W5=6-7 fingerprints separate the four older genuine captures from the two modern 0x1E/03E8-count14/0867=00E8/W5=0 captures.
+- The classifier identifies **ABI/topology family only**, not exact model.
+- Mixed modern-topology + local-XTR W5=6 behavior must not be misclassified as proof of a legacy physical platform.
 
 ## OPEN / UNKNOWN after reconciliation
 

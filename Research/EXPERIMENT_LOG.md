@@ -46,6 +46,12 @@
 
 ---
 
+### PROTO-OFFLINE-38 — ABI/profile fingerprint classifier — COMPLETE / POSITIVE
+- deterministic feature classifier added using A5/1E backend presence, 03E8 page shape, 0867 fingerprint and W5 profile values;
+- 4/4 older genuine references classify LEGACY_DCM_A5;
+- 2/2 genuine Eco5 references classify MODERN_1E_ONLINE;
+- classifier is explicitly topology/ABI-only and must not infer exact product model.
+
 ### PROTO-OFFLINE-37 — Write Beta safety/provenance audit — COMPLETE / POSITIVE
 - all current TX route classes mapped to provenance and guard policy;
 - no unknown/symmetry-only desired TX route found;

@@ -1,0 +1,30 @@
+PROTO-OFFLINE-38 PROFILE CLASSIFIER REGRESSION
+
+thermia_capture_20260924_210001(1).log
+  A5=132 1E=0 03E8/13=0 03E8/14=0 W5={6:11} 0867={0x0016} 0884=2
+  score legacy=9 modern=0 -> LEGACY_DCM_A5
+
+thermia_capture_20260925_071517.log
+  A5=224 1E=0 03E8/13=2 03E8/14=0 W5={6:18} 0867={0x0016} 0884=4
+  score legacy=12 modern=0 -> LEGACY_DCM_A5
+
+thermia_capture_20260925_090209.log
+  A5=156 1E=0 03E8/13=0 03E8/14=0 W5={6:6} 0867={0x0016} 0884=1
+  score legacy=9 modern=0 -> LEGACY_DCM_A5
+
+thermia_capture_20260925_090550.log
+  A5=306 1E=0 03E8/13=1 03E8/14=0 W5={7:1,6:2} 0867={} 0884=1
+  score legacy=9 modern=0 -> LEGACY_DCM_A5
+
+itec_eco5_gateway_20260926.log
+  A5=0 1E=5350 03E8/13=0 03E8/14=5 W5={0:183} 0867={0x00E8} 0884=1
+  score legacy=0 modern=12 -> MODERN_1E_ONLINE
+
+itec_eco5_gateway_20260928.log
+  A5=0 1E=4509 03E8/13=0 03E8/14=211 W5={0:81} 0867={0x00E8} 0884=0
+  score legacy=0 modern=12 -> MODERN_1E_ONLINE
+
+CHECK:
+  4/4 older genuine captures -> LEGACY_DCM_A5
+  2/2 genuine Eco5 captures -> MODERN_1E_ONLINE
+  ambiguous=0
