@@ -46,6 +46,12 @@
 
 ---
 
+### PROTO-OFFLINE-31 — 0884 event-ID archaeology — COMPLETE / NEGATIVE
+- public iTec Online profile exposes an empty REG_ERROR_CODES group;
+- some raw IDs numerically collide with Genesis alarm addresses, but the mapping fails across the full observed ID domain;
+- direct raw-ID == Genesis alarm address is rejected;
+- raw A/B remain opaque until labelled local alarm or serializer/firmware evidence exists.
+
 ### PROTO-OFFLINE-30 — protocol schema + linter — COMPLETE / POSITIVE
 - machine-readable schema created for bootstrap, runtime roles and selector provenance;
 - deny-by-default desired-selector policy encoded;

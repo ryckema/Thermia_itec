@@ -88,6 +88,12 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - Desired selectors are deny-by-default unless explicitly proven by PROTO28 provenance.
 - Runtime page recognition is separated from context-specific ACK permission.
 
+## PROTO-OFFLINE-31 raw history IDs
+
+- **DISPROVEN as universal decoder:** `0884 raw ID == Genesis Modbus alarm address`.
+- Numeric collisions exist for some low values, but modern values such as `0x0172` and `0x1400` exceed that domain and the public iTec Online error-code group is empty.
+- Raw event identity remains OPEN pending labelled alarm/firmware evidence.
+
 ## OPEN / UNKNOWN after reconciliation
 
 - exact gateway-internal readiness condition;
