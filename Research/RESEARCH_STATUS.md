@@ -1,3 +1,22 @@
+# Research status — 2026-10-03 — canonical offline reduction through PROTO-OFFLINE-44
+
+**Last completed live experiment:** EXP387 — **COMPLETE / POSITIVE**.  
+**Current live experiment:** EXP388 — **RUNNING / PARTIAL**.  
+**Prepared live bundle:** EXP383 — **PREPARED / NOT RUN**.
+
+Offline analysis is now reconciled through **PROTO-OFFLINE-44**. PROTO40 rejects the tested simple challenge-response transform families; PROTO41 distinguishes semantic-delta republish from genuine no-op behavior; PROTO42 establishes >=374.586 s bus-visible same-page cache reuse in genuine Eco5; PROTO43 proves ACK permission is state-qualified rather than shape/payload-qualified; PROTO44 regresses Write Beta v4.1 against the resulting full state graph.
+
+Current hardening requirements are documentation-only and have **not** changed Write Beta behavior:
+
+- qualify `085F` ACK by explicit local service/recovery state;
+- qualify `0870` ACK by normal-runtime or explicit recovery state;
+- require an owning bootstrap/refresh/confirmation/resume state for runtime configuration-page ACK;
+- keep `0834/count18` capture-only until locally proven.
+
+Current live priority remains finishing EXP388's remaining cancellation branches before treating any hardening revision as locally proven.
+
+---
+
 # Research status — 2026-10-01 — EXP379 COMPLETE / POSITIVE; EXP380 PREPARED / NOT RUN
 
 **Last completed live experiment:** EXP379 — **COMPLETE / POSITIVE**.
