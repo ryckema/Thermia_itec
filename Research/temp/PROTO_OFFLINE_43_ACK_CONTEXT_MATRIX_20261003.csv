@@ -1,0 +1,7 @@
+route,observed_total,acked,unacked,offline conclusion,future policy implication
+085F/count5,331,20,311,recurrent overlay; payload alone does not authorize ACK,require explicit local service/recovery context
+0870/count17,95,64,31,normally ACKed but one reconnect window deliberately withholds ACK until transition,qualified runtime OR explicit recovery state
+03E8 config,220,18,202,known page shape can be intentionally unACKed during page-service waiting,ordered/bootstrap/refresh/confirmation ownership only
+04A6 config,586,19,567,strongest example that known page shape is not ACK permission,retain capture-only except explicitly proven resume context
+04BA config,44,17,27,ACK depends on synchronization/work state,state-qualified config ACK
+06F4 config,27,26,1,normally terminal accepted page but still context-sensitive,exact ordered terminal/refresh context
