@@ -1,3 +1,5 @@
+> **Current-status refinement — ATEC-COLDSTART-01 (2026-10-03).** A later genuine ATEC + classic DCM03 cold-start capture proves `W0 bit0 -> FC03 0546/count20`. Therefore the historical statement below that genuine W0 had never been observed non-zero is corpus-scoped to the earlier six reference captures. Current provenance is: `0546/W0b0` = genuine ATEC/DCM03 + local XTR proven; genuine Eco5 W0 remains unobserved. Other W0 bits remain unproven unless separately evidenced.
+
 # PROTO-OFFLINE-28 — desired-selector provenance reconciliation
 
 **Date:** 2026-10-03  
