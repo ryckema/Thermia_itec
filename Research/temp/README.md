@@ -156,3 +156,15 @@ Canonical Research state is reconciled through PROTO-OFFLINE-33. TEMP remains a 
 - `PROTO_OFFLINE_39_EXPERIMENT_COVERAGE_LEDGER_20261003.csv`
 
 Canonical Research state is reconciled through PROTO-OFFLINE-39. TEMP remains a working/archive surface rather than the source of truth.
+
+## Follow-up offline reductions — PROTO-OFFLINE-40..44
+
+- `PROTO_OFFLINE_40_CHALLENGE_RESPONSE_PAIR_REDUCTION_20261003.md`
+- `PROTO_OFFLINE_41_NOOP_VS_DELTA_REPUBLISH_20261003.md`
+- `PROTO_OFFLINE_42_PAGE_CACHE_FRESHNESS_20261003.md`
+- `PROTO_OFFLINE_43_RUNTIME_ACK_CONTEXT_RECONSTRUCTION_20261003.md`
+- `PROTO_OFFLINE_43_ACK_CONTEXT_MATRIX_20261003.csv`
+- `PROTO_OFFLINE_44_FULL_PROTOCOL_STATE_MACHINE_REGRESSION_20261003.md`
+- `PROTO_OFFLINE_44_STATE_REGRESSION_MATRIX_20261003.csv`
+
+Canonical Research state is reconciled through PROTO-OFFLINE-44. These offline results do not advance EXP388 and do not modify Write Beta behavior.
