@@ -42,7 +42,7 @@
 
 ---
 
-# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-37
+# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-38
 
 ## PROVEN / genuine Eco5 Online structural
 
@@ -194,6 +194,13 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - **SAFETY DEBT:** known `085F` payload alone is currently sufficient ACK permission in v4.1; PROTO29 supports adding explicit service/W4 context.
 - **REVIEW:** `0870` and known runtime configuration pages are ACKed more broadly than the latest context-driven scheduler model would require.
 - No production YAML behavior was changed by this audit.
+
+## PROTO-OFFLINE-38 profile fingerprint
+
+- Broad capture family can be distinguished robustly using backend (`A5` vs `0x1E`), profile page counts, `0867`, and secondary W5 metadata.
+- **Legacy family:** `03E8/13`, `0410/21`, `0492/9`, `051E/9`, `0867=0016`.
+- **Modern family:** `03E8/14`, `0410/22`, `0492/11`, `051E/10`, `0867=00E8`.
+- This is ABI/profile-family classification only; exact model identity remains provenance-dependent.
 
 ## OPEN / UNKNOWN after reconciliation
 
