@@ -1,0 +1,12 @@
+page,count,w4_bit,total_requests,total_acks,ack_ratio,role
+07D0,19,0,109,108,0.991,"normal runtime ring; usually paired with 07E4"
+07E4,17,1,104,103,0.990,"normal runtime ring; usually follows 07D0"
+07F8,17,2,77,77,1.000,"normal runtime ring; usually paired with 080C"
+080C,18,3,71,69,0.972,"normal runtime ring; usually follows 07F8"
+0820,18,4,53,52,0.981,"normal runtime ring; usually paired with 0834"
+0834,18,5,51,50,0.980,"normal runtime ring; usually follows 0820"
+0848,23,6,54,54,1.000,"normal runtime ring; usually paired with 0864"
+085F,5,7,329,18,0.055,"recurrent overlay / service page; mostly ignored outside explicit service context"
+0864,4,8,55,55,1.000,"normal runtime ring / service page"
+0870,17,9,83,52,0.627,"runtime ring in normal Eco5; older reconnect capture shows repeated unACKed overlay behavior"
+0884,60,10,9,9,1.000,"occasional history/service page, not every ring"

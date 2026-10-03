@@ -76,6 +76,12 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - **NOT PROVEN:** all other desired bits; do not promote by symmetry.
 - `W0` is therefore locally proven on XTR but remains unobserved in the genuine Eco5 Online capture corpus.
 
+## PROTO-OFFLINE-29 runtime grammar
+
+- **PROVEN / genuine Eco5 structural:** ordinary runtime follows a stable publication ring dominated by `07D0→07E4`, `07F8→080C`, `0820→0834`, `0848→0864`, then `0870`.
+- **STRONGLY SUPPORTED:** W4 is runtime/service remaining-work/state metadata during refresh, not an exclusive next-page selector.
+- **PROVEN context sensitivity:** `085F` is mostly unACKed outside explicit service work; known page shape is not sufficient ACK permission.
+
 ## OPEN / UNKNOWN after reconciliation
 
 - exact gateway-internal readiness condition;

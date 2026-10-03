@@ -46,6 +46,12 @@
 
 ---
 
+### PROTO-OFFLINE-29 — runtime scheduler grammar — COMPLETE / POSITIVE
+- normal Eco5 runtime cycles mainly through 07D0/07E4 -> 07F8/080C -> 0820/0834 -> 0848/0864 -> 0870;
+- median answered-0708 cadence is ~4.24 s in the analysed normal windows;
+- W4 behaves as service state/remaining-work metadata during refresh, not an exclusive next-page command;
+- 085F is a recurrent overlay (18/329 ACKed overall), so page recognition and ACK permission must remain separate.
+
 ### PROTO-OFFLINE-28 — desired-selector provenance — COMPLETE / POSITIVE
 - genuine desired selector proof: 03E8/W1b0 and 042E/W1b3;
 - local XTR additional desired proof: 0442/W1b4, 0546/W0b0, 055A/W0b1;
