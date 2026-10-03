@@ -42,7 +42,7 @@
 
 ---
 
-# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-39
+# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-37
 
 ## PROVEN / genuine Eco5 Online structural
 
@@ -187,6 +187,13 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - Historical PREPARED/RUNNING headers deeper in the log do not override the top canonical current-state overlay.
 - EXP388 remains the current active live experiment; EXP383 remains PREPARED / NOT RUN.
 - Runtime config-page ACK qualification from PROTO37 remains a future hardening candidate requiring a live regression.
+
+## PROTO-OFFLINE-37 Write Beta safety audit
+
+- Semantic full-page mutation paths are aligned with current evidence: fresh controller cache, one intended word, exact republish comparison.
+- **SAFETY DEBT:** known `085F` payload alone is currently sufficient ACK permission in v4.1; PROTO29 supports adding explicit service/W4 context.
+- **REVIEW:** `0870` and known runtime configuration pages are ACKed more broadly than the latest context-driven scheduler model would require.
+- No production YAML behavior was changed by this audit.
 
 ## OPEN / UNKNOWN after reconciliation
 

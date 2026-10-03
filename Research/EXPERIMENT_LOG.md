@@ -30,6 +30,13 @@
 
 ---
 
+### PROTO-OFFLINE-37 — Write Beta v4.1 safety/provenance audit — COMPLETE / POSITIVE WITH SAFETY DEBT
+- 58 explicit write_array TX sites reduced to bounded protocol action classes;
+- R1/bootstrap/semantic-page write guards remain evidence-backed and fail-closed;
+- 085F ACK permission is too payload-driven versus PROTO29 context evidence;
+- 0870 ACK and generic runtime config-page ACK classes should become context-aware in a future production revision;
+- EXP383 TEST controls remain PREPARED / NOT RUN; no YAML behavior changed and no compile verification claimed.
+
 ## ATEC-EXP1 — historical heat-pump write candidate
 
 **Previous status:** PREPARED / NOT RUN.  

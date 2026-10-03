@@ -55,7 +55,7 @@
 
 ---
 
-# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-39
+# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-37
 
 **Authoritative status:** this section supersedes older current-state headers below where they conflict. Historical text remains unchanged below.
 
@@ -109,7 +109,7 @@
 
 - **PROTO-OFFLINE-39 — COMPLETE / POSITIVE** — canonical experiment coverage audit records 139 present numeric EXP IDs and preserves 249 missing IDs as explicit gaps. Newest-record provenance is inventoried without reconstructing history. The only current active live experiment remains EXP388; EXP383 remains PREPARED / NOT RUN.
 
-## Current protocol model additions
+- **PROTO-OFFLINE-37 — COMPLETE / POSITIVE WITH SAFETY DEBT IDENTIFIED** — Write Beta v4.1 TX provenance audit found semantic write machinery strongly fail-closed, but three runtime ACK rules are broader than the newer context-driven model: 085F payload-only ACK permission (highest priority), context-blind 0870 ACK, and generic runtime ACK of known configuration page shapes. No YAML behavior changed.\n\n## Current protocol model additions
 
 1. Treat **APPROVAL**, **WAITING_FOR_PAGE_SERVICE**, **BOOTSTRAP**, and **RUNTIME/MAILBOX** as separate protocol states.
 2. Do not encode the genuine Eco5 ~120 s page-service boundary as a universal Thermia controller requirement.
