@@ -1,3 +1,5 @@
+> **Current-status note — HISTORICAL / SUPERSEDED (2026-10-03).** This report correctly records the earlier `RUNNING / PARTIAL` state at the time it was written. The offline calendar reduction is now closed by `CAL_OFFLINE_01_FINAL_CLOSURE_20261003.md` as COMPLETE for the current evidence scope. Preserve this document as the intermediate analysis; use the final closure for current structure/status. Active calendar write semantics remain unproven where the final closure says OPEN.
+
 # Thermia iTec XTR M — Calendar Structure Analysis
 
 **Date:** 2026-10-02  
