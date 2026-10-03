@@ -1,3 +1,5 @@
+> **Current-status refinement — ATEC-COLDSTART-01 (2026-10-03).** PROTO-OFFLINE-23 remains correct for its six-capture regression corpus: none of those six references had non-zero W0. A later genuine ATEC + DCM03 cold-start capture adds `W0 bit0 -> 0546/count20`. Do not generalize the six-capture W0-negative result to all genuine DCM profiles.
+
 # PROTO-OFFLINE-23 — Current reference-model capture regression
 
 **Date:** 2026-10-03  
