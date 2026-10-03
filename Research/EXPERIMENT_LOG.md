@@ -1,5 +1,135 @@
 # EXPERIMENT LOG
 
+## 2026-10-03 — canonical reconciliation of recent offline tracks
+
+**Live experiment state is unchanged:** EXP387 remains the last fully completed live experiment; EXP388 remains **RUNNING / PARTIAL**. The entries below are offline analyses only and do not advance any live test.
+
+### PROTO-OFFLINE-16 — Native settings/register schema consolidation — COMPLETE / POSITIVE
+
+**Hypothesis:** Online/native numeric register addresses substantially overlap but semantic labels are profile/model scoped rather than universal.
+
+**Controlled change:** offline reconciliation only; no bus TX, YAML change, reboot or setting write.
+
+**Result:** COMPLETE / POSITIVE.
+- public ATEC and iTec profiles disagree at some identical numeric addresses, proving profile drift;
+- stable core heating family around `03E8..03F0` retained as strong XTR donor evidence;
+- `042E` is profile-dependent; genuine modern Eco5 `1->0` strongly favors iTec Hot Water Status for that profile;
+- `0870` strongly identified as compressor operating time;
+- previous contiguous `0872..0878` seven-counter hypothesis is superseded;
+- `087B/087C/087D` strongly align to the three defrost statistics in the XTR manual.
+
+### PROTO-OFFLINE-15 — DCM03 / Thermia Connect firmware archaeology — COMPLETE / POSITIVE
+
+**Hypothesis:** the missing HE-to-native serializer can be localized by following real DCM03/Connect hardware and update paths.
+
+**Controlled change:** offline external/document/firmware archaeology only.
+
+**Result:** COMPLETE / POSITIVE for target localization; no firmware image recovered.
+- DHP-AQ/Atec lineage places DCM03 directly on the pump communication path, making DCM03 the strongest old-generation serializer target;
+- current Thermia Connect directly replaces the old DCM-side path and officially supports iTec XTR;
+- Connect commissioning/update documentation references pairing and protocol packages;
+- no DCM03/Connect firmware binary, manifest or protocol package was recovered.
+
+### PROTO-OFFLINE-14 — Alarm/status/service-data mapping — COMPLETE / POSITIVE
+
+**Hypothesis:** timestamped history is a separate native service layer from current status/alarm state.
+
+**Controlled change:** offline comparison of genuine legacy/Eco5 Online traffic, local XTR stage-40 traffic, manual and firmware semantics.
+
+**Result:** COMPLETE / POSITIVE.
+- legacy `0884/count60` = 10 × 6-word timestamped records;
+- genuine Eco5 and local XTR use 8 × 7-word records + 4-word trailer;
+- local XTR confirms rolling/newest-first timestamped history;
+- raw codes remain unmapped; direct XTR E-code interpretation is not justified;
+- `085F/count5` remains semantically OPEN.
+
+### PROTO-OFFLINE-13 — Cross-topology runtime normalisation — COMPLETE / POSITIVE
+
+**Hypothesis:** `0x0F` runtime pages are a logical ABI fed by topology-specific physical sources.
+
+**Controlled change:** offline comparison of legacy Online/DCM and modern Eco5+Online capture families.
+
+**Result:** COMPLETE / POSITIVE.
+- stable runtime page shapes survive topology change;
+- source substitution proven for fields such as `07D1` and `07E4`;
+- `0820` is a concrete legacy-A5 vs modern-`0x1E` adapter boundary;
+- `0858..085E` is cross-topology clock/date with Monday=0 weekday;
+- page envelope portability does not imply byte-identical payload portability.
+
+### CAL-OFFLINE-01 — Calendar final offline closure — COMPLETE / POSITIVE
+
+**Previous status:** RUNNING / PARTIAL.
+
+**Controlled change:** no device action; integrate all existing calendar evidence with the reconstructed `0708` scheduler and exhaustively check for calendar desired-state pulls.
+
+**Result:** COMPLETE / POSITIVE for offline reconstruction scope.
+- four 98-word logical function blocks + 4-word tail;
+- each function = 8 × 12-word schedule records + two metadata words;
+- metadata0 strongly supported as slot-validity bitmap;
+- F1 locally maps to WW_GEBLOKKEERD;
+- no nonzero W0 and no FC03 desired read of any calendar transport page in the existing genuine corpus;
+- calendar write semantics remain OPEN and are not promoted.
+
+### PROTO-OFFLINE-10 — Desired-state command reconstruction — COMPLETE / POSITIVE
+
+**Hypothesis:** native Online commands are full-page read/modify/return transactions.
+
+**Controlled change:** offline-only reconstruction of all six nonzero-W1 command pulls.
+
+**Result:** COMPLETE / POSITIVE.
+- 4/4 fully bracketed Eco5 commands differ from prior controller page in exactly one word;
+- 4/4 controller FC16 result pages exactly equal the DCM desired page;
+- `03F4` performs reversible room-setpoint changes with independent downstream mirror confirmation;
+- full-page cache + one-word mutation is the evidence-backed emulator pattern.
+
+### PROTO-OFFLINE-09 — 0708 scheduler state machine — COMPLETE / POSITIVE
+
+**Hypothesis:** `0708/count6` is a page scheduler rather than opaque session data.
+
+**Controlled change:** offline correlation across the six genuine Online/DCM captures.
+
+**Result:** COMPLETE / POSITIVE.
+- `W2/W3` proven as 32-page FC16 state-upload bitmap;
+- `W1 bit0 -> FC03 03E8`, `W1 bit3 -> FC03 042E`;
+- `W4` strongly supported as runtime/service-page bitmap;
+- `W0` remains an unobserved high-half desired-state hypothesis;
+- `W5` remains implementation/profile/session metadata.
+
+### PROTO-OFFLINE-08 — Unresolved runtime-field reduction — COMPLETE / POSITIVE
+
+Offline reduction narrowed the dynamic `0834/0864/0870` fields. Later PROTO-OFFLINE-16 supersedes the earlier contiguous operating-time-counter interpretation; historical observations remain valid.
+
+### PROTO-OFFLINE-07 — Firmware semantic/identity mining — COMPLETE / POSITIVE
+
+Link CC 2.7.42 contains HE heat-pump identity/binding and semantic parameter logic but not the final Thermia-native `0x0F` serializer. Firmware-derived HE identities are not native-write payloads.
+
+### PROTO-OFFLINE-06 — Automated runtime source correlation — COMPLETE / POSITIVE
+
+Topology-aware correlation proves source-normalized fields including `07D1` return-line temperature and `07E4` average outdoor temperature.
+
+### PROTO-OFFLINE-05 — Runtime export family — COMPLETE / POSITIVE
+
+Recurring native Online/DCM runtime family established from `07D0` through `0870`, with repeated full rings in genuine Eco5 traffic.
+
+### PROTO-OFFLINE-04 — 06F4 context bridge — COMPLETE / POSITIVE
+
+Exact structural mirrors:
+`06F4..06F8 = A80C..A810`; `0701 = AFDC`.
+
+### PROTO-OFFLINE-03 — Page-shape provenance — COMPLETE / POSITIVE
+
+Corrects the four Sep24/25 reference captures to genuine Online/DCM provenance. Short-vs-extended page forms are cross-system/profile variation, not proven local-XTR temporal drift.
+
+### PROTO-OFFLINE-02 — 071C/0730 gate analysis — COMPLETE / POSITIVE
+
+Genuine Online evidence establishes the FC17 response as a strong session-opening gate. Local XTR replay evidence shows a fixed known-good response can be accepted against different request payloads; this does not imply a universal algorithm.
+
+### Numbering note
+
+No completed PROTO-OFFLINE-11 or PROTO-OFFLINE-12 result is recorded. Do not infer them from roadmap numbering.
+
+---
+
 ## PROTO-OFFLINE-01 — Native unknown-page correlation — COMPLETE / POSITIVE
 **Status: COMPLETE / POSITIVE**  
 **Date: 2026-10-02**  

@@ -1,3 +1,102 @@
+# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-16
+
+**Authoritative status:** this section supersedes older current-state headers below where they conflict. Historical experiment text is retained unchanged.
+
+## Current live XTR status
+
+- **EXP387 — COMPLETE / POSITIVE** — last fully completed live experiment.
+- **EXP388 — RUNNING / PARTIAL** — repeated controller-restart recovery has succeeded twice without ESP reboot; pre-semantic and refresh-only controller-loss cancellation branches are not yet independently live-exercised.
+- **EXP383 — PREPARED / NOT RUN** — historical TEST-candidate bundle remains recorded as prepared/not-run; later local proof must be tracked per target, not inferred from publication alone.
+- **CAL-OFFLINE-01 — COMPLETE / POSITIVE (offline scope closed)** — ordinary calendar structure is reduced to decoder level; calendar write semantics remain unproven.
+- No live experiment is advanced by the offline analyses below.
+
+Current published write baseline remains the existing Write (Beta) branch/file; this reconciliation changes documentation only.
+
+## Newly reconciled offline tracks
+
+- **PROTO-OFFLINE-02 — COMPLETE / POSITIVE** — `071C/0730` response is a strong session-opening gate in genuine Online captures; local XTR evidence shows a fixed known-good response can be accepted against different request payloads, so per-request cryptographic derivation is not required for that locally proven step.
+- **PROTO-OFFLINE-03 — COMPLETE / POSITIVE** — corrected provenance: the four `thermia_capture_20260924/25...` files are genuine Online/DCM reference captures, not historical local-XTR captures. Page-size differences are therefore cross-system/profile differences, not proven temporal XTR drift.
+- **PROTO-OFFLINE-04 — COMPLETE / POSITIVE** — `06F4..06F8 = A80C..A810` and `0701 = AFDC` are structurally proven mirrors; `06F4/count19` is an integration/context bridge, not a simple static settings page.
+- **PROTO-OFFLINE-05 — COMPLETE / POSITIVE** — recurring runtime family reduced: `07D0/19, 07E4/17, 07F8/17, 080C/18, 0820/18, 0834/18, 0848/23, 0864/4, 0870/17`.
+- **PROTO-OFFLINE-06 — COMPLETE / POSITIVE** — automated source correlation proves topology-normalized runtime fields including `07D1` return-line temperature and `07E4` average outdoor temperature.
+- **PROTO-OFFLINE-07 — COMPLETE / POSITIVE** — Link CC 2.7.42 contains HE identity/binding and a rich semantic heat-pump model but not the final Thermia-native `0x0F` serializer; exact HE heat-pump identity is firmware-derived only and must not be injected into native traffic.
+- **PROTO-OFFLINE-08 — COMPLETE / POSITIVE** — unresolved runtime-field reduction materially narrows `0834`, `0864`, and `0870`; later PROTO-OFFLINE-16 supersedes the earlier contiguous operating-time-counter hypothesis.
+- **PROTO-OFFLINE-09 — COMPLETE / POSITIVE** — `0708/count6` is a page scheduler/dispatcher. `W2/W3` are proven 32-page FC16 state-upload bitmaps; `W1` is proven as a desired-state FC03 pull bitmap for observed low-half bits; `W4` is strongly supported as the runtime/service-page bitmap; `W0` remains only a high-half desired-state hypothesis; `W5` remains open metadata.
+- **PROTO-OFFLINE-10 — COMPLETE / POSITIVE** — native Online semantic writes are controller-pulled full-page read/modify/return transactions. In all four fully bracketed Eco5 examples exactly one word differs from the last controller page and the following FC16 page exactly equals the desired image. `03F4` setpoint adoption is independently confirmed and later locally confirmed on XTR.
+- **CAL-OFFLINE-01 — COMPLETE / POSITIVE (offline scope closed)** — four logical calendar blocks `F1..F4`, each `8 × 12-word records + 2 metadata words`, plus four-word tail. F1 is locally WW_GEBLOKKEERD. No calendar desired-state pull or nonzero W0 exists in the current genuine capture corpus; live calendar writing is therefore not inferred.
+- **PROTO-OFFLINE-13 — COMPLETE / POSITIVE** — `0x0F` runtime pages form a logical Online/DCM ABI above topology-specific physical backends. Stable page envelopes do not imply byte-identical payload semantics across models.
+- **PROTO-OFFLINE-14 — COMPLETE / POSITIVE** — local XTR `0884/count60` is a rolling timestamped history page using the modern `8 × 7-word records + 4-word trailer` ABI; genuine legacy Online uses `10 × 6`. It is very strongly supported as alarm/service history, but raw IDs are not mapped to displayed XTR E-codes.
+- **PROTO-OFFLINE-15 — COMPLETE / POSITIVE** — firmware archaeology narrows the old AQ/Atec/iTec serializer target to DCM03 and the modern XTR target to Thermia Connect / protocol packages. No DCM03/Connect firmware binary or protocol package was recovered.
+- **PROTO-OFFLINE-16 — COMPLETE / POSITIVE** — register semantics are profile/model scoped, not universal. Core heating semantics are stable across ATEC+iTec; `042E` is a concrete profile-drift example. `0870` is strongly supported as compressor operating time; operating-time counters are sparse, and `087B/087C/087D` are strongly supported as the three defrost statistics.
+- **PROTO-OFFLINE-11 / -12:** no completed canonical experiment is recorded; do not backfill or infer completion from roadmap numbering.
+
+## Current protocol model
+
+### Native session and scheduler
+
+1. Controller/session transport, application approval, initial state synchronization, runtime qualification and semantic desired-state writes are separate layers.
+2. `071C/0730` is a session-opening gate in genuine Online traffic; XTR replay success does not prove a universal challenge algorithm.
+3. `0708/count6` is the dispatcher:
+   - `W1`: observed low-half desired-state FC03 pull bits;
+   - `W0`: hypothesized high-half desired-state pull bits, never observed nonzero in the current genuine corpus;
+   - `W2/W3`: proven 32-page FC16 state-upload bitmap;
+   - `W4`: runtime/service-page bitmap;
+   - `W5`: implementation/profile/session metadata, exact meaning open.
+4. Proven semantic write primitive:
+   `0708 desired-page bit -> controller FC03 desired page -> emulator returns coherent full page with one intended change -> controller applies -> controller FC16 republishes result`.
+5. Do not generalize this primitive to a page whose desired-state selector has never been observed or locally proven.
+
+### Register/schema discipline
+
+- Native numeric addresses can share the public Online `registerIndex` namespace, but semantics are **profile-specific**.
+- Keep four evidence dimensions separate: address exists; semantic label proven; an external profile says writable; native desired-state path proven.
+- Strong local/protocol anchors include `03E8` Heat Curve, `03EB` Curve +5, `03F4` Room Setpoint, `0442` Activate Cooling, and `0553` Operation Mode. Evidence level for each write path remains target-specific.
+- `03F1 = HotWaterStart` is superseded for XTR.
+- `042E` is profile-dependent: ATEC metadata says Integral A1; iTec metadata says Hot Water Status. Genuine modern Eco5 `1 -> 0` behavior strongly favors Hot Water Status for that profile; local XTR semantic identity remains separately tracked.
+- `0870` = compressor operating time is strongly supported; the seven operating-time counters are not a simple contiguous `0872..0878` block.
+- `087B/087C/087D` align strongly with defrost count / interval between last two defrosts / time since last defrost.
+
+### Runtime and service model
+
+- `0x0F` acts as a logical serializer/normalizer across legacy and modern topology families.
+- `0820` is a concrete adapter boundary: legacy sources from A5; modern sources from `0x1E`.
+- `0858..085E` is a stable clock/date tuple; weekday is Monday=0 through Sunday=6.
+- `0884/count60` is locally confirmed XTR rolling timestamped history; raw event identifiers remain unmapped.
+- Current alarm/error state and timestamped history are separate concepts; `085F/count5` remains semantically OPEN.
+
+### Calendar
+
+- Ordinary calendar = four 98-word logical functions + four-word tail.
+- Each function = eight 12-word records + two metadata words.
+- Metadata0 is strongly supported as slot-validity bitmap.
+- F1 = WW_GEBLOKKEERD locally; F2/F3/F4 labels remain hypotheses.
+- No W0/calendar desired-state transaction is observed; no active calendar writer should be inferred.
+
+## Strongest remaining unknowns
+
+1. Exact local-XTR prerequisite/state transition that activates or reactivates the full Online/DCM scheduler after loss/restart.
+2. Unobserved desired-state selector coverage, especially W0/high-half pages.
+3. Thermia Connect / DCM03 native serializer and protocol-package contents.
+4. Exact local XTR semantics for remaining profile-dependent fields such as `042E/042F`.
+5. Alarm-history raw-code translation and current-alarm native bridge.
+6. Calendar weekday bit order and calendar write/atomicity behavior.
+
+## Safety constraints
+
+- Preserve EXP388 as RUNNING / PARTIAL until its remaining branches are actually exercised.
+- Never transmit an unobserved W0 bit or invent W1 selectors from symmetry.
+- Build any desired page from a fresh locally authoritative full-page cache; mutate one known target only.
+- Equal page address/count across models does not authorize foreign payload replay.
+- External profile writability does not authorize an XTR write.
+- Calendar and alarm/history pages remain read/capture-only unless a separate active experiment explicitly defines otherwise.
+- Fail closed on parser/RX/session/page-shape mismatch and keep DE LOW outside guarded TX.
+
+## Reconciled working artifacts
+
+Current detailed working reports are retained under `Research/temp/`, including PROTO-OFFLINE-09/10/13/14/15/16 and CAL-OFFLINE-01 closure. Canonical files summarize durable conclusions; temp reports preserve the full derivations and intermediate evidence.
+
+---
+
 # 2026-10-02 — PROTO-OFFLINE-01 — unknown-page correlation — COMPLETE / POSITIVE
 
 **Track:** offline evidence analysis only. No heat-pump TX, no new native write target and no live experiment advancement.

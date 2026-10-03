@@ -1,5 +1,167 @@
 # THERMIA PROTOCOL FINDINGS
 
+# 2026-10-03 — canonical durable findings reconciliation
+
+## PROVEN / locally confirmed
+
+- **Native desired-state room setpoint:** `03F4` is a real XTR room-setpoint target. Local semantic writes use the controller-pulled desired-page path and are confirmed by exact controller `03E8` FC16 republish plus matching room-setpoint mirror.
+- **Operation Mode anchor:** `0553` is Operation Mode locally; at least `1=AUTO` and `2=COMPRESSOR` are locally causally confirmed.
+- **Activate Cooling anchor:** `0442` is Activate Cooling locally, 0/1.
+- **Heat Curve anchors:** `03E8` Heat Curve and `03EB` Curve +5 are locally confirmed semantic fields.
+- **Context bridge:** `06F4..06F8 = A80C..A810` and `0701=AFDC` are exact structural mirrors.
+- **Local XTR service history ABI:** `0884/count60` uses 8 × 7-word timestamped records + 4-word trailer and rolls newest entries forward.
+
+## PROVEN / genuine Online/DCM structural
+
+### 0708 scheduler
+
+For `0x0F FC03 0708/count6`:
+
+- `W2/W3` form the 32-page controller FC16 upload bitmap.
+- Observed low-half desired bits:
+  - `W1 bit0 -> controller FC03 03E8`
+  - `W1 bit3 -> controller FC03 042E`
+- `W0` has never been observed nonzero in the current genuine capture corpus and is not proven.
+- `W4` has a stable bit-to-runtime/service-page ordering and is strongly supported as the runtime/service page selector/refresh bitmap.
+- `W5` is not a universal 6/7 normal/join enum; exact semantics remain open.
+
+### Native semantic write primitive
+
+Observed genuine Online command flow:
+
+`0708 desired-page bit -> controller FC03 desired page -> DCM returns complete coherent page image -> controller applies -> controller FC16 republishes result`.
+
+In all four fully bracketed Eco5 examples:
+- prior page vs desired page differed in exactly one word;
+- desired page vs following controller FC16 result was byte-for-byte identical.
+
+Therefore safe emulation must use a fresh complete page image and mutate only the intended target; sparse or invented page context is not evidence-backed.
+
+### Runtime export family
+
+The recurring `0x0F` runtime family includes:
+
+`07D0/19, 07E4/17, 07F8/17, 080C/18, 0820/18, 0834/18, 0848/23, 0864/4, 0870/17`.
+
+The page namespace acts as a logical serializer/normalizer across topology families.
+
+### Cross-topology source substitution
+
+- `07D1` preserves return-line semantics while changing physical source between legacy and modern topology.
+- `07E4` preserves average-outdoor semantics while changing physical source.
+- `0820` is a concrete abstraction boundary: legacy data is sourced from A5; modern data from `0x1E`.
+- Equal page start/count does not imply equal byte-level payload semantics across models.
+
+### Clock/date ABI
+
+`0858..085E` is a stable second/minute/hour/day/month/year/weekday tuple across compared topologies. Weekday enumeration is Monday=0 through Sunday=6.
+
+### History ABI
+
+- legacy genuine Online/DCM `0884/count60`: 10 × 6-word timestamped records;
+- genuine Eco5 + local XTR: 8 × 7-word records + 4-word trailer.
+
+This is very strongly supported as alarm/service history, but raw event codes are not yet mapped to displayed XTR E-codes.
+
+## STRONGLY SUPPORTED
+
+- `0x0F` is a logical Online/DCM ABI above topology-specific source adapters.
+- `0867` is topology/platform metadata/fingerprint; exact human meaning remains open.
+- `0870` = compressor operating time.
+- Sparse operation-time mapping:
+  - `0872` heating;
+  - `0873` cooling;
+  - `0876` hot water;
+  - `0877` auxiliary/immersion 1;
+  - `0878` auxiliary/immersion 2;
+  - `0879` auxiliary/immersion 3 candidate aligned with ATEC + XTR manual, local XTR confirmation pending.
+- Defrost group:
+  - `087B` completed defrost periods/count;
+  - `087C` runtime/time between last two defrosts;
+  - `087D` runtime/time since last defrost.
+- Core heating semantics stable across public ATEC+iTec profiles:
+  `03E9` Heating Min, `03EA` Heating Max, `03EC` Curve 0, `03ED` Curve -5, `03EE` Heating Stop, `03F0` Room Factor.
+- `0559` Link Integration is a strong cross-profile semantic mapping; local XTR semantic effect/write remains separately unproven.
+
+## PROFILE-SPECIFIC / do not universalize
+
+- Public Online `registerIndex` values are **profile/model scoped**.
+- `042E` is a concrete conflict:
+  - ATEC/DHP-AQ profile: Integral A1;
+  - iTec profile: Hot Water Status 0/1;
+  - genuine modern Eco5 `042E:1->0` strongly supports the iTec interpretation for that profile;
+  - local XTR `042E` semantic identity remains separately tracked.
+- Older Diplomat/NCP profiles place common semantics at other numeric indices; do not use one public map as a universal XTR schema.
+
+## CALENDAR — STRONGLY SUPPORTED / PARTLY LOCALLY PROVEN
+
+Ordinary calendar logical layout:
+
+- F1 `055A..05BB`
+- F2 `05BC..061D`
+- F3 `061E..067F`
+- F4 `0680..06E1`
+- tail `06E2..06E5`
+
+Each function = 8 × 12-word records + 2 metadata words.
+
+Record fields are strongly reduced to mode, start minute/hour/day/month/year, stop minute/hour/day/month/year, weekday mask. Metadata0 is strongly supported as slot-validity bitmap.
+
+F1 = WW_GEBLOKKEERD is locally correlated. F2/F3/F4 names remain hypotheses.
+
+No nonzero W0 and no FC03 desired read of the calendar transport pages was observed in the current genuine capture corpus. Calendar write behavior is therefore OPEN.
+
+## FIRMWARE-DERIVED
+
+Link CC 2.7.42 proves:
+- an HE heat-pump identity/binding layer;
+- DHP/HE semantic parameter model;
+- grouped synchronization and integration-mode behavior.
+
+It does **not** expose the final Thermia-native `0x0F` page serializer in the recovered managed assemblies.
+
+Official hardware/document evidence narrows:
+- old AQ/Atec/iTec serializer target -> DCM03;
+- modern XTR serializer/protocol target -> Thermia Connect / protocol packages.
+
+No DCM03/Connect binary or protocol package has yet been recovered.
+
+## OPEN / UNKNOWN
+
+- exact local-XTR activation/re-activation prerequisite for the full Online/DCM scheduler;
+- any nonzero W0 desired-state behavior;
+- unobserved W1 desired bits;
+- exact semantics of W5;
+- local XTR semantic identity of remaining profile-dependent fields including `042E/042F`;
+- alarm-history raw-code -> user-facing alarm-name/E-code translation;
+- native current-alarm bridge for firmware ErrorCode/AlarmField semantics;
+- `085F/count5` semantics;
+- calendar weekday bit order, delete semantics and cross-page write atomicity;
+- Thermia Connect protocol-package contents and update manifests.
+
+## DISPROVEN / SUPERSEDED
+
+- the four Sep24/25 genuine Online/DCM captures as historical local-XTR captures;
+- page-size differences in those captures as proven temporal XTR page-shape drift;
+- `W2/W3=7FFF/FFFF` as opaque join magic — it is a concrete state-upload bitmap;
+- universal `W5=6 normal / 7 join`;
+- public Online registerIndex as one universal Thermia semantic map;
+- `03F1 = HotWaterStart` as an XTR mapping;
+- `0872..0878` as seven consecutive operating-time counters;
+- direct conversion of raw `0884` event identifiers into displayed XTR `E###` fault numbers.
+
+## Safety
+
+- Do not transmit unobserved W0 bits or infer desired selectors by symmetry.
+- A semantic register label does not imply its desired-state path is known.
+- A public profile's writable flag does not authorize an XTR write.
+- Desired-state responses must be built from fresh local authoritative page state; mutate one target only.
+- Do not replay complete foreign-model payloads because their page address/count matches.
+- Keep calendar and alarm/history work passive unless a separate bounded active experiment explicitly defines the transaction and rollback.
+- EXP388 remains RUNNING / PARTIAL until its remaining recovery branches are actually tested.
+
+---
+
 # 2026-10-02 — PROTO-OFFLINE-01 unknown-page correlation
 
 ## STRONGLY SUPPORTED / locally correlated — 04A6/04A7 follow SG operating state
