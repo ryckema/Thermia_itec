@@ -1,3 +1,5 @@
+> **Reconciliation status: APPLIED / HISTORICAL (2026-10-03).** The canonical Research state was reconciled through PROTO-OFFLINE-16 in commit `b4edd42cd17354845ec75111fb0aa30e5a0bda38`. This file is retained as the historical proposal that informed that reconciliation; do not apply it again blindly.
+
 # Pending canonical reconciliation — PROTO-OFFLINE-08
 
 GitHub was **not modified**. Apply these changes to the canonical project artefacts only when GitHub write permission is explicitly granted.
