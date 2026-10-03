@@ -1,0 +1,13 @@
+field,page,samples,observed_relation,status
+07F4,07E4/count17,96,"0 if 1E:0015 != 0x0221; 4 if 1E:0015=0x0221 and compressor frequency=0; 6 if 1E:0015=0x0221 and compressor frequency>0","PROVEN structural / genuine Eco5 normalized operating-state summary"
+0845,0834/count18,43,"0x0300 iff 1E:0015=0x0221; otherwise 0","PROVEN structural / genuine Eco5 outdoor-active status export"
+0865,0864/count4,48,"1 iff 1E:000B compressor frequency>0","PROVEN structural (reconfirmed)"
+0866,0864/count4,48,"start/pre-run indicator; one positive transition in corpus","STRONGLY SUPPORTED; sparse positive coverage"
+083B,0834/count18,14_intervals,"mod-60 delta equals 0x02 controller-poll count during active run","PROVEN structural cycle accumulator; semantic name OPEN"
+083C,0834/count18,43,"coded inverse start/pre-run transition; exact prior reduction","PROVEN structural; semantic label OPEN"
+0867,0864/count4,all_samples,"legacy=0x0016; Eco5=0x00E8","STRONGLY SUPPORTED topology/platform fingerprint"
+heating_mode_candidate,multiple,insufficient,"no independently labelled heating-mode edge in capture corpus","NO PROMOTION"
+cooling_mode_candidate,multiple,insufficient,"no independently labelled cooling-mode edge in capture corpus","NO PROMOTION"
+dhw_mode_candidate,multiple,insufficient,"no independently labelled DHW-mode edge in capture corpus","NO PROMOTION"
+defrost_active_candidate,multiple,insufficient,"no labelled defrost onset/clear edge in capture corpus","NO PROMOTION"
+sg_state_candidate,multiple,limited,"04A6/04A7 already correlate with SG locally; no new runtime-ring field gives a cleaner universal relation","NO NEW PROMOTION"

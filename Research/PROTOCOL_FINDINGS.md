@@ -1,4 +1,4 @@
-# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-35
+# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-36
 
 ## PROVEN / genuine Eco5 Online structural
 
@@ -118,6 +118,12 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - **STRONGLY SUPPORTED:** `0870/0872/0873/0876/0877/0878` use raw integer **hours** for operational time; `0879` likely shares the scaling if its Aux3 identity is correct.
 - **PROVEN manual semantics + strong address mapping:** `087C/087D` represent compressor-runtime **minutes** between last two defrosts / since last defrost.
 - **PROVEN count semantics:** `087B` is completed defrost count.
+
+## PROTO-OFFLINE-36 runtime-state reductions
+
+- **PROVEN / genuine Eco5 structural:** `07F4 = 0` outside outdoor status `0x0221`; `07F4=4` for `0x0221` with compressor frequency 0; `07F4=6` for `0x0221` with compressor frequency >0 (96/96).
+- **PROVEN / genuine Eco5 structural:** `0845=0x0300` iff `1E:0015=0x0221`, otherwise 0 (43/43).
+- No additional heating/cooling/DHW/defrost/SG runtime label is promoted without a labelled physical transition.
 
 ## OPEN / UNKNOWN after reconciliation
 

@@ -532,3 +532,5 @@ slave,register_hex,register_dec,page_start_hex,offset,semantic,evidence,access,e
 0x0F,0x087C,2172,0x0870,12,Runtime/Time Between Last Two Defrosts,STRONGLY SUPPORTED,read,raw compressor-runtime minutes,PROTO-OFFLINE-08/16/20 + XTR manual,
 0x0F,0x087D,2173,0x0870,13,Runtime/Time Since Last Defrost,STRONGLY SUPPORTED,read,raw compressor-runtime minutes,PROTO-OFFLINE-08/16/20 + XTR manual,
 0x0F,0x0884,2180,0x0884,,Rolling timestamped service/alarm history page,PROVEN local modern ABI / VERY STRONGLY SUPPORTED history role,read,8x7-word records + 4-word trailer,PROTO-OFFLINE-14 + local XTR,Raw event IDs remain unresolved
+0x0F,0x07F4,2036,0x07E4,16,Normalized outdoor-unit operating-state summary,PROVEN structural / genuine Eco5,read,"0=inactive;4=active/pre-run freq0;6=active/running freq>0",PROTO-OFFLINE-36,"Derived from 1E:0015 status 0x0221 + compressor frequency; numeric codes are not UI enum names"
+0x0F,0x0845,2117,0x0834,17,Coded outdoor-unit active-status export,PROVEN structural / genuine Eco5,read,"0x0300 iff 1E:0015=0x0221; else 0",PROTO-OFFLINE-36,Human firmware field name open

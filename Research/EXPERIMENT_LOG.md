@@ -46,6 +46,12 @@
 
 ---
 
+### PROTO-OFFLINE-36 — runtime-field correlation — COMPLETE / POSITIVE
+- 07F4 is exactly reduced in 96/96 Eco5 samples: 0 inactive, 4 active/pre-run with zero frequency, 6 active/running with non-zero frequency;
+- 0845 is exactly 0x0300 iff 1E:0015=0x0221 in 43/43 samples;
+- prior 0865/0866/083B/083C reductions remain consistent;
+- no new heating/cooling/DHW/defrost/SG semantic is promoted because labelled transitions are absent.
+
 ### PROTO-OFFLINE-35 — runtime-counter scaling — COMPLETE / POSITIVE
 - compressor/heating/cooling/hot-water operating counters strongly support raw integer hours;
 - mode-counter sums nearly partition total compressor hours in both legacy and Eco5 genuine captures;
