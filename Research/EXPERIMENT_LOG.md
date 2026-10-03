@@ -1,3 +1,45 @@
+# 2026-10-03 — PROTO-OFFLINE-40..44 reconciliation
+
+**Live XTR state remains unchanged:** EXP387 COMPLETE / POSITIVE; EXP388 RUNNING / PARTIAL; EXP383 PREPARED / NOT RUN.  
+**Controlled change for all five tracks:** offline analysis only; no bus TX, YAML behavior change, compile/flash, reboot or setting write.
+
+## PROTO-OFFLINE-44 — full protocol state-machine regression — COMPLETE / POSITIVE WITH HARDENING REQUIREMENTS
+
+- seven-capture state graph reduced to APPROVAL -> optional WAIT_PAGE_SERVICE -> BOOTSTRAP -> POST_BOOT_SERVICE -> NORMAL_RUNTIME;
+- runtime branches separated into CONFIG_REFRESH, SERVICE_REFRESH, DESIRED_PULL and RECOVERY_REJOIN;
+- Write Beta v4.1 major architecture matches the genuine model and no new uncontrolled semantic-write route was found;
+- future hardening required for `085F`, `0870` and generic runtime config-page ACK permission;
+- `0834/count18` remains intentionally capture-only because local XTR ACK safety is not proven despite 63/64 genuine ACKs.
+
+## PROTO-OFFLINE-43 — runtime ACK-context reconstruction — COMPLETE / POSITIVE
+
+- `085F/count5`: 331 publications, 20 ACKed, 311 unACKed; payload recognition is not ACK permission;
+- `0870/count17`: 95 publications, 64 ACKed, 31 unACKed; all 31 unACKed occur in one legacy reconnect retry window;
+- one later `0870` ACK is followed about 1.37 s later by `0708` rejoin/export state;
+- known config-page shape is not generic permission: `03E8` 220/18 ACKed, `04A6` 586/19, `04BA` 44/17;
+- durable conclusion: protocol state must own ACK permission.
+
+## PROTO-OFFLINE-42 — desired-page cache freshness/lifetime — COMPLETE / POSITIVE
+
+- fully bracketed genuine Eco5 desired pulls reused last bus-visible same-page FC16 images aged 67.084, 319.512, 374.586 and 87.609 s;
+- ATEC no-op `0546` used a 65.425 s-old bus-visible image;
+- current genuine lower bound for bus-visible same-page cache reuse is >=374.586 s;
+- local XTR freshness guard remains intentionally conservative.
+
+## PROTO-OFFLINE-41 — desired-page no-op vs semantic delta republish — COMPLETE / POSITIVE
+
+- four genuine Eco5 one-word deltas all receive exact FC16 republish in 0.491..0.571 s;
+- one genuine ATEC exact no-op `0546/count20` desired image receives no same-page republish over 226.677 s;
+- exact republish remains the strongest confirmation for a real delta; missing republish after exact no-op is not automatic failure.
+
+## PROTO-OFFLINE-40 — challenge/response pair reduction — COMPLETE / NEGATIVE for tested simple-transform families
+
+- 164 challenges yielded seven CRC-valid request/response pairs: six Eco5, one ATEC/DCM03;
+- fixed XOR/add/sub masks, fixed byte/word permutation+mask families, rotations and simple unkeyed MD5/SHA transforms fail;
+- exact response algorithm/key/session dependence remains OPEN.
+
+---
+
 # 2026-10-03 — ATEC-COLDSTART-01 / ATEC-EXP1 supersession / ATEC-EXP2 preparation
 
 **Local XTR live state remains unchanged:** EXP387 COMPLETE / POSITIVE; EXP388 RUNNING / PARTIAL.
