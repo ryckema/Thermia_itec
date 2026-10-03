@@ -46,6 +46,12 @@
 
 ---
 
+### PROTO-OFFLINE-37 — Write Beta safety/provenance audit — COMPLETE / POSITIVE
+- all current TX route classes mapped to provenance and guard policy;
+- no unknown/symmetry-only desired TX route found;
+- stale evidence/log labels corrected only; no functional TX logic changed;
+- runtime config ACK-by-known-shape remains a future hardening candidate requiring live regression before tightening.
+
 ### PROTO-OFFLINE-36 — runtime-field correlation — COMPLETE / POSITIVE
 - 07F4 is exactly reduced in 96/96 Eco5 samples: 0 inactive, 4 active/pre-run with zero frequency, 6 active/running with non-zero frequency;
 - 0845 is exactly 0x0300 iff 1E:0015=0x0221 in 43/43 samples;

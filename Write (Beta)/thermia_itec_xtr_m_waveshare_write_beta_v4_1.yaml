@@ -431,7 +431,7 @@ switch:
           id(exp379_room_sensor_control).publish_state(true);
           id(exp379_desired_w10)=target; id(exp379_dirty_mask)|=bit;
           id(exp379_status)->publish_state("QUEUED / desired Cooling Room Sensor retained until safe dispatch");
-          ESP_LOGE("thermia_exp379","\033[38;5;130m[EXP379] ===== UI_DESIRED_QUEUE reg=044C word=10 target=1 dirtyMask=%04X activeState=%u UI_NW_RETAINED=1 mappingDirection=HYPOTHESIS =====\033[0m",
+          ESP_LOGE("thermia_exp379","\033[38;5;130m[EXP379] ===== UI_DESIRED_QUEUE reg=044C word=10 target=1 dirtyMask=%04X activeState=%u UI_NW_RETAINED=1 mappingDirection=LOCAL_XTR_PROVEN_EXP379 =====\033[0m",
             unsigned(id(exp379_dirty_mask)),unsigned(id(exp379_state)));
     turn_off_action:
       - lambda: |-
@@ -444,7 +444,7 @@ switch:
           id(exp379_room_sensor_control).publish_state(false);
           id(exp379_desired_w10)=target; id(exp379_dirty_mask)|=bit;
           id(exp379_status)->publish_state("QUEUED / desired Cooling Room Sensor retained until safe dispatch");
-          ESP_LOGE("thermia_exp379","\033[38;5;130m[EXP379] ===== UI_DESIRED_QUEUE reg=044C word=10 target=0 dirtyMask=%04X activeState=%u UI_NW_RETAINED=1 mappingDirection=HYPOTHESIS =====\033[0m",
+          ESP_LOGE("thermia_exp379","\033[38;5;130m[EXP379] ===== UI_DESIRED_QUEUE reg=044C word=10 target=0 dirtyMask=%04X activeState=%u UI_NW_RETAINED=1 mappingDirection=LOCAL_XTR_PROVEN_EXP379 =====\033[0m",
             unsigned(id(exp379_dirty_mask)),unsigned(id(exp379_state)));
 
 
@@ -3900,14 +3900,14 @@ uart:
                                 "COMPLETE / POSITIVE / exact 0559 TEST republish" :
                                 "COMPLETE / POSITIVE / exact 0553 republish / reusable");
                               ESP_LOGE(tw==19 ? "thermia_exp383" : "thermia_exp380",
-                                "\033[31m[EXP383] ===== WRITE_CONFIRMED reg=%04X word=%u original=%u target=%u observed=%u extraDeltaWords=0 TRANSACTION_CLOSED_READY=1 =====\033[0m",
+                                "\033[31m[EXP380/383] ===== WRITE_CONFIRMED reg=%04X word=%u original=%u target=%u observed=%u extraDeltaWords=0 TRANSACTION_CLOSED_READY=1 =====\033[0m",
                                 unsigned(0x0546+tw),unsigned(tw),unsigned(old),unsigned(target),unsigned(observed));
                             } else {
                               id(exp380_state)=5; id(exp380_dirty)=false; id(exp383_link_dirty)=false; rollback380();
                               id(exp380_status)->publish_state(extra==0 && observed==old ?
                                 "COMPLETE / NEGATIVE / controller retained original 0546 value / disabled" :
                                 "COMPLETE / INCONCLUSIVE / 0546 republish mismatch or extra delta / disabled");
-                              ESP_LOGE("thermia_exp383","\033[31m[EXP383] ===== REPUBLISH_MISMATCH reg=%04X word=%u expected=%u observed=%u original=%u extraDeltaWords=%u NO_RETRY DISABLED =====\033[0m",
+                              ESP_LOGE("thermia_exp383","\033[31m[EXP380/383] ===== REPUBLISH_MISMATCH reg=%04X word=%u expected=%u observed=%u original=%u extraDeltaWords=%u NO_RETRY DISABLED =====\033[0m",
                                 unsigned(0x0546+tw),unsigned(tw),unsigned(target),unsigned(observed),unsigned(old),unsigned(extra));
                             }
                           } else if (id(exp380_state)==0 && e380[13]<=4 && e380[19]<=1) {
@@ -4246,7 +4246,7 @@ uart:
                             id(exp379_status)->publish_state(for_write ?
                               "RUNNING / requested fresh current 0442 page / wait controller FC16" :
                               "RUNNING / startup cooling synchronization / test W3 bit4 -> 0442");
-                            ESP_LOGE("thermia_exp379","\033[31m[EXP379] ===== CURRENT_0442_REFRESH_TX_INTENT frame=0F030C0000000000000010000000065CB5 words=0000,0000,0000,0010,0000,0006 W1=0000 W3bit4=1 forWrite=%u selectorMapping=HYPOTHESIS NO_SETTING_VALUE_TX=1 RAWREQ=%s =====\033[0m",unsigned(for_write),raw325);
+                            ESP_LOGE("thermia_exp379","\033[31m[EXP379] ===== CURRENT_0442_REFRESH_TX_INTENT frame=0F030C0000000000000010000000065CB5 words=0000,0000,0000,0010,0000,0006 W1=0000 W3bit4=1 forWrite=%u selectorMapping=LOCAL_XTR_PROVEN_EXP379 NO_SETTING_VALUE_TX=1 RAWREQ=%s =====\033[0m",unsigned(for_write),raw325);
                             id(waveshare_rs485_direction).turn_on(); delay_microseconds_safe(1000);
                             id(thermia_uart).write_array(refresh0442,sizeof(refresh0442)); id(thermia_uart).flush();
                             delay_microseconds_safe(1000); id(waveshare_rs485_direction).turn_off();
@@ -4272,7 +4272,7 @@ uart:
                             id(waveshare_rs485_direction).turn_on(); delay_microseconds_safe(1000); id(thermia_uart).write_array(idle379guard,sizeof(idle379guard)); id(thermia_uart).flush(); delay_microseconds_safe(1000); id(waveshare_rs485_direction).turn_off();
                           } else {
                             id(exp379_selector_ms)=millis(); id(exp379_state)=3;
-                            ESP_LOGE("thermia_exp379","\033[31m[EXP379] ===== 0708_SELECTOR_TX_INTENT page=0442 count=13 frame=0F030C0000001000000010000000069175 words=0000,0010,0000,0010,0000,0006 reg=%04X word=%u original=%u target=%u cacheAge=%ums selectorMapping=HYPOTHESIS RAWREQ=%s =====\033[0m",
+                            ESP_LOGE("thermia_exp379","\033[31m[EXP379] ===== 0708_SELECTOR_TX_INTENT page=0442 count=13 frame=0F030C0000001000000010000000069175 words=0000,0010,0000,0010,0000,0006 reg=%04X word=%u original=%u target=%u cacheAge=%ums selectorMapping=LOCAL_XTR_PROVEN_EXP379 RAWREQ=%s =====\033[0m",
                               unsigned(0x0442 + id(exp379_target_word)),unsigned(id(exp379_target_word)),unsigned(id(exp379_original_value)),unsigned(id(exp379_target_value)),unsigned(cache_age),raw325);
                             id(waveshare_rs485_direction).turn_on(); delay_microseconds_safe(1000); id(thermia_uart).write_array(select0442,sizeof(select0442)); id(thermia_uart).flush(); delay_microseconds_safe(1000); id(waveshare_rs485_direction).turn_off();
                             ESP_LOGE("thermia_exp379","\033[31m[EXP379] ===== 0708_SELECTOR_TX_EXECUTED DE=LOW wait=FC03_0442_13 NO_RETRY =====\033[0m");
@@ -4323,7 +4323,7 @@ uart:
                         } else if (id(exp380_state)==2 &&
                                    (id(exp378_state)==0 || id(exp378_state)==5) &&
                                    (id(exp379_state)==0 || id(exp379_state)==5)) {
-                          // Desired selector mirrors high-half page bit in W0 and CURRENT/PUSH in W2.
+                          // EXP380 locally proved 0546 selectors: desired W0 bit0 and current/PUSH W2 bit0; genuine Eco5 W0 remains unobserved.
                           static const uint8_t select0546[17]={
                             0x0F,0x03,0x0C,
                             0x00,0x01, 0x00,0x00, 0x00,0x01,
@@ -4390,7 +4390,7 @@ uart:
                           id(write_refresh_request_count)++;
                           id(thermia_write_refresh_request_count_sensor)->publish_state(float(id(write_refresh_request_count)));
                           id(write_write_state)=6;
-                          ESP_LOGE("thermia_write","\033[31m[WRITE] ===== REFRESH_0708_TX_INTENT refreshNo=%u frame=0F030C000000000000000100000006A0B6 words=0000,0000,0000,0001,0000,0006 evidence=GENUINE_DCM_PUSH_BITMAP_STRONGLY_SUPPORTED localXTR=NOT_YET_PROVEN W1=0000 W3bit0=1 selectedTarget=%u RAWREQ=%s =====\033[0m",
+                          ESP_LOGE("thermia_write","\033[31m[WRITE] ===== REFRESH_0708_TX_INTENT refreshNo=%u frame=0F030C000000000000000100000006A0B6 words=0000,0000,0000,0001,0000,0006 evidence=GENUINE_DCM_PUSH_BITMAP_PROVEN localXTR=PROVEN_EXP352 W1=0000 W3bit0=1 selectedTarget=%u RAWREQ=%s =====\033[0m",
                             unsigned(id(write_refresh_request_count)),unsigned(id(write_target_value)),raw325);
                           id(waveshare_rs485_direction).turn_on(); delay_microseconds_safe(1000);
                           id(thermia_uart).write_array(refresh03e8,sizeof(refresh03e8)); id(thermia_uart).flush();
@@ -4616,12 +4616,12 @@ uart:
                           id(exp380_semantic_responses)++;
                           id(exp380_desired_ms)=millis();
                           id(exp380_state)=4;
-                          ESP_LOGE(tw==19 ? "thermia_exp383" : "thermia_exp380","\033[31m[EXP383] ===== DESIRED_PAGE_TX_INTENT page=0546 count=20 reg=%04X word=%u original=%u desired=%u deltaWords=1 semanticResponseThisTx=%u/1 crc=%04X frame=%s RAWREQ=%s =====\033[0m",
+                          ESP_LOGE(tw==19 ? "thermia_exp383" : "thermia_exp380","\033[31m[EXP380/383] ===== DESIRED_PAGE_TX_INTENT page=0546 count=20 reg=%04X word=%u original=%u desired=%u deltaWords=1 semanticResponseThisTx=%u/1 crc=%04X frame=%s RAWREQ=%s =====\033[0m",
                             unsigned(0x0546+tw),unsigned(tw),unsigned(original),unsigned(id(exp380_target_value)),unsigned(id(exp380_semantic_responses)),unsigned(crc),rsphex,raw325);
                           id(waveshare_rs485_direction).turn_on(); delay_microseconds_safe(1000);
                           id(thermia_uart).write_array(rsp,sizeof(rsp)); id(thermia_uart).flush();
                           delay_microseconds_safe(1000); id(waveshare_rs485_direction).turn_off();
-                          ESP_LOGE(tw==19 ? "thermia_exp383" : "thermia_exp380","\033[31m[EXP383] ===== DESIRED_PAGE_TX_EXECUTED page=0546 reg=%04X word=%u desired=%u DE=LOW wait=FC16_0546_20_REPUBLISH =====\033[0m",
+                          ESP_LOGE(tw==19 ? "thermia_exp383" : "thermia_exp380","\033[31m[EXP380/383] ===== DESIRED_PAGE_TX_EXECUTED page=0546 reg=%04X word=%u desired=%u DE=LOW wait=FC16_0546_20_REPUBLISH =====\033[0m",
                             unsigned(0x0546+tw),unsigned(tw),unsigned(id(exp380_target_value)));
                         }
                       } else if (st==0x03E8 && ct==14 && ws==6) {

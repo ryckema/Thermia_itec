@@ -1,4 +1,4 @@
-# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-36
+# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-37
 
 ## PROVEN / genuine Eco5 Online structural
 
@@ -124,6 +124,12 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - **PROVEN / genuine Eco5 structural:** `07F4 = 0` outside outdoor status `0x0221`; `07F4=4` for `0x0221` with compressor frequency 0; `07F4=6` for `0x0221` with compressor frequency >0 (96/96).
 - **PROVEN / genuine Eco5 structural:** `0845=0x0300` iff `1E:0015=0x0221`, otherwise 0 (43/43).
 - No additional heating/cooling/DHW/defrost/SG runtime label is promoted without a labelled physical transition.
+
+## PROTO-OFFLINE-37 Write Beta audit
+
+- Current v4.1 contains no generic unknown semantic write path: desired responses are full-page cached mutations on proven/local-proven selectors with exact republish checks.
+- Runtime `04A6`, `0834`, `085F` policies remain deliberately context/payload scoped.
+- **HARDENING CANDIDATE:** known config-page shape currently contributes to runtime ACK permission outside explicit resume; future tightening must be live-regressed rather than changed from offline evidence alone.
 
 ## OPEN / UNKNOWN after reconciliation
 
