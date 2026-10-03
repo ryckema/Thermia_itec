@@ -505,7 +505,7 @@ slave,register_hex,register_dec,page_start_hex,offset,semantic,evidence,access,e
 0x0F,0x0708,1800,0x0708,,"Selector bitmap: page 0x06F1 current=W2 bit14, desired=W0 bit14",STRONGLY SUPPORTED; selected pages locally proven,read/write mailbox response,bitmask,genuine Online/Eco5 + local XTR,
 0x0F,0x0708,1800,0x0708,,"Selector bitmap: page 0x06F4 current=W2 bit15, desired=W0 bit15",STRONGLY SUPPORTED; selected pages locally proven,read/write mailbox response,bitmask,genuine Online/Eco5 + local XTR,
 0x0F,0x0861,2145,0x085F,2,Transport ACK field for AFCA=0x03E8 transaction,PROVEN / locally confirmed transport behavior,read,0↔16 observed,local XTR active experiments,
-0x0F,0x0870,2160,0x0870,0,Compressor Operating Time; raw word also equals (06E3<<8)|06E2 in compared datasets,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,Do not assume unit/scaling without local cross-check
+0x0F,0x0870,2160,0x0870,0,Compressor Operating Time; raw word also equals (06E3<<8)|06E2 in compared datasets,STRONGLY SUPPORTED,read,raw integer hours,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,Do not assume unit/scaling without local cross-check
 0x0A,0xB3B0,46000,,,Room temperature,PROVEN,controller-polled response,tenths °C,local/cross-model,
 0x0A,0xB3B1,46001,,,Pending/requested room setpoint,PROVEN cross-model semantic request,controller-polled response,whole °C,Eco8/DHP-AQ,
 0x0A,0xB3B2,46002,,,Unknown,OPEN / UNKNOWN,,,,
@@ -520,15 +520,17 @@ slave,register_hex,register_dec,page_start_hex,offset,semantic,evidence,access,e
 0x0F,0x06F4,1780,0x06F4,0,Exact mirror of A80C,PROVEN structural relation,read,uint16,PROTO-OFFLINE-04/01,Source-field human semantic remains separately scoped
 0x0F,0x06F5,1781,0x06F4,1,Exact mirror of A80D,PROVEN structural relation,read,uint16,PROTO-OFFLINE-04/01,Source-field human semantic remains separately scoped
 0x0F,0x06F8,1784,0x06F4,4,Exact mirror of A810,PROVEN structural relation,read,uint16,PROTO-OFFLINE-04/01,Source-field human semantic remains separately scoped
-0x0F,0x0872,2162,0x0870,2,Heating Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
-0x0F,0x0873,2163,0x0870,3,Cooling Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
+0x0F,0x0872,2162,0x0870,2,Heating Operating Time,STRONGLY SUPPORTED,read,raw integer hours,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
+0x0F,0x0873,2163,0x0870,3,Cooling Operating Time,STRONGLY SUPPORTED,read,raw integer hours,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
 0x0F,0x0874,2164,0x0870,4,Unknown,OPEN / UNKNOWN,read,,PROTO-OFFLINE-16/20,Do not force old contiguous-counter interpretation
 0x0F,0x0875,2165,0x0870,5,Unknown; exact value mirror of 0873 in current reference corpus,OPEN / UNKNOWN; PROVEN structural equality,read,uint16,PROTO-OFFLINE-25,0875==0873 in 83/83 legacy+Eco5 reference frames; semantic reason open
-0x0F,0x0876,2166,0x0870,6,Hot Water Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
-0x0F,0x0877,2167,0x0870,7,Aux/Immersion Heater 1 Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
-0x0F,0x0878,2168,0x0870,8,Aux/Immersion Heater 2 Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
-0x0F,0x0879,2169,0x0870,9,Aux/Immersion Heater 3 Operating Time,STRONGLY SUPPORTED candidate for XTR,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/XTR manual,Local XTR exact value confirmation pending
+0x0F,0x0876,2166,0x0870,6,Hot Water Operating Time,STRONGLY SUPPORTED,read,raw integer hours,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
+0x0F,0x0877,2167,0x0870,7,Aux/Immersion Heater 1 Operating Time,STRONGLY SUPPORTED,read,raw integer hours,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
+0x0F,0x0878,2168,0x0870,8,Aux/Immersion Heater 2 Operating Time,STRONGLY SUPPORTED,read,raw integer hours,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
+0x0F,0x0879,2169,0x0870,9,Aux/Immersion Heater 3 Operating Time,STRONGLY SUPPORTED candidate for XTR,read,raw integer hours (family scaling; semantic candidate),PROTO-OFFLINE-16/20 + ATEC/XTR manual,Local XTR exact value confirmation pending
 0x0F,0x087B,2171,0x0870,11,Defrost Count / Completed Defrost Periods,STRONGLY SUPPORTED,read,raw counter,PROTO-OFFLINE-08/16/20 + XTR manual,
-0x0F,0x087C,2172,0x0870,12,Runtime/Time Between Last Two Defrosts,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-08/16/20 + XTR manual,
-0x0F,0x087D,2173,0x0870,13,Runtime/Time Since Last Defrost,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-08/16/20 + XTR manual,
+0x0F,0x087C,2172,0x0870,12,Runtime/Time Between Last Two Defrosts,STRONGLY SUPPORTED,read,raw compressor-runtime minutes,PROTO-OFFLINE-08/16/20 + XTR manual,
+0x0F,0x087D,2173,0x0870,13,Runtime/Time Since Last Defrost,STRONGLY SUPPORTED,read,raw compressor-runtime minutes,PROTO-OFFLINE-08/16/20 + XTR manual,
 0x0F,0x0884,2180,0x0884,,Rolling timestamped service/alarm history page,PROVEN local modern ABI / VERY STRONGLY SUPPORTED history role,read,8x7-word records + 4-word trailer,PROTO-OFFLINE-14 + local XTR,Raw event IDs remain unresolved
+0x0F,0x07F4,2036,0x07E4,16,Normalized outdoor-unit operating-state summary,PROVEN structural / genuine Eco5,read,"0=inactive;4=active/pre-run freq0;6=active/running freq>0",PROTO-OFFLINE-36,"Derived from 1E:0015 status 0x0221 + compressor frequency; numeric codes are not UI enum names"
+0x0F,0x0845,2117,0x0834,17,Coded outdoor-unit active-status export,PROVEN structural / genuine Eco5,read,"0x0300 iff 1E:0015=0x0221; else 0",PROTO-OFFLINE-36,Human firmware field name open
