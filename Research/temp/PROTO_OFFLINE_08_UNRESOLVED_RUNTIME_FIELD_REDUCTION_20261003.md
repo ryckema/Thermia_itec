@@ -1,3 +1,5 @@
+> **Current-status note — PARTIALLY SUPERSEDED (2026-10-03).** Preserve the observations below, but the section treating `0872..0878` as a contiguous seven-counter operating-time candidate is superseded by PROTO-OFFLINE-16/20. Best current sparse map: `0870` compressor, `0872` heating, `0873` cooling, `0876` hot water, `0877` aux1, `0878` aux2, `0879` aux3 candidate; `0874/0875` remain OPEN. Other runtime-field observations in this report remain historical evidence unless separately superseded.
+
 # Thermia iTec XTR M — unresolved runtime-field reduction
 
 **Date:** 2026-10-03  

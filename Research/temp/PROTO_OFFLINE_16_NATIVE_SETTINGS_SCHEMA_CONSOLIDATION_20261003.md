@@ -1,3 +1,5 @@
+> **Current-status note — HISTORICAL SNAPSHOT / PARTIALLY SUPERSEDED (2026-10-03).** The profile-drift architecture remains durable, but several local-XTR evidence tiers in this report were later upgraded by live EXP results. PROTO-OFFLINE-20 is the current reconciliation overlay: e.g. `03E9/03EA/03EC/03ED/03EE/03EF/03F0`, local `042E/042F`, several cooling controls, and `0553` have stronger local write/semantic evidence than recorded here. Preserve this report as the offline cross-profile snapshot; use PROTO-OFFLINE-20 for current evidence status.
+
 # Thermia iTec XTR M — Native settings/register schema consolidation
 
 **Date:** 2026-10-03  

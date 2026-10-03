@@ -1,3 +1,5 @@
+> **Current-status note — REFINED BY PROTO-OFFLINE-19 (2026-10-03).** The W1 and W2/W3 bit-to-page mappings remain strong. Two lifecycle interpretations are refined: `FFFF/867F` is a later 26-page mailbox refresh, not the initial Eco5 bootstrap; and W4 is better described as a runtime/service page-family state/refresh bitmap, not an exclusive immediate next-page selector. Genuine Eco5 startup first performs a separate 32-page ACK-gated autonomous bootstrap through `06F4` before the first `0708` poll.
+
 # Thermia iTec XTR M — `0x0708/count6` scheduler state-machine reduction
 
 **Date:** 2026-10-03  

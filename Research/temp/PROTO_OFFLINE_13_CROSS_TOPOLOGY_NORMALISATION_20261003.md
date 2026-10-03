@@ -1,3 +1,5 @@
+> **Current-status note — PARTIALLY SUPERSEDED (2026-10-03).** The cross-topology geometry and source-normalisation findings remain useful. The old group-level `0872..0878` operating-time interpretation is superseded by the profile-backed sparse mapping consolidated in PROTO-OFFLINE-16 and audited in PROTO-OFFLINE-20. Do not infer consecutive counter semantics from geometry alone.
+
 # Thermia iTec XTR M — Cross-topology runtime normalisation
 
 **Date:** 2026-10-03  
