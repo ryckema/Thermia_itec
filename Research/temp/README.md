@@ -71,3 +71,24 @@ The current helper/reference-model scripts are copied under `tools/` because the
 - PROTO-OFFLINE-14 maps the XTR modern timestamped service/alarm-history structure without inventing alarm-name translations.
 - PROTO-OFFLINE-15 narrows old serializer archaeology toward DCM03 and modern XTR archaeology toward Thermia Connect/protocol packages.
 - PROTO-OFFLINE-16 treats public Online register semantics as profile-specific and keeps semantic proof separate from write-path proof.
+
+## Follow-up offline reductions — PROTO-OFFLINE-17..21
+
+- `PROTO_OFFLINE_17_APPROVAL_SYNC_READINESS_REDUCTION_20261003.md`
+- `PROTO_OFFLINE_17_SESSION_TIMING_MATRIX_20261003.csv`
+- `PROTO_OFFLINE_17_CANONICAL_UPDATE_PENDING_20261003.md`
+- `PROTO_OFFLINE_18_SYNC_READINESS_DISCRIMINATOR_20261003.md`
+- `PROTO_OFFLINE_18_CANDIDATE_FIELD_MATRIX_20261003.csv`
+- `PROTO_OFFLINE_18_CANONICAL_UPDATE_PENDING_20261003.md`
+- `PROTO_OFFLINE_19_MAILBOX_SYNC_SEQUENCE_COMPLETION_20261003.md`
+- `PROTO_OFFLINE_19_ECO5_BOOTSTRAP_PAGE_MATRIX_20261003.csv`
+- `PROTO_OFFLINE_19_CANONICAL_UPDATE_PENDING_20261003.md`
+- `PROTO_OFFLINE_20_REGISTER_DATABASE_HISTORY_AUDIT_20261003.md`
+- `PROTO_OFFLINE_20_REGISTER_DATABASE_DELTA_20261003.csv`
+- `PROTO_OFFLINE_20_SUPERSESSION_MATRIX_20261003.csv`
+- `PROTO_OFFLINE_20_CANONICAL_UPDATE_PENDING_20261003.md`
+- `PROTO_OFFLINE_21_CONNECT_APP_ARTIFACT_HUNT_20261003.md`
+- `PROTO_OFFLINE_21_ARTIFACT_ACQUISITION_MATRIX_20261003.csv`
+- `PROTO_OFFLINE_21_CANONICAL_UPDATE_PENDING_20261003.md`
+
+These files extend the TEMP working/offline snapshot only. They do not by themselves change live experiment status or replace the canonical Research files.

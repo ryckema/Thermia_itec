@@ -1,0 +1,70 @@
+address_or_range,audited_semantic,audited_evidence,previous_or_current_issue,support,recommended_database_action
+03E8,Heating Curve,PROVEN / locally confirmed writable,PROTO16 had semantic proof but weaker word-specific write status,EXP365/366/367/370,Upgrade write evidence
+03E9,Heating Minimum,PROVEN / locally confirmed writable,PROTO16: STRONGLY SUPPORTED / no active write authorization,EXP375A + current semantic map,Upgrade
+03EA,Heating Maximum,PROVEN / locally confirmed writable,PROTO16: STRONGLY SUPPORTED,EXP370,Upgrade
+03EB,Curve Correction +5,PROVEN / locally confirmed writable,"PROTO16: semantic proven, desired word-specific write not proven",EXP374 user-confirmed queue result,Upgrade write evidence
+03EC,Curve Correction 0,PROVEN / locally confirmed writable,PROTO16: STRONGLY SUPPORTED,EXP374 user-confirmed queue result,Upgrade
+03ED,Curve Correction -5,PROVEN / locally confirmed writable,PROTO16: STRONGLY SUPPORTED,EXP373 0→-5→0 exact republish,Upgrade
+03EE,Heating Stop,PROVEN / locally confirmed writable,PROTO16: STRONGLY SUPPORTED,EXP373 reversible exact republish,Upgrade
+03EF,Reduced Temperature,PROVEN / locally confirmed writable,PROTO16: OPEN / historical candidate,EXP373 20→22→20 exact republish,Major upgrade
+03F0,Room Factor,PROVEN / locally confirmed writable,PROTO16: STRONGLY SUPPORTED,EXP375B user-confirmed write/rollback,Upgrade
+03F1,UNKNOWN,OPEN / UNKNOWN; DISPROVEN as HotWaterStart,Old hypothesis existed,EXP135 negative A/B/A,Retain unknown; block old label
+03F2,UNKNOWN,OPEN / UNKNOWN,,current semantic map,No change
+03F3,UNKNOWN,OPEN / UNKNOWN,,current semantic map,No change
+03F4,Room Setpoint,PROVEN / locally confirmed writable,Already strongest target in PROTO16,EXP343 + later retained/recovery writes,No downgrade
+03F5,UNKNOWN,OPEN / UNKNOWN,,current semantic map,No change
+041D,Hot Water Start Temperature,PROVEN / locally correlated; read mapping,Not in PROTO16 DB core table,EXP376 48→47 controlled UI correlation,Add/retain
+041E,Warm Water Time,PROVEN / locally correlated; read mapping,Not in PROTO16 DB core table,EXP376 30→31 controlled UI correlation,Add/retain
+0424,Returnline Temperature Max Limit,STRONGLY SUPPORTED,semantic_register_map currently says Unknown / OPEN,PROTO-OFFLINE-01 + locally anchored 041D/041E sequence,Correct stale semantic-map row
+042E,Hot Water Enabled,PROVEN / locally confirmed writable,PROTO16 said local XTR semantic OPEN; top durable findings still say profile-dependent/open,EXP376 local mapping + current semantic map; page path locally proven,Correct canonical top-level stale wording
+042F,Hot Water Mode,PROVEN / locally confirmed writable,PROTO16 said semantic OPEN,EXP376 mapping + EXP377 active write,Correct canonical top-level stale wording
+0430,Hot Water TOP_UP,STRONGLY SUPPORTED / TEST-only,Earlier historical section called hypothesis,EXP382,Keep unproven
+0431,UNKNOWN,OPEN / UNKNOWN,Earlier START interpretation rejected,EXP376 correction,Retain unknown
+0432,UNKNOWN,OPEN / UNKNOWN,Earlier STOP interpretation rejected,EXP376 correction,Retain unknown
+0433,Startup HT,PROVEN / locally confirmed writable,,EXP376/378,Retain proven
+0434,Heating Time,PROVEN / locally confirmed writable,,EXP376 + canonical current map,Retain proven
+0442,Cooling Enabled,PROVEN / locally confirmed writable,PROTO16 had semantic proof but no desired selector proof,EXP379,Upgrade write evidence
+0443,Desired Cooling Temperature,PROVEN / locally confirmed writable,,EXP379,Retain proven
+0444,Cooling Hysteresis,STRONGLY SUPPORTED / TEST-only,,EXP382,Keep unproven
+0445,Cooling Active Above,PROVEN / locally confirmed writable,,EXP379,Retain proven
+0446,Cooling Configuration/Type,STRONGLY SUPPORTED / TEST-only,,EXP382,Keep unproven
+0447,Cooling START threshold,HYPOTHESIS,,EXP382,Do not promote
+0448,Cooling STOP threshold,STRONGLY SUPPORTED / TEST-only,,EXP382,Keep unproven
+0449,Cooling Time,PROVEN / locally confirmed writable,,EXP379,Retain proven
+044A,Cooling Max Start Temperature,STRONGLY SUPPORTED / TEST-only,,EXP382,Keep unproven
+044B,Cooling Min Stop Temperature,STRONGLY SUPPORTED / TEST-only,,EXP382,Keep unproven
+044C,Cooling Room Sensor,PROVEN / locally confirmed writable,,EXP379,Retain proven
+044D,Cooling Room Hysteresis Low,PROVEN / locally confirmed writable,,EXP379,Retain proven
+044E,Cooling Room Hysteresis High,PROVEN / locally confirmed writable,,EXP379,Retain proven
+04A6,SG / operational-state field in later XTR runtime,STRONGLY SUPPORTED / locally correlated,semantic_register_map currently says Unknown / OPEN,PROTO-OFFLINE-01 SG Normal/Enhanced/Blocked correlation,Correct stale semantic-map row; context-sensitive
+04A7,SG / operational-state companion field,STRONGLY SUPPORTED / locally correlated,semantic_register_map currently says Unknown / OPEN,PROTO-OFFLINE-01,Correct stale semantic-map row; context-sensitive
+04B0,UNKNOWN high-frequency field,OPEN / UNKNOWN,,raw Eco5 + historical alternate 04A6 regimes,Retain open
+0553,Operation Mode,PROVEN / locally confirmed writable,PROTO16 had semantic proof but desired selector not observed in genuine corpus,EXP380 local desired-page success,Upgrade local write path; do not claim genuine W0 proof
+0559,Link Integration,STRONGLY SUPPORTED / TEST-only,public cross-profile support; no local semantic effect,EXP382 + public profiles,Keep highest-risk unproven candidate
+06E2,Low-byte component of packed 0870 word0,STRONGLY SUPPORTED relation; semantic inherits 0870 candidate,semantic map says relation / semantics open,PROTO-OFFLINE-16 + 0870 compressor-time mapping,"Clarify: packing proven/strong, unit remains open"
+06E3,High-byte component of packed 0870 word0,STRONGLY SUPPORTED relation; semantic inherits 0870 candidate,semantic map says relation / semantics open,PROTO-OFFLINE-16 + 0870 compressor-time mapping,Clarify
+06F4,Exact mirror of A80C,PROVEN structural relation,semantic register map lacks explicit row,PROTO-OFFLINE-04/01,Add
+06F5,Exact mirror of A80D,PROVEN structural relation,semantic register map lacks explicit row,PROTO-OFFLINE-04/01,Add
+06F6,Exact mirror of A80E,PROVEN structural relation,semantic map says Unknown dynamic field,PROTO-OFFLINE-04/01,Correct structural label; source semantics still open
+06F7,Exact mirror of A80F,PROVEN structural relation,semantic map says Unknown dynamic field,PROTO-OFFLINE-04/01,Correct structural label; source semantics still open
+06F8,Exact mirror of A810,PROVEN structural relation,semantic register map lacks explicit row,PROTO-OFFLINE-04/01,Add
+0701,Exact mirror of AFDC,PROVEN structural relation,semantic map says Unknown dynamic field,PROTO-OFFLINE-04/01,Correct structural label; source semantics still open
+07D1,Return-line temperature logical field,PROVEN/strong cross-topology normalized semantic,not represented in semantic map excerpt,PROTO-OFFLINE-06/13,Add runtime semantic row
+07E4,Average outdoor temperature logical field,PROVEN/strong cross-topology normalized semantic,not represented in semantic map excerpt,PROTO-OFFLINE-06/13,Add runtime semantic row
+0858..085E,"Clock/date tuple: second,minute,hour,day,month,year,weekday",PROVEN structural / cross-topology; weekday Monday=0,not represented as rows in current semantic map excerpt,PROTO-OFFLINE-13,Add structured runtime metadata rows
+085F,Runtime/service page; per-word semantics unknown,PROVEN page role / OPEN semantics,only 0861 subfield represented,PROTO-OFFLINE-14 + local runtime work,"Add page-level caution, do not map to AlarmFields"
+0861,Transport/session discriminator field,PROVEN local transport behavior,current map: AFCA=03E8 transaction ACK field,EXP92+ later session experiments,Retain transport-only; not semantic login
+0867,Topology/platform metadata fingerprint,STRONGLY SUPPORTED,missing from semantic map excerpt,PROTO-OFFLINE-13/16,"Add, human label open"
+0870,Compressor Operating Time,STRONGLY SUPPORTED,semantic_register_map currently says semantics OPEN,ATEC+iTec profile agreement + PROTO-OFFLINE-16,Correct stale row
+0872,Heating Operating Time,STRONGLY SUPPORTED,missing from semantic map,ATEC+iTec profiles + XTR manual alignment,Add read-only
+0873,Cooling Operating Time,STRONGLY SUPPORTED,missing from semantic map,ATEC+iTec profiles + XTR manual alignment,Add read-only
+0874,UNKNOWN,OPEN / UNKNOWN,old contiguous-counter model could mislabel,PROTO-OFFLINE-16,Keep open
+0875,UNKNOWN,OPEN / UNKNOWN,old contiguous-counter model could mislabel,PROTO-OFFLINE-16,Keep open
+0876,Hot Water Operating Time,STRONGLY SUPPORTED,missing from semantic map,ATEC+iTec profiles + XTR manual alignment,Add read-only
+0877,Aux/Immersion Heater 1 Operating Time,STRONGLY SUPPORTED,missing from semantic map,ATEC+iTec profiles,Add read-only
+0878,Aux/Immersion Heater 2 Operating Time,STRONGLY SUPPORTED,missing from semantic map,ATEC+iTec profiles,Add read-only
+0879,Aux/Immersion Heater 3 Operating Time,STRONGLY SUPPORTED candidate for XTR,missing from semantic map,ATEC + XTR manual; local confirmation pending,Add with caveat
+087B,Defrost count / completed defrost periods,STRONGLY SUPPORTED,missing from semantic map,ATEC+iTec + XTR manual,Add read-only
+087C,Time/runtime between last two defrosts,STRONGLY SUPPORTED,missing from semantic map,ATEC+iTec + XTR manual,Add read-only; scaling not fully reduced
+087D,Time/runtime since last defrost,STRONGLY SUPPORTED,missing from semantic map,ATEC+iTec + XTR manual,Add read-only; scaling not fully reduced
+0884/count60,Rolling timestamped service/alarm history page,PROVEN local modern ABI; VERY STRONGLY SUPPORTED alarm/service history,missing from semantic register map,PROTO-OFFLINE-14,"Add page-level schema, raw IDs unresolved"
