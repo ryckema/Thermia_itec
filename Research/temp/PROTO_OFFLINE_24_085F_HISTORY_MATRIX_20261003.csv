@@ -1,0 +1,7 @@
+capture,085F_frames,085F_unique_payloads,085F_nonzero_payloads,0884_frames,0884_unique_payloads,newest_history_id
+thermia_capture_20260924_210001(1).log,0,0,0,2,1,0x0002
+thermia_capture_20260925_071517.log,0,0,0,4,1,0x0002
+thermia_capture_20260925_090209.log,2,1,0,1,1,0x0002
+thermia_capture_20260925_090550.log,8,1,0,1,1,0x0002
+itec_eco5_gateway_20260926.log,197,1,0,1,1,0x002C/0x0000
+itec_eco5_gateway_20260928.log,122,1,0,0,0,

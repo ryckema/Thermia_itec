@@ -43,7 +43,7 @@ Official Connect evidence now anchors:
 
 No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK, Online APK/XAPK or DCM03 firmware image has been recovered.
 
-## OPEN / UNKNOWN after reconciliation
+## PROTO-OFFLINE-24 current-alarm bridge\n\n- **PROVEN in available corpus:** 339/339 observed `085F/count5` payloads are all-zero.\n- **DISPROVEN:** `085F` as a direct mirror of the newest `0884` history entry; non-empty history exists while `085F` is zero.\n- **OPEN:** whether `085F` changes only during an active alarm/service condition; no labelled alarm edge exists in the current corpus.\n\n## OPEN / UNKNOWN after reconciliation
 
 - exact gateway-internal readiness condition;
 - genuine W0/high-half desired-selector behavior and unobserved W1 bits;
