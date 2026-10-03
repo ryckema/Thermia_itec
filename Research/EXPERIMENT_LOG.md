@@ -46,6 +46,12 @@
 
 ---
 
+### PROTO-OFFLINE-35 — runtime-counter scaling — COMPLETE / POSITIVE
+- compressor/heating/cooling/hot-water operating counters strongly support raw integer hours;
+- mode-counter sums nearly partition total compressor hours in both legacy and Eco5 genuine captures;
+- 087B is defrost count; 087C/087D are compressor-runtime minutes per the XTR manual and capture dynamics;
+- 0874/0875 semantics remain OPEN.
+
 ### PROTO-OFFLINE-34 — 0708 W5 semantic audit — COMPLETE / POSITIVE
 - legacy genuine Online/DCM: W5=6 in 37/38 answered polls, W5=7 once during a 7FFF/FFFF rejoin state;
 - genuine Eco5: W5=0 in 264/264 answered polls across idle, refresh and desired-state activity;

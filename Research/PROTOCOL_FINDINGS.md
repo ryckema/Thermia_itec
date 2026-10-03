@@ -1,4 +1,4 @@
-# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-34
+# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-35
 
 ## PROVEN / genuine Eco5 Online structural
 
@@ -112,6 +112,12 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - **PROVEN / local XTR causal:** W5=0006 is sufficient for persistent DCM-connected UI indication in the EXP344→345 one-variable comparison; W5=0000 remains transport/runtime-valid but the icon was absent.
 - **PROVEN / genuine profile evidence:** legacy Online/DCM uses W5=0006 normally and one W5=0007 rejoin-associated response; genuine Eco5 uses W5=0000 in 264/264 answered polls.
 - **DISPROVEN as universal enum:** W5 cannot be interpreted globally as 0=disconnected / 6=connected / 7=joining.
+
+## PROTO-OFFLINE-35 runtime scaling
+
+- **STRONGLY SUPPORTED:** `0870/0872/0873/0876/0877/0878` use raw integer **hours** for operational time; `0879` likely shares the scaling if its Aux3 identity is correct.
+- **PROVEN manual semantics + strong address mapping:** `087C/087D` represent compressor-runtime **minutes** between last two defrosts / since last defrost.
+- **PROVEN count semantics:** `087B` is completed defrost count.
 
 ## OPEN / UNKNOWN after reconciliation
 

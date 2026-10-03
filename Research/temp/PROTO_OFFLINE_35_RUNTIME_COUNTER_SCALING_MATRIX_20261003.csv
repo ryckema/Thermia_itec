@@ -1,0 +1,11 @@
+register,semantic,legacy_raw,eco5_raw_20260926,eco5_raw_20260928,scaling_result,evidence
+0870,Compressor Operating Time,21966,1131,1132,"raw integer hours — STRONGLY SUPPORTED","mode-counter partition + public iTec integer operational-time register"
+0872,Heating Operating Time,9763,501,501,"raw integer hours — STRONGLY SUPPORTED","same-family partition"
+0873,Cooling Operating Time,10,423,423,"raw integer hours — STRONGLY SUPPORTED","same-family partition"
+0876,Hot Water Operating Time,12091,201,202,"raw integer hours — STRONGLY SUPPORTED","same-family partition; +1 together with compressor +1 between Eco5 captures"
+0877,Aux/Immersion Heater 1 Operating Time,124,0,0,"raw integer hours — STRONGLY SUPPORTED family scaling","same operational-time family"
+0878,Aux/Immersion Heater 2 Operating Time,170,0,0,"raw integer hours — STRONGLY SUPPORTED family scaling","same operational-time family"
+0879,Aux/Immersion Heater 3 Operating Time,0,0,0,"raw integer hours — family scaling candidate","semantic itself not locally confirmed"
+087B,Completed Defrost Periods,3122,298,298,"raw count","XTR manual + public iTec profile"
+087C,Compressor runtime between last two defrosts,422,1475,1475,"raw minutes — STRONGLY SUPPORTED","XTR manual explicitly says compressor runtime in minutes; public iTec step=0.0167 h"
+087D,Compressor runtime since last defrost,15462,30729..30734,30811,"raw minutes — STRONGLY SUPPORTED","XTR manual explicitly says minutes; observed +1 edges during compressor-running state"
