@@ -1,49 +1,48 @@
-<PARSED TEXT FOR SHEET: 1 / 1 TABS
-TAB NAME: PROTO_OFFLINE_09_0708_PAGE_BIT_MAP_20261003.csv>index,word,bit,page_start_hex,role,evidence
-0,W3,0.0,03E8,config/state page index 0,PROVEN structural; matching W1 desired-pull bit directly observed
-1,W3,1.0,03FC,config/state page index 1,PROVEN structural
-2,W3,2.0,0410,config/state page index 2,PROVEN structural
-3,W3,3.0,042E,config/state page index 3,PROVEN structural; matching W1 desired-pull bit directly observed
-4,W3,4.0,0442,config/state page index 4,PROVEN structural
-5,W3,5.0,0456,config/state page index 5,PROVEN structural
-6,W3,6.0,046A,config/state page index 6,PROVEN structural
-7,W3,7.0,047E,config/state page index 7,PROVEN structural
-8,W3,8.0,0492,config/state page index 8,PROVEN structural
-9,W3,9.0,04A6,config/state page index 9,PROVEN structural
-10,W3,10.0,04BA,config/state page index 10,PROVEN structural
-11,W3,11.0,04D8,config/state page index 11,PROVEN structural
-12,W3,12.0,04F6,config/state page index 12,PROVEN structural
-13,W3,13.0,050A,config/state page index 13,PROVEN structural
-14,W3,14.0,051E,config/state page index 14,PROVEN structural
-15,W3,15.0,0532,config/state page index 15,PROVEN structural
-16,W2,0.0,0546,config/state page index 16,PROVEN structural
-17,W2,1.0,055A,config/state page index 17,PROVEN structural
-18,W2,2.0,057B,config/state page index 18,PROVEN structural
-19,W2,3.0,059C,config/state page index 19,PROVEN structural
-20,W2,4.0,05BD,config/state page index 20,PROVEN structural
-21,W2,5.0,05DE,config/state page index 21,PROVEN structural
-22,W2,6.0,05FF,config/state page index 22,PROVEN structural
-23,W2,7.0,0620,config/state page index 23,PROVEN structural
-24,W2,8.0,0641,config/state page index 24,PROVEN structural
-25,W2,9.0,0662,config/state page index 25,PROVEN structural
-26,W2,10.0,0683,config/state page index 26,PROVEN structural
-27,W2,11.0,06A4,config/state page index 27,PROVEN structural
-28,W2,12.0,06C5,config/state page index 28,PROVEN structural
-29,W2,13.0,06EA,config/state page index 29,PROVEN structural
-30,W2,14.0,06F1,config/state page index 30,PROVEN structural
-31,W2,15.0,06F4,config/state page index 31,PROVEN structural
-32,W4,0.0,07D0,runtime/service page,STRONGLY SUPPORTED / structural
-33,W4,1.0,07E4,runtime/service page,STRONGLY SUPPORTED / structural
-34,W4,2.0,07F8,runtime/service page,STRONGLY SUPPORTED / structural
-35,W4,3.0,080C,runtime/service page,STRONGLY SUPPORTED / structural
-36,W4,4.0,0820,runtime/service page,STRONGLY SUPPORTED / structural
-37,W4,5.0,0834,runtime/service page,STRONGLY SUPPORTED / structural
-38,W4,6.0,0848,runtime/service page,STRONGLY SUPPORTED / structural
-39,W4,7.0,085F,runtime/service page,STRONGLY SUPPORTED / structural
-40,W4,8.0,0864,runtime/service page,STRONGLY SUPPORTED / structural
-41,W4,9.0,0870,runtime/service page,STRONGLY SUPPORTED / structural
-42,W4,10.0,0884,runtime/service page,STRONGLY SUPPORTED / structural
-43,W1,0.0,03E8,desired-state FC03 pull,PROVEN
-44,W1,3.0,042E,desired-state FC03 pull,PROVEN
-45,W0,,,probable desired-state pull bitmap high half,HYPOTHESIS; never non-zero in corpus
-46,W5,,,implementation/profile/session metadata,OPEN
+word,bit,page_start_hex,role,evidence
+W3,0,03E8,config/state page index 0,PROVEN structural; matching W1 desired-pull bit directly observed
+W3,1,03FC,config/state page index 1,PROVEN structural
+W3,2,0410,config/state page index 2,PROVEN structural
+W3,3,042E,config/state page index 3,PROVEN structural; matching W1 desired-pull bit directly observed
+W3,4,0442,config/state page index 4,PROVEN structural
+W3,5,0456,config/state page index 5,PROVEN structural
+W3,6,046A,config/state page index 6,PROVEN structural
+W3,7,047E,config/state page index 7,PROVEN structural
+W3,8,0492,config/state page index 8,PROVEN structural
+W3,9,04A6,config/state page index 9,PROVEN structural
+W3,10,04BA,config/state page index 10,PROVEN structural
+W3,11,04D8,config/state page index 11,PROVEN structural
+W3,12,04F6,config/state page index 12,PROVEN structural
+W3,13,050A,config/state page index 13,PROVEN structural
+W3,14,051E,config/state page index 14,PROVEN structural
+W3,15,0532,config/state page index 15,PROVEN structural
+W2,0,0546,config/state page index 16,PROVEN structural
+W2,1,055A,config/state page index 17,PROVEN structural
+W2,2,057B,config/state page index 18,PROVEN structural
+W2,3,059C,config/state page index 19,PROVEN structural
+W2,4,05BD,config/state page index 20,PROVEN structural
+W2,5,05DE,config/state page index 21,PROVEN structural
+W2,6,05FF,config/state page index 22,PROVEN structural
+W2,7,0620,config/state page index 23,PROVEN structural
+W2,8,0641,config/state page index 24,PROVEN structural
+W2,9,0662,config/state page index 25,PROVEN structural
+W2,10,0683,config/state page index 26,PROVEN structural
+W2,11,06A4,config/state page index 27,PROVEN structural
+W2,12,06C5,config/state page index 28,PROVEN structural
+W2,13,06EA,config/state page index 29,PROVEN structural
+W2,14,06F1,config/state page index 30,PROVEN structural
+W2,15,06F4,config/state page index 31,PROVEN structural
+W4,0,07D0,runtime/service page,STRONGLY SUPPORTED / structural
+W4,1,07E4,runtime/service page,STRONGLY SUPPORTED / structural
+W4,2,07F8,runtime/service page,STRONGLY SUPPORTED / structural
+W4,3,080C,runtime/service page,STRONGLY SUPPORTED / structural
+W4,4,0820,runtime/service page,STRONGLY SUPPORTED / structural
+W4,5,0834,runtime/service page,STRONGLY SUPPORTED / structural
+W4,6,0848,runtime/service page,STRONGLY SUPPORTED / structural
+W4,7,085F,runtime/service page,STRONGLY SUPPORTED / structural
+W4,8,0864,runtime/service page,STRONGLY SUPPORTED / structural
+W4,9,0870,runtime/service page,STRONGLY SUPPORTED / structural
+W4,10,0884,runtime/service page,STRONGLY SUPPORTED / structural
+W1,0,03E8,desired-state FC03 pull,PROVEN
+W1,3,042E,desired-state FC03 pull,PROVEN
+W0,,,probable desired-state pull bitmap high half,HYPOTHESIS; never non-zero in corpus
+W5,,,implementation/profile/session metadata,OPEN
