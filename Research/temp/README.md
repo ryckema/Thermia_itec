@@ -92,3 +92,15 @@ The current helper/reference-model scripts are copied under `tools/` because the
 - `PROTO_OFFLINE_21_CANONICAL_UPDATE_PENDING_20261003.md`
 
 These files extend the TEMP working/offline snapshot only. They do not by themselves change live experiment status or replace the canonical Research files.
+
+## Protocol-reduction mirror verification
+
+Verified on 2026-10-03: the five core files under `Research/temp/protocol reduction/` are byte-for-byte identical to their counterparts under `Research/protocol reduction/` by Git blob SHA:
+
+- `thermia_protocol_capture_inventory.csv`
+- `thermia_protocol_database.json`
+- `thermia_protocol_page_census.csv`
+- `thermia_protocol_selector_map.csv`
+- `thermia_protocol_semantic_register_map.csv`
+
+This is a mirror-status check only; the TEMP copies remain non-canonical.
