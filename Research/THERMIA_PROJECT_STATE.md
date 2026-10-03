@@ -1,3 +1,52 @@
+# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-22
+
+**Authoritative status:** this section supersedes older current-state headers below where they conflict. Historical text remains unchanged below.
+
+## Current live XTR status
+
+- **EXP387 — COMPLETE / POSITIVE** — last fully completed live experiment; delayed `0708` semantic re-arm with Room Setpoint write locally confirmed.
+- **EXP388 — RUNNING / PARTIAL** — controller-restart recovery succeeded twice without ESP reboot; pre-semantic and refresh-only controller-loss cancellation branches remain not independently live-exercised.
+- **EXP383 — PREPARED / NOT RUN** — TEST-candidate bundle remains unpromoted except where later experiments individually established a target.
+- No offline result below advances EXP388.
+
+## Newly reconciled offline tracks
+
+- **PROTO-OFFLINE-17 — COMPLETE / POSITIVE** — genuine Eco5 approval acceptance and native page-service readiness are separate bus-visible gates. Across six successful sessions first accepted `03E8/count14` ACK occurs at 118.478..120.296 s after bus return. Two challenge-#3 approvals occur near 10 s and are followed by 102 unACKed `03E8` retries before page service becomes ready.
+- **PROTO-OFFLINE-18 — COMPLETE / NEGATIVE** — no independent recurrent captured RS485 field predicts the genuine Eco5 page-service transition before the first `03E8` ACK. The first ACK remains the first direct bus-visible readiness marker.
+- **PROTO-OFFLINE-19 — COMPLETE / POSITIVE** — genuine Eco5 startup performs a fixed **32-page ACK-gated controller-autonomous bootstrap** from `03E8` through terminal `06F4` before the first `0708` poll. Later `W2/W3=FFFF/867F` is a separate **26-page mailbox refresh**. `047E,0492,04D8,04F6,050A,051E` are bootstrap-only in the current Eco5 corpus. W4 is runtime/service state/refresh metadata rather than an exclusive next-page selector.
+- **PROTO-OFFLINE-20 — COMPLETE / POSITIVE** — register/history audit identifies stale evidence levels and historical interpretations. Local XTR `042E=Hot Water Enabled` and `042F=Hot Water Mode` are no longer open; several heating/cooling settings have later local write proof; runtime/service rows require sparse/profile-scoped semantics.
+- **PROTO-OFFLINE-21 — COMPLETE / POSITIVE** — Thermia Connect/OnSite artifact hunt narrows the modern serializer acquisition path. Official Connect commissioning links local AP use, heat-pump serial input and “pairing and protocol packages”; exact Connect identifiers are kit `206495`, gateway `355202`, PSU `357577`. No Connect/DCM firmware, protocol-package archive or APK binary was recovered.
+- **PROTO-OFFLINE-22 — COMPLETE / POSITIVE** — this canonical reconciliation folds PROTO17..21 and the PROTO20 evidence corrections into the durable project state without rewriting historical experiment observations.
+
+## Current protocol model additions
+
+1. Treat **APPROVAL**, **WAITING_FOR_PAGE_SERVICE**, **BOOTSTRAP**, and **RUNTIME/MAILBOX** as separate protocol states.
+2. Do not encode the genuine Eco5 ~120 s page-service boundary as a universal Thermia controller requirement.
+3. Initial genuine Eco5 configuration synchronization is the 32-page autonomous ACK-gated bootstrap; later `0708 W2/W3` configuration refresh is a separate mechanism.
+4. `W4` retains its page-family mapping but is not an exclusive immediate scheduler.
+5. Genuine desired-selector evidence remains narrow: `W1 bit0 -> 03E8` and `W1 bit3 -> 042E`. High-half/W0 genuine behavior remains unobserved; local XTR selector/write evidence must be tracked separately by experiment and not generalized cross-model.
+6. Local XTR semantic identity is now established for `042E=Hot Water Enabled` and `042F=Hot Water Mode`; the same numeric address remains profile-dependent across ATEC/iTec families.
+
+## Strongest remaining unknowns
+
+1. Exact gateway-internal/sideband condition behind the genuine Eco5 page-service readiness boundary.
+2. Unobserved desired-state selector coverage, especially genuine W0/high-half behavior.
+3. Thermia Connect / DCM03 serializer and protocol-package contents.
+4. `085F/count5` per-word semantics and the current-alarm bridge to `0884` history.
+5. Remaining unresolved registers including `03F1/03F2/03F3/03F5`, `0431/0432`, `0447`, `0874/0875`, plus exact runtime-counter scaling.
+6. Alarm-history raw-code translation and calendar active-write atomicity/weekday-bit behavior.
+
+## Safety constraints retained
+
+- EXP388 remains **RUNNING / PARTIAL**.
+- Unexpected traffic remains capture-only unless explicitly part of a bounded experiment.
+- Do not infer a desired selector from bitmap symmetry alone.
+- Desired responses use a fresh authoritative page cache and mutate one intended known target only.
+- Foreign-model page equality does not authorize payload replay.
+- Calendar/alarm/history remain passive unless separately defined.
+
+---
+
 # 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-16
 
 **Authoritative status:** this section supersedes older current-state headers below where they conflict. Historical experiment text is retained unchanged.

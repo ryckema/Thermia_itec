@@ -1,3 +1,51 @@
+# 2026-10-03 — PROTO-OFFLINE-22 canonical reconciliation
+
+**Status:** **COMPLETE / POSITIVE** — documentation/database reconciliation only.  
+**Controlled change:** no bus TX, YAML change, reboot or setting write.  
+**Live state:** EXP387 COMPLETE / POSITIVE; EXP388 RUNNING / PARTIAL.
+
+### EXP387 — delayed `0708` semantic re-arm — COMPLETE / POSITIVE
+- delayed semantic re-arm locally confirmed;
+- Room Setpoint native semantic write succeeded;
+- retained here because PROJECT_STATE and Write Beta v4.1 already carried this authoritative result.
+
+### EXP388 — repeated controller-restart recovery hardening — RUNNING / PARTIAL
+- repeated controller-restart recovery succeeded twice without ESP reboot;
+- pre-semantic and refresh-only controller-loss cancellation branches remain not independently live-exercised;
+- do not mark complete.
+
+### PROTO-OFFLINE-17 — Approval vs sync readiness — COMPLETE / POSITIVE
+- approval accepted and native page-service-ready are distinct;
+- six first accepted Eco5 `03E8/count14` ACKs fall at 118.478..120.296 s after bus return;
+- two early challenge-#3 approvals precede page readiness by ~108.5 s and accumulate 102 unACKed `03E8` requests.
+
+### PROTO-OFFLINE-18 — Sync-readiness discriminator search — COMPLETE / NEGATIVE
+- no independent captured recurrent RS485 field predicts readiness before first `03E8` ACK;
+- no live experiment changed.
+
+### PROTO-OFFLINE-19 — Mailbox + sync-sequence completion — COMPLETE / POSITIVE
+- six successful Eco5 sessions share a fixed 32-page ACK-gated bootstrap through `06F4` before first `0708`;
+- later `FFFF/867F` is a 26-page mailbox refresh;
+- `047E,0492,04D8,04F6,050A,051E` are bootstrap-only in the current Eco5 corpus;
+- no genuine desired-selector proof for `0442` or `0546` was found.
+
+### PROTO-OFFLINE-20 — Register/database/history audit — COMPLETE / POSITIVE
+- stale evidence levels and superseded interpretations were identified;
+- local XTR `042E/042F` semantics are no longer open;
+- historical observations are preserved and current status layered on top.
+
+### PROTO-OFFLINE-21 — Connect/OnSite artifact hunt — COMPLETE / POSITIVE
+- official Connect onboarding ties local AP, heat-pump serial input, pairing and protocol packages;
+- hardware IDs `206495/355202/357577` recovered;
+- no firmware/APK/protocol-package binary recovered.
+
+### PROTO-OFFLINE-22 — Canonical reconciliation — COMPLETE / POSITIVE
+- PROTO17..21 and PROTO20 evidence corrections folded into canonical state/findings/register map;
+- no historical experiment result rewritten;
+- no live experiment advanced.
+
+---
+
 # EXPERIMENT LOG
 
 ## 2026-10-03 — canonical reconciliation of recent offline tracks

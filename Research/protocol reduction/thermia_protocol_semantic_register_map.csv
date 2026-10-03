@@ -15,7 +15,7 @@ slave,register_hex,register_dec,page_start_hex,offset,semantic,evidence,access,e
 0x0F,0x03F5,1013,0x03E8,13,Unknown,OPEN / UNKNOWN,,,local XTR,
 0x0F,0x041D,1053,0x0410,13,Hot Water Start Temperature,PROVEN / locally correlated,read,°C/raw integer,local XTR EXP376,
 0x0F,0x041E,1054,0x0410,14,Warm Water Time,PROVEN / locally correlated,read,minutes/raw integer,local XTR EXP376,
-0x0F,0x0424,1060,0x0410,20,Unknown dynamic field,OPEN / UNKNOWN,read,,genuine Eco5 raw,Observed 0x0039/0x003C in attached Eco5 captures
+0x0F,0x0424,1060,0x0410,20,Returnline Temperature Max Limit,STRONGLY SUPPORTED,read,raw integer / temperature limit,PROTO-OFFLINE-01 + local 041D/041E anchors,Cross-model contiguous sequence; not one-variable local proof
 0x0F,0x042E,1070,0x042E,0,Hot Water Enabled,PROVEN / locally confirmed writable,read/write through native desired-page flow,,local XTR experiments,
 0x0F,0x042F,1071,0x042E,1,Hot Water Mode,PROVEN / locally confirmed writable,read/write through native desired-page flow,,local XTR experiments,
 0x0F,0x0433,1075,0x042E,5,Startup HT,PROVEN / locally confirmed writable,read/write through native desired-page flow,,local XTR experiments,
@@ -36,8 +36,8 @@ slave,register_hex,register_dec,page_start_hex,offset,semantic,evidence,access,e
 0x0F,0x0448,1096,0x0442,6,Cooling STOP threshold,STRONGLY SUPPORTED / TEST-only,candidate write,raw integer candidate,EXP382 canonical evidence,
 0x0F,0x044A,1098,0x0442,8,Cooling Max Start Temperature,STRONGLY SUPPORTED / TEST-only,candidate write,°C candidate,EXP382 canonical evidence,
 0x0F,0x044B,1099,0x0442,9,Cooling Min Stop Temperature,STRONGLY SUPPORTED / TEST-only,candidate write,°C candidate,EXP382 canonical evidence,
-0x0F,0x04A6,1190,0x04A6,0,Unknown high-frequency dynamic field,OPEN / UNKNOWN,read,,genuine Eco5 raw,Dynamic values 0x0000/0x0044; page is unusually frequent
-0x0F,0x04A7,1191,0x04A6,1,Unknown high-frequency dynamic field,OPEN / UNKNOWN,read,,genuine Eco5 raw,Dynamic values 0x0000/0x0001; page is unusually frequent
+0x0F,0x04A6,1190,0x04A6,0,SG / operational-state field,STRONGLY SUPPORTED / locally correlated,read,context-dependent enum/flags,PROTO-OFFLINE-01 + local XTR SG correlation,Later XTR runtime: Normal=0000 Enhanced=0041 Blocked=0042; historical page regime differs
+0x0F,0x04A7,1191,0x04A6,1,SG / operational-state companion field,STRONGLY SUPPORTED / locally correlated,read,context-dependent flag,PROTO-OFFLINE-01 + local XTR SG correlation,Later XTR runtime: Normal=0000 Enhanced/Blocked=0001; historical page regime differs
 0x0F,0x04B0,1200,0x04A6,10,Unknown high-frequency dynamic field,OPEN / UNKNOWN,read,,genuine Eco5 raw,Dynamic values 0x4A00/0x4A20; page is unusually frequent
 0x0F,0x04D8,1240,0x04D8,0,Concrete Drying header word 0,OPEN / UNKNOWN,read/current page,,local XTR + genuine Eco5 + manual structure,
 0x0F,0x04D9,1241,0x04D8,1,Concrete Drying header word 1,OPEN / UNKNOWN,read/current page,,local XTR + genuine Eco5 + manual structure,
@@ -469,9 +469,9 @@ slave,register_hex,register_dec,page_start_hex,offset,semantic,evidence,access,e
 0x0F,0x06EE,1774,0x06EA,4,Controller clock/date month,STRONGLY SUPPORTED,read,raw integer,local XTR + genuine Eco5,
 0x0F,0x06EF,1775,0x06EA,5,Controller clock/date year,STRONGLY SUPPORTED,read,raw integer,local XTR + genuine Eco5,
 0x0F,0x06F0,1776,0x06EA,6,Controller clock/date weekday,STRONGLY SUPPORTED,read,raw integer,local XTR + genuine Eco5,
-0x0F,0x06F6,1782,0x06F4,2,Unknown final-sync dynamic field,OPEN / UNKNOWN,read,,genuine Eco5 raw,Eco5 values 0x0008/0x0028
-0x0F,0x06F7,1783,0x06F4,3,Unknown final-sync dynamic field,OPEN / UNKNOWN,read,,genuine Eco5 raw,Eco5 values 0x000A/0x003C
-0x0F,0x0701,1793,0x06F4,13,Unknown final-sync dynamic field,OPEN / UNKNOWN,read,,genuine Eco5 raw,Eco5 values 0x0000/0x0010/0x0020
+0x0F,0x06F6,1782,0x06F4,2,Exact mirror of A80E,PROVEN structural relation,read,uint16,PROTO-OFFLINE-04/01,Source-field human semantic remains separately scoped
+0x0F,0x06F7,1783,0x06F4,3,Exact mirror of A80F,PROVEN structural relation,read,uint16,PROTO-OFFLINE-04/01,Source-field human semantic remains separately scoped
+0x0F,0x0701,1793,0x06F4,13,Exact mirror of AFDC,PROVEN structural relation,read,uint16,PROTO-OFFLINE-04/01,Source-field human semantic remains separately scoped
 0x0F,0x0708,1800,0x0708,,"Selector bitmap: page 0x03E8 current=W3 bit0, desired=W1 bit0",STRONGLY SUPPORTED; selected pages locally proven,read/write mailbox response,bitmask,genuine Online/Eco5 + local XTR,
 0x0F,0x0708,1800,0x0708,,"Selector bitmap: page 0x03FC current=W3 bit1, desired=W1 bit1",STRONGLY SUPPORTED; selected pages locally proven,read/write mailbox response,bitmask,genuine Online/Eco5 + local XTR,
 0x0F,0x0708,1800,0x0708,,"Selector bitmap: page 0x0410 current=W3 bit2, desired=W1 bit2",STRONGLY SUPPORTED; selected pages locally proven,read/write mailbox response,bitmask,genuine Online/Eco5 + local XTR,
@@ -505,7 +505,7 @@ slave,register_hex,register_dec,page_start_hex,offset,semantic,evidence,access,e
 0x0F,0x0708,1800,0x0708,,"Selector bitmap: page 0x06F1 current=W2 bit14, desired=W0 bit14",STRONGLY SUPPORTED; selected pages locally proven,read/write mailbox response,bitmask,genuine Online/Eco5 + local XTR,
 0x0F,0x0708,1800,0x0708,,"Selector bitmap: page 0x06F4 current=W2 bit15, desired=W0 bit15",STRONGLY SUPPORTED; selected pages locally proven,read/write mailbox response,bitmask,genuine Online/Eco5 + local XTR,
 0x0F,0x0861,2145,0x085F,2,Transport ACK field for AFCA=0x03E8 transaction,PROVEN / locally confirmed transport behavior,read,0↔16 observed,local XTR active experiments,
-0x0F,0x0870,2160,0x0870,0,Runtime word0; equals (06E3<<8)|06E2 in compared datasets,STRONGLY SUPPORTED relation / semantics OPEN,read,uint16,local XTR + genuine Eco5,
+0x0F,0x0870,2160,0x0870,0,Compressor Operating Time; raw word also equals (06E3<<8)|06E2 in compared datasets,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,Do not assume unit/scaling without local cross-check
 0x0A,0xB3B0,46000,,,Room temperature,PROVEN,controller-polled response,tenths °C,local/cross-model,
 0x0A,0xB3B1,46001,,,Pending/requested room setpoint,PROVEN cross-model semantic request,controller-polled response,whole °C,Eco8/DHP-AQ,
 0x0A,0xB3B2,46002,,,Unknown,OPEN / UNKNOWN,,,,
@@ -517,3 +517,18 @@ slave,register_hex,register_dec,page_start_hex,offset,semantic,evidence,access,e
 0x06,0xAFD1,45009,,,Expansion/accessory version field shown as version/10,PROVEN / locally confirmed,accessory response bank,raw/10,local XTR EXP129-132,
 0x06,0xAFDC,45020,,,Controller/accessory lifecycle field; 0x20 is not DCM session proof,PROVEN negative/refinement,controller→accessory context,,local XTR + Eco8,0x20 follows broader controller/heating-availability lifecycle
 0x06,0xAFE0,45024,,,Displayed outdoor temperature on Eco8,STRONGLY SUPPORTED cross-model,controller→accessory context,whole °C candidate,Eco8,
+0x0F,0x06F4,1780,0x06F4,0,Exact mirror of A80C,PROVEN structural relation,read,uint16,PROTO-OFFLINE-04/01,Source-field human semantic remains separately scoped
+0x0F,0x06F5,1781,0x06F4,1,Exact mirror of A80D,PROVEN structural relation,read,uint16,PROTO-OFFLINE-04/01,Source-field human semantic remains separately scoped
+0x0F,0x06F8,1784,0x06F4,4,Exact mirror of A810,PROVEN structural relation,read,uint16,PROTO-OFFLINE-04/01,Source-field human semantic remains separately scoped
+0x0F,0x0872,2162,0x0870,2,Heating Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
+0x0F,0x0873,2163,0x0870,3,Cooling Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
+0x0F,0x0874,2164,0x0870,4,Unknown,OPEN / UNKNOWN,read,,PROTO-OFFLINE-16/20,Do not force old contiguous-counter interpretation
+0x0F,0x0875,2165,0x0870,5,Unknown,OPEN / UNKNOWN,read,,PROTO-OFFLINE-16/20,Do not force old contiguous-counter interpretation
+0x0F,0x0876,2166,0x0870,6,Hot Water Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
+0x0F,0x0877,2167,0x0870,7,Aux/Immersion Heater 1 Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
+0x0F,0x0878,2168,0x0870,8,Aux/Immersion Heater 2 Operating Time,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/iTec profiles,
+0x0F,0x0879,2169,0x0870,9,Aux/Immersion Heater 3 Operating Time,STRONGLY SUPPORTED candidate for XTR,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-16/20 + ATEC/XTR manual,Local XTR exact value confirmation pending
+0x0F,0x087B,2171,0x0870,11,Defrost Count / Completed Defrost Periods,STRONGLY SUPPORTED,read,raw counter,PROTO-OFFLINE-08/16/20 + XTR manual,
+0x0F,0x087C,2172,0x0870,12,Runtime/Time Between Last Two Defrosts,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-08/16/20 + XTR manual,
+0x0F,0x087D,2173,0x0870,13,Runtime/Time Since Last Defrost,STRONGLY SUPPORTED,read,raw counter / scaling not fully reduced,PROTO-OFFLINE-08/16/20 + XTR manual,
+0x0F,0x0884,2180,0x0884,,Rolling timestamped service/alarm history page,PROVEN local modern ABI / VERY STRONGLY SUPPORTED history role,read,8x7-word records + 4-word trailer,PROTO-OFFLINE-14 + local XTR,Raw event IDs remain unresolved

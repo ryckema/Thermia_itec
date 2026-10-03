@@ -1,3 +1,68 @@
+# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-22
+
+## PROVEN / genuine Eco5 Online structural
+
+- Approval/session-open and native page-service readiness are separate states.
+- Genuine Eco5 initial configuration export is a fixed **32-page ACK-gated autonomous bootstrap** `03E8 ... 06F4` before the first `0708`.
+- Later `0708 W2/W3=FFFF/867F` is a separate **26-page refresh**, not the initial bootstrap.
+- `06F4/count19` is terminal in the strict bootstrap in all six successful Eco5 sessions.
+- `W2/W3` residual values behave as remaining configuration work.
+- `W4` has a stable runtime/service page-family mapping but is **not** an exclusive immediate next-page selector.
+- Genuine desired-selector observations remain `W1 bit0 -> 03E8` and `W1 bit3 -> 042E`; no genuine non-zero W0 exists in the current capture corpus.
+
+## STRONGLY SUPPORTED / genuine Eco5 session behavior
+
+- Across six successful sessions, first accepted `03E8/count14` ACK occurs 118.478..120.296 s after bus return.
+- Early challenge-#3 approval can be accepted ~108.5 s before genuine gateway page service becomes ready.
+- No independent captured recurrent bus field among the tested families predicts that transition.
+- The ~120 s boundary is gateway/session behavior in the current Eco5 corpus and is **not** a universal XTR controller requirement.
+
+## PROVEN / locally confirmed XTR semantic corrections
+
+- `042E = Hot Water Enabled`.
+- `042F = Hot Water Mode`.
+- The numeric address `042E` remains profile-specific across Thermia families; local proof does not make it universal.
+- Later local write experiments upgrade the current evidence for `03E9,03EA,03EC,03ED,03EE,03EF,03F0` and the already-recorded cooling/operation-mode controls beyond the older PROTO16 snapshot.
+
+## STRONGLY SUPPORTED / locally correlated or cross-profile
+
+- `0424 = Returnline Temperature Max Limit`.
+- `04A6/04A7` correlate with SG/operational state in the later local XTR runtime; they are not an Online approval flag.
+- `0870 = Compressor Operating Time`.
+- Sparse runtime map: `0872` heating, `0873` cooling, `0876` hot water, `0877` aux1, `0878` aux2, `0879` aux3 candidate; `0874/0875` remain OPEN.
+- `087B/087C/087D` align with defrost count / interval / since-last-defrost.
+- `0884/count60` is local modern rolling timestamped history; raw event translation remains unresolved.
+
+## CONNECT / firmware archaeology
+
+Official Connect evidence now anchors:
+- local AP commissioning/update as a supported path;
+- heat-pump serial input during onboarding;
+- explicit “pairing and protocol packages” wording;
+- exact identifiers: Connect kit `206495`, gateway `355202`, PSU `357577`.
+
+No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK, Online APK/XAPK or DCM03 firmware image has been recovered.
+
+## OPEN / UNKNOWN after reconciliation
+
+- exact gateway-internal readiness condition;
+- genuine W0/high-half desired-selector behavior and unobserved W1 bits;
+- `085F/count5` semantics/current-alarm bridge;
+- `03F1/03F2/03F3/03F5`, `0431/0432`, `0447`, `0874/0875`;
+- exact runtime-counter scaling where not directly reduced;
+- raw `0884` event -> displayed alarm mapping;
+- Connect/DCM03 serializer/protocol-package contents;
+- calendar active-write atomicity and remaining weekday/delete semantics.
+
+## DISPROVEN / SUPERSEDED additions
+
+- approval accepted == page service immediately ready;
+- initial Eco5 full sync == `0708 FFFF/867F` refresh;
+- W4 as an exclusive immediate next-page selector;
+- `042E/042F` as locally unknown on the tested XTR M.
+
+---
+
 # THERMIA PROTOCOL FINDINGS
 
 # 2026-10-03 — canonical durable findings reconciliation
