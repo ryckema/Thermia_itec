@@ -1,0 +1,10 @@
+source,profile_or_context,answered_0708,w5_distribution,paired_context,result
+thermia_capture_20260924_210001,legacy genuine Online/DCM,11,"6=11","normal/runtime; W4=0x077F","W5=6 stable legacy normal metadata"
+thermia_capture_20260925_071517,legacy genuine Online/DCM,18,"6=18","normal/runtime; W4=0x077F","W5=6 stable legacy normal metadata"
+thermia_capture_20260925_090209,legacy genuine Online/DCM,6,"6=6","runtime/rejoin tail; W4=0x0080","W5=6 stable legacy normal metadata"
+thermia_capture_20260925_090550,legacy genuine Online/DCM,3,"7=1;6=2","first 7 occurs with W2/W3=7FFF/FFFF; then W5=6 after refresh","W5=7 associated with one legacy rejoin/full-refresh event; not independently decoded"
+itec_eco5_gateway_20260926,genuine Eco5 Online,183,"0=183","idle; broad refresh; desired commands; runtime","W5=0 throughout all observed Eco5 states"
+itec_eco5_gateway_20260928,genuine Eco5 Online,81,"0=81","idle; broad refresh; desired commands; runtime","W5=0 throughout all observed Eco5 states"
+EXP344,local XTR emulator,controlled,"0","stage40 transport-clean >15 min; DCM icon absent","W5=0 sufficient for transport/runtime but not persistent DCM UI indication"
+EXP345,local XTR emulator,controlled,"6","same baseline + only W5 changed; DCM icon retained","W5=6 sufficient for persistent DCM-connected UI indication in tested XTR session"
+EXP346-352+,local XTR emulator,production path,"6","persistent runtime + semantic writes + retained-session rejoin","W5=6 remains compatible with healthy XTR emulator runtime"

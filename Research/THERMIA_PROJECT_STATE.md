@@ -1,4 +1,4 @@
-# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-33
+# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-34
 
 **Authoritative status:** this section supersedes older current-state headers below where they conflict. Historical text remains unchanged below.
 
@@ -40,7 +40,7 @@
 
 - **PROTO-OFFLINE-33 — COMPLETE / POSITIVE** — Thermia Connect hardware fingerprint narrowed to exact part IDs 206495/355202/357577, 12 V gateway, USB/Ethernet/two communication ports, 2.4 GHz Wi-Fi/WPA-PSK and regulatory radio-standard set. No OEM/SoC/module identity was recovered; cellular certification must not be interpreted as proof of a built-in active modem because Thermia documents external 3G/4G modem use for no-broadband installations.
 
-## Current protocol model additions
+- **PROTO-OFFLINE-34 — COMPLETE / POSITIVE** — W5 is narrowed to profile/session metadata with local XTR liveness/UI significance: EXP344→345 proves W5=0006 sufficient for persistent DCM icon while W5=0000 remains transport-valid; genuine Eco5 uses W5=0000 in 264/264 answered polls, so W5 is not a universal connected enum.\n\n## Current protocol model additions
 
 1. Treat **APPROVAL**, **WAITING_FOR_PAGE_SERVICE**, **BOOTSTRAP**, and **RUNTIME/MAILBOX** as separate protocol states.
 2. Do not encode the genuine Eco5 ~120 s page-service boundary as a universal Thermia controller requirement.

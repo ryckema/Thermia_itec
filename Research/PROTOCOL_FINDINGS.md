@@ -1,4 +1,4 @@
-# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-33
+# 2026-10-03 — durable findings reconciliation through PROTO-OFFLINE-34
 
 ## PROVEN / genuine Eco5 Online structural
 
@@ -106,6 +106,12 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - **PROVEN / official:** 2.4 GHz IEEE 802.11 b/g/n with WPA-PSK AP; Wi-Fi/Ethernet are the normal network paths.
 - **OPEN:** built-in cellular capability. Cellular-family standards occur in the EU declaration, while Thermia's public Online documentation describes a separate external 3G/4G modem when broadband is unavailable.
 - **NOT RECOVERED:** OEM, SoC/MCU, radio module identity, bootloader/update transport.
+
+## PROTO-OFFLINE-34 W5 semantics
+
+- **PROVEN / local XTR causal:** W5=0006 is sufficient for persistent DCM-connected UI indication in the EXP344→345 one-variable comparison; W5=0000 remains transport/runtime-valid but the icon was absent.
+- **PROVEN / genuine profile evidence:** legacy Online/DCM uses W5=0006 normally and one W5=0007 rejoin-associated response; genuine Eco5 uses W5=0000 in 264/264 answered polls.
+- **DISPROVEN as universal enum:** W5 cannot be interpreted globally as 0=disconnected / 6=connected / 7=joining.
 
 ## OPEN / UNKNOWN after reconciliation
 

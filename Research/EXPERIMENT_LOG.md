@@ -46,6 +46,12 @@
 
 ---
 
+### PROTO-OFFLINE-34 — 0708 W5 semantic audit — COMPLETE / POSITIVE
+- legacy genuine Online/DCM: W5=6 in 37/38 answered polls, W5=7 once during a 7FFF/FFFF rejoin state;
+- genuine Eco5: W5=0 in 264/264 answered polls across idle, refresh and desired-state activity;
+- EXP344→345 locally proves W5=6 sufficient for persistent DCM icon while W5=0 remains transport/runtime-valid;
+- W5 is therefore profile/session metadata with local XTR liveness/UI significance, not a universal connected enum.
+
 ### PROTO-OFFLINE-33 — Connect hardware / OEM fingerprint — COMPLETE / POSITIVE
 - exact official hardware IDs and interface/power fingerprint consolidated;
 - RED declaration includes Wi-Fi and cellular-family standards, but current Thermia connectivity documentation describes Wi-Fi/Ethernet plus an external 3G/4G modem option, so built-in cellular remains OPEN;
