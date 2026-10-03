@@ -1,0 +1,10 @@
+state,entry evidence,normal action,exit evidence,v4.1 regression
+S0 APPROVAL,071C/0730 FC17 challenge,bounded DCM response,accepted response / config traffic,PASS guarded local path
+S1 WAIT_PAGE_SERVICE,approval accepted but config unACKed,withhold config ACK,first accepted ordered page,cross-model state recognized; do not universalize timing
+S2 BOOTSTRAP,ordered 03E8..06F4 export,ACK exact expected page/count,terminal 06F4 accepted,PASS
+S3 POST_BOOT_SERVICE,terminal export -> 085F/service handoff,contextual service ACK,mailbox/runtime starts,HARDEN 085F permission
+S4 NORMAL_RUNTIME,answered 0708 + runtime ring,ACK proven normal runtime pages,refresh/service/desired/recovery branch,PASS except 0834 conservative gap and 0870 qualification
+S5 CONFIG_REFRESH,W2/W3 current work or explicit local refresh,ACK owned config page only,work exhausted / runtime resumes,HARDEN generic local_config fallback
+S6 SERVICE_REFRESH,W4/service context + recurrent overlays,contextual service ACK,service work clears,HARDEN 085F
+S7 DESIRED_PULL,W0/W1 selector -> FC03 page pull,full-page coherent response,delta exact FC16 republish; no-op no republish required,PASS; local no-op is NO-TX
+S8 RECOVERY_REJOIN,retained/reconnect retry state,only explicitly qualified recovery ACK,0708 rejoin / export / runtime,HARDEN 0870 generic permission
