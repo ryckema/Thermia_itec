@@ -1,0 +1,5 @@
+artifact,identifier,observed_public_metadata,acquisition_status,static_analysis_status
+Thermia OnSite Android,com.thermia.onsite,"Google Play updated 2026-09-25; installer/professional tool; AppBrain historical 1.7.9 / 40.4 MB / 22 permissions incl Wi-Fi/network/location/camera","Binary not recovered","NOT RUN — dependency missing"
+Thermia OnSite iOS,App Store id1598139106,"iOS version history exposes 1.8.2 in late Sep/early Oct 2026","IPA not recovered","NOT RUN"
+Thermia Online Android,se.thermia.online2,"APKPure exposes XAPK download surface; 2.1.1 = 37.3 MB armeabi-v7a; SHA256 b74adf4bc9006019ddc64fb1f1503b695f806d49ace2da3497a7ada5128d6126","Direct XAPK retrieval attempted but failed in analysis environment","NOT RUN"
+Thermia Connect,206495 / gateway 355202,"official hardware identifiers retained from PROTO21","No firmware image","NOT RUN"
