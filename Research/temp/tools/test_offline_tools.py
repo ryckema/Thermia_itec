@@ -5,31 +5,73 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from thermia_capture_analyzer import analyze
-from thermia_dcm_reference_model import DCMReferenceModel, add_crc
+from thermia_dcm_reference_model_current import (
+    DCMReferenceModelCurrent,
+    ECO5_BOOTSTRAP,
+    ECO5_REFRESHABLE,
+    Phase,
+    add_crc,
+    build_fc16_request,
+)
 
 
-def test_model() -> None:
-    m = DCMReferenceModel()
+def test_current_model() -> None:
+    m = DCMReferenceModelCurrent()
     req_0708 = bytes.fromhex("0f03070800064450")
-    assert m.handle(req_0708).hex() == "0f030c0000000000000000000000069d76"
 
-    m.heat_curve = 23
-    assert m.mailbox_words[1] == 1
-    assert m.handle(req_0708).hex() == "0f030c00000001000000000000000690e6"
-    heat_req = bytes.fromhex("0f0303e8000d0551")
-    heat_response = m.handle(heat_req)
-    assert heat_response is not None and heat_response[2] == 26
-    assert m.mailbox_words[1] == 0
+    assert m.handle(req_0708) is None
+    m.accept_approval()
+    assert m.phase is Phase.WAIT_PAGE_SERVICE
+    assert m.handle(req_0708) is None
+    m.set_page_service_ready()
+    assert m.phase is Phase.BOOTSTRAP
 
-    m.operation_mode = 1
-    assert m.mailbox_words[0] == 1
-    system_req = add_crc(bytes.fromhex("0f0305460014"))
-    system_response = m.handle(system_req)
-    assert system_response is not None and system_response[2] == 40
-    assert m.mailbox_words[0] == 0
+    for start, count in ECO5_BOOTSTRAP:
+        words = [0] * count
+        if start == 0x03E8:
+            words[12] = 20
+        if start == 0x042E:
+            words[0] = 1
+            words[1] = 1
+        assert m.handle(build_fc16_request(start, words)) is not None
 
-    write_0864 = bytes.fromhex("0f1008640004080000000000000016d7b7")
-    assert m.handle(write_0864).hex() == "0f1008640004835b"
+    assert m.phase is Phase.RUNTIME
+    idle = m.handle(req_0708)
+    assert idle is not None
+    assert m.mailbox_words() == [0, 0, 0, 0, 0, 0]
+
+    m.request_refresh(set(ECO5_REFRESHABLE))
+    assert m.mailbox_words()[2:4] == [0xFFFF, 0x867F]
+
+    for start, count in ECO5_BOOTSTRAP:
+        if start in ECO5_REFRESHABLE:
+            assert m.handle(build_fc16_request(start, [0] * count)) is not None
+    assert m.refresh_pending == set()
+
+    m.queue_desired_word(0x03E8, 0x03F4, 30)
+    words = m.mailbox_words()
+    assert words[0] == 0
+    assert words[1] == 0x0001
+    assert words[3] & 0x0001
+
+    desired_req = add_crc(bytes.fromhex("0f0303e8000e"))
+    desired_response = m.handle(desired_req)
+    assert desired_response is not None
+    assert desired_response[2] == 28
+    assert m.mailbox_words()[1] == 0
+    assert m.mailbox_words()[3] & 0x0001
+
+    result_words = list(m.pending_desired.desired_words)
+    assert m.handle(build_fc16_request(0x03E8, result_words)) is not None
+    assert m.pending_desired.confirmed
+    m.clear_confirmed_desired()
+
+    try:
+        m.queue_desired_word(0x0546, 0x0553, 1)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("0546 desired selector must remain unproven")
 
 
 def test_analyzer() -> None:
@@ -58,7 +100,7 @@ def test_analyzer() -> None:
 
 
 def main() -> None:
-    test_model()
+    test_current_model()
     test_analyzer()
     print("offline tool tests: OK")
 

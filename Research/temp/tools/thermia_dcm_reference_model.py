@@ -208,3 +208,4 @@ def _selftest() -> None:
 
 if __name__ == "__main__":
     _selftest()
+\n#\n# HISTORICAL / LEGACY REFERENCE MODEL.\n# Retained unchanged for reproducibility of earlier EXP212-era offline work.\n# It encodes older page shapes and an unproven W0->0546 symmetry assumption.\n# Use thermia_dcm_reference_model_current.py for the current PROTO17-20 evidence model.
