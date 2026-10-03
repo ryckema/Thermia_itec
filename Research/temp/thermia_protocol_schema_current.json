@@ -1,0 +1,339 @@
+{
+  "schema_version": "2026-10-03-proto30",
+  "source_tracks": [
+    "PROTO-OFFLINE-19",
+    "PROTO-OFFLINE-28",
+    "PROTO-OFFLINE-29"
+  ],
+  "bootstrap": [
+    {
+      "index": 0,
+      "page": "0x03E8",
+      "count": 14,
+      "ack_frame": "0F1003E8000EC093"
+    },
+    {
+      "index": 1,
+      "page": "0x03FC",
+      "count": 11,
+      "ack_frame": "0F1003FC000B4094"
+    },
+    {
+      "index": 2,
+      "page": "0x0410",
+      "count": 22,
+      "ack_frame": "0F1004100016401C"
+    },
+    {
+      "index": 3,
+      "page": "0x042E",
+      "count": 15,
+      "ack_frame": "0F10042E000FE01A"
+    },
+    {
+      "index": 4,
+      "page": "0x0442",
+      "count": 13,
+      "ack_frame": "0F100442000DA1C6"
+    },
+    {
+      "index": 5,
+      "page": "0x0456",
+      "count": 12,
+      "ack_frame": "0F100456000C2002"
+    },
+    {
+      "index": 6,
+      "page": "0x046A",
+      "count": 18,
+      "ack_frame": "0F10046A00126006"
+    },
+    {
+      "index": 7,
+      "page": "0x047E",
+      "count": 19,
+      "ack_frame": "0F10047E0013E1C2"
+    },
+    {
+      "index": 8,
+      "page": "0x0492",
+      "count": 11,
+      "ack_frame": "0F100492000B203D"
+    },
+    {
+      "index": 9,
+      "page": "0x04A6",
+      "count": 13,
+      "ack_frame": "0F1004A6000DE1F1"
+    },
+    {
+      "index": 10,
+      "page": "0x04BA",
+      "count": 22,
+      "ack_frame": "0F1004BA0016603C"
+    },
+    {
+      "index": 11,
+      "page": "0x04D8",
+      "count": 27,
+      "ack_frame": "0F1004D8001B0027"
+    },
+    {
+      "index": 12,
+      "page": "0x04F6",
+      "count": 14,
+      "ack_frame": "0F1004F6000EA1E1"
+    },
+    {
+      "index": 13,
+      "page": "0x050A",
+      "count": 19,
+      "ack_frame": "0F10050A0013A024"
+    },
+    {
+      "index": 14,
+      "page": "0x051E",
+      "count": 10,
+      "ack_frame": "0F10051E000A21EA"
+    },
+    {
+      "index": 15,
+      "page": "0x0532",
+      "count": 18,
+      "ack_frame": "0F1005320012E029"
+    },
+    {
+      "index": 16,
+      "page": "0x0546",
+      "count": 20,
+      "ack_frame": "0F10054600142031"
+    },
+    {
+      "index": 17,
+      "page": "0x055A",
+      "count": 33,
+      "ack_frame": "0F10055A002121E0"
+    },
+    {
+      "index": 18,
+      "page": "0x057B",
+      "count": 33,
+      "ack_frame": "0F10057B002171EA"
+    },
+    {
+      "index": 19,
+      "page": "0x059C",
+      "count": 33,
+      "ack_frame": "0F10059C0021C1DD"
+    },
+    {
+      "index": 20,
+      "page": "0x05BD",
+      "count": 33,
+      "ack_frame": "0F1005BD002191D7"
+    },
+    {
+      "index": 21,
+      "page": "0x05DE",
+      "count": 33,
+      "ack_frame": "0F1005DE002161C9"
+    },
+    {
+      "index": 22,
+      "page": "0x05FF",
+      "count": 33,
+      "ack_frame": "0F1005FF002131C3"
+    },
+    {
+      "index": 23,
+      "page": "0x0620",
+      "count": 33,
+      "ack_frame": "0F1006200021007D"
+    },
+    {
+      "index": 24,
+      "page": "0x0641",
+      "count": 33,
+      "ack_frame": "0F100641002151A3"
+    },
+    {
+      "index": 25,
+      "page": "0x0662",
+      "count": 33,
+      "ack_frame": "0F1006620021A069"
+    },
+    {
+      "index": 26,
+      "page": "0x0683",
+      "count": 33,
+      "ack_frame": "0F1006830021F05F"
+    },
+    {
+      "index": 27,
+      "page": "0x06A4",
+      "count": 33,
+      "ack_frame": "0F1006A400214054"
+    },
+    {
+      "index": 28,
+      "page": "0x06C5",
+      "count": 33,
+      "ack_frame": "0F1006C50021118A"
+    },
+    {
+      "index": 29,
+      "page": "0x06EA",
+      "count": 7,
+      "ack_frame": "0F1006EA0007A199"
+    },
+    {
+      "index": 30,
+      "page": "0x06F1",
+      "count": 3,
+      "ack_frame": "0F1006F10003D05D"
+    },
+    {
+      "index": 31,
+      "page": "0x06F4",
+      "count": 19,
+      "ack_frame": "0F1006F40013C190"
+    }
+  ],
+  "runtime": [
+    {
+      "page": "0x07D0",
+      "count": 19,
+      "role": "normal"
+    },
+    {
+      "page": "0x07E4",
+      "count": 17,
+      "role": "normal"
+    },
+    {
+      "page": "0x07F8",
+      "count": 17,
+      "role": "normal"
+    },
+    {
+      "page": "0x080C",
+      "count": 18,
+      "role": "normal"
+    },
+    {
+      "page": "0x0820",
+      "count": 18,
+      "role": "normal"
+    },
+    {
+      "page": "0x0834",
+      "count": 18,
+      "role": "normal"
+    },
+    {
+      "page": "0x0848",
+      "count": 23,
+      "role": "normal"
+    },
+    {
+      "page": "0x085F",
+      "count": 5,
+      "role": "overlay"
+    },
+    {
+      "page": "0x0864",
+      "count": 4,
+      "role": "normal"
+    },
+    {
+      "page": "0x0870",
+      "count": 17,
+      "role": "context"
+    },
+    {
+      "page": "0x0884",
+      "count": 60,
+      "role": "history"
+    }
+  ],
+  "selector_provenance": [
+    {
+      "page": "03E8",
+      "current": {
+        "word": "W3",
+        "bit": 0,
+        "proof": "genuine+local"
+      },
+      "desired": {
+        "word": "W1",
+        "bit": 0,
+        "proof": "genuine+local"
+      }
+    },
+    {
+      "page": "042E",
+      "current": {
+        "word": "W3",
+        "bit": 3,
+        "proof": "genuine+local"
+      },
+      "desired": {
+        "word": "W1",
+        "bit": 3,
+        "proof": "genuine+local"
+      }
+    },
+    {
+      "page": "0442",
+      "current": {
+        "word": "W3",
+        "bit": 4,
+        "proof": "local"
+      },
+      "desired": {
+        "word": "W1",
+        "bit": 4,
+        "proof": "local-only"
+      }
+    },
+    {
+      "page": "0546",
+      "current": {
+        "word": "W2",
+        "bit": 0,
+        "proof": "local"
+      },
+      "desired": {
+        "word": "W0",
+        "bit": 0,
+        "proof": "local-only"
+      }
+    },
+    {
+      "page": "055A",
+      "current": {
+        "word": "W2",
+        "bit": 1,
+        "proof": "local"
+      },
+      "desired": {
+        "word": "W0",
+        "bit": 1,
+        "proof": "local-only"
+      }
+    }
+  ],
+  "rules": {
+    "desired_default": "deny",
+    "current_bitmap_geometry": "W2/W3 32-page mapping",
+    "runtime_ack_permission": "context-specific",
+    "recurrent_overlays": [
+      "0x085F"
+    ],
+    "special_context_pages": [
+      "0x0870"
+    ],
+    "semantic_write": "fresh authoritative full page + one intended word + exact FC16 republish",
+    "live_experiment_status": "EXP388 RUNNING / PARTIAL"
+  }
+}

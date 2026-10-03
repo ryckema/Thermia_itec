@@ -1,0 +1,58 @@
+PROTO-OFFLINE-30 STATIC LINTER RESULTS
+target: Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v4_1.yaml
+schema: 2026-10-03-proto30
+
+hard_errors=0
+warnings=0
+passes=39
+
+HARD ERRORS
+- none
+
+WARNINGS
+- none
+
+PASSES
+- ACK 03E8/14 CRC frame present
+- ACK 03FC/11 CRC frame present
+- ACK 0410/22 CRC frame present
+- ACK 042E/15 CRC frame present
+- ACK 0442/13 CRC frame present
+- ACK 0456/12 CRC frame present
+- ACK 046A/18 CRC frame present
+- ACK 047E/19 CRC frame present
+- ACK 0492/11 CRC frame present
+- ACK 04A6/13 CRC frame present
+- ACK 04BA/22 CRC frame present
+- ACK 04D8/27 CRC frame present
+- ACK 04F6/14 CRC frame present
+- ACK 050A/19 CRC frame present
+- ACK 051E/10 CRC frame present
+- ACK 0532/18 CRC frame present
+- ACK 0546/20 CRC frame present
+- ACK 055A/33 CRC frame present
+- ACK 057B/33 CRC frame present
+- ACK 059C/33 CRC frame present
+- ACK 05BD/33 CRC frame present
+- ACK 05DE/33 CRC frame present
+- ACK 05FF/33 CRC frame present
+- ACK 0620/33 CRC frame present
+- ACK 0641/33 CRC frame present
+- ACK 0662/33 CRC frame present
+- ACK 0683/33 CRC frame present
+- ACK 06A4/33 CRC frame present
+- ACK 06C5/33 CRC frame present
+- ACK 06EA/7 CRC frame present
+- ACK 06F1/3 CRC frame present
+- ACK 06F4/19 CRC frame present
+- selector 03E8 frame present + CRC valid
+- selector 042E frame present + CRC valid
+- selector 0442 frame present + CRC valid
+- selector 0546 frame present + CRC valid
+- 055A desired selector is not part of the production Write Beta semantic controls
+- exactly 7 TEST candidate controls remain visibly marked TEST
+- schema marks all non-proven desired selector bits as symmetry-only / default NO-TX
+
+NOTE
+Textual absence of an ACK frame is a warning, not a failure, because some frames may be produced by logic rather than literal constants.
+Desired selector provenance is enforced as deny-by-default in the schema; only PROTO28-proven desired selectors are listed as allowed.

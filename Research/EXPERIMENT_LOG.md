@@ -46,6 +46,12 @@
 
 ---
 
+### PROTO-OFFLINE-30 — protocol schema + linter — COMPLETE / POSITIVE
+- machine-readable schema created for bootstrap, runtime roles and selector provenance;
+- deny-by-default desired-selector policy encoded;
+- current Write Beta v4.1 statically checked: 0 hard errors, 0 warnings;
+- this is not an ESPHome compile verification.
+
 ### PROTO-OFFLINE-29 — runtime scheduler grammar — COMPLETE / POSITIVE
 - normal Eco5 runtime cycles mainly through 07D0/07E4 -> 07F8/080C -> 0820/0834 -> 0848/0864 -> 0870;
 - median answered-0708 cadence is ~4.24 s in the analysed normal windows;

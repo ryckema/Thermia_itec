@@ -1,4 +1,4 @@
-# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-29
+# 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-30
 
 **Authoritative status:** this section supersedes older current-state headers below where they conflict. Historical text remains unchanged below.
 
@@ -28,7 +28,7 @@
 
 - **PROTO-OFFLINE-27 — COMPLETE / INCONCLUSIVE** — current OnSite/Online public metadata and package acquisition surfaces were rechecked. OnSite Android permissions fit local Wi-Fi commissioning; Thermia Online exposes a concrete XAPK download surface, but no app binary could be retrieved into the analysis environment, so endpoint/manifest/static-code analysis remains untested.
 
-- **PROTO-OFFLINE-28 — COMPLETE / POSITIVE** — selector provenance is now split explicitly: genuine desired proof exists for 03E8/W1b0 and 042E/W1b3; local XTR additionally proves 0442/W1b4, 0546/W0b0 and 055A/W0b1. All remaining desired bits are geometry/symmetry only.\n\n- **PROTO-OFFLINE-29 — COMPLETE / POSITIVE** — runtime grammar reduced to a normal A→B→C→D→E publication ring plus W4 service-refresh state and recurrent overlays. W4 is not exclusive scheduling; 085F is mostly unACKed and requires context-specific permission.\n\n## Current protocol model additions
+- **PROTO-OFFLINE-28 — COMPLETE / POSITIVE** — selector provenance is now split explicitly: genuine desired proof exists for 03E8/W1b0 and 042E/W1b3; local XTR additionally proves 0442/W1b4, 0546/W0b0 and 055A/W0b1. All remaining desired bits are geometry/symmetry only.\n\n- **PROTO-OFFLINE-29 — COMPLETE / POSITIVE** — runtime grammar reduced to a normal A→B→C→D→E publication ring plus W4 service-refresh state and recurrent overlays. W4 is not exclusive scheduling; 085F is mostly unACKed and requires context-specific permission.\n\n- **PROTO-OFFLINE-30 — COMPLETE / POSITIVE** — current page geometry, selector provenance and runtime ACK rules are now encoded in a deny-by-default machine-readable schema with a static YAML linter. Current Write Beta v4.1 produced no hard protocol-schema errors; TEST candidates remain explicitly marked.\n\n## Current protocol model additions
 
 1. Treat **APPROVAL**, **WAITING_FOR_PAGE_SERVICE**, **BOOTSTRAP**, and **RUNTIME/MAILBOX** as separate protocol states.
 2. Do not encode the genuine Eco5 ~120 s page-service boundary as a universal Thermia controller requirement.

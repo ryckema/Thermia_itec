@@ -82,6 +82,12 @@ No Connect firmware, protocol-package archive, local API route, OnSite APK/XAPK,
 - **STRONGLY SUPPORTED:** W4 is runtime/service remaining-work/state metadata during refresh, not an exclusive next-page selector.
 - **PROVEN context sensitivity:** `085F` is mostly unACKed outside explicit service work; known page shape is not sufficient ACK permission.
 
+## PROTO-OFFLINE-30 machine-readable schema
+
+- Current protocol geometry and selector provenance are encoded in `Research/temp/thermia_protocol_schema_current.json`.
+- Desired selectors are deny-by-default unless explicitly proven by PROTO28 provenance.
+- Runtime page recognition is separated from context-specific ACK permission.
+
 ## OPEN / UNKNOWN after reconciliation
 
 - exact gateway-internal readiness condition;
