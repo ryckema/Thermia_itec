@@ -1,0 +1,19 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_56_XTR_ONLY_ACK_CONTEXT_MATRIX_20261004.csv>index,traffic,local_evidence,context,action,observed_result,classification
+0,085F/5 payload 0000 0000 0000 0000 0000,EXP307,qualified retained state after normalization + fresh 0708,ACK once,~1.48s later 0708; ~2.05s later 0864,PROVEN locally ACKable in qualified context
+1,085F/5 payload 0000 0000 0000 0000 0000,EXP319,after 085F(0800) normalization; two exact zero frames,ACK second once,2.381s later direct 0884,PROVEN locally ACKable in qualified retained context
+2,085F/5 payload 0000 0000 0000 0000 0000,EXP280,post-0848 0708 serviced,ACK once,~2.06s later 0864,PROVEN locally ACKable in qualified runtime branch
+3,085F/5 payload containing 0861=0800,EXP318,two exact 085F(0800) requests,ACK second once,2.196s later all-zero 085F,PROVEN locally ACKable as normalization transition
+4,085F/5 payload containing 0861=0800,EXP305,after ACK-gated 0662 transfer,NO direct ACK in target observation,transient 085F(0800) -> 0708 -> zero 085F sequence,payload is state discriminator; not every occurrence proven to require immediate ACK
+5,085F/5 all-zero,EXP335,immediately after fresh bootstrap tail 06F4,ACK once,0708 arrived before 07D0,ACK alone does not imply one fixed next page
+6,085F/5 all-zero,EXP386,fresh post-recovery stage40,ACKed,fresh 0708 then RECOVERY_POSITIVE,PROVEN part of local runtime qualification chain
+7,085F/5 all-zero + 03E8/14,local passive thermia-logs.txt,no visible approval or answered 0708,NO ACK by passive logger,70 x 03E8 and 35 x 085F over 73.842s,same shapes can occur outside a qualified emulated session; shape alone is not a qualification signal
+8,0870/17,EXP309,direct after qualified zero-085F ACK; no 0864,NO ACK (fail-closed experiment),target exposed without mandatory 0864,PROVEN local direct branch existence; ACK requirement not tested there
+9,0870/17,EXP310,qualified live direct 0870 after proven 085F prerequisites,ACK once,~1.47s later 0708; ~2.18s later 0884; no retry,PROVEN locally ACKable in qualified retained context
+10,0870/17,EXP292,"steady runtime, optional post-0870 0708 branch",ACK within established responder,"branch serviced for 256.276s, 12 cycles",PROVEN locally usable in sustained normal runtime
+11,03E8/14 initial sync,EXP256+later ordered sync experiments,post-R1 first config stage,ACK,advances ordered sync,PROVEN local ACK-gated bootstrap page
+12,03E8/14 current refresh,EXP352/357,W3 bit0 current-page request,ACKed controller FC16 under existing runtime service,fresh page in ~119-120ms,PROVEN local refresh-owned config path
+13,03E8/14 semantic confirmation,EXP343/352/357/etc.,after desired page response,"controller FC16 exact republish, runtime handler continues",transaction closes,PROVEN local confirmation-owned config path
+14,03E8/14 autonomous controller update,EXP352,no ESP semantic write pending; native/front-panel change,controller publishes new current page; cache promoted,next ESP write uses new value,PROVEN autonomous runtime publication; ACK causality not isolated
+15,04A6/13 runtime,EXP358/359 hardened production,runtime capture-only policy,NO ACK by design,retained/recovery behavior remained functional in completed regressions,local evidence that permissive runtime 04A6 ACK is not required in tested contexts
+16,0834/18 runtime,EXP358 design + later production baseline,capture-only/fail-closed,NO ACK,no local positive ACK proof,keep capture-only
