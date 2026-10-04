@@ -1,3 +1,45 @@
+# 2026-10-04 — OFFLINE EXPERIMENTS PROTO-OFFLINE-61..64
+
+These are offline analyses only. They do **not** advance EXP388 and did not transmit to the heat pump.
+
+## PROTO-OFFLINE-64 — COMPLETE / POSITIVE — production-core reduction / cleanup map
+
+**Hypothesis:** v4.1 can be separated into proven production core, reusable generic machinery, historical experiment scaffolding and dead state without changing behavior.
+
+**Controlled change:** static source inventory/classification only.
+
+**Result:** 28 components classified. Strong cleanup candidates include old stalled-export resume scaffolding, EXP383 TEST controls, boot-observation fields, legacy request/pending state and several unused hot-rejoin fields. Bootstrap ACK blocks and the four semantic engines are later table/schema-driven merge candidates. Current recovery and ACK behavior remains unchanged for EXP388 discipline.
+
+## PROTO-OFFLINE-63 — COMPLETE / POSITIVE FOR RESYNC ROBUSTNESS WITH PARSER AMBIGUITY
+
+**Hypothesis:** source-faithful parser fuzzing should reject malformed/noisy traffic without synthesizing an unintended semantic request.
+
+**Controlled change:** offline stream-assembler transcription/fuzz only.
+
+**Result:** 60,000 broad fuzz cases plus 100,000 targeted non-semantic controls. Targeted controls produced 0 accidental semantic-request outputs. Deterministic constructions prove that a valid longer FC03 response can contain an 8-byte CRC-valid prefix that the current shortest-first parser emits as an exact semantic request; examples were found for 0546/count20, 042E/count15, and 0442/count13.
+
+**Interpretation:** real parser-level defensive gap; no genuine Thermia frame is currently known to trigger it.
+
+## PROTO-OFFLINE-62 — COMPLETE / POSITIVE — source-transcribed host decision engine
+
+**Hypothesis:** important v4.1 authorization/recovery logic can be executed host-side and reproduce current regression expectations.
+
+**Controlled change:** host-side decision model only.
+
+**Result:** **4630/4630 checks PASS**, covering golden regression, representative fault cases, semantic selector/page guards, state7 delayed re-arm, all 4,608 EXP388 recovery-state combinations, and reachability safety.
+
+**Limitation:** source transcription is not compiled ESPHome execution.
+
+## PROTO-OFFLINE-61 — COMPLETE / POSITIVE WITH THREE KNOWN ACK-POLICY DEVIATIONS
+
+**Hypothesis:** every explicit Write Beta v4.1 TX route should be represented in the PROTO60 formal model.
+
+**Controlled change:** static model-to-code conformance audit only.
+
+**Result:** **58/58 UART TX sites accounted for**: 2 approval responses, 32 ordered bootstrap ACKs, 1 historical 04A6 resume ACK, 1 generic runtime FC16 ACK builder, 18 mailbox responses, and 4 semantic full-page FC03 responses. No unmodeled semantic TX class was found. The remaining deviations are the known broader source permissions for 085F, 0870, and generic known-config ACKs.
+
+---
+
 # 2026-10-04 — OFFLINE EXPERIMENTS PROTO-OFFLINE-45..60
 
 These are offline analyses only. They do **not** advance EXP388 and did not transmit to the heat pump.
