@@ -1,3 +1,65 @@
+# Research status — 2026-10-04 — calendar writer locally proven through EXP404
+
+## Live XTR
+
+- **Last completed:** EXP404 — **COMPLETE / POSITIVE**
+- **Current:** EXP405 — **PREPARED / NOT RUN**
+- EXP405 has been generated but has no supplied result yet.
+
+## Major calendar milestone
+
+The local XTR M now has a proven native calendar write path.
+
+Proven components:
+- CURRENT `055A`: W2 bit1
+- DESIRED `055A`: W0 bit1 + W2 bit1
+- CURRENT `059C`: W2 bit3
+- DESIRED `059C`: W0 bit3 + W2 bit3
+- semantic content write: `055B` start minute
+- metadata write: `05BA bit0` slot0 validity
+- exact rollback for both content and metadata
+
+The core transaction is now locally demonstrated rather than inferred:
+
+`0708 selector -> controller FC03 page pull -> full desired image -> controller FC16 confirmation`.
+
+## Current direction
+
+The research priority remains Calendar, but the blocker has shifted.
+
+The basic write primitive is solved locally. The next questions are now:
+1. coherent multi-word slot updates;
+2. safe content-first / validity-second slot creation;
+3. weekday/mode semantics;
+4. additional slots and functions;
+5. production-quality calendar UI and transaction engine.
+
+## EXP405
+
+EXP405 tests a two-word inactive-slot mutation in one 055A page:
+- start minute +1;
+- stop minute +1;
+- slot0 validity must remain clear;
+- exact rollback mandatory.
+
+If positive, the next high-value experiment should move from isolated word writes toward a complete staged slot image while keeping validity off until content is confirmed.
+
+## Safety position
+
+- no broad speculative calendar writes;
+- no untested desired selector inference by symmetry;
+- keep inactive-slot guard for content experiments;
+- use fresh authoritative page images;
+- require exact FC16 confirmation;
+- rollback before advancing if the experiment changes semantics;
+- stop on rollback failure.
+
+## Wider protocol status
+
+Challenge-response remains OPEN. Recovery/runtime qualification without R1/broad bitmap has been locally observed, but this does not solve the challenge algorithm. ACK-context hardening, 0834 safety, alarm semantics, remaining entities and generic emulator architecture remain separate workstreams.
+
+---
+
 # Research status — 2026-10-04 — offline phase reconciled through PROTO-OFFLINE-64
 
 ## Live XTR
