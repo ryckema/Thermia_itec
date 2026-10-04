@@ -1,0 +1,164 @@
+R01 [runtime_fc16] PASS / FAIL-CLOSED
+  mutation: valid-CRC unknown FC16 page 0899/17
+  raw: 0F10089900112255D600002623000A000A000A2F43007C00AA000000000C3201A63E9A000000000000956E
+  v4.1 action: STOP_NO_ACK
+  meaning: unknown runtime FC16 shape
+
+R02 [runtime_fc16] PASS / FAIL-CLOSED
+  mutation: known 0870 address but wrong count 16
+  raw: 0F10087000102055D600002623000A000A000A2F43007C00AA000000000C3201A63E9A0000000032E0
+  v4.1 action: STOP_NO_ACK
+  meaning: unknown runtime FC16 shape
+
+R03 [runtime_fc16] PASS / FAIL-CLOSED
+  mutation: known 085F shape with unknown payload word0=0001
+  raw: 0F10085F00050A000100000000000000003F52
+  v4.1 action: STOP_NO_ACK
+  meaning: unknown 085F payload
+
+R04 [runtime_fc16] BROAD ACK SURFACE / HARDENING CANDIDATE
+  mutation: known all-zero 085F in stage40 without extra service qualifier
+  raw: 0F10085F00050A0000000000000000000032C2
+  v4.1 action: ACK
+  meaning: generic local_config/local_runtime allowlist
+
+R06 [runtime_fc16] BROAD ACK SURFACE / HARDENING CANDIDATE
+  mutation: 0870 in stage40 without mailbox qualification
+  raw: 0F10087000112255D600002623000A000A000A2F43007C00AA000000000C3201A63E9A0000000000008EF5
+  v4.1 action: ACK
+  meaning: generic local_config/local_runtime allowlist
+
+R07 [runtime_fc16] BROAD ACK SURFACE / HARDENING CANDIDATE
+  mutation: standalone known config page in stage40 with no owning refresh state
+  raw: 0F1003E8000E1C0019001300280000000000000015001300020028001E000100140002E77E
+  v4.1 action: ACK
+  meaning: generic local_config/local_runtime allowlist
+
+R08 [runtime_fc16] PASS / FAIL-CLOSED
+  mutation: 04A6 in ordinary runtime, resume not armed
+  raw: 0F1004A6000D1A00000000000000000000000000000000000000004A2000000000CA30
+  v4.1 action: CAPTURE_NO_ACK
+  meaning: 04A6 runtime capture-only
+
+R09 [runtime_fc16] PASS / FAIL-CLOSED
+  mutation: 0834 in runtime
+  raw: 0F100834001224001E00000000000000000000000000000000000000000000000000000000000000000000B5B7
+  v4.1 action: STOP_NO_ACK
+  meaning: 0834 locally unsupported
+
+R10 [runtime_fc16] PASS / FAIL-CLOSED
+  mutation: out-of-order resume page: got 04D8 while 04BA expected
+  raw: 0F1004D8001B360006000200190000000C0002000A00010014000200190003001E000400230005002800060028000700230008001E00090019000A00141A6E
+  v4.1 action: STOP_NO_ACK
+  meaning: out-of-order config page during resume
+
+R11 [runtime_fc16] PASS / FAIL-CLOSED
+  mutation: unrequested 06F4 within 5 s post-export window
+  raw: 0F1006F4001326004000000028000A000A00000000001100040000000000110000001000000000000000000000DC4B
+  v4.1 action: STOP_NO_ACK
+  meaning: unrequested 06F4 after export
+
+R05 [runtime_fc16] BROAD ACK SURFACE / HARDENING CANDIDATE
+  mutation: duplicate known all-zero 085F twice in stage40
+  raw: 0F10085F00050A0000000000000000000032C2 | 0F10085F00050A0000000000000000000032C2
+  v4.1 action: ACK + ACK
+  meaning: same known payload is ACKed twice; no duplicate suppression at this branch
+
+R12 [runtime_fc16] PASS / FAIL-CLOSED
+  mutation: unexpected external 8-byte FC16 ACK not matching self-echo
+  raw: 0F1007D000138067
+  v4.1 action: ABORT_NO_NEW_TX
+  meaning: external responder collision aborts writer
+
+D01 [fc03_desired] PASS / FAIL-CLOSED
+  mutation: unexpected FC03 0546 while main 03E8 engine owns semantic state
+  raw: 0F0305460014A5F2
+  v4.1 action: STOP_NO_RESPONSE
+  meaning: unexpected runtime FC03
+
+D02 [fc03_desired] PASS / FAIL-CLOSED
+  mutation: wrong-count FC03 03E8/13 while 03E8/14 expected
+  raw: 0F0303E8000D0551
+  v4.1 action: STOP_NO_RESPONSE
+  meaning: unexpected runtime FC03
+
+D03 [fc03_desired] PASS / FAIL-CLOSED
+  mutation: desired pull with cache age 300001 ms
+  raw: 0F0303E8000E4550
+  v4.1 action: STOP_NO_RESPONSE
+  meaning: desired-page response guard failed
+
+D04 [fc03_desired] PASS / FAIL-CLOSED
+  mutation: second semantic response attempt after budget already used
+  raw: 0F0303E8000E4550
+  v4.1 action: STOP_NO_RESPONSE
+  meaning: desired-page response guard failed
+
+D05 [fc03_desired] PASS / FAIL-CLOSED
+  mutation: desired pull with non-authorized 03E8 word index 11
+  raw: 0F0303E8000E4550
+  v4.1 action: STOP_NO_RESPONSE
+  meaning: desired-page response guard failed
+
+D06 [fc03_desired] PASS / FAIL-CLOSED
+  mutation: FC03 desired-page pull appears during current-refresh-only state 6
+  raw: 0F0303E8000E4550
+  v4.1 action: WITHHOLD_PAGE_DISABLE_SEMANTIC
+  meaning: refresh-only unexpectedly produced FC03 pull
+
+D08 [fc03_desired] EXPECTED BOUNDED TX / POSITIVE CONTROL
+  mutation: positive control: exact expected desired pull with fresh cache
+  raw: 0F0303E8000E4550
+  v4.1 action: SEND_ONE_DESIRED_PAGE
+  meaning: expected desired pull with valid cache/word/budget
+
+D07 [0708_mailbox] PASS / FAIL-CLOSED
+  mutation: new 0708 request arrives while semantic state=2 waits for desired-page pull
+  raw: 0F03070800064450
+  v4.1 action: STOP_NO_RESPONSE
+  meaning: 0708 repeated during semantic wait
+
+D09 [semantic_noop] PASS / FAIL-CLOSED
+  mutation: fresh authoritative selected word already equals requested target
+  v4.1 action: NO_SEMANTIC_TX_READY
+  meaning: transaction closes before desired selector; no-op does not enter semantic TX
+
+C01 [republish] PASS / CLOSE TRANSACTION / NO NEW TX
+  mutation: positive control: exact selected target, no extra delta
+  v4.1 action: CLOSE_POSITIVE
+  meaning: exact confirmation
+
+C02 [republish] PASS / FAIL-CLOSED
+  mutation: controller republishes original selected value unchanged
+  v4.1 action: CLOSE_NEGATIVE_DISABLE_NO_RETRY
+  meaning: controller retained original
+
+C03 [republish] PASS / FAIL-CLOSED
+  mutation: selected target applied but one unrelated extra word also changed
+  v4.1 action: CLOSE_INCONCLUSIVE_DISABLE_NO_RETRY
+  meaning: mismatch or extra delta
+
+B01 [recovery] PASS / FAIL-CLOSED
+  mutation: bus loss while main 03E8 selector is in flight (state 2)
+  v4.1 action: REFUSE_RECOVERY_STOP_NO_TX
+  meaning: semantic selector/page in flight
+
+B02 [recovery] PASS / FAIL-CLOSED
+  mutation: bus loss while 042E selector is in flight (EXP378 state 3)
+  v4.1 action: REFUSE_RECOVERY_STOP_NO_TX
+  meaning: semantic selector/page in flight
+
+B03 [recovery] PASS / CANCEL + RECOVER / NO IMMEDIATE SEMANTIC TX
+  mutation: bus loss with main write queued pre-selector (state 1)
+  v4.1 action: CANCEL_INTENTS_REENTER_COLD_START
+  meaning: pre-semantic/current-refresh-only state
+
+B04 [recovery] PASS / CANCEL + RECOVER / NO IMMEDIATE SEMANTIC TX
+  mutation: bus loss while current-refresh-only state 6 is active
+  v4.1 action: CANCEL_INTENTS_REENTER_COLD_START
+  meaning: pre-semantic/current-refresh-only state
+
+B05 [recovery] PASS / FAIL-CLOSED
+  mutation: second >=5 s bus-loss after recovery already attempted
+  v4.1 action: STOP_SECOND_LOSS_NO_TX
+  meaning: no second recovery attempt
