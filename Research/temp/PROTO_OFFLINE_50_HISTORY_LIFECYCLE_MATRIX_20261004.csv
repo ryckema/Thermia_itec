@@ -1,0 +1,7 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_50_HISTORY_LIFECYCLE_MATRIX_20261004.csv>index,source,0884_publications,unique_payloads,first_to_last_span_s,median_repeat_interval_s,records_newest_to_oldest,modern_trailer
+0,legacy_20260925_071517,4,1,63.569,21.248,yes,
+1,legacy_20260925_090209,1,1,0.0,,yes,
+2,legacy_20260925_090550,1,1,0.0,,yes,
+3,eco5_20260926,1,1,0.0,,yes,0000 0000 0000 000F
+4,atec_dcm03_20261003,12,1,233.266,20.995,yes,
