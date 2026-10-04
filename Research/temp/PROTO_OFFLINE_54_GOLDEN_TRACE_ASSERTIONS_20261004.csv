@@ -1,0 +1,74 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_54_GOLDEN_TRACE_ASSERTIONS_20261004.csv>index,assertion,result,observed,expected
+0,legacy_20260924: no 0x0F CRC errors,PASS,0,0
+1,legacy_20260925_071517: no 0x0F CRC errors,PASS,0,0
+2,legacy_20260925_090209: no 0x0F CRC errors,PASS,0,0
+3,legacy_20260925_090550: no 0x0F CRC errors,PASS,0,0
+4,eco5_20260926: no 0x0F CRC errors,PASS,0,0
+5,eco5_20260928: no 0x0F CRC errors,PASS,0,0
+6,atec_20261003: no 0x0F CRC errors,PASS,0,0
+7,legacy_20260925_090209: complete bootstraps,PASS,0,0
+8,legacy_20260925_090209: partial bootstraps,PASS,1,1
+9,eco5_20260926: complete bootstraps,PASS,2,2
+10,eco5_20260926: partial bootstraps,PASS,0,0
+11,eco5_20260928: complete bootstraps,PASS,4,4
+12,eco5_20260928: partial bootstraps,PASS,0,0
+13,atec_20261003: complete bootstraps,PASS,1,1
+14,atec_20261003: partial bootstraps,PASS,0,0
+15,eco5_20260926: accepted approval,PASS,2,2
+16,eco5_20260926: challenge count,PASS,99,99
+17,eco5_20260928: accepted approval,PASS,4,4
+18,eco5_20260928: challenge count,PASS,64,64
+19,atec_20261003: accepted approval,PASS,1,1
+20,atec_20261003: challenge count,PASS,1,1
+21,legacy_20260924: desired pull count,PASS,2,2
+22,legacy_20260924: desired confirmation count,PASS,0,0
+23,eco5_20260926: desired pull count,PASS,4,4
+24,eco5_20260926: desired confirmation count,PASS,4,4
+25,atec_20261003: desired pull count,PASS,1,1
+26,atec_20261003: desired confirmation count,PASS,0,0
+27,legacy_20260925_090550: 0870 recovery windows,PASS,1,1
+28,eco5_20260926: 0870 recovery windows,PASS,0,0
+29,eco5_20260928: 0870 recovery windows,PASS,0,0
+30,atec_20261003: 0870 recovery windows,PASS,0,0
+31,legacy_20260925_090209: 085F acked,PASS,2,2
+32,legacy_20260925_090209: 085F total,PASS,2,2
+33,legacy_20260925_090550: 085F acked,PASS,8,8
+34,legacy_20260925_090550: 085F total,PASS,8,8
+35,eco5_20260926: 085F acked,PASS,4,4
+36,eco5_20260926: 085F total,PASS,197,197
+37,eco5_20260928: 085F acked,PASS,4,4
+38,eco5_20260928: 085F total,PASS,122,122
+39,atec_20261003: 085F acked,PASS,2,2
+40,atec_20261003: 085F total,PASS,2,2
+41,legacy_20260924: 0834 acked,PASS,2,2
+42,legacy_20260924: 0834 total,PASS,2,2
+43,legacy_20260925_071517: 0834 acked,PASS,4,4
+44,legacy_20260925_071517: 0834 total,PASS,4,4
+45,legacy_20260925_090209: 0834 acked,PASS,1,1
+46,legacy_20260925_090209: 0834 total,PASS,1,1
+47,eco5_20260926: 0834 acked,PASS,31,31
+48,eco5_20260926: 0834 total,PASS,32,32
+49,eco5_20260928: 0834 acked,PASS,12,12
+50,eco5_20260928: 0834 total,PASS,12,12
+51,atec_20261003: 0834 acked,PASS,13,13
+52,atec_20261003: 0834 total,PASS,13,13
+53,legacy_20260924: exact canonical runtime buckets,PASS,8,8
+54,legacy_20260924: steady runtime buckets,PASS,8,8
+55,legacy_20260925_071517: exact canonical runtime buckets,PASS,16,16
+56,legacy_20260925_071517: steady runtime buckets,PASS,18,18
+57,legacy_20260925_090550: exact canonical runtime buckets,PASS,0,0
+58,legacy_20260925_090550: steady runtime buckets,PASS,1,1
+59,eco5_20260926: exact canonical runtime buckets,PASS,146,146
+60,eco5_20260926: steady runtime buckets,PASS,153,153
+61,eco5_20260928: exact canonical runtime buckets,PASS,56,56
+62,eco5_20260928: steady runtime buckets,PASS,56,56
+63,atec_20261003: exact canonical runtime buckets,PASS,60,60
+64,atec_20261003: steady runtime buckets,PASS,62,62
+65,Eco5 20260926 approval/config overlap,PASS,1,1
+66,Eco5 20260928 approval/config overlap,PASS,2,2
+67,ATEC steady-runtime 085F ACK,PASS,1,1
+68,Legacy standalone ACKed 03E8 pushes,PASS,2,2
+69,local XTR passive: no answered 0708,PASS,0,0
+70,local XTR passive: 70 unACKed 03E8,PASS,70,70
+71,local XTR passive: 35 unACKed 085F,PASS,35,35
