@@ -1,0 +1,8 @@
+gate,result,detail
+decision equivalence,PASS,13358496 current-v4.1 vs clean-core decisions identical
+bootstrap table/count/CRC,PASS,32/32
+PROTO54 golden regression,PASS,PROTO54 GOLDEN TRACE REGRESSION: PASS
+PROTO60 model validator,PASS,THERMIA PROTOCOL MODEL V1: PASS (57 checks)
+semantic pages,PASS,"03E8,042E,0442,0546 schema-driven"
+runtime ACK policy,PASS,current broad 085F/0870/config behavior intentionally preserved
+parser policy,NOT CHANGED,PROTO63/67 hardening deliberately remains separate
