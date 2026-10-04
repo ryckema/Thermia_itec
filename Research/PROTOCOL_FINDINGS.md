@@ -1,3 +1,51 @@
+# 2026-10-04 — Durable findings from PROTO-OFFLINE-61..64
+
+This section is current where it conflicts with older interpretations below.
+
+## PROVEN / locally confirmed or source-confirmed
+
+- Write Beta v4.1 contains **58 explicit UART TX sites**, all mapped to known route classes. No additional semantic TX class was found in the source audit.
+- The only full-page semantic response TX classes remain 03E8, 042E, 0442, and 0546.
+- 0834 remains capture-only in current source.
+- The state7 delayed-refresh distinction is represented by the separate delayed-refresh flag; numeric state7 alone is not sufficient to decide re-arm behavior.
+
+## STRONGLY SUPPORTED
+
+- The PROTO60 formal model is sufficiently complete to act as a source-audit contract for current TX routes.
+- Source-transcribed host decision logic agrees with the current golden/fault/reachability assets across **4630/4630 checks**.
+- Current source still has three known ACK-context policy debts: 085F, 0870, and generic known-config runtime ACK.
+- A future production-core rewrite can safely target consolidation of bootstrap ACK blocks and semantic transaction engines, but should preserve behavior until live regressions are complete.
+
+## NEW PARSER SAFETY FINDING
+
+- The current stream assembler considers multiple candidate frame lengths and accepts the shortest CRC-valid candidate.
+- CRC validity does **not** uniquely distinguish a short FC03 request from a longer FC03 response sharing the same prefix.
+- Deterministic synthetic constructions exist where a valid longer FC03 response has an 8-byte CRC-valid prefix interpreted as an exact semantic request for:
+  - 0546/count20
+  - 042E/count15
+  - 0442/count13
+- 100,000 targeted fuzz cases built only from non-semantic seed traffic produced **0 accidental semantic-request outputs**, so no ordinary random reframing problem is demonstrated.
+- No genuine Thermia frame in the present corpus is known to trigger the double-valid-prefix ambiguity.
+- Classification: **STRONGLY SUPPORTED defensive parser gap; not a proven live semantic write defect.**
+
+## DISPROVEN / NOT SUPPORTED
+
+- There is no evidence from PROTO61 that a hidden/unmodeled semantic TX route exists in v4.1.
+- The parser ambiguity does not prove that genuine controller traffic has ever triggered an incorrect semantic response.
+- Broad random-fuzz semantic-shaped outputs that included genuine semantic-request seeds are not evidence of accidental semantic synthesis; the targeted non-semantic control is the relevant negative control.
+
+## Cleanup / rebuild constraints
+
+- Preserve delayed-refresh semantics explicitly.
+- Preserve direct valid 0870 behavior without inventing a mandatory 0864 prerequisite.
+- Preserve both locally proven 085F payload forms.
+- Preserve autonomous current-state/config behavior such as runtime 03E8.
+- Keep 0834 capture-only until local evidence changes.
+- Move historical resume/test scaffolding out of production core only after static/compile/golden equivalence checks.
+- Do not combine parser replacement, ACK-hardening, and EXP388 recovery restructuring in one experiment.
+
+---
+
 # 2026-10-04 — Durable protocol findings from PROTO-OFFLINE-45..60
 
 This section is current where it conflicts with older interpretations below.
