@@ -1,0 +1,16 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: THERMIA_PROTOCOL_MODEL_V1_DECISION_TABLE_20261004.csv>index,input_or_event,required_context,action,evidence,safety_note
+0,approval FC17 071C/0730,exact guarded session-opening context,bounded R1/response path,local guarded + genuine,do not infer algorithm
+1,config bootstrap page,exact expected page/count/order,ACK,local + genuine,ordered only
+2,0708 current 03E8,W3b0 locally proven,current refresh response,local + genuine geometry,no desired value
+3,0708 desired 03E8,W1b0 locally/genuinely proven + sole owner + fresh cache,selector / one desired response,local + genuine,one-word coherent mutation
+4,0708 desired 042E,W1b3 locally/genuinely proven + sole owner + fresh cache,selector / one desired response,local + genuine,page semantics profile-specific
+5,0708 desired 0442,W1b4 locally proven + sole owner + fresh cache,selector / one desired response,local,no genuine Eco5 bit proof
+6,0708 desired 0546,W0b0 locally + genuine ATEC proven + sole owner + fresh cache,selector / one desired response,local + genuine ATEC,0553 Operation Mode locally proven
+7,0708 desired 055A,W0b1 local-only calendar transaction,DENY production generalization,local-only,cross-page calendar atomicity unresolved
+8,085F known payload,qualified local service/runtime context,ACK only when owning state allows,local payload proof,universal context OPEN
+9,0870,normal ownership token OR explicit recovery/rejoin state,one ACK,local normal proof + genuine recovery architecture,recovery qualifier OPEN
+10,0834,any current context,NO ACK / capture-only,no local ACK proof,cross-model proof insufficient
+11,unknown FC03,any,NO RESPONSE + fail-closed,current v4.1,
+12,semantic republish mismatch,after desired response,close negative/inconclusive; NO RETRY,current v4.1,
+13,controller loss semantic in-flight,after selector/page boundary,refuse recovery / stop,EXP388 design,live cancellation branches still partial
