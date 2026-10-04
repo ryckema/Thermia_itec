@@ -1,3 +1,77 @@
+# 2026-10-04 — LOCAL WRITE UPDATE — EXP399..404
+
+This section supersedes the earlier write-status statements below where they conflict. The original passive/offline analysis remains preserved as historical evidence.
+
+## Writer status
+
+Calendar writing is now **PROVEN / locally confirmed** on the Thermia iTec XTR M for both F1 content and F1 validity metadata.
+
+### Proven selector paths
+
+| Purpose | 0708 selector | Controller action | Status |
+|---|---|---|---|
+| CURRENT 055A | W2 bit1 | FC16 055A/count33 | PROVEN |
+| DESIRED 055A | W0 bit1 + W2 bit1 | FC03 055A/count33 | PROVEN |
+| CURRENT 059C | W2 bit3 | FC16 059C/count33 | PROVEN |
+| DESIRED 059C | W0 bit3 + W2 bit3 | FC03 059C/count33 | PROVEN |
+
+Full F1 current refresh remains `W2=000E`, producing `055A + 057B + 059C`.
+
+## Semantic content write — EXP401
+
+A fresh F1 page was acquired while slot0 validity was clear. Only `055B` / slot0 word1 / start minute changed:
+
+`0000 -> 0001`.
+
+The controller republished `FC16 055A/count33` with exactly one delta and no unexpected changes. The passive calendar decoder simultaneously interpreted the new start time as 00:01. A second desired transaction restored the original page exactly.
+
+**Conclusion:** slot0 start minute is not only correlated but locally writable through the native desired-page mechanism.
+
+## Metadata write — EXP404
+
+A fresh `059C/count33` baseline contained:
+
+`05BA = 0000`.
+
+EXP404 returned a desired 059C page with exactly one changed word:
+
+`05BA = 0001`.
+
+The controller republished exactly that page. The independent passive decoder recorded:
+
+`CAL_F1_METADATA0_CHANGE old=0000 new=0001 setBits=0001`.
+
+Rollback restored `05BA=0000` and the exact original 059C page.
+
+**Conclusion:** `05BA bit0` is **PROVEN / locally confirmed** as F1 slot0 validity and is locally writable.
+
+## Transaction model now locally demonstrated
+
+`fresh current page -> 0708 desired selector -> controller FC03 page pull -> full desired page response -> controller FC16 confirmation`.
+
+This model is proven on both 055A and 059C. Exact no-op desired responses are also accepted locally on both pages.
+
+## Current safe writer design
+
+The safest architecture supported by current evidence is:
+
+1. acquire a fresh authoritative F1 image;
+2. keep slot validity clear;
+3. stage/confirm content changes on 055A/057B as needed;
+4. only after content is coherent, set the corresponding validity bit on the metadata page;
+5. require exact FC16 confirmation at every semantic step;
+6. retain the original image for rollback.
+
+Cross-page atomicity is not proven, so content-first then validity is a safety strategy, not yet a proven native requirement.
+
+## Next prepared test
+
+**EXP405 — PREPARED / NOT RUN**
+
+While slot0 remains invalid, mutate start minute and stop minute together by +1 in one 055A desired-page transaction. Both original minute values must be <=58; exact rollback is mandatory.
+
+---
+
 # Thermia iTec XTR M — Calendar Structure Analysis
 
 **Date:** 2026-10-02  
