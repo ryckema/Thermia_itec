@@ -1,0 +1,9 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_52_ARTIFACT_ACQUISITION_MATRIX_20261004.csv>index,target,artifact_type,identifier,priority,observed_evidence,result
+0,MyThermia / former Thermia Online,Android package,se.thermia.online2,CURRENT / HIGH VALUE,Official Google Play shows MyThermia on same package; app updated 2026-09-23,Binary not recovered
+1,Thermia OnSite,Android package,com.thermia.onsite,CURRENT / HIGHEST INSTALLER VALUE,Official Google Play; professional installer/service app; updated 2026-09-25,Binary not recovered
+2,Thermia Online/MyThermia 2.1.1,XAPK historical,se.thermia.online2,HIGH VALUE HISTORICAL,"Previously indexed third-party XAPK surface, 37.3 MB armeabi-v7a, SHA256 b74adf4bc9006019ddc64fb1f1503b695f806d49ace2da3497a7ada5128d6126",Direct d.apkpure.net retrieval failed again 2026-10-04
+3,Thermia Connect,gateway,art.no. 355202,HIGH VALUE,Official Connect target; current Thermia page lists iTec XTR compatibility,No firmware recovered
+4,Thermia Connect kit,hardware kit,art.no. 206495,MEDIUM/HIGH VALUE,Exact official acquisition/search fingerprint retained,No firmware recovered
+5,Classic DCM03,gateway/serializer target,dcmVersion 2.0.17 / DCM03,HIGH VALUE HISTORICAL,Best old AQ/Atec serializer target from prior official architecture research,No binary recovered
+6,Public GitHub,source/decompilation search,com.thermia.onsite / se.thermia.online2 / DCM03 / 355202,NEGATIVE,"No useful public decompile, firmware, protocol package or DCM03 2.0.17 hit",No artifact
