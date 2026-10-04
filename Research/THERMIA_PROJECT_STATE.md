@@ -1,3 +1,78 @@
+# 2026-10-04 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-60
+
+**Authoritative status:** this section supersedes older offline/current-state summaries below where they conflict. Historical sections remain unchanged.
+
+## Current live XTR status — unchanged
+
+- **EXP387 — COMPLETE / POSITIVE** — last fully completed local XTR experiment.
+- **EXP388 — RUNNING / PARTIAL** — repeated controller-restart recovery succeeded twice without ESP reboot. The pre-semantic cancellation and refresh-only cancellation branches remain not independently live-exercised.
+- **EXP383 — PREPARED / NOT RUN** — historical TEST-candidate bundle remains unpromoted except where later experiments separately established a target.
+- **PROTO-OFFLINE-45..60 do not advance live experiment state.**
+
+## Offline state through PROTO-OFFLINE-60
+
+- **PROTO-OFFLINE-45 — COMPLETE / POSITIVE WITH MODEL REFINEMENTS** — executable replay across seven genuine Online/DCM captures plus one local passive XTR trace reproduces approval, ordered bootstrap, runtime grammar, desired pulls and recovery/rejoin. Approval and retained service/config traffic can overlap; genuine legacy standalone config pushes and genuine ATEC steady-state 085F ACK show that one strictly linear protocol enum is too coarse.
+- **PROTO-OFFLINE-46 — COMPLETE / POSITIVE WITH THREE BROAD ACK SURFACES CONFIRMED** — 29 valid-CRC synthetic faults show semantic write paths fail closed. Remaining broad authorization surfaces are known 085F, 0870 and generic known-config ACKs.
+- **PROTO-OFFLINE-47 — COMPLETE / POSITIVE** — local XTR page geometry aligns with modern Eco5 at the known count-drift pages 03E8/0410/0492/051E. Local XTR 03F3=1 and 03F5=2 align structurally with the modern family; semantics remain OPEN.
+- **PROTO-OFFLINE-48 — COMPLETE / NEGATIVE FOR NEW SEMANTIC PROMOTIONS** — unresolved settings fields lack useful edges in the current corpus. 087D +1 edges are reconfirmed only while compressor-running is active; no new user-facing register labels are promoted.
+- **PROTO-OFFLINE-49 — COMPLETE / POSITIVE AS PRIORITIZATION ARTIFACT** — no new W0/W1 selector is proven. Unproven selectors remain DENY-BY-DEFAULT; ranking is planning guidance only.
+- **PROTO-OFFLINE-50 — COMPLETE / POSITIVE FOR HISTORY LIFECYCLE** — 0884/count60 is a periodically republished newest-first history snapshot, not merely a one-shot new-alarm event. Raw event-ID semantics remain OPEN.
+- **PROTO-OFFLINE-51 — COMPLETE / POSITIVE STRUCTURAL RECONFIRMATION** — ATEC calendar words 0..391 match the legacy reference; only tail register 06E2 differs. The 06E2..06E5 tail is further separated from F1..F4 calendar state. No new calendar desired-pull evidence.
+- **PROTO-OFFLINE-52 — COMPLETE / INCONCLUSIVE FOR BINARY RECOVERY; POSITIVE FOR TARGET REFINEMENT** — current app target is MyThermia while Android package identity remains `se.thermia.online2`; OnSite remains `com.thermia.onsite`. No APK/XAPK, Connect firmware, protocol package or DCM03 binary was recovered.
+- **PROTO-OFFLINE-53 — COMPLETE / POSITIVE WITH DEFENSIVE-INVARIANT DEBT IDENTIFIED** — exhaustive Cartesian state/permission analysis exposes mixed semantic-owner combinations only when impossible states are injected.
+- **PROTO-OFFLINE-54 — COMPLETE / POSITIVE** — eight captures are now a deterministic golden-trace regression suite; **72/72 assertions pass**.
+- **PROTO-OFFLINE-55 — COMPLETE / POSITIVE** — differential ACK-policy replay shows 0870 is the cleanest hardening target. A recent-mailbox-only 3 s candidate yields TP=63, FP=0, TN=31, FN=1; simple 085F/config ownership rules over-block genuine traffic.
+- **PROTO-OFFLINE-56 — COMPLETE / POSITIVE** — XTR-only reduction proves both accepted 085F payload forms are locally ACKable in qualified contexts, proves direct local 0870 can occur without 0864, and confirms qualified local 0870 ACK advances runtime.
+- **PROTO-OFFLINE-57 — COMPLETE / POSITIVE** — corrected forward reachability with the EXP387 delayed-rearm substate reaches **115 semantic-capable variants, 0 multi-owner states, 0 reachable PROTO53 conflict projections and 0 unsafe semantic pre-events**.
+- **PROTO-OFFLINE-58 — COMPLETE / POSITIVE** — a global sole-owner guard blocks all **604** PROTO53 synthetic conflict cases and 0 modeled reachable normal paths. A two-branch 0870 architecture reproduces the genuine corpus **TP=64, FP=0, TN=31, FN=0**.
+- **PROTO-OFFLINE-59 — COMPLETE / POSITIVE** — best-supported local normal-runtime 0870 qualifier is a session-scoped one-shot ownership token created by qualified all-zero 085F ACK OR qualified 0864 ACK; known optional 0708 may intervene. Exact local recovery/rejoin qualification remains OPEN.
+- **PROTO-OFFLINE-60 — COMPLETE / POSITIVE** — formal machine-readable protocol model v1 created and validated. **57/57 model checks pass**.
+
+## Current protocol model
+
+1. FC17 `071C/0730` is the genuine Online/DCM approval gate; exact response algorithm remains OPEN.
+2. Session qualification and current work class are orthogonal axes. Work may be bootstrap, runtime, config refresh, service overlay, desired transaction or recovery/rejoin.
+3. Only one semantic owner is reachable at a time in the modeled v4.1 transition graph. A global sole-owner assertion remains recommended defensive hardening.
+4. Bootstrap is a fixed 32-page XTR sequence `03E8..06F4`, ACK-gated and profile-specific in page counts.
+5. Desired primitive remains: proven selector -> controller FC03 full-page pull -> coherent authoritative page response with at most intended mutation -> exact FC16 confirmation for an actual delta. Exact no-op may not republish.
+6. **0870:** normal-runtime ACK is locally proven, but shape alone is wider than local proof. Strongest normal-runtime candidate is the PROTO59 ownership token. A separate recovery/rejoin authorization branch remains locally unresolved.
+7. **085F:** both currently accepted local payload forms are genuinely ACK-proven; the open problem is contextual authorization.
+8. **Config FC16:** bootstrap, explicit refresh and desired confirmation are locally owned contexts; autonomous controller-originated 03E8 also exists locally. A universal W2/W3-only rule is too strict.
+9. **0834:** remains capture-only because local XTR ACK safety is not proven.
+10. **0884:** rolling newest-first history snapshot; raw event IDs remain unresolved.
+11. **Calendar:** F1..F4 structure remains passive/read-oriented; no generalized writer or new selector inference is authorized.
+
+## Strongest remaining unknowns
+
+- exact 071C/0730 challenge-response algorithm/key/session dependence;
+- exact local recovery/rejoin qualifier for an 0870 ACK outside the PROTO59 normal-runtime token path;
+- universal/local context predicate for 085F;
+- autonomous config-push ownership beyond the locally observed 03E8 case;
+- local ACK safety for 0834;
+- raw 0884 event-ID meanings;
+- calendar weekday bit order and native cross-page write atomicity;
+- missing Connect/OnSite/DCM03 firmware or application binary.
+
+## Recommended next sequence
+
+1. Finish EXP388 live: pre-semantic controller-loss cancellation and refresh-only controller-loss cancellation, one branch at a time.
+2. Only after EXP388 closes, prepare a single-variable 0870 context-hardening experiment based on the PROTO59 normal-runtime ownership-token model.
+3. Keep the recovery/rejoin exception explicitly instrumented; do not guess its local qualifier from cross-model traffic.
+4. Run the PROTO54 golden regression and PROTO60 model validator before/after any future writer refactor.
+
+## Safety constraints retained
+
+- Unexpected traffic remains capture-only unless explicitly part of a bounded test.
+- No new desired selector is authorized by symmetry or ranking.
+- Do not require 0864 before every 0870; EXP309/310 locally disprove that.
+- Do not remove either known 085F payload from the local allowlist solely from cross-model statistics.
+- Do not convert generic config ACKs to W2/W3-only ownership without preserving autonomous-current-state behavior.
+- Keep 0834 capture-only until local evidence changes.
+- **EXP388 remains RUNNING / PARTIAL.**
+- Write Beta v4.1 itself is unchanged by PROTO45..60.
+
+---
+
 # 2026-10-03 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-44
 
 **Authoritative status:** this section supersedes older offline/current-state summaries below where they conflict. Historical text remains unchanged below.
