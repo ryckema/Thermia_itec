@@ -1,3 +1,42 @@
+# Research status — 2026-10-04 — offline phase reconciled through PROTO-OFFLINE-64
+
+## Live XTR
+
+- **EXP387 — COMPLETE / POSITIVE**
+- **EXP388 — RUNNING / PARTIAL**
+- **EXP383 — PREPARED / NOT RUN**
+
+PROTO61..64 are offline only and do not complete EXP388.
+
+## Offline position
+
+The capture corpus remains near its semantic evidence ceiling, but PROTO61..64 added valuable implementation/safety information:
+
+- **PROTO61:** 58/58 current v4.1 TX sites are accounted for; no hidden semantic TX class.
+- **PROTO62:** 4630/4630 host-side decision checks pass.
+- **PROTO63:** ordinary targeted non-semantic fuzz produced 0 accidental semantic requests, but a deterministic shortest-valid-prefix FC03 ambiguity exists and must be treated as future parser hardening debt.
+- **PROTO64:** production-core cleanup/rebuild boundaries are now explicitly mapped.
+
+## Current implementation priorities
+
+1. Finish or rebuild EXP388 as a recovery-only controlled experiment.
+2. Keep 085F, 0870, generic config ACK and parser behavior unchanged inside that same EXP388 live scope unless separately authorized.
+3. Treat parser ambiguity as a separate future hardening/refactor item.
+4. After EXP388, test 0870 context qualification separately.
+5. Any future cleanup/refactor should pass the golden/model/TX/host/parser offline gates first.
+
+## Offline ceiling
+
+Further analysis of the same captures is unlikely to create new register/selector semantics. New high-value discovery now requires one of:
+
+- new labelled local captures;
+- a genuine new Online/DCM collaborator capture;
+- an OnSite/MyThermia APK/XAPK;
+- Connect/DCM03 firmware or protocol-package bytes;
+- a newly isolated live branch.
+
+---
+
 # Research status — 2026-10-04 — offline phase reconciled through PROTO-OFFLINE-60
 
 ## Live XTR
