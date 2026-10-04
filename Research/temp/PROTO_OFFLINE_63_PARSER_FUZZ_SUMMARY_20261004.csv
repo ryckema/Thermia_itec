@@ -1,0 +1,23 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_63_PARSER_FUZZ_SUMMARY_20261004.csv>index,metric,value
+0,basic_chunk_split_checks,160
+1,random_fuzz_cases,60000
+2,bitflip_bad_crc,7483
+3,concat_valid,7394
+4,drops,0
+5,duplicate,7577
+6,garbage_wrapped,7560
+7,noise_prefix,7393
+8,noise_suffix,7489
+9,parsed_frames,57746
+10,resync,11023
+11,semantic_shaped_frames,25909
+12,truncate,7485
+13,valid_crc_mutation,7619
+14,unexpected_semantic_reframings,25903
+15,deliberate_0546_ambiguous_prefix,YES
+16,042E_ambiguous_prefix,YES
+17,0442_ambiguous_prefix,YES
+18,known_fc16_prefix_ack_collisions,0
+19,targeted_nonsemantic_fuzz_cases,100000
+20,targeted_nonsemantic_semantic_prefix_hits,0
