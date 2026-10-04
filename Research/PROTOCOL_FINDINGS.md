@@ -1,3 +1,63 @@
+# 2026-10-04 — Durable protocol findings from PROTO-OFFLINE-45..60
+
+This section is current where it conflicts with older interpretations below.
+
+## PROVEN / locally confirmed
+
+- Both currently accepted XTR `085F/count5` payload forms are ACKable in qualified local contexts. The unresolved problem is context authorization, not payload identity.
+- Local XTR can present `0870/count17` directly after qualified all-zero 085F **without prior 0864**. EXP309/310 disprove a mandatory-0864 prerequisite.
+- One qualified direct local 0870 ACK advances to valid runtime; sustained local runtime also services 0870.
+- Local config ACK ownership is proven for ordered bootstrap, explicit current-page refresh and desired-state confirmation.
+- Autonomous controller-originated runtime `03E8/count14` exists locally, so every runtime config publication cannot be modeled as W2/W3-owned.
+- Local XTR `03F3=1` and `03F5=2` are structurally observed on the modern `03E8/count14` page; semantic names remain OPEN.
+- `0834/count18` still has no local XTR ACK proof.
+
+## PROVEN / genuine Online/DCM capture
+
+- Approval and service/config work can overlap; they are not strictly exclusive sequential states.
+- Genuine legacy Online can ACK standalone config publication while W2/W3 are zero.
+- Genuine ATEC/DCM03 can ACK steady-state `085F/count5`.
+- Current genuine 0870 corpus contains 64 ACKed and 31 unACKed publications; the 31 unACKed examples are one reconnect retry population.
+- `0884/count60` can be periodically republished byte-for-byte unchanged for minutes; decoded records are newest-to-oldest.
+- ATEC calendar function words 0..391 match the legacy reference; changing 06E2 further separates the 06E2..06E5 tail from F1..F4.
+
+## STRONGLY SUPPORTED
+
+- Session/approval qualification and current work class should be modeled as **orthogonal axes**.
+- Current v4.1 transitions enforce a sole-semantic-owner invariant in the modeled reachable graph: PROTO57 reaches 115 variants with zero multi-owner states.
+- A global explicit sole-owner assertion is useful defensive hardening; PROTO58 shows it blocks 604 impossible synthetic conflicts and zero modeled reachable normal paths.
+- Best-supported local normal-runtime 0870 qualifier: a one-shot session-scoped ownership token created after qualified all-zero 085F ACK OR qualified 0864 ACK; optional known 0708 may intervene; first 0870 ACK consumes it.
+- 0870 needs at least two conceptual authorization branches: qualified normal runtime plus explicit recovery/rejoin.
+- Semantic write safety debt is concentrated mainly in ACK authorization/context, not value injection.
+- Local XTR configuration ABI follows modern Eco5 geometry for the known count-drift pages 03E8, 0410, 0492 and 051E.
+
+## OPEN / UNKNOWN
+
+- exact local recovery/rejoin predicate for 0870 outside the normal-runtime token path;
+- universal/local context rule for immediate 085F ACK permission;
+- which XTR config pages besides 03E8 can be autonomously pushed and whether ACK is required;
+- local 0834 ACK behavior;
+- raw 0884 event-ID meanings and insertion/rollover/clear mechanics;
+- calendar weekday bit ordering and native cross-page write atomicity;
+- exact 071C/0730 challenge-response implementation/key/state;
+- Connect/OnSite/DCM03 binaries and serializer implementation.
+
+## DISPROVEN / SUPERSEDED
+
+- **Mandatory 0864 before 0870** — disproven locally by EXP309/310.
+- **All config FC16 must be W2/W3-owned** — disproven as a general model by local autonomous 03E8 and genuine legacy standalone config pushes.
+- **085F service-only ACK as a universal Thermia rule** — disproven cross-profile by genuine steady-state ATEC 085F ACK.
+- **PROTO53 Cartesian conflicts as evidence of a reachable double-semantic bug** — superseded by PROTO57 reachability.
+
+## Regression assets
+
+- PROTO54 golden trace suite: **72/72 PASS**.
+- PROTO60 formal protocol model validator: **57/57 PASS**.
+- Machine-readable model: `Research/protocol reduction/thermia_protocol_model_v1.json`.
+- Decision table: `Research/protocol reduction/thermia_protocol_model_v1_decision_table.csv`.
+
+---
+
 # 2026-10-03 — durable findings through PROTO-OFFLINE-44
 
 ## DISPROVEN / SUPERSEDED — challenge-response simple transforms
