@@ -1,0 +1,50 @@
+thermia_capture_20260924_210001(1).log [legacy_a5]
+  0F frames=68 crc_bad=0 approval=0/0 bootstrap_complete=0 partial=0
+  mailbox=11 desired_pulls=2 confirmed=0 recovery0870=0
+  runtime=21 acked=21 085F=0/0 ACKed 0834=2/2 ACKed
+  steady mailbox buckets exact canonical=8/8 (100.0%)
+
+thermia_capture_20260925_071517.log [legacy_a5]
+  0F frames=116 crc_bad=0 approval=0/0 bootstrap_complete=0 partial=0
+  mailbox=18 desired_pulls=0 confirmed=0 recovery0870=0
+  runtime=38 acked=38 085F=0/0 ACKed 0834=4/4 ACKed
+  steady mailbox buckets exact canonical=16/18 (88.9%)
+  standalone ACKed config pushes=[(22.142, '03E8'), (61.633, '03E8')]
+
+thermia_capture_20260925_090209.log [legacy_a5]
+  0F frames=94 crc_bad=0 approval=0/0 bootstrap_complete=0 partial=1
+  mailbox=6 desired_pulls=0 confirmed=0 recovery0870=0
+  runtime=12 acked=12 085F=2/2 ACKed 0834=1/1 ACKed
+
+thermia_capture_20260925_090550.log [legacy_a5]
+  0F frames=137 crc_bad=0 approval=0/0 bootstrap_complete=0 partial=0
+  mailbox=3 desired_pulls=0 confirmed=0 recovery0870=1
+  runtime=42 acked=11 085F=8/8 ACKed 0834=0/0 ACKed
+  steady mailbox buckets exact canonical=0/1 (0.0%)
+
+itec_eco5_gateway_20260926.log [eco5]
+  0F frames=2054 crc_bad=0 approval=2/99 bootstrap_complete=2 partial=0
+  mailbox=183 desired_pulls=4 confirmed=4 recovery0870=0
+  runtime=543 acked=345 085F=4/197 ACKed 0834=31/32 ACKed
+  steady mailbox buckets exact canonical=146/153 (95.4%)
+  approval/config overlap=[{'t': 301.737, 'page': '04A6', 'count': 13}]
+
+itec_eco5_gateway_20260928.log [eco5]
+  0F frames=1882 crc_bad=0 approval=4/64 bootstrap_complete=4 partial=0
+  mailbox=81 desired_pulls=0 confirmed=0 recovery0870=0
+  runtime=339 acked=220 085F=4/122 ACKed 0834=12/12 ACKed
+  steady mailbox buckets exact canonical=56/56 (100.0%)
+  approval/config overlap=[{'t': 311.321, 'page': '04A6', 'count': 13}, {'t': 312.205, 'page': '04BA', 'count': 22}]
+
+thermia_capture_20261003_165355.log [atec_dcm03]
+  0F frames=458 crc_bad=0 approval=1/1 bootstrap_complete=1 partial=0
+  mailbox=65 desired_pulls=1 confirmed=0 recovery0870=0
+  runtime=130 acked=130 085F=2/2 ACKed 0834=13/13 ACKed
+  steady mailbox buckets exact canonical=60/62 (96.8%)
+  ATEC steady 085F ACK=[{'t': 58.092, 'mailbox': ['0000', '0000', '0000', '0000', '077F', '0006']}]
+
+thermia-logs.txt [local_xtr_passive]
+  0F frames=105 crc_bad=0 approval=0/0 bootstrap_complete=0 partial=0
+  mailbox=0 desired_pulls=0 confirmed=0 recovery0870=0
+  runtime=35 acked=0 085F=0/35 ACKed 0834=0/0 ACKed
+  local passive loop: 03E8 unACKed=70, 085F unACKed=35, duration=73.842s
