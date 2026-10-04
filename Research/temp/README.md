@@ -1,3 +1,35 @@
+## Follow-up offline reductions — PROTO-OFFLINE-45..60
+
+Added/reconciled on 2026-10-04:
+
+- PROTO45: executable trace/state-machine verifier, replay matrix and verifier output
+- PROTO46: synthetic valid-CRC fail-closed replay, fault matrix and replay output
+- PROTO47: cross-profile ABI alignment + matrix
+- PROTO48: unresolved-register edge correlation + matrix
+- PROTO49: selector-candidate ranking + matrix
+- PROTO50: 0884 history lifecycle forensics + matrix
+- PROTO51: calendar cross-capture forensics + matrix
+- PROTO52: Connect/DCM03 artifact-hunt second pass + acquisition matrix
+- PROTO53: exhaustive state/permission model-check + conflicting-state matrix
+- PROTO54: golden-trace regression suite + assertion matrix
+- PROTO55: differential ACK-hardening simulation + policy matrix
+- PROTO56: XTR-only ACK-context reduction + matrix
+- PROTO57: semantic-state reachability + reachable-state/conflict matrices
+- PROTO58: shadow-patch regression + 0870/policy matrices
+- PROTO59: local-XTR 0870 context classifier + rule/context matrices
+- PROTO60: formal protocol/spec package, model JSON, schema, decision table and validation output
+
+Added tooling under `Research/temp/tools/` includes the trace-state verifier, fail-closed replay harness, golden-trace regression runner and protocol-model validator.
+
+Canonical Research files are reconciled through **PROTO-OFFLINE-60**. The live state remains **EXP387 COMPLETE / POSITIVE**, **EXP388 RUNNING / PARTIAL**, **EXP383 PREPARED / NOT RUN**. None of the offline work completes EXP388 or changes Write Beta v4.1.
+
+The formal model is also mirrored durably under `Research/protocol reduction/` as:
+- `thermia_protocol_model_v1.json`
+- `thermia_protocol_model_v1_schema.json`
+- `thermia_protocol_model_v1_decision_table.csv`
+
+---
+
 # Offline research snapshot — TEMP
 
 Created: 2026-10-03
