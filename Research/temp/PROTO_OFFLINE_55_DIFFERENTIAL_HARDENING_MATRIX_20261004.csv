@@ -1,0 +1,36 @@
+family,candidate_policy,preserved_actual_acks_TP,would_ack_actual_unacked_FP,correctly_withheld_TN,would_block_actual_ack_FN,events
+0870,0870 current shape-only,64,31,0,0,95
+0870,0870 recent answered 0708 <=1s,59,0,31,5,95
+0870,0870 recent answered 0708 <=3s,63,0,31,1,95
+0870,0870 recent answered 0708 <=5s,63,0,31,1,95
+085F,085F current known-payload-only,20,311,0,0,331
+085F,085F recent config ACK <=1s,14,0,311,6,331
+085F,085F recent config ACK <=3s,15,0,311,5,331
+085F,085F recent answered 0708 <=1s,2,0,311,18,331
+085F,085F recent answered 0708 <=3s,5,0,311,15,331
+085F,085F config<=3s OR recent mailbox<=1s,16,0,311,4,331
+config,config current shape-only,547,828,0,0,1375
+config,config bootstrap only,253,0,828,294,1375
+config,config bootstrap OR W2/W3<=3s,324,7,821,223,1375
+config,config bootstrap OR desired-confirm,257,0,828,290,1375
+config,config bootstrap OR W2/W3<=3s OR desired-confirm,324,7,821,223,1375
+
+detail_family,source,events,actual_acked,TP,FP,TN,FN
+0870,legacy_20260924,2,2,2,0,0,0
+0870,legacy_20260925_071517,4,4,4,0,0,0
+0870,legacy_20260925_090209,1,1,1,0,0,0
+0870,legacy_20260925_090550,32,1,0,0,31,1
+0870,eco5_20260926,32,32,32,0,0,0
+0870,eco5_20260928,12,12,12,0,0,0
+0870,atec_20261003,12,12,12,0,0,0
+085F,legacy_20260925_090209,2,2,1,0,0,1
+085F,legacy_20260925_090550,8,8,8,0,0,0
+085F,eco5_20260926,197,4,2,0,193,2
+085F,eco5_20260928,122,4,3,0,118,1
+085F,atec_20261003,2,2,1,0,0,1
+config,legacy_20260925_071517,2,2,0,0,0,2
+config,legacy_20260925_090209,29,29,29,0,0,0
+config,legacy_20260925_090550,31,31,4,0,0,27
+config,eco5_20260926,515,142,86,3,370,56
+config,eco5_20260928,766,311,173,4,451,138
+config,atec_20261003,32,32,32,0,0,0
