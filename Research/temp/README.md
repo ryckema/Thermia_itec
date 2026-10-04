@@ -1,3 +1,18 @@
+## Follow-up offline reductions — PROTO-OFFLINE-61..64
+
+Added/reconciled on 2026-10-04:
+
+- PROTO61: model-to-code TX conformance audit + route matrix
+- PROTO62: source-transcribed host decision-engine regression + 4630-check matrix
+- PROTO63: stream-parser/resynchronization fuzzing + fuzz summary + parser ambiguity matrix
+- PROTO64: production-core reduction/cleanup map
+
+Key new durable finding from this block: the current shortest-first parser can accept an 8-byte CRC-valid FC03 request prefix from a longer CRC-valid FC03 response in synthetic double-valid cases. Targeted non-semantic fuzz produced 0 accidental semantic requests, and no genuine Thermia frame is currently known to trigger the ambiguity. Treat this as defensive parser hardening debt, not a proven live write defect.
+
+Canonical Research files are reconciled through **PROTO-OFFLINE-64**. Live status remains **EXP387 COMPLETE / POSITIVE**, **EXP388 RUNNING / PARTIAL**, **EXP383 PREPARED / NOT RUN**. Write Beta v4.1 is unchanged.
+
+---
+
 ## Follow-up offline reductions — PROTO-OFFLINE-45..60
 
 Added/reconciled on 2026-10-04:
