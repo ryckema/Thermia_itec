@@ -1,3 +1,88 @@
+# 2026-10-04 — durable calendar write findings through EXP404
+
+## PROVEN / locally confirmed — F1 current and desired selectors
+
+- `W2 bit1 -> CURRENT FC16 055A/count33`.
+- `W0 bit1 + W2 bit1 -> DESIRED FC03 055A/count33`.
+- `W2 bit3 -> CURRENT FC16 059C/count33`.
+- `W0 bit3 + W2 bit3 -> DESIRED FC03 059C/count33`.
+- `W2=000E` requests the full F1 transport window as `055A/33 + 057B/33 + 059C/33`.
+
+These are local XTR M results, not symmetry-only inference.
+
+## PROVEN / locally confirmed — native calendar desired-page primitive
+
+For both 055A and 059C, the local XTR M accepts the native sequence:
+
+`0708 desired selector -> controller FC03 full-page pull -> ESP full-page response -> controller FC16 page publication`.
+
+An exact no-op response is locally accepted on both pages.
+
+For semantic deltas, exact FC16 republish of the intended change is observed and used as confirmation.
+
+## PROVEN / locally confirmed — semantic content write
+
+`055B` / F1 slot0 word1 is start minute.
+
+EXP401 changed `055B 0000 -> 0001` while slot0 validity remained clear. Controller FC16 confirmed exactly one changed word, and automatic rollback restored the original page.
+
+Therefore calendar content is locally writable through the native Online/DCM desired-page mechanism.
+
+## PROVEN / locally confirmed — F1 slot0 validity metadata
+
+`05BA bit0` controls validity of F1 slot0.
+
+Evidence now includes both directions:
+- prior panel-driven/local mapping correlation;
+- EXP404 active write `05BA 0000 -> 0001`;
+- exact controller FC16 confirmation with one changed word;
+- independent passive decoder observation of bit0 set;
+- automatic rollback `0001 -> 0000` with exact original page restored.
+
+This upgrades `05BA bit0 -> F1 slot0 validity` to **PROVEN / locally confirmed**.
+
+## PROVEN / locally confirmed — rollbackability
+
+Both content-page and metadata-page experimental writes have been restored using a second native desired transaction carrying the original authoritative page image.
+
+Safe experimental pattern now locally supported:
+1. acquire fresh current page;
+2. preserve exact original image;
+3. mutate only intended word(s);
+4. answer one controller FC03 pull;
+5. require exact FC16 confirmation;
+6. send original page through the same desired mechanism;
+7. require exact restoration.
+
+## STRONGLY SUPPORTED
+
+- F1 is the `WW_GEBLOKKEERD` / Hot Water Blocked calendar function.
+- Each calendar function is 98 logical words: 8 x 12-word records + 2 metadata words.
+- slot0 word6 is stop minute.
+- slot0 word11 is weekday/recurrence mask; exact weekday bit identity remains incomplete.
+- a production calendar writer should stage content while validity is clear, then change validity separately after content confirmation.
+
+## OPEN / UNKNOWN
+
+- coherent multi-word content acceptance in one local XTR 055A desired transaction;
+- exact weekday bit ordering;
+- mode-field semantics;
+- date-vs-recurrence precedence;
+- desired selectors for other F1 pages and F2/F3/F4;
+- F2/F3/F4 semantic labels locally;
+- persistence/reload behavior across restart;
+- atomicity expectations when content and validity live on different pages;
+- whether full slot creation should be ordered content-first then metadata, as currently safest, or follows another native rule.
+
+## DISPROVEN / SUPERSEDED
+
+- **Calendar is read-only on this XTR M** — disproven by EXP401 and EXP404.
+- **055A desired selector is only a cross-model inference** — superseded by local EXP399.
+- **059C desired selector is unknown** — superseded by local EXP403.
+- **05BA bit0 is only a candidate validity flag** — superseded by EXP404 local write+rollback confirmation.
+
+---
+
 # 2026-10-04 — Durable findings from PROTO-OFFLINE-61..64
 
 This section is current where it conflicts with older interpretations below.
