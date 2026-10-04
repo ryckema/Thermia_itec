@@ -1,0 +1,593 @@
+{
+  "model_id": "thermia-itec-xtr-native-dcm-v1",
+  "generated": "2026-10-04",
+  "status": "offline formalization through PROTO-OFFLINE-60",
+  "live_state": {
+    "last_complete": "EXP387",
+    "current": {
+      "id": "EXP388",
+      "status": "RUNNING / PARTIAL"
+    },
+    "prepared": {
+      "id": "EXP383",
+      "status": "PREPARED / NOT RUN"
+    }
+  },
+  "evidence_classes": [
+    "PROVEN / locally confirmed",
+    "PROVEN / genuine Online/DCM capture",
+    "STRONGLY SUPPORTED",
+    "HYPOTHESIS",
+    "OPEN / UNKNOWN",
+    "DISPROVEN / SUPERSEDED"
+  ],
+  "transport": {
+    "logical_slave": "0x0F",
+    "approval": {
+      "request": {
+        "function": "0x17",
+        "read_start": "0x0730",
+        "read_count": 8,
+        "write_start": "0x071C",
+        "write_count": 8,
+        "byte_count": 16
+      },
+      "response": {
+        "function": "0x17",
+        "byte_count": 16
+      },
+      "status": "PROVEN / genuine Online/DCM capture + local guarded emulation",
+      "algorithm": "OPEN / UNKNOWN",
+      "simple_transform_families": "DISPROVEN by PROTO40 for tested corpus"
+    },
+    "mailbox": {
+      "request": {
+        "function": "0x03",
+        "start": "0x0708",
+        "count": 6
+      },
+      "words": {
+        "W0": "high-half desired-page selector bits; bit0->0546 proven local+genuine ATEC; bit1->055A local-only",
+        "W1": "low-half desired-page selector bits; bit0->03E8 and bit3->042E genuine+local; bit4->0442 local",
+        "W2_W3": "32-page current/export bitmap geometry",
+        "W4": "service/runtime work metadata; exact universal bit semantics OPEN",
+        "W5": "profile/session metadata; local XTR 0006 has icon/liveness significance, Eco5 may use 0000"
+      }
+    }
+  },
+  "bootstrap": [
+    {
+      "index": 0,
+      "page": "0x03E8",
+      "count": 14,
+      "ack_frame": "0F1003E8000EC093",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 1,
+      "page": "0x03FC",
+      "count": 11,
+      "ack_frame": "0F1003FC000B4094",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 2,
+      "page": "0x0410",
+      "count": 22,
+      "ack_frame": "0F1004100016401C",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 3,
+      "page": "0x042E",
+      "count": 15,
+      "ack_frame": "0F10042E000FE01A",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 4,
+      "page": "0x0442",
+      "count": 13,
+      "ack_frame": "0F100442000DA1C6",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 5,
+      "page": "0x0456",
+      "count": 12,
+      "ack_frame": "0F100456000C2002",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 6,
+      "page": "0x046A",
+      "count": 18,
+      "ack_frame": "0F10046A00126006",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 7,
+      "page": "0x047E",
+      "count": 19,
+      "ack_frame": "0F10047E0013E1C2",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 8,
+      "page": "0x0492",
+      "count": 11,
+      "ack_frame": "0F100492000B203D",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 9,
+      "page": "0x04A6",
+      "count": 13,
+      "ack_frame": "0F1004A6000DE1F1",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 10,
+      "page": "0x04BA",
+      "count": 22,
+      "ack_frame": "0F1004BA0016603C",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 11,
+      "page": "0x04D8",
+      "count": 27,
+      "ack_frame": "0F1004D8001B0027",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 12,
+      "page": "0x04F6",
+      "count": 14,
+      "ack_frame": "0F1004F6000EA1E1",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 13,
+      "page": "0x050A",
+      "count": 19,
+      "ack_frame": "0F10050A0013A024",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 14,
+      "page": "0x051E",
+      "count": 10,
+      "ack_frame": "0F10051E000A21EA",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 15,
+      "page": "0x0532",
+      "count": 18,
+      "ack_frame": "0F1005320012E029",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 16,
+      "page": "0x0546",
+      "count": 20,
+      "ack_frame": "0F10054600142031",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 17,
+      "page": "0x055A",
+      "count": 33,
+      "ack_frame": "0F10055A002121E0",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 18,
+      "page": "0x057B",
+      "count": 33,
+      "ack_frame": "0F10057B002171EA",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 19,
+      "page": "0x059C",
+      "count": 33,
+      "ack_frame": "0F10059C0021C1DD",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 20,
+      "page": "0x05BD",
+      "count": 33,
+      "ack_frame": "0F1005BD002191D7",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 21,
+      "page": "0x05DE",
+      "count": 33,
+      "ack_frame": "0F1005DE002161C9",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 22,
+      "page": "0x05FF",
+      "count": 33,
+      "ack_frame": "0F1005FF002131C3",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 23,
+      "page": "0x0620",
+      "count": 33,
+      "ack_frame": "0F1006200021007D",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 24,
+      "page": "0x0641",
+      "count": 33,
+      "ack_frame": "0F100641002151A3",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 25,
+      "page": "0x0662",
+      "count": 33,
+      "ack_frame": "0F1006620021A069",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 26,
+      "page": "0x0683",
+      "count": 33,
+      "ack_frame": "0F1006830021F05F",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 27,
+      "page": "0x06A4",
+      "count": 33,
+      "ack_frame": "0F1006A400214054",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 28,
+      "page": "0x06C5",
+      "count": 33,
+      "ack_frame": "0F1006C50021118A",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 29,
+      "page": "0x06EA",
+      "count": 7,
+      "ack_frame": "0F1006EA0007A199",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 30,
+      "page": "0x06F1",
+      "count": 3,
+      "ack_frame": "0F1006F10003D05D",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    },
+    {
+      "index": 31,
+      "page": "0x06F4",
+      "count": 19,
+      "ack_frame": "0F1006F40013C190",
+      "local_xtr_geometry": "PROVEN / current v4.1 bootstrap"
+    }
+  ],
+  "runtime_pages": [
+    {
+      "page": "0x07D0",
+      "count": 19,
+      "role": "runtime A"
+    },
+    {
+      "page": "0x07E4",
+      "count": 17,
+      "role": "runtime A"
+    },
+    {
+      "page": "0x07F8",
+      "count": 17,
+      "role": "runtime B"
+    },
+    {
+      "page": "0x080C",
+      "count": 18,
+      "role": "runtime B"
+    },
+    {
+      "page": "0x0820",
+      "count": 18,
+      "role": "runtime C"
+    },
+    {
+      "page": "0x0834",
+      "count": 18,
+      "role": "runtime C",
+      "local_ack_policy": "capture-only; no local ACK proof"
+    },
+    {
+      "page": "0x0848",
+      "count": 23,
+      "role": "runtime D"
+    },
+    {
+      "page": "0x085F",
+      "count": 5,
+      "role": "overlay",
+      "local_known_payloads": [
+        {
+          "words": [
+            "0000",
+            "0000",
+            "0000",
+            "0000",
+            "0000"
+          ],
+          "ack_evidence": "PROVEN locally in qualified contexts"
+        },
+        {
+          "predicate": "word at 0x0861 == 0x0800 with otherwise known shape",
+          "ack_evidence": "PROVEN locally in qualified normalization context"
+        }
+      ],
+      "local_ack_policy_status": "context qualifier OPEN; payload allowlist itself locally evidence-backed"
+    },
+    {
+      "page": "0x0864",
+      "count": 4,
+      "role": "runtime D"
+    },
+    {
+      "page": "0x0870",
+      "count": 17,
+      "role": "runtime E/context",
+      "local_ack_evidence": "PROVEN in qualified runtime",
+      "normal_runtime_candidate": {
+        "status": "STRONGLY SUPPORTED / PROTO59",
+        "ownership_token_from": [
+          "qualified all-zero 085F ACK",
+          "qualified 0864 ACK"
+        ],
+        "token_may_survive": [
+          "known optional 0708 exchange"
+        ],
+        "consume": "first 0870 ACK",
+        "reset_on": [
+          "session/recovery boundary",
+          "unknown FC16/FC03",
+          "peer responder",
+          "parser/drop integrity fault",
+          "writer stop"
+        ]
+      },
+      "recovery_rejoin_qualifier": "OPEN / UNKNOWN"
+    },
+    {
+      "page": "0x0884",
+      "count": 60,
+      "role": "history snapshot",
+      "lifecycle": "periodically re-published; records newest-to-oldest",
+      "raw_event_id_semantics": "OPEN / UNKNOWN"
+    }
+  ],
+  "selectors": [
+    {
+      "page": "0x03E8",
+      "index": 0,
+      "current": {
+        "word": "W3",
+        "bit": 0,
+        "status": "PROVEN / local+genuine"
+      },
+      "desired": {
+        "word": "W1",
+        "bit": 0,
+        "status": "PROVEN / local+genuine"
+      },
+      "production_authorized": true
+    },
+    {
+      "page": "0x042E",
+      "index": 3,
+      "current": {
+        "word": "W3",
+        "bit": 3,
+        "status": "PROVEN / local+genuine"
+      },
+      "desired": {
+        "word": "W1",
+        "bit": 3,
+        "status": "PROVEN / local+genuine"
+      },
+      "production_authorized": true
+    },
+    {
+      "page": "0x0442",
+      "index": 4,
+      "current": {
+        "word": "W3",
+        "bit": 4,
+        "status": "PROVEN / local"
+      },
+      "desired": {
+        "word": "W1",
+        "bit": 4,
+        "status": "PROVEN / local-only"
+      },
+      "production_authorized": true
+    },
+    {
+      "page": "0x0546",
+      "index": 16,
+      "current": {
+        "word": "W2",
+        "bit": 0,
+        "status": "PROVEN / local"
+      },
+      "desired": {
+        "word": "W0",
+        "bit": 0,
+        "status": "PROVEN / local + genuine ATEC"
+      },
+      "production_authorized": true
+    },
+    {
+      "page": "0x055A",
+      "index": 17,
+      "current": {
+        "word": "W2",
+        "bit": 1,
+        "status": "PROVEN / local calendar transaction"
+      },
+      "desired": {
+        "word": "W0",
+        "bit": 1,
+        "status": "PROVEN / local-only"
+      },
+      "production_authorized": false,
+      "reason": "calendar cross-page/write atomicity not generalized; no genuine Online calendar desired pull"
+    }
+  ],
+  "desired_transaction": {
+    "primitive": [
+      "qualified mailbox selector",
+      "controller FC03 full-page pull",
+      "emulator returns coherent authoritative full page with at most intended mutation",
+      "semantic delta expects exact controller FC16 republish confirmation"
+    ],
+    "no_op": "exact desired image may produce no same-page FC16 republish; genuine ATEC example",
+    "cache_policy": "fresh local authoritative cache required by production; genuine Eco5 bus-visible reuse >=374.586s does not relax local safety rule",
+    "default_unproven_selector_policy": "DENY / NO_TX"
+  },
+  "state_model": {
+    "axes": [
+      "session/approval qualification",
+      "work class: bootstrap | runtime | config-refresh | service-refresh | desired | recovery",
+      "semantic owner: none | 03E8 | 042E | 0442 | 0546"
+    ],
+    "sole_semantic_owner": {
+      "status": "STRONGLY SUPPORTED / PROTO57",
+      "reachable_multi_owner_states": 0,
+      "defensive_global_assertion": "recommended future hardening; shadow-regresses cleanly"
+    },
+    "write_state7_note": "state7 has substate: delayed-refresh armed vs runtime-only; only armed state7 may re-enter current refresh"
+  },
+  "ack_policy": {
+    "bootstrap": "ACK exact expected page/count/order",
+    "0834": "capture-only until locally proven",
+    "04A6_runtime": "capture-only except explicitly proven resume context",
+    "085F": "known payload is necessary but not sufficient as universal context proof",
+    "0870": "qualified runtime ownership; recovery/rejoin exception architecture required; exact recovery qualifier OPEN",
+    "config_runtime": "bootstrap/refresh/confirmation ownership proven; autonomous controller-originated 03E8 also locally observed; generic universal owner rule not yet resolved"
+  },
+  "calendar": {
+    "transport_pages": [
+      "0x055A",
+      "0x057B",
+      "0x059C",
+      "0x05BD",
+      "0x05DE",
+      "0x05FF",
+      "0x0620",
+      "0x0641",
+      "0x0662",
+      "0x0683",
+      "0x06A4",
+      "0x06C5"
+    ],
+    "logical_layout": "4 x 98-word function blocks + 4-word tail",
+    "function1": "WW_GEBLOKKEERD / PROVEN locally correlated",
+    "function2": "HYPOTHESIS EVU / power limiting",
+    "function3": "HYPOTHESIS silent mode",
+    "function4": "HYPOTHESIS temperature reduction; real scheduled effect strongly supported",
+    "weekday_mask": "7-bit mask; 0x7F all days; bit order OPEN",
+    "write_policy": "NO generalized writer; no genuine Online calendar desired pull in corpus"
+  },
+  "profile_abi": {
+    "modern_xtr_eco5_geometry_matches": [
+      "0x03E8",
+      "0x0410",
+      "0x0492",
+      "0x051E"
+    ],
+    "local_xtr_structural_values": {
+      "0x03F3": 1,
+      "0x03F5": 2
+    },
+    "legacy_atec_values": {
+      "0x03F3": 60,
+      "0x03F5": "absent from 03E8/count13"
+    },
+    "warning": "same address/page does not prove same semantics"
+  },
+  "invariants": [
+    {
+      "id": "I1",
+      "rule": "unproven desired selector => NO_TX",
+      "status": "required safety invariant"
+    },
+    {
+      "id": "I2",
+      "rule": "unexpected FC03 => no response + stop/fail-closed",
+      "status": "current v4.1 behavior"
+    },
+    {
+      "id": "I3",
+      "rule": "semantic response budget <=1 per transaction",
+      "status": "current v4.1 behavior"
+    },
+    {
+      "id": "I4",
+      "rule": "semantic delta must use coherent full-page clone with one intended mutation",
+      "status": "proven local/genuine architecture"
+    },
+    {
+      "id": "I5",
+      "rule": "semantic confirmation mismatch/extra delta => no retry",
+      "status": "current v4.1 fail-closed"
+    },
+    {
+      "id": "I6",
+      "rule": "controller-loss after semantic selector/page boundary => refuse recovery",
+      "status": "EXP388 design; offline verified, live branches partial"
+    },
+    {
+      "id": "I7",
+      "rule": "one semantic owner at a time",
+      "status": "STRONGLY SUPPORTED reachable-state invariant"
+    },
+    {
+      "id": "I8",
+      "rule": "0834 remains capture-only without local ACK proof",
+      "status": "required evidence discipline"
+    },
+    {
+      "id": "I9",
+      "rule": "calendar symmetry does not authorize new desired selectors or cross-page writes",
+      "status": "required evidence discipline"
+    }
+  ],
+  "open_questions": [
+    "exact 071C/0730 challenge-response algorithm/key/session dependence",
+    "exact local XTR recovery/rejoin qualifier for 0870",
+    "universal/local context predicate for 085F ACK",
+    "autonomous config push ownership beyond locally observed 03E8",
+    "local ACK safety for 0834",
+    "raw 0884 event-ID meanings",
+    "calendar weekday bit order and native cross-page write atomicity"
+  ],
+  "references": {
+    "semantic_register_map": "Research/protocol reduction/thermia_protocol_semantic_register_map.csv",
+    "selector_map": "Research/protocol reduction/thermia_protocol_selector_map.csv",
+    "current_prior_schema": "Research/temp/thermia_protocol_schema_current.json",
+    "write_beta": "Write (Beta)/thermia_itec_xtr_m_waveshare_write_beta_v4_1.yaml"
+  }
+}
