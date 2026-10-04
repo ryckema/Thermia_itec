@@ -1,0 +1,58 @@
+THERMIA PROTOCOL MODEL V1: PASS (57 checks)
+PASS 32 bootstrap pages 32
+PASS bootstrap indices 0..31 
+PASS bootstrap page uniqueness 
+PASS CRC 0x03E8/14 
+PASS CRC 0x03FC/11 
+PASS CRC 0x0410/22 
+PASS CRC 0x042E/15 
+PASS CRC 0x0442/13 
+PASS CRC 0x0456/12 
+PASS CRC 0x046A/18 
+PASS CRC 0x047E/19 
+PASS CRC 0x0492/11 
+PASS CRC 0x04A6/13 
+PASS CRC 0x04BA/22 
+PASS CRC 0x04D8/27 
+PASS CRC 0x04F6/14 
+PASS CRC 0x050A/19 
+PASS CRC 0x051E/10 
+PASS CRC 0x0532/18 
+PASS CRC 0x0546/20 
+PASS CRC 0x055A/33 
+PASS CRC 0x057B/33 
+PASS CRC 0x059C/33 
+PASS CRC 0x05BD/33 
+PASS CRC 0x05DE/33 
+PASS CRC 0x05FF/33 
+PASS CRC 0x0620/33 
+PASS CRC 0x0641/33 
+PASS CRC 0x0662/33 
+PASS CRC 0x0683/33 
+PASS CRC 0x06A4/33 
+PASS CRC 0x06C5/33 
+PASS CRC 0x06EA/7 
+PASS CRC 0x06F1/3 
+PASS CRC 0x06F4/19 
+PASS unique desired selector ('W1', 0) 
+PASS 0x03E8 low-half selector word 
+PASS 0x03E8 low-half selector bit 
+PASS unique desired selector ('W1', 3) 
+PASS 0x042E low-half selector word 
+PASS 0x042E low-half selector bit 
+PASS unique desired selector ('W1', 4) 
+PASS 0x0442 low-half selector word 
+PASS 0x0442 low-half selector bit 
+PASS unique desired selector ('W0', 0) 
+PASS 0x0546 high-half selector word 
+PASS 0x0546 high-half selector bit 
+PASS unique desired selector ('W0', 1) 
+PASS 0x055A high-half selector word 
+PASS 0x055A high-half selector bit 
+PASS calendar selector not production-authorized 
+PASS 0834 capture-only 
+PASS 0870 recovery qualifier remains open 
+PASS EXP388 remains partial 
+PASS PROTO54 golden regression PROTO54 GOLDEN TRACE REGRESSION: PASS
+PASS PROTO57 no reachable multi-owner state 0
+PASS PROTO58 0870 TP/FP/TN/FN (64, 0, 31, 0)
