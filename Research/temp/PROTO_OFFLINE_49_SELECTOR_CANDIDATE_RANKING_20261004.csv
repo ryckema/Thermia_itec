@@ -1,0 +1,34 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_49_SELECTOR_CANDIDATE_RANKING_20261004.csv>index,page_index,selector_word,bit,page,selector_status,evidence,score,ranking_reason
+0,0,W1,0,03E8,PROVEN,genuine + local XTR,,excluded from candidate ranking
+1,1,W1,1,03FC,UNPROVEN / DENY-BY-DEFAULT,geometry only,6.0,A — low-half W1 mechanism has multiple genuine/local proven bits; stable page count across profiles
+2,2,W1,2,0410,UNPROVEN / DENY-BY-DEFAULT,geometry only,5.0,A — low-half W1 mechanism has multiple genuine/local proven bits; clean profile split but local XTR geometry known
+3,3,W1,3,042E,PROVEN,genuine + local XTR,,excluded from candidate ranking
+4,4,W1,4,0442,PROVEN,local XTR only,,excluded from candidate ranking
+5,5,W1,5,0456,UNPROVEN / DENY-BY-DEFAULT,geometry only,6.0,A — low-half W1 mechanism has multiple genuine/local proven bits; stable page count across profiles
+6,6,W1,6,046A,UNPROVEN / DENY-BY-DEFAULT,geometry only,6.0,A — low-half W1 mechanism has multiple genuine/local proven bits; stable page count across profiles
+7,7,W1,7,047E,UNPROVEN / DENY-BY-DEFAULT,geometry only,6.0,A — low-half W1 mechanism has multiple genuine/local proven bits; stable page count across profiles
+8,8,W1,8,0492,UNPROVEN / DENY-BY-DEFAULT,geometry only,5.0,A — low-half W1 mechanism has multiple genuine/local proven bits; clean profile split but local XTR geometry known
+9,9,W1,9,04A6,UNPROVEN / DENY-BY-DEFAULT,geometry only,4.0,B — low-half W1 mechanism has multiple genuine/local proven bits; stable page count across profiles; service/SG operational page
+10,10,W1,10,04BA,UNPROVEN / DENY-BY-DEFAULT,geometry only,6.0,A — low-half W1 mechanism has multiple genuine/local proven bits; stable page count across profiles
+11,11,W1,11,04D8,UNPROVEN / DENY-BY-DEFAULT,geometry only,1.0,C — low-half W1 mechanism has multiple genuine/local proven bits; stable page count across profiles; concrete-drying program; active side effect risk
+12,12,W1,12,04F6,UNPROVEN / DENY-BY-DEFAULT,geometry only,6.0,A — low-half W1 mechanism has multiple genuine/local proven bits; stable page count across profiles
+13,13,W1,13,050A,UNPROVEN / DENY-BY-DEFAULT,geometry only,6.0,A — low-half W1 mechanism has multiple genuine/local proven bits; stable page count across profiles
+14,14,W1,14,051E,UNPROVEN / DENY-BY-DEFAULT,geometry only,5.0,A — low-half W1 mechanism has multiple genuine/local proven bits; clean profile split but local XTR geometry known
+15,15,W1,15,0532,UNPROVEN / DENY-BY-DEFAULT,geometry only,6.0,A — low-half W1 mechanism has multiple genuine/local proven bits; stable page count across profiles
+16,16,W0,0,0546,PROVEN,genuine ATEC + local XTR,,excluded from candidate ranking
+17,17,W0,1,055A,PROVEN,local XTR only,,excluded from candidate ranking
+18,18,W0,2,057B,UNPROVEN / DENY-BY-DEFAULT,geometry only,-2.0,D — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; calendar transport; desired path absent and cross-page atomicity unresolved
+19,19,W0,3,059C,UNPROVEN / DENY-BY-DEFAULT,geometry only,-2.0,D — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; calendar transport; desired path absent and cross-page atomicity unresolved
+20,20,W0,4,05BD,UNPROVEN / DENY-BY-DEFAULT,geometry only,-2.0,D — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; calendar transport; desired path absent and cross-page atomicity unresolved
+21,21,W0,5,05DE,UNPROVEN / DENY-BY-DEFAULT,geometry only,-2.0,D — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; calendar transport; desired path absent and cross-page atomicity unresolved
+22,22,W0,6,05FF,UNPROVEN / DENY-BY-DEFAULT,geometry only,-2.0,D — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; calendar transport; desired path absent and cross-page atomicity unresolved
+23,23,W0,7,0620,UNPROVEN / DENY-BY-DEFAULT,geometry only,-2.0,D — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; calendar transport; desired path absent and cross-page atomicity unresolved
+24,24,W0,8,0641,UNPROVEN / DENY-BY-DEFAULT,geometry only,-2.0,D — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; calendar transport; desired path absent and cross-page atomicity unresolved
+25,25,W0,9,0662,UNPROVEN / DENY-BY-DEFAULT,geometry only,-2.0,D — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; calendar transport; desired path absent and cross-page atomicity unresolved
+26,26,W0,10,0683,UNPROVEN / DENY-BY-DEFAULT,geometry only,-2.0,D — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; calendar transport; desired path absent and cross-page atomicity unresolved
+27,27,W0,11,06A4,UNPROVEN / DENY-BY-DEFAULT,geometry only,-2.0,D — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; calendar transport; desired path absent and cross-page atomicity unresolved
+28,28,W0,12,06C5,UNPROVEN / DENY-BY-DEFAULT,geometry only,-2.0,D — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; calendar transport; desired path absent and cross-page atomicity unresolved
+29,29,W0,13,06EA,UNPROVEN / DENY-BY-DEFAULT,geometry only,0.0,C — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; tail/terminal bootstrap-service pages; semantics weak
+30,30,W0,14,06F1,UNPROVEN / DENY-BY-DEFAULT,geometry only,0.0,C — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; stable page count across profiles; tail/terminal bootstrap-service pages; semantics weak
+31,31,W0,15,06F4,UNPROVEN / DENY-BY-DEFAULT,geometry only,-2.0,D — high-half W0 mechanism proven only for bit0 genuine and bits0/1 locally; tail/terminal bootstrap-service pages; semantics weak
