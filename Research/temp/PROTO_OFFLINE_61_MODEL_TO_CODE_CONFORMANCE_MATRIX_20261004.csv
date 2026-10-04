@@ -1,0 +1,15 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_61_MODEL_TO_CODE_CONFORMANCE_MATRIX_20261004.csv>index,route_class,source_lines,tx_sites,model_section,conformance,finding,risk
+0,FC17 approval response / R1,2284-2285; 2320-2321,2.0,transport.approval,CONFORMS,Both FC17 response TX sites use the modeled response shape and are challenge/session guarded.,No new gap found.
+1,Ordered bootstrap FC16 ACK chain 03E8..06F4,2547;2572;2602;2625;2644;2663;2683;2703;2723;2743;2763;2783;2803;2823;2843;2863;2883;2905;2929;2953;2977;3001;3025;3049;3073;3097;3121;3144;3168;3190;3208;3274,32.0,bootstrap[0..31],CONFORMS,Exactly 32 page ACK TX sites correspond to the formal bootstrap table and hard-coded CRCs.,No new gap found.
+2,Special retained/export-resume 04A6 ACK,3988-3989,1.0,ack_policy.04A6_runtime,CONFORMS / LEGACY-SCAFFOLD,ACK exists only behind write_resume_armed/write_resume_started; normal Thermia Write does not arm this old probe.,"Cleanup candidate, not uncontrolled normal runtime ACK."
+3,Generic runtime FC16 ACK,4034-4045,1.0,"ack_policy.{085F,0870,config_runtime,0834}",PARTIAL / KNOWN POLICY DEBT,One generic ACK builder services locally recognized config/runtime pages after special-case exclusions.,"Broader than formal model for known 085F, 0870 and generic known-config pages; 0834 remains excluded."
+4,0708 mailbox idle/startup/refresh/selector responses,4161;4182;4213;4220;4239;4251;4272;4277;4298;4319;4348;4355;4376;4396;4421;4434;4459;4472,18.0,transport.mailbox + selectors + state_model,CONFORMS WITH SPEC-GRANULARITY NOTE,"All 18 TX sites are 0708 replies used for startup sync, current refresh, proven selectors, guard-idle, delayed re-arm, autosync or normal idle.",Formal model does not enumerate every exact idle/guard frame variant.
+5,Semantic full-page desired FC03 responses,4519-4520;4555;4621-4622;4664-4665,4.0,desired_transaction + selectors,CONFORMS,"Four page-response TX sites correspond to 042E, 0442, 0546 and 03E8 semantic engines; each clones a full page and mutates one authorized word.",No unmodeled semantic page-response TX class found.
+6,,,,,,,
+7,POLICY_GAPS,,,,,,
+8,ACK-085F,KNOWN / NOT NEW,,Formal model requires contextual qualification.,v4.1 generic runtime ACK includes known 085F payloads.,Later context-hardening candidate; do not change during EXP388.,
+9,ACK-0870,KNOWN / ACTIONABLE LATER,,Formal model requires qualified runtime ownership or recovery/rejoin.,v4.1 generically ACKs recognized 0870/count17.,Best first ACK-hardening candidate after EXP388.,
+10,ACK-known-config,KNOWN / PROFILE-AMBIGUOUS,,Formal model has owned contexts plus autonomous 03E8 exception.,v4.1 generic local_config fallback is broader.,Do not replace with W2/W3-only ownership.,
+11,sole-semantic-owner,DEFENSIVE ONLY,,Formal model recommends centralized assertion.,v4.1 relies on distributed guards; PROTO57 proves conflicts unreachable.,Refactor hardening only.,
+12,state7-substate,MODEL REFINEMENT,,Formal model distinguishes delayed-refresh-armed from runtime-only state7.,v4.1 carries separate write_delayed_refresh_pending.,Keep explicit in rebuild.,
