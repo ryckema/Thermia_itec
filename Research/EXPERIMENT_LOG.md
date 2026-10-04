@@ -1,3 +1,61 @@
+# 2026-10-04 — OFFLINE EXPERIMENTS PROTO-OFFLINE-45..60
+
+These are offline analyses only. They do **not** advance EXP388 and did not transmit to the heat pump.
+
+## PROTO-OFFLINE-60 — COMPLETE / POSITIVE — formal protocol/spec package
+**Hypothesis:** encode accumulated protocol knowledge as one machine-readable deny-by-default contract.  
+**Controlled change:** model/documentation tooling only.  
+**Result:** protocol model v1 + schema + decision table + executable validator. **57/57 checks PASS**.
+
+## PROTO-OFFLINE-59 — COMPLETE / POSITIVE — local 0870 context classifier
+**Hypothesis:** XTR-only history can yield the smallest normal-runtime 0870 qualifier.  
+**Result:** mandatory 0864 is locally disproven. Best-supported candidate is a one-shot session-scoped 0870 ownership token from qualified all-zero 085F ACK OR qualified 0864 ACK; optional known 0708 may intervene; first 0870 ACK consumes it. Recovery/rejoin qualifier remains OPEN.
+
+## PROTO-OFFLINE-58 — COMPLETE / POSITIVE — shadow-patch regression
+**Result:** sole-owner guard blocks **604/604** synthetic PROTO53 conflict cases and zero modeled reachable normal paths. `qualified normal runtime OR explicit recovery/rejoin` classifies the genuine 0870 corpus exactly: **TP=64, FP=0, TN=31, FN=0**. Golden regression remains PASS.
+
+## PROTO-OFFLINE-57 — COMPLETE / POSITIVE — semantic-state reachability
+**Controlled change:** forward reachability from valid normal/recovery roots with explicit EXP387 delayed-rearm substate.  
+**Result:** **115 reachable variants; 0 multi-owner states; 0 reachable PROTO53 conflict projections; 0 unsafe semantic pre-events.** No demonstrated double-semantic-TX bug.
+
+## PROTO-OFFLINE-56 — COMPLETE / POSITIVE — XTR-only ACK context
+**Result:** both known 085F payload forms are locally ACK-proven in qualified contexts. Direct 0870 without prior 0864 is locally proven; qualified 0870 ACK advances valid runtime. Bootstrap/refresh/confirmation config ownership is locally proven; autonomous runtime 03E8 also exists. 0834 remains without local ACK proof.
+
+## PROTO-OFFLINE-55 — COMPLETE / POSITIVE — differential hardening simulation
+**Result:** recent answered 0708 <=3 s for 0870 gives TP=63, FP=0, TN=31, FN=1. Simple 085F/config hardening over-blocks genuine behavior. 0870 is the cleanest first local ACK-hardening target.
+
+## PROTO-OFFLINE-54 — COMPLETE / POSITIVE — golden trace regression
+**Result:** eight fixtures converted to deterministic regression; **72/72 exact assertions PASS**.
+
+## PROTO-OFFLINE-53 — COMPLETE / POSITIVE WITH DEFENSIVE-INVARIANT DEBT IDENTIFIED
+**Result:** 4,608 Cartesian state tuples / 64,512 decision rows expose impossible mixed-owner combinations. Later PROTO57 proves those conflict states unreachable under current modeled transitions.
+
+## PROTO-OFFLINE-52 — COMPLETE / INCONCLUSIVE FOR BINARY RECOVERY; POSITIVE FOR TARGET REFINEMENT
+**Result:** no binary recovered. Current user-app target is MyThermia / `se.thermia.online2`; installer/service target remains `com.thermia.onsite`.
+
+## PROTO-OFFLINE-51 — COMPLETE / POSITIVE STRUCTURAL RECONFIRMATION
+**Result:** ATEC calendar function words 0..391 equal legacy reference; only tail 06E2 differs. No new weekday subset or calendar desired pull; generalized calendar writing remains unauthorized.
+
+## PROTO-OFFLINE-50 — COMPLETE / POSITIVE FOR HISTORY LIFECYCLE; NEGATIVE FOR RAW-ID SEMANTICS
+**Result:** 0884 pages can remain byte-identical for minutes and are ordered newest-to-oldest. Raw IDs and insertion/rollover mechanics remain OPEN.
+
+## PROTO-OFFLINE-49 — COMPLETE / POSITIVE AS PRIORITIZATION ARTIFACT; NO NEW SELECTOR PROOF
+**Result:** no new selector promoted. Ranking is planning-only; unproven bits remain DENY-BY-DEFAULT.
+
+## PROTO-OFFLINE-48 — COMPLETE / NEGATIVE FOR NEW SEMANTIC PROMOTIONS
+**Result:** unresolved settings fields show no useful within-capture edges. Five 087D +1 edges reconfirm compressor-runtime accumulation; no new semantic label.
+
+## PROTO-OFFLINE-47 — COMPLETE / POSITIVE — cross-profile ABI alignment
+**Result:** XTR aligns structurally with modern Eco5 at 03E8/0410/0492/051E; local 03F3=1 and 03F5=2 follow the modern representation. Semantics remain OPEN.
+
+## PROTO-OFFLINE-46 — COMPLETE / POSITIVE WITH THREE BROAD ACK SURFACES CONFIRMED
+**Result:** 29 valid-CRC synthetic scenarios confirm semantic write machinery is strongly fail-closed. Broad ACK surfaces remain known 085F, 0870 and generic known-config allowlists. EXP388 cancellation branches remain live-unconfirmed.
+
+## PROTO-OFFLINE-45 — COMPLETE / POSITIVE WITH MODEL REFINEMENTS
+**Result:** seven genuine captures + one local passive XTR trace replay successfully. Approval/bootstrap/runtime/desired/recovery are machine-reproducible; approval and retained service/config can overlap, so session/work state is orthogonal rather than one strict enum.
+
+---
+
 # 2026-10-03 — PROTO-OFFLINE-40..44 reconciliation
 
 **Live XTR state remains unchanged:** EXP387 COMPLETE / POSITIVE; EXP388 RUNNING / PARTIAL; EXP383 PREPARED / NOT RUN.  
