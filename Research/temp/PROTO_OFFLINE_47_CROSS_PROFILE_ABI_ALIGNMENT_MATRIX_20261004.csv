@@ -1,0 +1,42 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_47_CROSS_PROFILE_ABI_ALIGNMENT_MATRIX_20261004.csv>index,page_index,page_start,legacy_count,atec_count,eco5_count,local_xtr_v4_1_count,classification
+0,0,03E8,13,13,14,14,clean legacy/ATEC vs modern Eco5/XTR ABI split
+1,1,03FC,11,11,11,11,same count across compared profiles
+2,2,0410,21,21,22,22,clean legacy/ATEC vs modern Eco5/XTR ABI split
+3,3,042E,15,15,15,15,same count across compared profiles
+4,4,0442,13,13,13,13,same count across compared profiles
+5,5,0456,12,12,12,12,same count across compared profiles
+6,6,046A,18,18,18,18,same count across compared profiles
+7,7,047E,19,19,19,19,same count across compared profiles
+8,8,0492,9,9,11,11,clean legacy/ATEC vs modern Eco5/XTR ABI split
+9,9,04A6,13,13,13,13,same count across compared profiles
+10,10,04BA,22,22,22,22,same count across compared profiles
+11,11,04D8,27,27,27,27,same count across compared profiles
+12,12,04F6,14,14,14,14,same count across compared profiles
+13,13,050A,19,19,19,19,same count across compared profiles
+14,14,051E,9,9,10,10,clean legacy/ATEC vs modern Eco5/XTR ABI split
+15,15,0532,18,18,18,18,same count across compared profiles
+16,16,0546,20,20,20,20,same count across compared profiles
+17,17,055A,33,33,33,33,same count across compared profiles
+18,18,057B,33,33,33,33,same count across compared profiles
+19,19,059C,33,33,33,33,same count across compared profiles
+20,20,05BD,33,33,33,33,same count across compared profiles
+21,21,05DE,33,33,33,33,same count across compared profiles
+22,22,05FF,33,33,33,33,same count across compared profiles
+23,23,0620,33,33,33,33,same count across compared profiles
+24,24,0641,33,33,33,33,same count across compared profiles
+25,25,0662,33,33,33,33,same count across compared profiles
+26,26,0683,33,33,33,33,same count across compared profiles
+27,27,06A4,33,33,33,33,same count across compared profiles
+28,28,06C5,33,33,33,33,same count across compared profiles
+29,29,06EA,7,7,7,7,same count across compared profiles
+30,30,06F1,3,3,3,3,same count across compared profiles
+31,31,06F4,,19,19,19,legacy capture gap; ATEC/Eco5/XTR agree
+32,register,legacy,atec,eco5_20260926,eco5_20260928,local_xtr,conclusion
+33,03F1,40,40,40,40,40,same value across every observed profile including local XTR; structurally stable but no semantic edge.
+34,03F2,30,30,30,30,30,same value across every observed profile including local XTR; structurally stable but no semantic edge.
+35,03F3,60,60,1,1,1,local XTR=1 matches modern Eco5=1; legacy/ATEC=60. Strong modern-vs-legacy ABI discriminator; semantic still OPEN.
+36,03F5,,,2,2,2,"local XTR contains modern count14 extension with value 2, matching Eco5; absent from legacy/ATEC count13 page."
+37,0431,12,12,20,20,,ATEC follows legacy values; Eco5 differs. Local XTR value unavailable in current raw corpus.
+38,0432,60,60,-10,-10,,ATEC follows legacy values; Eco5 differs. Local XTR value unavailable in current raw corpus.
+39,0447,35,35,-8,-8,,ATEC follows legacy values; Eco5 differs. Local XTR value unavailable in current raw corpus.
