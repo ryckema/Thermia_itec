@@ -1,3 +1,24 @@
+## Follow-up offline reductions — PROTO-OFFLINE-65..68
+
+Added on 2026-10-04:
+
+- PROTO65: exhaustive genuine-corpus parser ambiguity scan + per-capture summary/details/type distribution
+- PROTO66: parser-fix shadow tournament against genuine and adversarial double-valid frames
+- PROTO67: parser + semantic-state end-to-end adversarial replay + gap-aware genuine replay
+- PROTO68: clean-core structural equivalence dry-run + equivalence matrix
+- `tools/thermia_clean_core_v0_reference.py`: architecture/reference note for the PROTO68 clean-core design
+- `CANONICAL_UPDATE_PENDING_PROTO65_68_20261004.md`: pending canonical reconciliation notes
+
+Key results:
+- PROTO65 scanned **25,031 genuine CRC-valid Online/DCM frames** and found **0 double-valid parser candidates** and **0 genuine semantic-prefix collisions**.
+- PROTO66 refined the parser fix: merely preferring shortest/longest or rejecting only already-complete ambiguities is insufficient under arbitrary chunk splitting; robust handling needs frame-gap/context-aware deferral.
+- PROTO67 demonstrates the synthetic risk end-to-end: in 50,000 adversarial parser+semantic cases, the current shortest-prefix strategy can cross the setting-bearing TX boundary in matching-owner split-prefix states, while frame-gap finalization reduced tested ambiguous-prefix setting TX decisions to **0** and preserved **140/140** genuine replay runs plus **4/4** legitimate semantic request controls.
+- PROTO68 proves structural cleanup can preserve current behavior offline: **13,358,496** current-v4.1 vs schema/table-driven decision comparisons, **0 differences**; PROTO54 and PROTO60 gates remain PASS.
+
+These remain offline results. No Write Beta YAML behavior was changed and EXP388 remains **RUNNING / PARTIAL**.
+
+---
+
 ## Follow-up offline reductions — PROTO-OFFLINE-61..64
 
 Added/reconciled on 2026-10-04:
