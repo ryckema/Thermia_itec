@@ -1,0 +1,10 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_45_TRACE_REPLAY_MATRIX_20261003.csv>index,file,profile,0f_frames,crc_bad,approval_accepted,approval_challenges,bootstrap_complete,bootstrap_partial,mailbox_answered,desired_pulls,desired_delta,desired_noop,desired_unbracketed,desired_confirmed,recovery_0870_windows,runtime_pub,runtime_acked,runtime_unacked,085f_acked,085f_unacked,0834_acked,0834_unacked,steady_runtime_buckets,exact_canonical_buckets,noncanonical_buckets,approval_overlap_config,standalone_config,atec_steady_085f
+0,thermia_capture_20260924_210001(1).log,legacy_a5,68,0,0,0,0,0,11,2,0,0,2,0,0,21,21,0,0,0,2,0,8,8,0,0,0,0
+1,thermia_capture_20260925_071517.log,legacy_a5,116,0,0,0,0,0,18,0,0,0,0,0,0,38,38,0,0,0,4,0,18,16,2,0,2,0
+2,thermia_capture_20260925_090209.log,legacy_a5,94,0,0,0,0,1,6,0,0,0,0,0,0,12,12,0,2,0,1,0,0,0,0,0,0,0
+3,thermia_capture_20260925_090550.log,legacy_a5,137,0,0,0,0,0,3,0,0,0,0,0,1,42,11,31,8,0,0,0,1,0,1,0,0,0
+4,itec_eco5_gateway_20260926.log,eco5,2054,0,2,99,2,0,183,4,4,0,0,4,0,543,345,198,4,193,31,1,153,146,7,1,0,0
+5,itec_eco5_gateway_20260928.log,eco5,1882,0,4,64,4,0,81,0,0,0,0,0,0,339,220,119,4,118,12,0,56,56,0,2,0,0
+6,thermia_capture_20261003_165355.log,atec_dcm03,458,0,1,1,1,0,65,1,0,1,0,0,0,130,130,0,2,0,13,0,62,60,2,0,0,1
+7,thermia-logs.txt,local_xtr_passive,105,0,0,0,0,0,0,0,0,0,0,0,0,35,0,35,0,35,0,0,0,0,0,0,0,0
