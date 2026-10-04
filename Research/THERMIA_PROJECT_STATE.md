@@ -1,3 +1,50 @@
+# 2026-10-04 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-64
+
+**Authoritative status:** this section supersedes older offline/current-state summaries below where they conflict. Historical sections remain unchanged.
+
+## Current live XTR status — unchanged
+
+- **EXP387 — COMPLETE / POSITIVE**
+- **EXP388 — RUNNING / PARTIAL** — repeated controller-restart recovery succeeded twice without ESP reboot; pre-semantic cancellation and refresh-only cancellation remain not independently live-exercised.
+- **EXP383 — PREPARED / NOT RUN**
+- **PROTO-OFFLINE-61..64 do not advance live experiment state.**
+
+## New offline results
+
+- **PROTO-OFFLINE-61 — COMPLETE / POSITIVE WITH THREE KNOWN ACK-POLICY DEVIATIONS** — 58/58 explicit v4.1 UART TX sites are accounted for by six known route classes. No unmodeled semantic TX route exists. Remaining source/model gaps are the already-known broader ACK permissions for 085F, 0870, and generic known-config pages.
+- **PROTO-OFFLINE-62 — COMPLETE / POSITIVE** — source-transcribed host decision logic passes **4630/4630 checks**, including golden evidence, representative fault cases, selector/page guards, all 4,608 EXP388 recovery-state combinations, and PROTO57 sole-owner reachability.
+- **PROTO-OFFLINE-63 — COMPLETE / POSITIVE FOR RESYNC ROBUSTNESS WITH PARSER AMBIGUITY** — 60,000 broad fuzz cases plus 100,000 non-semantic targeted controls; targeted controls produced **0 accidental semantic-request outputs**. Deterministic constructions nevertheless prove that a longer valid FC03 response can contain an 8-byte CRC-valid prefix that the current shortest-first assembler accepts as an exact semantic FC03 request. Constructions were found for 0546, 042E, and 0442.
+- **PROTO-OFFLINE-64 — COMPLETE / POSITIVE** — a cleanup/rebuild map classifies 28 current components into KEEP / MERGE / MOVE-TO-TEST-HARNESS / REMOVE-OR-REVIEW.
+
+## Current protocol/safety additions
+
+1. Every explicit v4.1 UART TX site maps to a known protocol route class; no hidden semantic TX path was found.
+2. The host-side decision transcription reproduces current regression expectations, but is not compiled ESPHome proof.
+3. CRC validity plus shortest-candidate selection is not a unique request/response discriminator. Future parser hardening should use transaction/session context or fail closed on double-valid candidates.
+4. No genuine Thermia frame is currently known to trigger the PROTO63 ambiguity; treat it as defensive parser hardening, not an observed live write.
+5. Do not combine EXP388 recovery restructuring with 0870, 085F, generic-config ACK hardening, or parser replacement in the same live experiment.
+6. Any rewrite must preserve delayed-refresh state, integrity counters, autonomous 03E8 handling, both locally proven 085F payload forms, and direct 0870 behavior without mandatory 0864.
+
+## Recommended next sequence
+
+1. Keep v4.1 behavior unchanged until an explicitly prepared live experiment.
+2. Rebuild EXP388 only around recovery/state instrumentation and deterministic cancellation testing.
+3. Carry parser ambiguity as a separate hardening item.
+4. After EXP388, test 0870 context hardening separately.
+5. Run PROTO54/60/61/62/63 offline gates before future live refactors.
+
+## Safety constraints retained
+
+- No new desired selector is authorized.
+- 0834 remains capture-only.
+- Do not require 0864 before every 0870.
+- Do not reduce config ACK ownership to W2/W3 only.
+- Do not remove either locally proven 085F payload form.
+- **EXP388 remains RUNNING / PARTIAL.**
+- Write Beta v4.1 is unchanged by PROTO61..64.
+
+---
+
 # 2026-10-04 — CANONICAL RECONCILIATION — offline tracks through PROTO-OFFLINE-60
 
 **Authoritative status:** this section supersedes older offline/current-state summaries below where they conflict. Historical sections remain unchanged.
