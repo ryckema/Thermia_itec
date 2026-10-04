@@ -1,0 +1,7 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_59_LOCAL_0870_CONTEXT_CLASSIFIER_MATRIX_20261004.csv>index,experiment,status,pre_0870_anchor,optional_0708_between,0870_observed,0870_acked,result_for_classifier,evidence
+0,EXP308,COMPLETE / POSITIVE,0864 ACK,YES,YES,NO (target was capture-only in EXP308),POSITIVE PRESENTATION,0864 ACK -> ~1.47s 0708 -> ~2.09s 0870
+1,EXP309,COMPLETE / INCONCLUSIVE,qualified all-zero 085F ACK,allowed by preceding qualification chain,"YES direct, 0864 absent",NO by experimental guard,POSITIVE PRESENTATION / NEGATIVE OLD 0864 PREREQUISITE,direct 0870 after zero-085F branch disproves mandatory 0864
+2,EXP310,COMPLETE / POSITIVE,qualified all-zero 085F ACK,not required as 0864 predecessor,"YES direct, 0864 absent",YES exactly once,POSITIVE ACK,ACK 0F10087000110290 -> ~1.47s 0708 -> ~2.18s 0884; no retry
+3,EXP281 / corrected interpretation,"historical INCONCLUSIVE, ordering later accepted",0864 ACK,YES,YES after intervening 0708,later chain evidence supports,POSITIVE OPTIONAL-0708 BRANCH,0864 ACK -> 0708 -> 0870 is valid native ordering
+4,EXP292,COMPLETE / POSITIVE,qualified continuous runtime,YES; post-0870 0708 also valid,YES across sustained cycles,YES by established responder,POSITIVE SUSTAINED RUNTIME,"256.276s, 12 cycles, 0 unexpected, optional post-0870 0708 serviced"
