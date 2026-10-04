@@ -1,0 +1,6 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_63_PARSER_AMBIGUITY_MATRIX_20261004.csv>index,semantic_shape,full_valid_frame,parser_emitted_prefix,ambiguous_prefix_found,method
+0,0546,0F0305460014A5F20000,0F0305460014A5F2,YES,deterministic construction
+1,042E,0F03042E000F65D900,0F03042E000F65D9,YES,1-byte brute-force solution
+2,0442,0F030442000D240500,0F030442000D2405,YES,1-byte brute-force solution
+3,fc16_start,count,prefix_crc_if_low_byte_equals_bytecount,,
