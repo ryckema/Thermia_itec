@@ -1,0 +1,117 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_57_REACHABLE_STATE_GRAPH_20261004.csv>index,write_state,exp378,exp379,exp380,delayed_rearm,semantic_owners,parent,first_transition
+0,0,0,0,0,False,none,,ROOT
+1,0,0,0,1,False,none,"(0, 0, 0, 0, False)",dispatch 0546 dirty -> exp380=1
+2,0,0,0,2,False,none,"(0, 0, 0, 6, False)",0546 fresh page differs -> wait selector
+3,0,0,0,3,False,380,"(0, 0, 0, 2, False)",0708 -> 0546 selector
+4,0,0,0,4,False,380,"(0, 0, 0, 3, False)",FC03 0546 -> desired page
+5,0,0,0,5,False,none,"(0, 0, 0, 1, False)",EXP380 timeout/integrity abort -> disabled
+6,0,0,0,6,False,none,"(0, 0, 0, 1, False)",0546 current refresh from state 1
+7,0,0,0,7,False,none,"(0, 0, 6, 7, False)",0442 sync/no-op -> idle
+8,0,0,1,0,False,none,"(0, 0, 0, 0, False)",dispatch 0442 dirty -> exp379=1
+9,0,0,1,5,False,none,"(0, 0, 0, 5, False)",dispatch 0442 dirty -> exp379=1
+10,0,0,2,0,False,none,"(0, 0, 6, 0, False)",0442 fresh page differs -> wait selector
+11,0,0,2,5,False,none,"(0, 0, 6, 5, False)",0442 fresh page differs -> wait selector
+12,0,0,2,7,False,none,"(0, 0, 6, 7, False)",0442 fresh page differs -> wait selector
+13,0,0,3,0,False,379,"(0, 0, 2, 0, False)",0708 -> 0442 selector
+14,0,0,3,5,False,379,"(0, 0, 2, 5, False)",0708 -> 0442 selector
+15,0,0,3,7,False,379,"(0, 0, 2, 7, False)",0708 -> 0442 selector
+16,0,0,4,0,False,379,"(0, 0, 3, 0, False)",FC03 0442 -> desired page
+17,0,0,4,5,False,379,"(0, 0, 3, 5, False)",FC03 0442 -> desired page
+18,0,0,4,7,False,379,"(0, 0, 3, 7, False)",FC03 0442 -> desired page
+19,0,0,5,0,False,none,"(0, 0, 1, 0, False)",EXP379 timeout/integrity abort -> disabled
+20,0,0,5,1,False,none,"(0, 0, 5, 0, False)",dispatch 0546 dirty -> exp380=1
+21,0,0,5,2,False,none,"(0, 0, 5, 6, False)",0546 fresh page differs -> wait selector
+22,0,0,5,3,False,380,"(0, 0, 5, 2, False)",0708 -> 0546 selector
+23,0,0,5,4,False,380,"(0, 0, 5, 3, False)",FC03 0546 -> desired page
+24,0,0,5,5,False,none,"(0, 0, 1, 5, False)",EXP379 timeout/integrity abort -> disabled
+25,0,0,5,6,False,none,"(0, 0, 5, 1, False)",0546 current refresh from state 1
+26,0,0,5,7,False,none,"(0, 0, 6, 7, False)",0442 refresh/range failure -> disabled
+27,0,0,6,0,False,none,"(0, 0, 1, 0, False)",0442 current refresh from state 1
+28,0,0,6,5,False,none,"(0, 0, 1, 5, False)",0442 current refresh from state 1
+29,0,0,6,7,False,none,"(0, 0, 7, 7, False)",0442 current refresh from state 7
+30,0,0,7,7,False,none,"(0, 6, 7, 7, False)",042E sync/no-op -> idle
+31,0,1,0,0,False,none,"(0, 0, 0, 0, False)",dispatch 042E dirty -> exp378=1
+32,0,1,0,5,False,none,"(0, 0, 0, 5, False)",dispatch 042E dirty -> exp378=1
+33,0,1,5,0,False,none,"(0, 0, 5, 0, False)",dispatch 042E dirty -> exp378=1
+34,0,1,5,5,False,none,"(0, 0, 5, 5, False)",dispatch 042E dirty -> exp378=1
+35,0,2,0,0,False,none,"(0, 6, 0, 0, False)",042E fresh page differs -> wait selector
+36,0,2,0,5,False,none,"(0, 6, 0, 5, False)",042E fresh page differs -> wait selector
+37,0,2,5,0,False,none,"(0, 6, 5, 0, False)",042E fresh page differs -> wait selector
+38,0,2,5,5,False,none,"(0, 6, 5, 5, False)",042E fresh page differs -> wait selector
+39,0,2,7,7,False,none,"(0, 6, 7, 7, False)",042E fresh page differs -> wait selector
+40,0,3,0,0,False,378,"(0, 2, 0, 0, False)",0708 -> 042E selector
+41,0,3,0,5,False,378,"(0, 2, 0, 5, False)",0708 -> 042E selector
+42,0,3,5,0,False,378,"(0, 2, 5, 0, False)",0708 -> 042E selector
+43,0,3,5,5,False,378,"(0, 2, 5, 5, False)",0708 -> 042E selector
+44,0,3,7,7,False,378,"(0, 2, 7, 7, False)",0708 -> 042E selector
+45,0,4,0,0,False,378,"(0, 3, 0, 0, False)",FC03 042E -> desired page
+46,0,4,0,5,False,378,"(0, 3, 0, 5, False)",FC03 042E -> desired page
+47,0,4,5,0,False,378,"(0, 3, 5, 0, False)",FC03 042E -> desired page
+48,0,4,5,5,False,378,"(0, 3, 5, 5, False)",FC03 042E -> desired page
+49,0,4,7,7,False,378,"(0, 3, 7, 7, False)",FC03 042E -> desired page
+50,0,5,0,0,False,none,"(0, 1, 0, 0, False)",EXP378 timeout/integrity abort -> disabled
+51,0,5,0,1,False,none,"(0, 5, 0, 0, False)",dispatch 0546 dirty -> exp380=1
+52,0,5,0,2,False,none,"(0, 5, 0, 6, False)",0546 fresh page differs -> wait selector
+53,0,5,0,3,False,380,"(0, 5, 0, 2, False)",0708 -> 0546 selector
+54,0,5,0,4,False,380,"(0, 5, 0, 3, False)",FC03 0546 -> desired page
+55,0,5,0,5,False,none,"(0, 1, 0, 5, False)",EXP378 timeout/integrity abort -> disabled
+56,0,5,0,6,False,none,"(0, 5, 0, 1, False)",0546 current refresh from state 1
+57,0,5,0,7,False,none,"(0, 5, 6, 7, False)",0442 sync/no-op -> idle
+58,0,5,1,0,False,none,"(0, 5, 0, 0, False)",dispatch 0442 dirty -> exp379=1
+59,0,5,1,5,False,none,"(0, 5, 0, 5, False)",dispatch 0442 dirty -> exp379=1
+60,0,5,2,0,False,none,"(0, 5, 6, 0, False)",0442 fresh page differs -> wait selector
+61,0,5,2,5,False,none,"(0, 5, 6, 5, False)",0442 fresh page differs -> wait selector
+62,0,5,2,7,False,none,"(0, 5, 6, 7, False)",0442 fresh page differs -> wait selector
+63,0,5,3,0,False,379,"(0, 5, 2, 0, False)",0708 -> 0442 selector
+64,0,5,3,5,False,379,"(0, 5, 2, 5, False)",0708 -> 0442 selector
+65,0,5,3,7,False,379,"(0, 5, 2, 7, False)",0708 -> 0442 selector
+66,0,5,4,0,False,379,"(0, 5, 3, 0, False)",FC03 0442 -> desired page
+67,0,5,4,5,False,379,"(0, 5, 3, 5, False)",FC03 0442 -> desired page
+68,0,5,4,7,False,379,"(0, 5, 3, 7, False)",FC03 0442 -> desired page
+69,0,5,5,0,False,none,"(0, 1, 5, 0, False)",EXP378 timeout/integrity abort -> disabled
+70,0,5,5,1,False,none,"(0, 5, 5, 0, False)",dispatch 0546 dirty -> exp380=1
+71,0,5,5,2,False,none,"(0, 5, 5, 6, False)",0546 fresh page differs -> wait selector
+72,0,5,5,3,False,380,"(0, 5, 5, 2, False)",0708 -> 0546 selector
+73,0,5,5,4,False,380,"(0, 5, 5, 3, False)",FC03 0546 -> desired page
+74,0,5,5,5,False,none,"(0, 1, 5, 5, False)",EXP378 timeout/integrity abort -> disabled
+75,0,5,5,6,False,none,"(0, 5, 5, 7, False)",0546 current refresh from state 7
+76,0,5,5,7,False,none,"(0, 5, 6, 7, False)",0442 refresh/range failure -> disabled
+77,0,5,6,0,False,none,"(0, 5, 1, 0, False)",0442 current refresh from state 1
+78,0,5,6,5,False,none,"(0, 5, 1, 5, False)",0442 current refresh from state 1
+79,0,5,6,7,False,none,"(0, 5, 7, 7, False)",0442 current refresh from state 7
+80,0,5,7,7,False,none,"(0, 6, 7, 7, False)",042E refresh/range failure -> disabled
+81,0,6,0,0,False,none,"(0, 1, 0, 0, False)",042E current refresh from state 1
+82,0,6,0,5,False,none,"(0, 1, 0, 5, False)",042E current refresh from state 1
+83,0,6,5,0,False,none,"(0, 1, 5, 0, False)",042E current refresh from state 1
+84,0,6,5,5,False,none,"(0, 1, 5, 5, False)",042E current refresh from state 1
+85,0,6,7,7,False,none,"(0, 7, 7, 7, False)",042E current refresh from state 7
+86,0,7,7,7,False,none,,ROOT
+87,1,0,0,0,False,none,"(6, 0, 0, 0, False)",fresh 03E8 differs -> wait semantic selector
+88,1,0,0,5,False,none,"(6, 0, 0, 5, False)",fresh 03E8 differs -> wait semantic selector
+89,1,0,5,0,False,none,"(6, 0, 5, 0, False)",fresh 03E8 differs -> wait semantic selector
+90,1,0,5,5,False,none,"(6, 0, 5, 5, False)",fresh 03E8 differs -> wait semantic selector
+91,2,0,0,0,False,main,"(1, 0, 0, 0, False)",0708 -> semantic selector
+92,2,0,0,5,False,main,"(1, 0, 0, 5, False)",0708 -> semantic selector
+93,2,0,5,0,False,main,"(1, 0, 5, 0, False)",0708 -> semantic selector
+94,2,0,5,5,False,main,"(1, 0, 5, 5, False)",0708 -> semantic selector
+95,3,0,0,0,False,main,"(2, 0, 0, 0, False)",expected FC03 desired pull -> desired page sent
+96,3,0,0,5,False,main,"(2, 0, 0, 5, False)",expected FC03 desired pull -> desired page sent
+97,3,0,5,0,False,main,"(2, 0, 5, 0, False)",expected FC03 desired pull -> desired page sent
+98,3,0,5,5,False,main,"(2, 0, 5, 5, False)",expected FC03 desired pull -> desired page sent
+99,5,0,0,0,False,none,"(0, 0, 0, 0, False)",dispatch 03E8 dirty -> main=5
+100,5,0,0,5,False,none,"(0, 0, 0, 5, False)",dispatch 03E8 dirty -> main=5
+101,5,0,5,0,False,none,"(0, 0, 5, 0, False)",dispatch 03E8 dirty -> main=5
+102,5,0,5,5,False,none,"(0, 0, 5, 5, False)",dispatch 03E8 dirty -> main=5
+103,6,0,0,0,False,none,"(5, 0, 0, 0, False)",0708 -> current 03E8 refresh
+104,6,0,0,5,False,none,"(5, 0, 0, 5, False)",0708 -> current 03E8 refresh
+105,6,0,5,0,False,none,"(5, 0, 5, 0, False)",0708 -> current 03E8 refresh
+106,6,0,5,5,False,none,"(5, 0, 5, 5, False)",0708 -> current 03E8 refresh
+107,7,0,0,0,False,none,"(6, 0, 0, 0, False)",refresh timeout/unexpected pull -> runtime-only
+108,7,0,0,0,True,none,"(5, 0, 0, 0, False)",30s pre-TX park; delayed refresh armed
+109,7,0,0,5,False,none,"(6, 0, 0, 5, False)",refresh timeout/unexpected pull -> runtime-only
+110,7,0,0,5,True,none,"(5, 0, 0, 5, False)",30s pre-TX park; delayed refresh armed
+111,7,0,5,0,False,none,"(6, 0, 5, 0, False)",refresh timeout/unexpected pull -> runtime-only
+112,7,0,5,0,True,none,"(5, 0, 5, 0, False)",30s pre-TX park; delayed refresh armed
+113,7,0,5,5,False,none,"(6, 0, 5, 5, False)",refresh timeout/unexpected pull -> runtime-only
+114,7,0,5,5,True,none,"(5, 0, 5, 5, False)",30s pre-TX park; delayed refresh armed
