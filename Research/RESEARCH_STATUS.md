@@ -1,3 +1,35 @@
+# Research status — 2026-10-04 — offline phase reconciled through PROTO-OFFLINE-60
+
+## Live XTR
+
+- **EXP387 — COMPLETE / POSITIVE**
+- **EXP388 — RUNNING / PARTIAL**
+- **EXP383 — PREPARED / NOT RUN**
+
+Offline work through PROTO60 does not complete EXP388.
+
+## Offline research position
+
+The current capture corpus is near its useful offline evidence ceiling for new selector/register semantics. High-value offline infrastructure is now complete: executable trace replay, valid-CRC fault injection, cross-profile ABI analysis, history/calendar reduction, exhaustive state model checking, 72-assertion golden capture regression, differential ACK-policy replay, XTR-only ACK reduction, reachability proof, shadow hardening regression, local 0870 ownership-token candidate, and formal protocol model v1 with 57-check validator.
+
+## Current implementation conclusions
+
+- Write Beta v4.1 semantic value injection remains strongly fail-closed in the tested model.
+- The most actionable safety debt is **0870 ACK context qualification**.
+- 085F cannot be reduced to one generic service-proximity rule because both payload forms are locally valid and multiple legitimate next branches exist.
+- Config ACK cannot be reduced to W2/W3 ownership only because autonomous current-state publication exists locally.
+- 0834 remains capture-only.
+- A global sole-semantic-owner assertion is suitable defensive refactoring, not a fix for a demonstrated reachable bug.
+
+## Next work
+
+1. Finish EXP388's two untested live cancellation branches.
+2. Then prepare one bounded local 0870 hardening experiment using the PROTO59 normal-runtime ownership token while keeping recovery/rejoin explicitly instrumented.
+3. Re-run PROTO54 and PROTO60 regressions before and after any writer change.
+4. New offline protocol discovery should wait for new labelled captures, an app/firmware binary, or genuinely new external evidence rather than repeating broad correlation passes.
+
+---
+
 # Research status — 2026-10-03 — canonical offline reduction through PROTO-OFFLINE-44
 
 **Last completed live experiment:** EXP387 — **COMPLETE / POSITIVE**.  
