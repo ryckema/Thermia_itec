@@ -1,3 +1,24 @@
+## Follow-up offline reductions — PROTO-OFFLINE-69..72
+
+Added on 2026-10-04:
+
+- PROTO69: RTU timing / UART callback feasibility audit
+- PROTO70: standalone compiled C++ parser harness + output
+- PROTO71: targeted safety-regression mutation testing
+- PROTO72: dead-code / state-liveness proof
+- `tools/thermia_v41_cpp_parser_harness.cpp`: source-faithful standalone parser harness
+- `CANONICAL_UPDATE_PENDING_PROTO69_72_20261004.md`: pending canonical reconciliation notes
+
+Key results:
+- PROTO69: at 9600 8E1 the remaining 1–2 bytes of a contiguous 9/10-byte frame arrive within ~1.15–2.29 ms, shorter than the configured 5 ms UART-debug idle timeout; the split-prefix ambiguity is therefore physically unlikely for normal contiguous short RTU frames.
+- PROTO70: standalone C++17 parser replayed 25,031 genuine frames exactly across 50 randomized-chunk full runs and reproduced all deliberate 042E/0442/0546 shortest-prefix ambiguities.
+- PROTO71: 19/19 targeted safety mutants killed (100% for the tested invariant set).
+- PROTO72: 12 definite write-only globals identified; old `write_resume_*` / 04A6 resume and historical hot-rejoin branches are source-unreachable in current v4.1. Current EXP388 recovery remains separate and live.
+
+These are offline results only. No Write Beta behavior changed and EXP388 remains **RUNNING / PARTIAL**.
+
+---
+
 ## Follow-up offline reductions — PROTO-OFFLINE-65..68
 
 Added on 2026-10-04:

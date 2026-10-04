@@ -1,0 +1,21 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_71_SAFETY_MUTATION_MATRIX_20261004.csv>index,mutant,mutation,evidence_basis,killed,killed_by
+0,M01,ACK 0834/count18,PROTO60 I8 / local no-ACK proof,YES,T01_0834_capture_only
+1,M02,ACK unknown runtime page,PROTO46 fail-closed runtime,YES,T02_unknown_runtime_no_ack
+2,M03,drop all-zero 085F acceptance,PROTO56 local ACK proof,YES,T03_zero_085f_remains_locally_valid
+3,M04,drop 0861=0800 085F acceptance,PROTO56 local ACK proof,YES,T04_0800_085f_remains_locally_valid
+4,M05,ACK unknown 085F payload,PROTO46/56 payload guard,YES,T05_unknown_085f_no_ack
+5,M06,authorize 03E8 word11,PROTO60 selector/word allowlist,YES,T06_03e8_word11_not_authorized
+6,M07,relax 03E8 cache age to 600s,PROTO46 desired-page freshness guard,YES,T08_03e8_cache_freshness_bound
+7,M08,allow two semantic responses,PROTO60 invariant I3,YES,T09_one_semantic_response_budget
+8,M09,recover from main semantic state2,EXP388/PROTO46,YES,T13_main_semantic_boundary_refuses_recovery
+9,M10,recover from EXP semantic state3,EXP388/PROTO46,YES,T14_exp_semantic_boundary_refuses_recovery
+10,M11,treat every state7 as delayed re-arm,PROTO57 correction,YES,T15_state7_substate_preserved
+11,M12,remove sole-owner invariant,PROTO57/58,YES,T16_sole_semantic_owner
+12,M13,require 0864 before all 0870,EXP309/310 + PROTO59,YES,T18_direct_0870_without_0864_preserved
+13,M14,authorize calendar 055A in production,CAL-OFFLINE-01 + PROTO60,YES,T12_calendar_not_generalized
+14,M15,allow multi-word desired delta,PROTO10/60 invariant I4,YES,T10_one_word_mutation_invariant
+15,M16,allow second bus-loss recovery,EXP388 design,YES,T17_second_loss_failclosed
+16,M17,semantic interpretation before complete frame,PROTO67,YES,T19_frame_before_semantic_interpretation
+17,M18,stop checking bootstrap ACK CRC,PROTO60 validator,YES,T20_bootstrap_crc_enforced
+18,M19,allow unproven desired selector TX,PROTO28/60 invariant I1,YES,T11_unproven_selector_no_tx

@@ -1,0 +1,33 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_72_DEAD_CODE_LIVENESS_MATRIX_20261004.csv>index,id_or_group,type,classification,static_evidence,interpretation,action
+0,write_extra_delta_words,uint8_t,WRITE_ONLY,5 writes / 0 reads,Stores local `extra` result but global is never subsequently read.,REMOVE GLOBAL; keep local validation logic.
+1,write_request_word_index,uint8_t,WRITE_ONLY,2 writes / 0 reads,Only reset to 0.,REMOVE
+2,write_request_register,uint16_t,WRITE_ONLY,2 writes / 0 reads,Only reset to 03E8.,REMOVE
+3,write_request_target,uint16_t,WRITE_ONLY,2 writes / 0 reads,Only reset to 0.,REMOVE
+4,write_request_generation,uint32_t,WRITE_ONLY,2 writes / 0 reads,Only reset to 0.,REMOVE
+5,write_pending_generation,uint32_t,WRITE_ONLY,10 writes / 0 reads,Repeatedly reset; never consumed.,REMOVE
+6,write_last_confirm_ms,uint32_t,WRITE_ONLY,3 writes / 0 reads,Stores confirmation timestamp but no read exists.,REMOVE unless future telemetry needs it.
+7,write_hot_rejoin_armed,bool,WRITE_ONLY,1 write / 0 reads,Set false only.,REMOVE
+8,write_hot_rejoin_tx_ms,uint32_t,WRITE_ONLY,1 write / 0 reads,Set 0 only.,REMOVE
+9,write_hot_rejoin_challenge_baseline,uint32_t,WRITE_ONLY,1 write / 0 reads,Set 0 only.,REMOVE
+10,write_boot_observation_15s_noted,bool,WRITE_ONLY,1 write / 0 reads,Set false only.,REMOVE
+11,write_boot_observation_complete,bool,WRITE_ONLY,1 write / 0 reads,Set false only.,REMOVE
+12,write_pending_valid,bool,CONSTANT_FALSE,10 writes false / 6 reads,No source assignment true. Reads are diagnostic queue sensors/log context.,REMOVE pending diagnostic surface.
+13,write_pending_word_index,uint8_t,CONSTANT_0,2 writes 0 / 1 read,"Only diagnostic read gated by pending_valid, which is always false.",REMOVE
+14,write_pending_register,uint16_t,CONSTANT_03E8,2 writes 03E8 / 2 reads,Diagnostic/log only; pending_valid never true.,REMOVE
+15,write_pending_target,uint16_t,CONSTANT_0,2 writes 0 / 2 reads,Diagnostic/log only; pending_valid never true.,REMOVE
+16,write_hot_rejoin_sent,bool,CONSTANT_FALSE,1 write false / 1 read,Only used in timeout OR-condition with hot_rejoin_in_progress.,REMOVE/replace with live recovery state.
+17,write_hot_rejoin_in_progress,bool,CONSTANT_FALSE,4 writes false / 3 reads,No assignment true anywhere in v4.1. Branch that would promote export_complete/wait_runtime is unreachable.,REMOVE historical hot-rejoin branch after archival.
+18,write_resume_armed,bool,CONSTANT_FALSE,3 writes false / 2 reads,No assignment true. Therefore 04A6 resume-ACK branch cannot be entered in current source.,REMOVE/move resume experiment to test harness.
+19,write_resume_started/done/start_ms/index/pages/interleaves,group,TRANSITIVELY_UNREACHABLE,resume_started can become true only inside `if (write_resume_armed && !write_resume_started)`,"Because resume_armed is source-constant false, the active resume state machine and its 04A6 ACK TX are unreachable.",MOVE TO ARCHIVE/TEST HARNESS
+20,write_pre_resume_04a6_seen,uint16_t,TELEMETRY_ONLY_IN_LIVE_CORE,increments while resume_started is false; logs count,"Can still count observed 04A6 frames, but cannot activate resume TX without unreachable resume_armed.",REMOVE with resume experiment or retain passive metric only.
+21,write_hot_rejoin_export_complete,bool,TRANSITIVELY_UNREACHABLE,true assignments depend on hot_rejoin_in_progress/wait_runtime chain,Enabling root hot_rejoin_in_progress is source-constant false.,REMOVE historical branch after archival.
+22,write_hot_rejoin_wait_runtime,bool,TRANSITIVELY_UNREACHABLE,set true only inside `if (write_hot_rejoin_in_progress)`,Enabling root is source-constant false.,REMOVE historical branch after archival.
+23,write_hot_rejoin_complete_ms,uint32_t,TRANSITIVELY_UNREACHABLE_FOR_HOT_REJOIN,dynamic assignments occur only in dead hot-rejoin chain,Any hot-rejoin-only decisions based on it are unreachable.,REMOVE with dead hot-rejoin branch.
+24,write_write_state,uint8_t,SAFETY_CRITICAL,live multi-state reads/writes,Controls production 03E8 semantic selector/page/recovery behavior.,KEEP; convert to named enum in rewrite.
+25,exp378_state,uint8_t,SAFETY_CRITICAL,live multi-state reads/writes,042E transaction owner/state.,KEEP; generic semantic engine later.
+26,exp379_state,uint8_t,SAFETY_CRITICAL,live multi-state reads/writes,0442 transaction owner/state.,KEEP; generic semantic engine later.
+27,exp380_state,uint8_t,SAFETY_CRITICAL,live multi-state reads/writes,0546 transaction owner/state.,KEEP; generic semantic engine later.
+28,write_delayed_refresh_pending,bool,SAFETY_CRITICAL,live read/write substate,PROTO57 proves state7 meaning depends on this flag.,KEEP EXPLICIT or encode as distinct enum state.
+29,write_recovery_in_progress/attempted,group,SAFETY_CRITICAL,live recovery reads/writes,Owns EXP388 restart recovery.,KEEP until EXP388-R2 replaces it.
+30,parser resync/drop + peer responder counters,group,SAFETY_CRITICAL,live guard reads/writes,"Gate runtime qualification, semantic dispatch and recovery.",KEEP

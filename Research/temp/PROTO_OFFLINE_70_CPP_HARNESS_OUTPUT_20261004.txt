@@ -1,0 +1,8 @@
+ADV 042E full=0F03042E000F65D900 first=0F03042E000F65D9 pending=1
+ADV 0442 full=0F030442000D240500 first=0F030442000D2405 pending=1
+ADV 0546 full=0F0305460014A5F20000 first=0F0305460014A5F2 pending=2
+CPP_PARSER_HARNESS
+genuine_frames=25031
+genuine_chunk_runs_pass=50/50
+adversarial_whole_short_prefix=3/3
+adversarial_split_short_prefix=3/3
