@@ -1,3 +1,125 @@
+# 2026-10-04 — LIVE CALENDAR WRITE EXPERIMENTS EXP399..405
+
+## EXP405 — PREPARED / NOT RUN — inactive slot0 two-word time-window write
+
+**Hypothesis:** with F1 slot0 validity clear, one coherent 055A desired-page transaction can mutate both start and stop minute while preserving the window duration.
+
+**Baseline:** EXP404 COMPLETE / POSITIVE.
+
+**Controlled change:** fresh F1 baseline, require `05BA bit0=0`, then change only:
+- `055B` / slot0 word1 / start minute: original +1
+- `0560` / slot0 word6 / stop minute: original +1
+
+Both originals must be <=58. No wrap is allowed. All other 31 words remain unchanged. Automatic exact rollback is mandatory.
+
+**Status:** PREPARED / NOT RUN. No result has been supplied yet.
+
+## EXP404 — COMPLETE / POSITIVE — F1 slot0 validity metadata write + rollback
+
+**Hypothesis:** `05BA bit0` can be written through the proven 059C desired-page path and then restored.
+
+**Controlled change from EXP403:** EXP403 was zero-delta. EXP404 changed exactly one word in the fresh 059C page: word index30 / address `05BA`, bit0 `0 -> 1`.
+
+**Observed:**
+- fresh CURRENT `059C/count33` acquired with `W2 bit3`;
+- baseline `05BA=0000`;
+- target `05BA=0001`;
+- proven desired selector `W0 bit3 + W2 bit3` sent;
+- controller pulled `FC03 059C/count33`;
+- one 33-word response sent with only 05BA changed;
+- controller republished `FC16 059C/count33` with `05BA=0001`;
+- confirmation reported `deltaWords=1`, `unexpectedDelta=0`;
+- passive calendar decoder independently observed `CAL_F1_METADATA0_CHANGE old=0000 new=0001 setBits=0001`;
+- rollback selector sent;
+- original 059C image returned;
+- final controller FC16 had `05BA=0000`, `finalDeltaWords=0`.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+**Conclusion:** `05BA bit0` is locally proven writable and rollbackable as F1 slot0 validity metadata.
+
+## EXP403 — COMPLETE / POSITIVE — accelerated 059C desired selector + no-op
+
+**Hypothesis A:** `W0 bit3 + W2 bit3` causes `FC03 059C/count33`.
+
+**Hypothesis B:** an exact fresh 059C no-op image is accepted as a desired response.
+
+**Observed:**
+- fresh 059C acquired first via proven W2 bit3;
+- candidate selector `W0=0008,W2=0008` sent;
+- controller requested `FC03 059C/count33` about 78 ms later;
+- exact 33-word cached page returned once;
+- exact `FC16 059C/count33` observed with `deltaWords=0`;
+- no FC03 retry in the discrimination window.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+**Conclusion:** desired selector and no-op response acceptance for 059C are locally proven.
+
+## EXP402 — COMPLETE / POSITIVE — isolate CURRENT 059C
+
+**Hypothesis:** `W2 bit3` alone selects current/config page `059C/count33`.
+
+**Controlled change:** isolate W2=0008 from EXP398 combined W2=000E.
+
+**Observed:** `W2=0008` caused controller `FC16 059C/count33` in about 176 ms.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+**Conclusion:** `W2 bit3 -> CURRENT 059C/count33` is locally proven.
+
+## EXP401 — COMPLETE / POSITIVE — first semantic calendar-content write
+
+**Hypothesis:** an exact 055A page image with one intended calendar-word mutation is accepted.
+
+**Controlled change from EXP400:** mutate only `055B` / slot0 word1 / start minute by +1 while `05BA bit0=0`.
+
+**Observed:**
+- fresh F1 baseline; slot0 invalid;
+- start minute `0 -> 1`;
+- full 055A desired response transmitted;
+- controller republished exact one-word delta at `055B`;
+- `deltaWords=1`, `unexpectedDelta=0`;
+- passive decoder saw slot0 start time become 00:01;
+- automatic rollback restored the exact original 055A image.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+**Conclusion:** semantic calendar content is locally writable through the native desired-page mechanism.
+
+## EXP400 — COMPLETE / POSITIVE — exact 055A no-op desired response
+
+**Hypothesis:** after the proven F1 desired selector, returning a byte-for-byte clone of fresh `055A/count33` is accepted.
+
+**Observed:**
+- candidate selector already proven by EXP399;
+- controller `FC03 055A/count33`;
+- one exact 33-word response, `deltaWords=0`;
+- controller subsequently published exact `FC16 055A/count33`;
+- no FC03 retry over the discrimination quiet window.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+**Conclusion:** the 055A desired response stage is locally accepted.
+
+## EXP399 — COMPLETE / POSITIVE — high-half F1 desired selector
+
+**Hypothesis:** `W0 bit1 + W2 bit1` is the desired selector pair for page 055A.
+
+**Observed:**
+- fresh F1 current baseline acquired;
+- selector `W0=0002,W2=0002` sent;
+- controller requested `FC03 055A/count33` about 78 ms later;
+- response deliberately withheld;
+- controller repeated FC03 055A;
+- generic unexpected-FC03 safety stop ended runtime.
+
+**Result:** **COMPLETE / POSITIVE** for selector identification.
+
+**Operational note:** the experiment caused session loss/alarm behavior, but a later controller restart plus retained-runtime qualification restored normal runtime without R1 or broad bitmap. This did not solve challenge-response.
+
+---
+
 # 2026-10-04 — OFFLINE EXPERIMENTS PROTO-OFFLINE-61..64
 
 These are offline analyses only. They do **not** advance EXP388 and did not transmit to the heat pump.
