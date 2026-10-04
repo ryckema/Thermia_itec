@@ -1,0 +1,7 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: PROTO_OFFLINE_59_0870_RULE_CANDIDATES_20261004.csv>index,candidate_rule,passes_local_evidence,classification,reason
+0,require immediately preceding 0864 ACK,False,DISPROVEN,EXP309/310 direct 0870 has no 0864
+1,require any earlier 0864 in current cycle,False,DISPROVEN,direct retained branch remains valid without 0864
+2,require qualified all-zero 085F ACK only,False,INCOMPLETE,0864-owned normal ring path must also remain valid
+3,require recent 0708 only,False,INSUFFICIENTLY PROVEN LOCALLY,timing bound not established for every local positive 0870
+4,session qualified + clean integrity + 0870 ownership token from zero-085F ACK OR 0864 ACK; allow intervening known 0708; consume once,True,BEST-SUPPORTED CANDIDATE,covers EXP308/309/310/281/292 without inventing mandatory 0864 or timing threshold
