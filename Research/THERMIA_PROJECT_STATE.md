@@ -1,3 +1,52 @@
+# 2026-10-05 — EXP423 COMPLETE / INCONCLUSIVE — aborted by pre-target 0662 ACK-ownership regression
+
+## Current experiment / status
+
+- **EXP423 — COMPLETE / INCONCLUSIVE** — target `0442/count13` semantic validation was not run because the baseline entered a persistent `0662/count33` retry loop before configuration synchronization.
+- **EXP424 — SUPERSEDED / NOT RUN** — its prerequisite (EXP423 COMPLETE / POSITIVE) was not met; do not run the prepared EXP424 YAML.
+- **EXP422 — COMPLETE / POSITIVE** — generic helper live-confirmed on `042E/count15`.
+- **EXP421 — COMPLETE / POSITIVE** — generic helper live-confirmed on `03E8/count14`.
+- **EXP420 — COMPLETE / POSITIVE for the observed long retained-runtime slice, but its ownership predicate is now known to be incomplete outside that exercised context.**
+
+## EXP423 observed failure before active write
+
+After OTA/reconnect the controller remained at `stage=40`, `A80E=0000`, `A80F=000A`, but repeatedly published `FC16 0662/count33`.
+
+The EXP420 ownership rule classified each publication as:
+`EXP420_CONFIG_NO_OWNER ... NO_ACK`.
+
+Key state during the loop:
+- `write_state=0`;
+- `exp378_state=7`, `exp379_state=7`, `exp380_state=7` (startup-unsynchronized states);
+- `configSynced=0`;
+- `resume=0`;
+- no generic semantic TX;
+- no parser/resync/drop fault.
+
+The retry persisted for the full supplied ~180 s slice. The no-owner counter reached 166 and `idle0708` remained 0. The generic transaction counter remained 0 and no setting write was attempted.
+
+## Interpretation
+
+This is not evidence against the EXP421 generic page builder and not an `0442/count13` semantic-write result.
+
+It is new local evidence that the EXP420 config-ACK ownership model is too narrow for at least one pre-first-0708 / unsynchronized context involving `0662/count33`.
+
+The previous EXP420 positive result remains valid for the long retained-runtime context actually observed there, but must not be generalized to all reconnect/startup/export contexts.
+
+## Safety decision
+
+Do not attempt the EXP423 044D write and do not run EXP424.
+
+Do not simply restore unconditional page-shape ACK for 0662. The next experiment should isolate the legitimate owner/context for this 0662 transfer and authorize only that context.
+
+## Recommended next experiment
+
+**EXP425 — 0662 pre-first-0708 ownership discrimination / recovery hardening.**
+
+Goal: reproduce the observed unsynchronized retained-session condition and determine a narrow owner predicate for `0662/count33`, while preserving EXP420 fail-closed behavior for unrelated config pages.
+
+---
+
 # 2026-10-05 — EXP424 PREPARED / NOT RUN — queued behind EXP423
 
 ## Current experiment / status
