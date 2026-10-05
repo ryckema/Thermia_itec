@@ -1,3 +1,25 @@
+# 2026-10-05 — EXP426 trigger absent; normal retained startup remains healthy
+
+## PROVEN / locally confirmed
+
+- In the supplied EXP426 run, no `0662/count33` frame appeared and the EXP426 release-ACK route transmitted nothing.
+- Normal retained-runtime startup still synchronized `042E/count15`, `0442/count13`, `0546/count20`, then `03E8/count14` without special 0662 handling.
+- Configuration reached READY and remained stable through the supplied ~147 s run.
+- Final parser/session integrity remained clean: no unknown FC16/FC03, peer FC17/FC16-ACK, resync or RX drops.
+- The presentation-only HA entity cleanup did not disturb the observed protocol/runtime behavior.
+
+## OPEN / UNKNOWN
+
+- Whether the exact repeated `0662/count33` condition recurs deterministically or only under a narrower retained-controller state.
+- Whether the isolated EXP426 one-shot ACK is sufficient when that condition does recur.
+- The semantic owner/role of `0662/count33` remains unknown.
+
+## STATUS
+
+- **EXP426 COMPLETE / INCONCLUSIVE** — trigger absent, not a negative result for the isolated-release hypothesis.
+
+---
+
 # 2026-10-05 — EXP425 ordered-tail hypothesis negative; EXP426 isolates the 0662 ACK effect
 
 ## PROVEN / locally confirmed
