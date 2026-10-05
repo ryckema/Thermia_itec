@@ -1,3 +1,27 @@
+# 2026-10-05 — EXP420 config ACK ownership hardening
+
+## PROVEN / locally confirmed
+
+- The local XTR M remains stable in retained `stage=40` with broad known-config page-shape ACK authorization removed.
+- During the same EXP420 boot, the explicit-owner counter reached **4 owned config ACKs** while the unowned-config counter remained **0**.
+- After more than 6700 s runtime age, the final supplied heartbeat remained clean: `unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`.
+- EXP418 0870 ownership remained clean in the same run and reached `316/316` set/consume with no tokenless event.
+
+## STRONGLY SUPPORTED
+
+- For the currently exercised production config path, page geometry alone is no longer required as ACK authorization; explicit transaction ownership is a viable production baseline.
+- The four owned config ACKs are consistent with the normal startup/current synchronization of `042E`, `0442`, `0546`, and `03E8`; however the supplied late-runtime slice contains the counters rather than those earlier individual owner log lines.
+
+## OPEN / UNKNOWN
+
+- legitimate autonomous config-family publications other than the already evidence-backed idle `03E8`;
+- live behavior of `EXP420_CONFIG_NO_OWNER ... NO_ACK` if such a page occurs;
+- live autonomous idle `03E8` owner branch under EXP420;
+- EXP419 085F context authorization;
+- cold approval / recovery / rejoin ownership interactions.
+
+---
+
 # 2026-10-05 — EXP418 0870 ownership hardening
 
 ## PROVEN / locally confirmed
