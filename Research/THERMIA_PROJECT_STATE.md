@@ -1,3 +1,20 @@
+# 2026-10-05 — EXP417 strengthened by live semantic-write regression
+
+EXP417 remains **COMPLETE / POSITIVE**.
+
+Additional local XTR runtime evidence now confirms that the FC03 double-valid-prefix hardening does not break the existing proven semantic write path:
+
+- retained runtime stayed at `stage=40`;
+- room setpoint `03F4` was changed `22 -> 23` through the normal selector / desired-page / FC16-confirm flow;
+- the controller republished `03E8/count14` with the requested value and the transaction closed READY with exactly one semantic page response and zero extra delta words;
+- the setting was then changed back `23 -> 22` through the same path and again controller-confirmed;
+- the later heartbeat remained clean with `unknown16=0`, `unknown03=0`, `peer17=0`, `peer16ack=0`, `resync=0`, `drops=0`;
+- the EXP417 double-valid suppression counter remained zero throughout the supplied ~10 minute retained-runtime observation.
+
+**Conclusion:** EXP417 is now live-regression-tested not only against normal read/runtime traffic but also against a complete proven one-word semantic write and reverse write. This still does not prove that a naturally occurring double-valid frame exists on the bus; the ambiguity itself remains a defensive parser hardening case demonstrated offline.
+
+---
+
 # 2026-10-05 — CANONICAL RECONCILIATION — EXP411–416
 
 **Authoritative status:** this section supersedes older current-state summaries below where they conflict.
