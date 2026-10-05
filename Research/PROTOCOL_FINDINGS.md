@@ -1,3 +1,26 @@
+# 2026-10-05 — EXP418 0870 ownership hardening
+
+## PROVEN / locally confirmed
+
+- In the supplied EXP418 retained-runtime slice, **15/15** observed `0870/count17` publications were preceded by an actually ACKed `0864/count4` that created a one-shot ownership token.
+- Each of those 15 `0870` ACKs consumed exactly one token; token counters advanced in lockstep from 96/96 to 111/111.
+- No tokenless `0870` was observed and no recovery/rejoin bypass was used.
+- The hardened implementation remained at `stage=40` with clean final integrity counters: `unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`.
+
+## STRONGLY SUPPORTED
+
+- The existing one-shot normal-runtime ownership-token model is now live-compatible on this XTR M, not merely offline-modeled.
+- Page shape alone is no longer required as sufficient authorization for normal-runtime `0870/count17` in the production path.
+- `0864` remains only one valid token source; earlier EXP309/310 evidence still disproves a mandatory-0864 prerequisite because qualified all-zero `085F` can also lead directly to valid `0870`.
+
+## OPEN / UNKNOWN
+
+- whether any normal-runtime XTR context can legitimately produce `0870/count17` without either token source;
+- live EXP418 behavior when the token source is all-zero `085F/count5` rather than `0864/count4`;
+- exact recovery/rejoin authorization predicate outside the normal-runtime token path.
+
+---
+
 # 2026-10-04 — durable calendar write findings through EXP404
 
 ## PROVEN / locally confirmed — F1 current and desired selectors
