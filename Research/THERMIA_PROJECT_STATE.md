@@ -1,3 +1,54 @@
+# 2026-10-05 — EXP421 PREPARED / NOT RUN — generic desired-page transaction core
+
+## Current experiment / status
+
+- **EXP421 — PREPARED / NOT RUN** — structural consolidation of the four existing production semantic desired-page transmitters into one generic FC03 page builder/TX primitive.
+- **EXP420 — COMPLETE / POSITIVE** — explicit config ACK ownership baseline.
+- **EXP419 — COMPLETE / INCONCLUSIVE**.
+- **EXP418 — COMPLETE / POSITIVE**.
+- **EXP417 — COMPLETE / POSITIVE**.
+
+## Hypothesis
+
+The existing `03E8/count14`, `042E/count15`, `0442/count13`, and `0546/count20` semantic writers can share the byte-level desired-page construction/TX core without changing page-specific guards, state transitions, confirmation rules, selectors or ACK ownership.
+
+## Exact controlled change
+
+EXP421 centralizes only:
+- FC03 response byte-count construction;
+- full cached-page serialization;
+- exactly one selected-word substitution;
+- Modbus CRC16 calculation;
+- response hex rendering;
+- the existing DE-on / 1000 us / UART TX / flush / 1000 us / DE-off sequence.
+
+The individual page engines still own validation, cache freshness, semantic response budget, selector state, state transitions, confirmation, extra-delta checks, HA/UI rollback and ACK ownership.
+
+No new register, selector, desired value, ACK rule, parser rule, recovery/approval behavior or semantic write target is introduced.
+
+## Offline validation
+
+- YAML parse PASS;
+- undefined `id()` references: 0;
+- UART `write_array()` call sites reduce **66 -> 63** exactly because four duplicated desired-page TX sites collapse into one shared TX helper;
+- the four generic call sites are exactly `042E/15`, `0442/13`, `0546/20`, and `03E8/14`;
+- all 58 existing named static `uint8_t` protocol arrays are byte-for-byte unchanged;
+- 2000 randomized desired-page constructions across the four page geometries were byte-identical to the EXP420 construction algorithm;
+- no ESPHome compile is claimed; the ESPHome CLI is unavailable in the working environment.
+
+## Live positive criteria
+
+1. retained `stage=40` and production startup/current sync remain healthy;
+2. no EXP420 no-owner event or parser/peer/resync/drop regression;
+3. one already-proven `03E8` write and reverse write produces an EXP421 `GENERIC_PAGE_TX_EXECUTED page=03E8 count=14` log and exact controller FC16 confirmation both directions;
+4. `EXP421 Generic Build Failures` remains zero.
+
+## Abort / recovery
+
+Any generic-build failure, semantic write mismatch, session degradation or parser/integrity regression -> revert to EXP420. EXP421 adds no new write target.
+
+---
+
 # 2026-10-05 — EXP420 COMPLETE / POSITIVE — generic config ACK ownership hardening
 
 ## Current experiment / status
