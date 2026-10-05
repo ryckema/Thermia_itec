@@ -1,3 +1,28 @@
+# 2026-10-05 — EXP426 live result
+
+## EXP426 — COMPLETE / INCONCLUSIVE — no 0662 trigger observed
+
+**Hypothesis:** under the exact retained unsynchronized condition, repeated `0662/count33` needs one standalone release ACK and no ordered-resume state.
+
+**Observed:**
+- no `0662/count33` occurred in the supplied ~147 s run;
+- EXP426 status stayed `repeat=0 released=0 releaseACK=0 resumeStarted=0`;
+- therefore the new EXP426 ACK route was never exercised;
+- normal startup sync completed: `042E`, `0442`, `0546`, then `03E8` Configuration autosync;
+- Configuration became READY at ~24 s;
+- final heartbeat stayed stage40 with cache valid and `unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`;
+- no semantic write occurred;
+- EXP420 no-owner remained 0;
+- EXP418 remained balanced.
+
+**Result:** **COMPLETE / INCONCLUSIVE**.
+
+**Reason:** the required repeated-0662 trigger was absent, so the isolated release-ACK hypothesis was not tested.
+
+**Additional positive evidence:** the HA presentation cleanup and cleaned EXP426 baseline did not disturb ordinary retained-runtime synchronization.
+
+---
+
 # 2026-10-05 — EXP426 prepared
 
 ## EXP426 — PREPARED / NOT RUN — isolated 0662 release ACK
