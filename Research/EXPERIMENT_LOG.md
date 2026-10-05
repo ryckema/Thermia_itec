@@ -1,3 +1,28 @@
+# 2026-10-05 — EXP421 first live run
+
+## EXP421 — RUNNING / PARTIAL — retained-runtime smoke PASS, generic semantic TX not exercised
+
+**Baseline:** EXP420 COMPLETE / POSITIVE.
+
+**Observed:**
+- ~200 s retained-runtime run after OTA;
+- stage40 qualified with `A80E=0000 A80F=000A`;
+- startup/current sync completed for `042E`, `0442`, `0546`, and `03E8`;
+- EXP420 explicit ownership reached `ownedACK=4 noOwner=0`;
+- room setpoint cache synchronized at `03F4=22`;
+- final visible heartbeat around 196 s: `stage=40 runtimeFC16ACK=87 idle0708=46 unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`;
+- EXP418 reached `set=9 consumed=9 noToken=0 bypass=0`;
+- EXP417 suppressions remained 0;
+- EXP419 target remained absent;
+- EXP421 remained `genericTX=0 buildFail=0 lastPage=0000`;
+- no semantic response and no confirmed write occurred.
+
+**Status:** **RUNNING / PARTIAL**.
+
+**Reason:** normal runtime non-regression passed, but the experiment's generic desired-page TX helper was never entered. Completion still requires one reversible proven `03E8` write and exact controller confirmation in both directions.
+
+---
+
 # 2026-10-05 — EXP421 generic desired-page transaction core
 
 ## EXP421 — PREPARED / NOT RUN
