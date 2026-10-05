@@ -1,3 +1,37 @@
+# 2026-10-05 — EXP422 live result
+
+## EXP422 — COMPLETE / POSITIVE — generic helper on 042E/count15
+
+**Baseline:** EXP421 COMPLETE / POSITIVE.
+
+**Target:** existing proven `0433` / word5 / Startup HT on `042E/count15`.
+
+**Forward test:**
+- original authoritative value 5;
+- selector requested desired `042E/count15`;
+- EXP421 generic helper sent `frameLen=35 txCount=1`;
+- controller republished word5 = 6;
+- exact `WRITE_CONFIRMED original=5 target=6 observed=6 extraDeltaWords=0`.
+
+**Rollback:**
+- second generic `042E/count15` response, `txCount=2`;
+- controller republished word5 = 5;
+- exact `WRITE_CONFIRMED original=6 target=5 observed=5 extraDeltaWords=0`;
+- HA Startup HT restored to 5.
+
+**Integrity:**
+- `genericTX=2 buildFail=0 lastPage=042E`;
+- EXP420 no-owner remained 0;
+- final visible heartbeat around 175 s stayed at stage40 with `unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`;
+- EXP418 remained balanced;
+- EXP417 suppression remained 0.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+**Interpretation:** the shared desired-page builder/TX primitive is now independently live-confirmed on both 14-word and 15-word page geometries.
+
+---
+
 # 2026-10-05 — EXP422 second-geometry validation
 
 ## EXP422 — PREPARED / NOT RUN
