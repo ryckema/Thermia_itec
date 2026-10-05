@@ -1,3 +1,32 @@
+# 2026-10-05 — EXP423 live attempt
+
+## EXP423 — COMPLETE / INCONCLUSIVE — aborted before target write
+
+**Baseline:** EXP422 COMPLETE / POSITIVE with EXP420 ownership hardening retained.
+
+**Planned target:** `044D` / word11 on `0442/count13`.
+
+**Observed before any active target write:**
+- stage40 retained runtime entered after OTA;
+- repeated controller `FC16 0662/count33`;
+- every 0662 publication hit `EXP420_CONFIG_NO_OWNER ... NO_ACK`;
+- writer startup states remained `e378=7 e379=7 e380=7`;
+- `configSynced=0`;
+- no first idle `0708` service cycle developed;
+- no semantic response or generic page TX occurred;
+- at ~178 s: `noOwner=166`, `genericTX=0`, `idle0708=0`;
+- parser/session integrity counters remained clean (`unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`).
+
+**Result:** **COMPLETE / INCONCLUSIVE** for the EXP423 geometry hypothesis.
+
+**Reason:** the test was correctly aborted before touching `044D`; a baseline ACK-ownership regression prevented normal configuration synchronization.
+
+**New evidence:** EXP420's explicit config-owner predicate is incomplete for a legitimate-looking `0662/count33` transfer in this pre-first-0708 / unsynchronized context.
+
+**EXP424:** SUPERSEDED / NOT RUN because its prerequisite EXP423-positive result was not obtained.
+
+---
+
 # 2026-10-05 — EXP424 fourth-geometry validation
 
 ## EXP424 — PREPARED / NOT RUN — queued behind EXP423
