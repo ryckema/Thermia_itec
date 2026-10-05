@@ -1,3 +1,65 @@
+# 2026-10-05 — EXP420 COMPLETE / POSITIVE — generic config ACK ownership hardening
+
+## Current experiment / status
+
+- **EXP420 — COMPLETE / POSITIVE** — broad known-config page-shape ACK authorization was replaced by explicit ownership without observed regression.
+- **EXP419 — COMPLETE / INCONCLUSIVE** — 085F target branch remained unexercised.
+- **EXP418 — COMPLETE / POSITIVE** — 0870 one-shot ownership-token hardening.
+- **EXP417 — COMPLETE / POSITIVE** — FC03 double-valid-prefix parser hardening.
+
+## EXP420 hypothesis
+
+A known stage40 config-page address/count shape must not by itself authorize an FC16 ACK. Production/config ACKs should require an explicit owner captured before page handlers mutate state.
+
+## Controlled change
+
+Explicit owners were preserved for:
+- production `03E8/count14`, `042E/count15`, `0442/count13`, `0546/count20` flows;
+- evidence-backed autonomous idle `03E8/count14`;
+- exact EXP410 calendar ownership states/pages;
+- ordered export-resume with the existing exact-order checker.
+
+Other known config-family pages in normal retained runtime are capture-only / NO_ACK.
+
+No new TX frame, selector, CRC, timing, W4 behavior, semantic writer, approval path, parser rule, EXP418 ownership rule or EXP419 rule was introduced.
+
+## Live result
+
+The supplied log is a late retained-runtime slice from the same EXP420 boot, spanning about 6483 s to 6770 s runtime age.
+
+Observed:
+- `stage=40` remained qualified throughout;
+- EXP420 status was already `ownedACK=4 noOwner=0 autonomous03E8=0` at the start of the supplied slice and remained unchanged to the end;
+- no `EXP420_CONFIG_NO_OWNER` event occurred;
+- the supplied 5-minute slice contained 122 stage40 FC16 publications, all runtime-service pages and no config-family page;
+- final retained-runtime counters remained clean: `unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`;
+- final runtime heartbeat was approximately 6767 s with `runtimeFC16ACK=2844`, `idle0708=1578`, `rt085F=0`;
+- EXP418 remained clean and advanced to `set=316 consumed=316 noToken=0 bypass=0`;
+- EXP417 suppression remained 0;
+- EXP419 remained unexercised (`085F` seen/ACK/no-context counters all zero);
+- no semantic write was performed in this observation slice.
+
+The four EXP420 owned-ACK counts occurred earlier in the same boot and are consistent with the four production startup/current sync pages. The supplied slice does not contain those earlier per-page owner log lines, so the exact four owner labels are not independently re-read from this attachment.
+
+**Result:** **COMPLETE / POSITIVE** for the stated ACK-hardening hypothesis and retained-runtime non-regression.
+
+## Strong conclusion
+
+On this local XTR M, broad page-shape-only authorization is no longer needed for the currently exercised config path. Explicit config ownership can remain as the production baseline without disturbing long-running retained runtime.
+
+## Remaining limits
+
+- autonomous idle `03E8` ownership was not exercised in this supplied slice;
+- no unowned config page occurred, so the NO_ACK discrimination branch remains unexercised;
+- EXP419 085F context remains open;
+- recovery/rejoin and cold native approval remain separate validation tracks.
+
+## Recommended next action
+
+Stop broadening ACK hardening for now. The next higher-value step is to consolidate the proven per-page read/write transactions into a generic page transaction engine while keeping the current fail-closed ownership rules intact.
+
+---
+
 # 2026-10-05 — EXP420 PREPARED / NOT RUN — generic config ACK ownership hardening
 
 ## Current experiment / status
