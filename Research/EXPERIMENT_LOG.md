@@ -1,3 +1,30 @@
+# 2026-10-05 — EXP419 live result
+
+## EXP419 — COMPLETE / INCONCLUSIVE — target 085F branch not observed
+
+**Baseline:** EXP418 COMPLETE / POSITIVE.
+
+**Hypothesis:** known `085F/count5` payload shape is necessary but not sufficient ACK authorization in stable retained runtime.
+
+**Controlled change:** known 085F is no longer unconditionally ACKable in stable retained runtime; only explicit fresh-approval/recovery/hot-rejoin/resume contexts preserve ACK permission. No payload recognition, frame, CRC, timing, parser, 0870 ownership, config ACK policy or semantic writer was changed.
+
+**Observed local result:**
+- run duration approximately 180 s;
+- successful retained-runtime qualification at `stage=40`;
+- normal startup/current synchronization and `03E8` autosync completed;
+- normal runtime and `0708` idle replies continued;
+- EXP418 counters reached `set=9 consumed=9 noToken=0 bypass=0`;
+- EXP417 suppression counter remained 0;
+- final heartbeat: `stage=40 runtimeFC16ACK=80 idle0708=42 rt085F=0 unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`;
+- no `085F/count5` publication occurred;
+- no EXP419 context ACK and no EXP419 no-context capture occurred.
+
+**Result:** **COMPLETE / INCONCLUSIVE**.
+
+**Reason:** the experiment's target branch was never exercised. The run is a positive non-regression test for ordinary retained runtime only.
+
+---
+
 # 2026-10-05 — EXP419 retained-runtime 085F ACK-context hardening
 
 ## EXP419 — PREPARED / NOT RUN
