@@ -1,3 +1,77 @@
+# 2026-10-05 — EXP426 PREPARED / NOT RUN — isolated 0662 release ACK + HA entity cleanup
+
+## Current experiment / status
+
+- **EXP426 — PREPARED / NOT RUN** — test a narrowly-qualified one-shot ACK for repeated `0662/count33` without assuming an ordered export tail.
+- **EXP425 — COMPLETE / NEGATIVE** — the one-shot 0662 ACK stopped the retry loop, but the predicted `0683 -> ... -> 06F4` ordered tail never appeared. After the 60 s timeout, normal retained-runtime synchronization recovered and Configuration reached READY.
+- **EXP424 — SUPERSEDED / NOT RUN**.
+- **EXP423 — COMPLETE / INCONCLUSIVE**.
+- **EXP422 — COMPLETE / POSITIVE**.
+- **EXP421 — COMPLETE / POSITIVE**.
+
+## EXP425 result that motivates EXP426
+
+Observed locally:
+- exact repeated `0662/count33` was recognized and ACKed once;
+- repeated 0662 stopped;
+- no `0683/count33` followed;
+- ordered-resume timed out cleanly after 60 s;
+- normal runtime then resumed;
+- `042E/count15`, `0442/count13`, and `0546/count20` startup syncs completed;
+- `03E8/count14` Configuration autosync completed and writes became READY;
+- parser/peer/resync/drop integrity stayed clean.
+
+Conclusion:
+The EXP425 ordered-tail hypothesis is negative. The narrower interpretation — that this exact 0662 retry condition may need a standalone release ACK — remains viable and is now the EXP426 hypothesis.
+
+## EXP426 controlled change
+
+Only one new active authorization versus the EXP423 baseline:
+- exact `0x0F FC16 0662/count33`;
+- pre-first-0708;
+- unsynchronized Configuration;
+- no semantic write/pending/dirty state;
+- EXP378/379/380 states exactly 7/7/7;
+- EXP410 idle;
+- no recovery/hot-rejoin/resume;
+- clean integrity counters;
+- same receive-frame CRC repeated >=3 times within 5 s gaps.
+
+On the third qualifying repeat:
+- send the standard `0662/count33` FC16 ACK exactly once;
+- do **not** seed ordered resume;
+- do **not** suppress/hold 0708;
+- allow the existing normal runtime/autosync logic to continue.
+
+No setting value is transmitted.
+
+## EXP426 expected positive result
+
+- exactly one isolated 0662 ACK;
+- no further 0662 retry;
+- normal 0708 resumes;
+- 042E, 0442, 0546 startup syncs complete;
+- 03E8 Configuration autosync reaches READY;
+- integrity counters stay clean.
+
+## EXP426 HA entity cleanup
+
+Presentation-only cleanup:
+- removed EXP417 Parser Status text entity; numeric suppression counter retained;
+- removed EXP421 Generic Page Core status text entity; generic counters retained;
+- removed EXP414 Arm / Cancel Natural 0532 buttons;
+- EXP414 dormant status object kept internal because old dormant capture code still references it;
+- active EXP418/419/420 diagnostics retained;
+- added one compact EXP426 status entity.
+
+No protocol/state-machine behavior is intentionally removed by this cleanup.
+
+## User action
+
+Flash EXP426, change no HA setting, leave the system untouched for at least 2 minutes and up to 3 minutes if Configuration is not READY, then return the full log from OTA/boot through either complete synchronization or the failure/timeout point.
+
+---
+
 # 2026-10-05 — EXP425 PREPARED / NOT RUN — repeated 0662 orphan-resume adoption
 
 ## Current experiment / status
