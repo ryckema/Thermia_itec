@@ -1,3 +1,56 @@
+# 2026-10-05 — EXP418 COMPLETE / POSITIVE — 0870 ownership hardening
+
+## Current experiment / status
+
+- **EXP418 — COMPLETE / POSITIVE** — normal-runtime `0870/count17` ACK ownership hardened from page-shape-only to one-shot session-token authorization.
+- **EXP417 — COMPLETE / POSITIVE** — FC03 double-valid-prefix parser hardening, including live bidirectional `03F4` write regression.
+
+## EXP418 hypothesis
+
+Normal-runtime `0870/count17` should be ACKed only when owned by a one-shot session token created after an actually executed ACK of either:
+- qualified all-zero `085F/count5`; or
+- qualified `0864/count4`.
+
+Ordinary `0708` preserves the token. The first normal-runtime `0870` ACK consumes it. Existing explicit recovery/rejoin contexts remain separate passthrough authorization branches.
+
+## Controlled change
+
+- removed `0870/count17` from the unconditional runtime ACK whitelist;
+- added one-shot ownership token and diagnostics;
+- tokenless normal-runtime `0870` is capture-only / NO_ACK;
+- no parser, 085F payload recognition, W4, 0708 words, generic config ACK policy, semantic writer, approval/bootstrap/recovery state-machine, frame, CRC, timing or DE behavior was intentionally changed.
+
+## Live result
+
+The supplied EXP418 log is a late retained-runtime slice beginning after approximately 2069 s uptime and ending near 2378 s.
+
+Observed in that slice:
+- retained runtime stayed at `stage=40`;
+- 15 `0864/count4` publications were ACKed and each set one EXP418 token;
+- 15 `0870/count17` publications followed and each consumed exactly one token;
+- token counters advanced from 96/96 at the start of the supplied slice to 111/111;
+- **0 tokenless 0870 captures**;
+- **0 recovery/rejoin bypasses**;
+- `rt085F=0` in this slice, so all observed token creation here came from `0864`;
+- EXP417 double-valid suppression remained 0;
+- no semantic write was performed in this EXP418 observation slice;
+- final heartbeat remained clean:
+  `stage=40 unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`.
+
+**Result:** **COMPLETE / POSITIVE** for the normal-runtime ownership-hardening hypothesis.
+
+## Interpretation
+
+Locally on this XTR M, the hardened rule is now live-compatible over the observed retained-runtime sequence: every observed normal-runtime `0870/count17` had an unconsumed prior token and the one-shot token was consumed exactly once when its ACK was sent.
+
+This does **not** prove that the token is universally necessary for every possible 0870 context. EXP309/310 still prove that 0864 specifically is not mandatory because qualified all-zero 085F can also precede a valid 0870. Recovery/rejoin authorization remains a separate open context.
+
+## Next engineering step
+
+Keep ACK hardening isolated. The next candidate is the remaining **085F / generic config ACK context authorization debt**, not additional 0870 broadening.
+
+---
+
 # 2026-10-05 — EXP418 PREPARED / NOT RUN — 0870 ACK ownership hardening
 
 ## Current experiment / status
