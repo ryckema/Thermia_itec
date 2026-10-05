@@ -1,3 +1,73 @@
+# 2026-10-05 — EXP421 COMPLETE / POSITIVE — generic desired-page TX core live-confirmed on 03E8
+
+## Current experiment / status
+
+- **EXP421 — COMPLETE / POSITIVE** — shared desired-page builder/TX primitive is live-confirmed on the proven `03E8/count14` room-setpoint writer in both directions.
+- **EXP420 — COMPLETE / POSITIVE** — explicit config ACK ownership baseline.
+- **EXP419 — COMPLETE / INCONCLUSIVE**.
+- **EXP418 — COMPLETE / POSITIVE**.
+- **EXP417 — COMPLETE / POSITIVE**.
+
+## Hypothesis
+
+The existing production semantic writers can share one byte-level desired-page construction/TX primitive without changing page-specific guards, selectors, state transitions, confirmation or ACK ownership.
+
+## Controlled change
+
+No additional code change was made for this result. The previously prepared EXP421 build was exercised using the already-proven room-setpoint target `03F4` on `03E8/count14`:
+
+- forward write: `22 -> 23`;
+- exact controller confirmation required;
+- rollback write: `23 -> 22`;
+- exact controller confirmation required.
+
+No other setting was intentionally changed.
+
+## Observed live result
+
+### Forward write 22 -> 23
+
+- fresh authoritative `03E8/count14` page confirmed current room setpoint `22`;
+- desired selector issued for `03F4`, word 12;
+- controller pulled desired `03E8/count14`;
+- EXP421 shared helper emitted `GENERIC_PAGE_TX_EXECUTED page=03E8 count=14 frameLen=33 txCount=1`;
+- controller republished `03E8/count14` with room setpoint `23`;
+- `WRITE_CONFIRMED writeNo=1 ... original=22 target=23 observed=23 extraDeltaWords=0`.
+
+### Rollback 23 -> 22
+
+- same generic path was exercised again;
+- EXP421 emitted `GENERIC_PAGE_TX_EXECUTED page=03E8 count=14 frameLen=33 txCount=2`;
+- controller republished `03E8/count14` with room setpoint `22`;
+- `WRITE_CONFIRMED writeNo=2 ... original=23 target=22 observed=22 extraDeltaWords=0`.
+
+## Integrity / safety result
+
+After rollback:
+- `genericTX=2`;
+- `buildFail=0`;
+- `lastPage=03E8`;
+- `confirmedWrites=2`;
+- cache restored to `03F4=22`;
+- EXP420 remained `noOwner=0`;
+- parser/peer integrity remained clean: `unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`;
+- EXP418 remained balanced `23/23`;
+- EXP417 suppressions remained 0.
+
+## Conclusion
+
+**EXP421 COMPLETE / POSITIVE.**
+
+The shared desired-page byte builder/TX primitive is now **locally live-proven on `03E8/count14`**, including a semantic write and exact rollback. This proves the refactor did not alter the observed `03E8` write semantics.
+
+It does **not** yet independently live-prove the shared helper on the other three geometries `042E/15`, `0442/13`, and `0546/20`; their call sites were offline-equivalence checked and their ordinary current-sync paths remain healthy.
+
+## Recommended next action
+
+Prepare **EXP422** as a second-geometry live validation of the same generic helper using one already-proven reversible write on a non-`03E8` page. Change only that page/value, require exact FC16 confirmation and exact rollback, and keep parser/ACK/W4/approval logic unchanged.
+
+---
+
 # 2026-10-05 — EXP421 RUNNING / PARTIAL — smoke/non-regression passed, semantic TX branch unexercised
 
 ## Current experiment / status
