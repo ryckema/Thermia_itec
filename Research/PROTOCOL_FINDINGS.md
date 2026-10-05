@@ -1,3 +1,26 @@
+# 2026-10-05 — EXP422 generic helper second-geometry validation
+
+## PROVEN / locally confirmed
+
+- The shared generic desired-page builder/TX primitive is now live-proven on `042E/count15` in addition to `03E8/count14`.
+- `0433` / word5 / Startup HT was changed `5 -> 6` through the generic helper and confirmed by exact controller FC16 republish with `extraDeltaWords=0`.
+- The exact rollback `6 -> 5` traversed the same generic helper and was again confirmed with `extraDeltaWords=0`.
+- Final EXP421/422 diagnostics were `genericTX=2 buildFail=0 lastPage=042E`; Startup HT returned to 5.
+- Explicit config ACK ownership remained intact and no parser/session integrity regression was observed.
+
+## STRONGLY SUPPORTED
+
+- The generic helper is not specific to the `03E8/count14` frame length; it has now been locally exercised successfully on a distinct `042E/count15` geometry.
+- Centralized page serialization, one-word substitution, CRC16 and TX timing can remain the shared primitive while page-specific guards/state/confirmation stay outside it.
+
+## OPEN / UNKNOWN
+
+- Independent live exercise of the shared helper on `0442/count13` and `0546/count20`.
+- Whether the remaining page-specific orchestration can safely be consolidated into a higher-level generic transaction state machine without weakening per-page validation or ownership.
+- Fresh cold-session/recovery interaction with semantic writes remains separate from these retained-runtime results.
+
+---
+
 # 2026-10-05 — EXP421 generic desired-page TX core
 
 ## PROVEN / locally confirmed
