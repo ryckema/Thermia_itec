@@ -1,3 +1,32 @@
+# 2026-10-05 — EXP417 additional live write regression
+
+## EXP417 — COMPLETE / POSITIVE — strengthened
+
+A longer retained-runtime run exercised the production `03E8` writer while EXP417 parser hardening was active.
+
+Observed sequence 1:
+- fresh current `03E8/count14` cache;
+- selector transaction for `03F4`;
+- desired full-page response with exactly one changed word, `22 -> 23`;
+- controller FC16 `03E8/count14` republish with `03F4=23`;
+- exact transaction confirmation, no extra delta words.
+
+Observed sequence 2:
+- fresh current-page refresh;
+- selector transaction for `03F4`;
+- desired full-page response with exactly one changed word, `23 -> 22`;
+- controller FC16 `03E8/count14` republish with `03F4=22`;
+- exact transaction confirmation, no extra delta words.
+
+Final supplied heartbeat remained `stage=40` with two confirmed writes and clean integrity counters:
+`unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`.
+
+The EXP417 FC03 double-valid suppression counter stayed at zero over the supplied ~10 minute observation.
+
+**Interpretation:** the parser hardening preserves the locally proven semantic write path. No naturally occurring double-valid frame was observed.
+
+---
+
 # 2026-10-05 — EXP411–416 validation track
 
 ## EXP416 — COMPLETE / POSITIVE — structural cleanup pass 2
