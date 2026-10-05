@@ -1,3 +1,45 @@
+# 2026-10-05 — EXP419 COMPLETE / INCONCLUSIVE — retained-runtime 085F context hardening
+
+## Current experiment / status
+
+- **EXP419 — COMPLETE / INCONCLUSIVE** — target 085F branch was not exercised; ordinary retained-runtime non-regression passed.
+- **EXP418 — COMPLETE / POSITIVE** — 0870 one-shot ownership-token hardening.
+- **EXP417 — COMPLETE / POSITIVE** — FC03 double-valid-prefix parser hardening.
+
+## EXP419 hypothesis
+
+In stable retained runtime, a known `085F/count5` payload should not by itself authorize an ACK. Only explicit fresh-approval/recovery/hot-rejoin/resume contexts retain ACK permission.
+
+## Live result
+
+The supplied EXP419 run covered about 180 s after OTA.
+
+Observed:
+- successful ESP/API reconnect and immediate retained-runtime qualification;
+- `stage=40`, `A80E=0000`, `A80F=000A`;
+- production startup/current synchronization remained healthy;
+- `03E8/count14` configuration autosync completed and writes were enabled;
+- normal `0708` idle responses continued;
+- EXP418 ownership remained healthy, reaching 9 token sets / 9 token consumes, with 0 tokenless 0870 and 0 bypasses;
+- EXP417 double-valid suppression remained 0;
+- final heartbeat remained clean:
+  `stage=40 runtimeFC16ACK=80 idle0708=42 rt085F=0 unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`;
+- **no `085F/count5` appeared at all**;
+- EXP419 counters therefore remained:
+  `zeroSeen=0 0800Seen=0 contextACK=0 noContext=0`.
+
+**Result:** **COMPLETE / INCONCLUSIVE** for the 085F-context hypothesis.
+
+**Positive side result:** no regression is visible in ordinary retained runtime, production synchronization, EXP417 parser hardening or EXP418 0870 ownership.
+
+**Limitation:** because the target page never appeared, this run gives no live evidence about whether withholding a known but contextless 085F ACK is correct.
+
+## Next step
+
+Do not broaden or promote the EXP419 085F predicate. Either wait for a naturally occurring 085F/recovery context, or move to the separate generic known-config ACK ownership hardening track while preserving EXP419 as an unexercised fail-closed rule.
+
+---
+
 # 2026-10-05 — EXP419 PREPARED / NOT RUN — retained-runtime 085F ACK-context hardening
 
 ## Current experiment / status
