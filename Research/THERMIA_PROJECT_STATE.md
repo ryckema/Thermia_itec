@@ -1,3 +1,66 @@
+# 2026-10-05 — EXP419 PREPARED / NOT RUN — retained-runtime 085F ACK-context hardening
+
+## Current experiment / status
+
+- **EXP419 — PREPARED / NOT RUN** — known `085F/count5` payload is no longer sufficient by itself for ACK permission in stable retained runtime.
+- **EXP418 — COMPLETE / POSITIVE** — `0870/count17` one-shot ownership-token hardening.
+- **EXP417 — COMPLETE / POSITIVE** — FC03 double-valid-prefix parser hardening.
+
+## EXP419 hypothesis
+
+In stable retained runtime, known `085F/count5` payload shape alone is not sufficient ACK authorization.
+
+The two locally known payload forms remain recognized:
+- `0000 0000 0000 0000 0000`;
+- `0000 0000 0800 0000 0000`.
+
+EXP419 ACKs them only when an already-explicit session context is active:
+- a fresh native approval was transmitted in this ESP session;
+- controller recovery is in progress;
+- hot-rejoin is in progress / waiting for runtime qualification;
+- ordered export-resume is active.
+
+In ordinary retained runtime with none of those owners, a known 085F is capture-only / NO_ACK.
+
+## Baseline evidence
+
+- EXP302 locally proved that ACK of repeated `085F(0861=0800)` can change retained controller state.
+- EXP307 locally proved that a qualified all-zero 085F ACK can advance into known runtime.
+- EXP305 showed 085F can occur downstream of an ACK-gated retained transfer.
+- Genuine/offline evidence shows 085F is context-sensitive and often present without ACK; page recognition and ACK permission must remain separate.
+- EXP418 supplied run contained zero stage40 085F publications, so replay predicts no behavior change on that ordinary retained-runtime trace.
+
+## Exact controlled change
+
+- remove `local_085f_known` from unconditional runtime ACK permission;
+- replace it with explicit context-owned 085F authorization;
+- known 085F with no context -> log `EXP419_085F_NO_CONTEXT`, capture-only / NO_ACK;
+- unknown 085F payload -> existing fail-closed STOP remains unchanged;
+- EXP418 0870 token creation from all-zero 085F remains possible only after an actual 085F ACK.
+
+No TX frame/CRC/timing, parser, 0870 ownership, 0708/W4, config ACK, semantic writer, approval implementation, recovery state machine or 0834 policy is intentionally changed.
+
+## Offline validation
+
+- YAML parse PASS;
+- zero undefined `id()` references;
+- UART `write_array()` sites unchanged: 66 -> 66;
+- ordered UART TX expressions identical to EXP418;
+- existing hard-coded long protocol literals unchanged;
+- EXP418 supplied trace contains zero stage40 `085F/count5`, so the new target branch is not exercised by replay.
+
+## Result criteria
+
+**Positive:** ordinary retained runtime remains healthy and any 085F ACK that occurs is explicitly context-owned.
+
+**Negative/discrimination:** a known 085F appears in stable retained runtime and is withheld. If it repeats or session health degrades, record that result and revert to EXP418 rather than broadening the rule.
+
+**Inconclusive:** no 085F appears during an otherwise healthy run; this proves only non-regression of ordinary runtime, not the 085F target branch.
+
+**Recovery:** revert to EXP418. EXP419 changes no Thermia setting.
+
+---
+
 # 2026-10-05 — EXP418 COMPLETE / POSITIVE — 0870 ownership hardening
 
 ## Current experiment / status
