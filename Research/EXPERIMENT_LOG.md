@@ -1,3 +1,30 @@
+# 2026-10-05 — EXP418 0870 ACK ownership hardening
+
+## EXP418 — PREPARED / NOT RUN
+
+**Hypothesis:** normal-runtime `0870/count17` ACK permission is session-context-owned rather than page-shape-owned.
+
+**Baseline:** EXP417 COMPLETE / POSITIVE, including retained-runtime and bidirectional `03F4` semantic-write regression.
+
+**Controlled change:**
+- remove unconditional `0870/count17` runtime ACK authorization;
+- set a one-shot token only after an ACK is actually transmitted for all-zero `085F/count5` or `0864/count4`;
+- preserve the token across ordinary `0708`;
+- first normal-runtime `0870` ACK consumes the token;
+- tokenless normal-runtime `0870` is capture-only / NO_ACK;
+- existing explicit recovery/rejoin contexts are passthrough so this experiment does not redefine recovery behavior.
+
+**Offline validation:**
+- YAML parse PASS;
+- 0 undefined `id()` references;
+- UART TX call sites remain 66 and in the same order;
+- existing hard-coded protocol frame literals unchanged;
+- replay of the supplied EXP417 long run yielded 15 `0870/count17` publications; all 15 were authorized by an unconsumed prior `0864` token and zero would have been withheld.
+
+**Status:** **PREPARED / NOT RUN**. ESPHome compile not claimed; CLI unavailable in the preparation environment.
+
+---
+
 # 2026-10-05 — EXP417 additional live write regression
 
 ## EXP417 — COMPLETE / POSITIVE — strengthened
