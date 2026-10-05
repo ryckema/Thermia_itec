@@ -1,3 +1,66 @@
+# 2026-10-05 — EXP423 PREPARED / NOT RUN — third generic page geometry validation
+
+## Current experiment / status
+
+- **EXP423 — PREPARED / NOT RUN** — live validation of the unchanged EXP421 generic desired-page TX core on `0442/count13`.
+- **EXP422 — COMPLETE / POSITIVE** — generic helper live-confirmed on `042E/count15`.
+- **EXP421 — COMPLETE / POSITIVE** — generic helper live-confirmed on `03E8/count14`.
+- **EXP420 — COMPLETE / POSITIVE** — explicit config ACK ownership baseline.
+- **EXP419 — COMPLETE / INCONCLUSIVE**.
+- **EXP418 — COMPLETE / POSITIVE**.
+- **EXP417 — COMPLETE / POSITIVE**.
+
+## Hypothesis
+
+The unchanged generic byte-level desired-page builder/TX primitive also preserves the already-proven `0442/count13` semantic write behavior.
+
+## Baseline / target
+
+- slave: `0x0F`;
+- page: `0442/count13`;
+- register: `044D`;
+- page word: 11;
+- local mapping: Cooling Room Hysteresis Low;
+- source: EXP379 local XTR result;
+- locally proven historical write: raw `10 -> 18 -> 10` = `1.0 -> 1.8 -> 1.0 °C`;
+- latest known value before preparation: raw 10 / 1.0 °C, but EXP423 must use the fresh authoritative value after flash.
+
+## Exact controlled change
+
+Protocol/YAML behavior versus EXP422 is intentionally unchanged. EXP423 changes only experiment labelling, build identification and the Configuration validation-status entity.
+
+The live action uses `04 Cooling | 06 Room Hysteresis Low`:
+1. read authoritative current value `N`;
+2. request `N+0.1 °C` if `N<5.0`, otherwise `N-0.1 °C`;
+3. require exact `0442/count13` FC16 confirmation with `extraDeltaWords=0`;
+4. restore exactly `N`;
+5. require exact restoration confirmation.
+
+## Safety / abort
+
+Expected effect: cooling room-hysteresis-low shifts by 0.1 °C until rollback.
+
+Plausible unintended effect: if the system is exactly at a cooling-control threshold, cooling behavior can differ slightly during the short test.
+
+Abort on generic build failure, wrong page/count, missing exact confirmation, extra changed words, controller-retained original after semantic TX, EXP420 no-owner, parser/resync/drop/peer fault or session degradation.
+
+If the forward write was confirmed, rollback only through the same proven `044D` path while the session is healthy.
+
+## Offline validation
+
+- YAML parse PASS;
+- undefined `id()` references: 0;
+- UART write sites remain `63 -> 63`;
+- ordered UART write expressions identical to EXP422;
+- hard-coded long protocol literal sequence identical;
+- generic `0442/13` call site preserved;
+- `044D` word11 scaling/range and exact confirmation path preserved;
+- EXP420 `0442_EXP379` ownership preserved;
+- obsolete EXP422 target-status entity removed;
+- ESPHome compile not run in assistant environment.
+
+---
+
 # 2026-10-05 — EXP422 COMPLETE / POSITIVE — second generic page geometry live-confirmed on 042E/count15
 
 ## Current experiment / status
