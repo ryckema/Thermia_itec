@@ -1,3 +1,19 @@
+# 2026-10-05 — EXP420 PREPARED / NOT RUN
+
+## EXP420 — generic config FC16 ACK ownership hardening
+
+**Hypothesis:** known config-page geometry is necessary but not sufficient ACK authorization in stage40 retained runtime.
+
+**Baseline:** EXP419 COMPLETE / INCONCLUSIVE with clean non-regression; EXP418 and EXP417 remain positive.
+
+**Controlled change:** replace broad known-config ACK permission with explicit owners captured before page handlers mutate state. Production owners: `03E8`, `042E`, `0442`, `0546`; preserve evidence-backed autonomous idle `03E8`, exact EXP410 calendar ownership, and ordered export-resume. Other known config pages become capture-only / NO_ACK.
+
+**Offline checks:** YAML PASS; undefined IDs 0; UART write sites 66 -> 66 and ordered expressions identical; protocol literals identical; the previous EXP419 run's four config pages all replay as explicitly owned.
+
+**Status:** PREPARED / NOT RUN.
+
+---
+
 # 2026-10-05 — EXP419 live result
 
 ## EXP419 — COMPLETE / INCONCLUSIVE — target 085F branch not observed
