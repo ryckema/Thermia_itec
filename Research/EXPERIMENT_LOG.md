@@ -1,3 +1,39 @@
+# 2026-10-05 — EXP421 live semantic validation
+
+## EXP421 — COMPLETE / POSITIVE — generic desired-page core
+
+**Baseline:** EXP420 COMPLETE / POSITIVE; same EXP421 build that passed the earlier retained-runtime smoke test.
+
+**Controlled live action:** exercise only the already-proven room-setpoint writer at `03F4` on `03E8/count14`: `22 -> 23`, confirm, then `23 -> 22`, confirm.
+
+**Forward result:**
+- fresh current page confirmed room setpoint 22;
+- desired selector requested `03F4` word 12;
+- EXP421 shared helper executed `page=03E8 count=14 frameLen=33 txCount=1`;
+- controller FC16 republished room setpoint 23;
+- `WRITE_CONFIRMED writeNo=1 original=22 target=23 observed=23 extraDeltaWords=0`.
+
+**Rollback result:**
+- second desired transaction used the same generic helper;
+- `GENERIC_PAGE_TX_EXECUTED page=03E8 count=14 frameLen=33 txCount=2`;
+- controller FC16 republished room setpoint 22;
+- `WRITE_CONFIRMED writeNo=2 original=23 target=22 observed=22 extraDeltaWords=0`.
+
+**Final integrity:**
+- `genericTX=2 buildFail=0 lastPage=03E8`;
+- `confirmedWrites=2`;
+- `cache03F4=22`;
+- `unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`;
+- EXP420 no-owner remained 0;
+- EXP418 remained balanced 23/23;
+- EXP417 suppressions remained 0.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+**Interpretation:** the shared EXP421 byte-level desired-page builder/TX primitive is now locally live-proven for `03E8/count14` in both write and rollback directions. Other generic call-site geometries remain offline-equivalence checked but not yet independently live-exercised through the shared helper.
+
+---
+
 # 2026-10-05 — EXP421 first live run
 
 ## EXP421 — RUNNING / PARTIAL — retained-runtime smoke PASS, generic semantic TX not exercised
