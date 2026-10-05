@@ -1,3 +1,21 @@
+# 2026-10-05 — EXP422 second-geometry validation
+
+## EXP422 — PREPARED / NOT RUN
+
+**Baseline:** EXP421 COMPLETE / POSITIVE.
+
+**Hypothesis:** the same generic desired-page TX helper proven live on `03E8/count14` behaves identically on a second geometry, `042E/count15`.
+
+**Controlled live target:** existing locally proven `0433` / word5 / Startup HT control. Read authoritative current value `N`, make one adjacent-minute change, require exact controller republish, then restore exactly `N` and require exact rollback confirmation.
+
+**Protocol code delta versus EXP421:** none intended. Only EXP422 labelling/build identification and a Configuration diagnostic text sensor were added.
+
+**Offline checks:** YAML PASS; undefined IDs 0; UART TX sites 63 -> 63 with identical ordered TX expressions; hard-coded protocol literals identical; 042E generic-helper call and EXP378 confirmation guards preserved.
+
+**Status:** PREPARED / NOT RUN.
+
+---
+
 # 2026-10-05 — EXP421 live semantic validation
 
 ## EXP421 — COMPLETE / POSITIVE — generic desired-page core
