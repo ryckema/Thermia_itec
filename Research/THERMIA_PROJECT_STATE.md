@@ -1,3 +1,63 @@
+# 2026-10-05 — EXP422 PREPARED / NOT RUN — second generic page geometry validation
+
+## Current experiment / status
+
+- **EXP422 — PREPARED / NOT RUN** — live validation of the unchanged EXP421 generic desired-page TX core on a second page geometry, `042E/count15`.
+- **EXP421 — COMPLETE / POSITIVE** — generic helper live-confirmed on `03E8/count14` with reversible `03F4 22 -> 23 -> 22`.
+- **EXP420 — COMPLETE / POSITIVE** — explicit config ACK ownership baseline.
+- **EXP419 — COMPLETE / INCONCLUSIVE**.
+- **EXP418 — COMPLETE / POSITIVE**.
+- **EXP417 — COMPLETE / POSITIVE**.
+
+## Hypothesis
+
+The unchanged generic byte-level desired-page builder/TX primitive from EXP421 also preserves the already-proven `042E/count15` semantic write behavior.
+
+## Baseline / target
+
+- slave: `0x0F`;
+- page: `042E/count15`;
+- register: `0433`;
+- page word: 5;
+- local mapping: Startup HT / Opstart HT;
+- mapping/writeability source: EXP378 local XTR result;
+- historical reversible example: `5 -> 7 -> 5`;
+- EXP422 does not assume the current live value is still 5.
+
+## Exact controlled change
+
+Protocol/YAML behavior versus EXP421 is intentionally unchanged. EXP422 changes only experiment labelling, build identification and one Configuration diagnostic text sensor.
+
+The live controlled action uses the existing `02 Heating | 20 Startup HT` control:
+1. read authoritative displayed current value `N`;
+2. request `N+1` if `N<30`, otherwise `N-1`;
+3. require exact `042E/count15` FC16 confirmation with `extraDeltaWords=0`;
+4. restore exactly `N`;
+5. require exact restoration confirmation.
+
+## Safety / abort
+
+Expected effect: Startup HT timing changes by one minute until rollback.
+
+Plausible unintended effect: timing behavior associated with Startup HT can differ briefly during the test.
+
+Abort on generic build failure, wrong page/count, missing exact confirmation, extra changed words, controller-retained original after semantic TX, EXP420 no-owner, parser/resync/drop/peer fault or session degradation.
+
+If forward change was confirmed, rollback only through the same proven `0433` path while the session is healthy.
+
+## Offline validation
+
+- YAML parse PASS;
+- undefined `id()` references: 0;
+- UART write sites remain `63 -> 63`;
+- ordered UART write expressions are identical to EXP421;
+- hard-coded long protocol literal sequence is identical;
+- generic `042E/15` call site preserved;
+- existing `0433` word5 control/range and exact confirmation path preserved;
+- ESPHome compile not run in assistant environment.
+
+---
+
 # 2026-10-05 — EXP421 COMPLETE / POSITIVE — generic desired-page TX core live-confirmed on 03E8
 
 ## Current experiment / status
