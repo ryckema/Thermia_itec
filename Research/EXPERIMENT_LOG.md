@@ -1,3 +1,42 @@
+# 2026-10-05 — EXP426 prepared
+
+## EXP426 — PREPARED / NOT RUN — isolated 0662 release ACK
+
+**Baseline evidence:** EXP425 COMPLETE / NEGATIVE for the ordered-tail hypothesis.
+
+### EXP425 observed result
+- repeated `0662/count33` was recognized and one ACK was sent;
+- the 0662 retry loop stopped;
+- expected `0683/count33` never appeared;
+- ordered-resume timed out at 60 s;
+- normal runtime then recovered without controller restart;
+- startup syncs `042E`, `0442`, `0546` completed;
+- `03E8` autosync completed and Configuration became READY;
+- no parser/peer/resync/drop regression.
+
+### EXP426 hypothesis
+The exact retained-session `0662/count33` retry condition requires a standalone release ACK, not adoption into the historical ordered-resume tail.
+
+### Controlled change
+After >=3 identical retries under the strict pre-first-0708 / unsynchronized / 7-7-7 / clean-integrity qualifier:
+- send one standard `0662/count33` ACK;
+- no ordered resume;
+- no 0708 hold;
+- no semantic setting TX;
+- normal runtime/autosync continues immediately.
+
+### User procedure
+1. Flash EXP426.
+2. Do not change any HA setting.
+3. Leave system untouched >=2 min; continue to max ~3 min if Configuration not READY.
+4. Return full log from OTA/boot through sync completion or failure.
+5. Abort on unknown/peer/resync/drop/session degradation.
+
+### Cleanup included
+Removed obsolete presentation entities only: EXP417 status, EXP421 status, EXP414 arm/cancel buttons. Dormant EXP414 status is internal. Active EXP418/419/420 diagnostics remain.
+
+---
+
 # 2026-10-05 — EXP425 0662 orphan-resume adoption
 
 ## EXP425 — PREPARED / NOT RUN
