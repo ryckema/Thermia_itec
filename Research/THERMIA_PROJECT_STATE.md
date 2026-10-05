@@ -1,3 +1,44 @@
+# 2026-10-05 — EXP420 PREPARED / NOT RUN — generic config ACK ownership hardening
+
+## Current experiment / status
+
+- **EXP420 — PREPARED / NOT RUN** — stage40 known-config FC16 ACKs are changed from broad page-shape authorization to explicit ownership captured at frame arrival.
+- **EXP419 — COMPLETE / INCONCLUSIVE** — no 085F target page appeared; ordinary retained-runtime non-regression passed.
+- **EXP418 — COMPLETE / POSITIVE**.
+- **EXP417 — COMPLETE / POSITIVE**.
+
+## EXP420 hypothesis
+
+A known config page shape must not by itself authorize a runtime FC16 ACK. ACK permission should come from an explicit active owner.
+
+## Controlled change
+
+Explicit owners are retained for:
+- production `03E8/count14` current/autosync and semantic-confirm flows;
+- evidence-backed autonomous idle `03E8/count14`;
+- production `042E/count15`, `0442/count13`, and `0546/count20` current/confirm flows;
+- the exact existing EXP410 calendar states and pages;
+- ordered export-resume, with the existing exact-order checker unchanged.
+
+Any other known config-family page in normal retained runtime is capture-only / NO_ACK and increments an EXP420 diagnostic counter.
+
+No new TX frame, selector, CRC, timing, W4 behavior, semantic write, approval path, parser rule, EXP418 ownership rule, EXP419 rule, 04A6 policy, or 0834 policy is introduced.
+
+## Offline validation
+
+- YAML parse PASS;
+- undefined `id()` references: 0;
+- UART `write_array()` sites remain 66 -> 66;
+- ordered UART write expressions are identical to EXP419;
+- existing hard-coded long-hex protocol literals are identical;
+- replay of the supplied EXP419 run found exactly four config publications (`042E`, `0442`, `0546`, `03E8`), all four with their explicit owner markers present.
+
+## Safety / abort
+
+If an unowned config page appears, EXP420 logs `EXP420_CONFIG_NO_OWNER ... NO_ACK` and does not auto-broaden the rule. Repeated retries, failed production sync, session degradation or parser/write regression require reverting to EXP419.
+
+---
+
 # 2026-10-05 — EXP419 COMPLETE / INCONCLUSIVE — retained-runtime 085F context hardening
 
 ## Current experiment / status
