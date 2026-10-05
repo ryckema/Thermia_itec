@@ -1,3 +1,27 @@
+# 2026-10-05 — EXP421 generic desired-page transaction core
+
+## EXP421 — PREPARED / NOT RUN
+
+**Baseline:** EXP420 COMPLETE / POSITIVE.
+
+**Hypothesis:** the four current production desired-page writers can share one generic byte-level FC03 response builder/TX primitive without changing semantic behavior.
+
+**Controlled change:** consolidate only response serialization, one-word substitution, CRC16, frame rendering and DE/TX timing for `03E8/14`, `042E/15`, `0442/13`, and `0546/20`. Page-specific validation, state, selectors, confirmation and ACK ownership remain separate and unchanged.
+
+**Offline checks:**
+- YAML PASS;
+- undefined ESPHome IDs 0;
+- UART write sites 66 -> 63, matching four duplicated sites replaced by one helper;
+- all 58 existing named static protocol byte arrays unchanged;
+- 2000 randomized page-frame equivalence cases PASS across all four geometries;
+- no ESPHome compile claimed.
+
+**Positive live criterion:** stable retained runtime plus one reversible, already-proven `03E8` write must traverse the generic helper and receive exact controller confirmation in both directions.
+
+**Status:** PREPARED / NOT RUN.
+
+---
+
 # 2026-10-05 — EXP420 live result
 
 ## EXP420 — COMPLETE / POSITIVE — generic config ACK ownership hardening
