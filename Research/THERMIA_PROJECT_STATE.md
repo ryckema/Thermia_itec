@@ -1,3 +1,59 @@
+# 2026-10-05 — EXP421 RUNNING / PARTIAL — smoke/non-regression passed, semantic TX branch unexercised
+
+## Current experiment / status
+
+- **EXP421 — RUNNING / PARTIAL** — generic desired-page transaction core is live and stable in retained runtime, but the generic semantic TX helper has not yet been exercised.
+- **EXP420 — COMPLETE / POSITIVE** — explicit config ACK ownership baseline.
+- **EXP419 — COMPLETE / INCONCLUSIVE**.
+- **EXP418 — COMPLETE / POSITIVE**.
+- **EXP417 — COMPLETE / POSITIVE**.
+
+## Supplied live result
+
+The supplied EXP421 log covers about 200 s after OTA.
+
+Observed:
+- successful API reconnect and immediate retained-runtime qualification;
+- `stage=40`, `A80E=0000`, `A80F=000A`;
+- startup/current synchronization completed normally for `042E/count15`, `0442/count13`, `0546/count20`, and `03E8/count14`;
+- EXP420 recorded the expected four explicitly owned config ACKs;
+- Configuration synchronized with local room setpoint `03F4=22` and writes were enabled;
+- normal 0708 idle operation continued;
+- EXP418 remained balanced at 9 token sets / 9 consumes with zero tokenless events;
+- EXP417 double-valid suppression remained 0;
+- EXP419 remained unexercised;
+- no EXP420 no-owner event;
+- no parser/peer/resync/drop regression;
+- final visible heartbeat around 196 s remained clean with `runtimeFC16ACK=87 idle0708=46 unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`.
+
+EXP421-specific counters remained:
+- `genericTX=0`;
+- `buildFail=0`;
+- `lastPage=0000`;
+- `semanticResponses=0`;
+- `confirmedWrites=0`.
+
+Therefore the generic desired-page builder/TX path was **not exercised** in this run.
+
+## Result interpretation
+
+This is a **positive live smoke/non-regression result**, not completion of EXP421.
+
+The experiment remains **RUNNING / PARTIAL** because its key positive criterion still requires one already-proven reversible `03E8` write to traverse `GENERIC_PAGE_TX_EXECUTED page=03E8 count=14` and receive exact controller FC16 confirmation, followed by the reverse write and confirmation.
+
+## Next action
+
+Using the already-proven room-setpoint control:
+1. change `03F4` / room setpoint `22 -> 23`;
+2. wait for exact controller confirmation;
+3. change `23 -> 22`;
+4. wait for exact controller confirmation;
+5. return the log covering both directions.
+
+Abort on generic build failure, config no-owner event, missing exact FC16 confirmation, parser/resync/drop regression or session degradation.
+
+---
+
 # 2026-10-05 — EXP421 PREPARED / NOT RUN — generic desired-page transaction core
 
 ## Current experiment / status
