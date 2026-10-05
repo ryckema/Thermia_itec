@@ -1,3 +1,27 @@
+# 2026-10-05 — EXP424 fourth-geometry validation
+
+## EXP424 — PREPARED / NOT RUN — queued behind EXP423
+
+**Execution dependency:** do not run until EXP423 has been reviewed **COMPLETE / POSITIVE**.
+
+**Hypothesis:** the unchanged generic desired-page helper also preserves the locally proven `0546/count20` Operation Mode write path.
+
+**Target:** `0553` / word13 / Operation Mode.
+
+**Allowed live values:** only locally panel-confirmed Auto/raw1 and Compressor/raw2. If the authoritative current mode is not one of those two, EXP424 is not run.
+
+**Controlled action:** Auto -> Compressor -> Auto, or Compressor -> Auto -> Compressor, with exact FC16 confirmation and `extraDeltaWords=0` required after both forward and rollback transactions.
+
+**Safety:** Operation Mode is semantically meaningful; keep the validation window short. A temporary Auto <-> Compressor change can alter auxiliary-heat permission. No Off/Auxiliary Heater/Hot Water value is part of the experiment.
+
+**Protocol code delta vs EXP423:** none intended; labels/status/build identification only.
+
+**Offline checks:** YAML PASS; undefined IDs 0; UART TX sites 63 -> 63 with identical ordered TX expressions; hard-coded protocol literals identical; generic 0546 helper call, 0553 word13 mapping, exact confirmation and EXP420 ownership all preserved.
+
+**Status:** PREPARED / NOT RUN.
+
+---
+
 # 2026-10-05 — EXP423 third-geometry validation
 
 ## EXP423 — PREPARED / NOT RUN
