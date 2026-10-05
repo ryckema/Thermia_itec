@@ -1,3 +1,29 @@
+# 2026-10-05 — EXP425 0662 orphan-resume adoption
+
+## EXP425 — PREPARED / NOT RUN
+
+**Baseline/result trigger:** EXP423 COMPLETE / INCONCLUSIVE. The target 0442 write was never attempted because `0662/count33` repeatedly appeared pre-first-0708 and EXP420 withheld it as unowned.
+
+**Hypothesis:** the repeated identical 0662 page is an orphaned retained export page. After >=3 exact retries in the observed startup/unsynchronized state, ACK it once and continue only the already-known exact ordered tail from `0683` through `06F4`.
+
+**Controlled change:**
+- exact 0662/count33 qualifier only;
+- same received frame CRC repeated >=3 times with <=5 s gaps;
+- requires no 0708 yet, `configSynced=0`, semantic idle, EXP378/379/380 = 7/7/7, EXP410 idle, no recovery/rejoin/resume, no approval TX, clean integrity;
+- one existing standard 0662 ACK is transmitted;
+- existing ordered-resume engine is seeded at index16 / expected `0683/count33`;
+- 0708 during the tail receives idle-only W5=0006 so autosync/semantic selectors cannot interfere.
+
+**Expected ordered tail:** `0683/33 -> 06A4/33 -> 06C5/33 -> 06EA/7 -> 06F1/3 -> 06F4/19`.
+
+**Safety:** no setting value is transmitted. Out-of-order config traffic, retry-after-ACK, timeout, unknown/peer/resync/drop or session degradation aborts fail-closed.
+
+**Offline checks:** YAML PASS; 0 undefined IDs; original TX expressions preserved; only two new TX sites (0662 adoption ACK + idle 0708 while resume active); 0662 ACK CRC validated; supplied EXP423 log contained 165 repeated 0662 frames and first three had identical received CRC `BB60`.
+
+**Status:** PREPARED / NOT RUN.
+
+---
+
 # 2026-10-05 — EXP423 live attempt
 
 ## EXP423 — COMPLETE / INCONCLUSIVE — aborted before target write
