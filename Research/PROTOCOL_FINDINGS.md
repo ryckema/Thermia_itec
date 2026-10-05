@@ -1,3 +1,31 @@
+# 2026-10-05 — EXP425 ordered-tail hypothesis negative; EXP426 isolates the 0662 ACK effect
+
+## PROVEN / locally confirmed
+
+- Under the exact EXP425 condition, a one-shot ACK of repeated `0662/count33` stopped the repeated 0662 loop.
+- The expected next ordered config page `0683/count33` did not appear within the 60 s observation.
+- The runtime subsequently recovered without a controller restart.
+- Existing startup sync paths `042E/count15`, `0442/count13`, and `0546/count20` completed after the timeout.
+- `03E8/count14` Configuration autosync then completed and writes became READY.
+- No parser/peer/resync/drop regression was observed in that recovery.
+
+## DISPROVEN / SUPERSEDED
+
+- **EXP425 ordered-tail interpretation:** in this context, ACKing `0662/count33` does not imply that the controller will continue with `0683 -> 06A4 -> 06C5 -> 06EA -> 06F1 -> 06F4`.
+
+## STRONGLY SUPPORTED
+
+- The exact repeated `0662/count33` condition is not safely modeled as an orphaned position in the known ordered export.
+- The ACK itself may be sufficient to release the controller from a stalled retained transfer, after which ordinary runtime/autosync can recover.
+
+## OPEN / UNKNOWN
+
+- The semantic role / owner identity of this standalone-looking `0662/count33` transfer.
+- Whether the exact strict qualifier used in EXP426 is necessary and sufficient across repeated reconnects.
+- Whether another predecessor/token exists that would classify this transfer more naturally than the current startup-state discriminator.
+
+---
+
 # 2026-10-05 — EXP423 exposed an incomplete EXP420 config-ownership predicate
 
 ## PROVEN / locally confirmed
