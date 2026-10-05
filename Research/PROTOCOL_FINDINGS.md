@@ -1,3 +1,26 @@
+# 2026-10-05 — EXP421 generic desired-page TX core
+
+## PROVEN / locally confirmed
+
+- The EXP421 shared desired-page byte builder/TX primitive is live-compatible with the local XTR M `03E8/count14` semantic write flow.
+- A room-setpoint write `03F4 22 -> 23` traversed the shared helper once and was confirmed by exact controller FC16 republish with `extraDeltaWords=0`.
+- The exact rollback `03F4 23 -> 22` traversed the same shared helper a second time and was confirmed by exact controller FC16 republish with `extraDeltaWords=0`.
+- Final EXP421 diagnostics were `genericTX=2 buildFail=0 lastPage=03E8`; the room-setpoint cache was restored to 22.
+- The same run retained clean parser/session integrity and explicit config ACK ownership.
+
+## STRONGLY SUPPORTED
+
+- Centralizing full cached-page serialization, one selected-word substitution, CRC16 and DE/UART transmit timing does not change the observed `03E8/count14` semantic behavior when page-specific validation, selectors, state and confirmation remain outside the helper.
+- The generic helper is a viable base for further consolidation of the existing production writers.
+
+## OPEN / UNKNOWN
+
+- Independent live exercise of the shared helper on `042E/count15`, `0442/count13`, and `0546/count20`.
+- Whether a higher-level generic transaction state machine can safely replace the remaining page-specific orchestration without weakening current per-page guards.
+- Fresh cold-session/recovery interaction with semantic writes remains separate from this result.
+
+---
+
 # 2026-10-05 — EXP420 config ACK ownership hardening
 
 ## PROVEN / locally confirmed
