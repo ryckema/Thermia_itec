@@ -1,3 +1,32 @@
+# 2026-10-05 — EXP420 live result
+
+## EXP420 — COMPLETE / POSITIVE — generic config ACK ownership hardening
+
+**Hypothesis:** known config-page geometry is necessary but not sufficient ACK authorization in stage40 retained runtime.
+
+**Baseline:** EXP419 COMPLETE / INCONCLUSIVE; EXP418 and EXP417 positive.
+
+**Controlled change:** broad known-config ACK permission was replaced by explicit owners captured at FC16 arrival. Production owners for `03E8`, `042E`, `0442`, `0546`, exact EXP410 calendar states, autonomous idle `03E8`, and ordered resume were preserved. Other known config-family pages are capture-only / NO_ACK.
+
+**Observed local result:**
+- supplied slice spans roughly 6483 s to 6770 s runtime age of the same EXP420 boot;
+- EXP420 status remained `ownedACK=4 noOwner=0 autonomous03E8=0`;
+- no `EXP420_CONFIG_NO_OWNER` event;
+- 122 stage40 FC16 publications occurred in the supplied slice; none were config-family pages;
+- final heartbeat around 6767 s: `stage=40 runtimeFC16ACK=2844 idle0708=1578 rt085F=0 unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`;
+- EXP418 reached `set=316 consumed=316 noToken=0 bypass=0`;
+- EXP417 suppressions remained 0;
+- EXP419 remained unexercised;
+- no semantic write was performed during this slice.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+**Interpretation:** explicit ownership does not regress the currently exercised production config path or long-running retained runtime. The four owned config ACKs happened earlier in this boot; this attachment preserves their counters but not the earlier individual owner log lines.
+
+**Limitations:** autonomous idle 03E8 and unowned-config NO_ACK branches were not exercised in this supplied slice.
+
+---
+
 # 2026-10-05 — EXP420 PREPARED / NOT RUN
 
 ## EXP420 — generic config FC16 ACK ownership hardening
