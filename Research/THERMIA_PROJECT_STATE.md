@@ -1,3 +1,64 @@
+# 2026-10-05 — EXP424 PREPARED / NOT RUN — queued behind EXP423
+
+## Current experiment / status
+
+- **EXP423 — PREPARED / NOT RUN** — third generic page-geometry validation on `0442/count13`; this remains the current live experiment.
+- **EXP424 — PREPARED / NOT RUN** — fourth generic page-geometry validation on `0546/count20`, staged in advance and **must not be run until EXP423 is reviewed COMPLETE / POSITIVE**.
+- **EXP422 — COMPLETE / POSITIVE** — generic helper live-confirmed on `042E/count15`.
+- **EXP421 — COMPLETE / POSITIVE** — generic helper live-confirmed on `03E8/count14`.
+
+## EXP424 hypothesis
+
+The unchanged EXP421 generic desired-page builder/TX primitive also preserves the already-proven `0546/count20` semantic write flow.
+
+## Target
+
+- slave `0x0F`;
+- page `0546/count20`;
+- register `0553`;
+- word 13;
+- local meaning Operation Mode;
+- local writeability source: EXP380;
+- EXP424 restricts the live validation to the two locally panel-confirmed modes:
+  - raw 1 = Auto;
+  - raw 2 = Compressor.
+
+No Off / Auxiliary Heater / Hot Water value is part of EXP424.
+
+## Controlled live action
+
+After EXP423 has passed:
+1. read the fresh authoritative Operation Mode;
+2. if Auto, request Compressor;
+3. if Compressor, request Auto;
+4. if any other mode, **do not run** EXP424;
+5. require exact `0546/count20` FC16 confirmation with `extraDeltaWords=0`;
+6. restore the exact original mode immediately;
+7. require exact rollback confirmation.
+
+## Safety / abort
+
+Expected temporary semantic effect: Auto <-> Compressor can change whether auxiliary heat is permitted and may briefly affect heating/hot-water behavior.
+
+Abort on generic build failure, wrong page/count, missing exact confirmation, extra changed words, unexpected mode value, EXP420 no-owner, parser/resync/drop/peer fault or session degradation.
+
+EXP424 introduces **no protocol/TX behavior change** versus EXP423; only experiment labels/status/build identification differ.
+
+## Offline validation
+
+- YAML parse PASS;
+- undefined `id()` references: 0;
+- UART write sites `63 -> 63`;
+- ordered UART TX expressions identical to EXP423;
+- hard-coded protocol literal sequence identical;
+- generic `0546/count20` call preserved;
+- `0553` word13 Operation Mode control preserved;
+- Auto/raw1 and Compressor/raw2 mappings preserved;
+- exact `0546` confirmation path and EXP420 owner preserved;
+- ESPHome compile not run in assistant environment.
+
+---
+
 # 2026-10-05 — EXP423 PREPARED / NOT RUN — third generic page geometry validation
 
 ## Current experiment / status
