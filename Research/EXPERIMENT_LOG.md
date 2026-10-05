@@ -1,3 +1,41 @@
+# 2026-10-05 — EXP418 live result
+
+## EXP418 — COMPLETE / POSITIVE — 0870 ACK ownership hardening
+
+**Hypothesis:** normal-runtime `0870/count17` ACK permission is session-context-owned rather than page-shape-owned.
+
+**Baseline:** EXP417 COMPLETE / POSITIVE.
+
+**Controlled change:**
+- remove unconditional `0870/count17` runtime ACK authorization;
+- one-shot token is created only after an actually transmitted ACK for all-zero `085F/count5` or `0864/count4`;
+- ordinary `0708` preserves the token;
+- first normal-runtime `0870` ACK consumes it;
+- tokenless normal-runtime `0870` is capture-only / NO_ACK;
+- explicit recovery/rejoin contexts remain passthrough and were not redefined.
+
+**Observed local result:**
+- supplied log slice spans retained runtime from approximately 2069 s to 2378 s;
+- `stage=40` throughout;
+- EXP418 status begins at `set=96 consumed=96 noToken=0 bypass=0`;
+- 15 new `0864/count4` ACKs each produce `0870_TOKEN_SET source=0864_ACK`;
+- 15 new `0870/count17` ACKs each produce `0870_TOKEN_CONSUMED source=0864_ACK`;
+- counters reach `set=111 consumed=111`;
+- no `EXP418_0870_NO_TOKEN`;
+- no `0870_RECOVERY_PASSTHROUGH`;
+- no runtime 085F ACK in this slice;
+- no semantic write;
+- no EXP417 double-valid suppression;
+- final heartbeat: `stage=40 ... runtimeFC16ACK=1003 idle0708=555 rt085F=0 unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+**Strong conclusion:** replacing page-shape-only 0870 authorization with the one-shot token rule did not regress the observed retained-runtime XTR path, and all observed normal-runtime 0870 publications were owned by an unconsumed token.
+
+**Limitation:** this run does not exercise all-zero 085F token creation or recovery/rejoin bypass, and absence of tokenless 0870 does not prove such a context can never occur.
+
+---
+
 # 2026-10-05 — EXP418 0870 ACK ownership hardening
 
 ## EXP418 — PREPARED / NOT RUN
