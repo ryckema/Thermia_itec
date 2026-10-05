@@ -1,3 +1,65 @@
+# 2026-10-05 — CANONICAL RECONCILIATION — EXP411–416
+
+**Authoritative status:** this section supersedes older current-state summaries below where they conflict.
+
+## Current experiment / status
+
+- **EXP416 — COMPLETE / POSITIVE** — structural cleanup pass 2 live-smoke-tested successfully.
+- **EXP415 — COMPLETE / POSITIVE** — structural cleanup pass 1 live-smoke-tested successfully.
+- **EXP414 — RUNNING / PARTIAL historically** — capture-only natural `0532/count18` observer; no natural page observed in the supplied retained-runtime logs.
+- **EXP413 — COMPLETE / INCONCLUSIVE** — bounded current-only identity-page request did not produce `0532/count18` within the discrimination window.
+- **EXP412 — PREPARED / NOT RUN** — manual UI correlation requires physical heat-pump access.
+- **EXP411 — COMPLETE / INCONCLUSIVE** — a firmware-derived native approval implementation was prepared, but retained runtime produced no fresh controller challenge.
+
+## Confidential native approval finding
+
+Thermia Connect firmware analysis established the native approval mechanism and genuine capture evidence independently verified it.
+
+**Security-sensitive approval parameters, capture fixtures and working implementation details are confidential and are intentionally not stored in this repository.**
+
+Evidence status:
+- **PROVEN / firmware-derived:** native approval mechanism recovered.
+- **PROVEN / genuine Online/DCM capture:** recovered mechanism verified against genuine traffic.
+- **OPEN / local XTR live:** acceptance during a fresh local controller challenge has not yet been exercised.
+
+## Local XTR identity / firmware findings
+
+- **PROVEN / locally observed:** `0867=242`, decoded by the vendor firmware formula as CM firmware **2.4.2**.
+- Additional repeatedly observed local raw values: `07DC=30`, `07E8=2410`, `07E9=2201`, `07EA=2501`, `07EB=1301`, `0816=0`.
+- `0539` configured product code remains **OPEN / UNKNOWN** locally.
+- Firmware-derived XTR M codes are 22 for 1N and 23 for 3N; this has not yet been locally read from `0539`.
+
+## EXP415 / EXP416 cleanup result
+
+Both cleanup passes were designed as zero-bus-behaviour changes and preserved the existing production/session paths.
+
+Live validation showed:
+- retained `stage=40`;
+- `A80E=0000`, `A80F=000A`;
+- normal runtime FC16 page flow and ACKs;
+- successful startup/current synchronization for `042E/count15`, `0442/count13`, `0546/count20`;
+- successful automatic `03E8/count14` configuration refresh;
+- minimal zero-W4 `0708` idle replies continued;
+- clean integrity counters with no parser resync/drop or peer responder activity in the supplied windows;
+- no semantic setting write was triggered by either cleanup experiment.
+
+## Current strongest hypotheses / unknowns
+
+1. `0532/count18` appears context-sensitive rather than a normal retained-runtime publication.
+2. W4 remains service/work metadata whose exact local lifecycle is not yet proven.
+3. Fresh local native-approval acceptance remains open because no fresh challenge has been seen.
+4. Parser ambiguity hardening from PROTO-OFFLINE-63 is now a higher-value next engineering step than another small cleanup.
+
+## Safety constraints
+
+- Do not broaden fresh-session eligibility based only on retained runtime.
+- Do not infer new desired selectors from W4 or current-selector symmetry.
+- Keep `0834` capture-only.
+- Do not combine W4 emulation, approval testing, parser hardening and semantic writes in one experiment.
+- Confidential native-approval implementation details must not be committed to a public repository.
+
+---
+
 # 2026-10-04 — CANONICAL RECONCILIATION — calendar writer through EXP404
 
 **Authoritative status:** this section supersedes older live/calendar summaries below where they conflict. Historical sections remain unchanged.

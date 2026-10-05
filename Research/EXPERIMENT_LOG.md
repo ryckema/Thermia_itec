@@ -1,3 +1,49 @@
+# 2026-10-05 — EXP411–416 validation track
+
+## EXP416 — COMPLETE / POSITIVE — structural cleanup pass 2
+
+**Baseline:** EXP415 COMPLETE / POSITIVE.
+
+**Controlled change:** removed six additional state fields proven by static audit to be write-only. No parser rule, ACK policy, selector, frame, CRC, timing, guard, recovery path, semantic transaction or production control was intentionally changed.
+
+**Observed:** retained `stage=40`, normal production synchronization, normal runtime ACKs, clean integrity counters throughout the supplied run, and no semantic write.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+## EXP415 — COMPLETE / POSITIVE — structural cleanup pass 1
+
+**Baseline:** EXP414 retained-runtime build.
+
+**Controlled change:** removed twelve state fields proven by static audit to be dead. Ordered UART write sites, hard-coded frame sequence and executable behaviour outside those removals were preserved.
+
+**Observed:** retained `stage=40`, startup/current synchronization for `042E`, `0442`, `0546`, automatic `03E8` synchronization, normal runtime ACKs and clean integrity counters.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+## EXP414 — RUNNING / PARTIAL — passive natural 0532 observer
+
+Capture-only observer for natural `FC16 0532/count18`. No natural page was observed in the supplied retained-runtime logs. No selector, desired page or setting value is transmitted by EXP414 itself.
+
+## EXP413 — COMPLETE / INCONCLUSIVE — current-only 0532 request
+
+One bounded current-only mailbox request was transmitted during healthy retained runtime. No `0532/count18` followed inside the 15 s discrimination window; runtime integrity stayed clean.
+
+Conclusion: that current request alone is not proven sufficient to force `0532` during retained runtime.
+
+## EXP412 — PREPARED / NOT RUN — 043C UI correlation
+
+Manual UI correlation remains unrun because physical access is unavailable.
+
+## EXP411 — COMPLETE / INCONCLUSIVE — native approval implementation
+
+A native approval implementation derived from Thermia Connect firmware was prepared and independently validated against genuine traffic evidence. The local retained-runtime session produced no fresh controller challenge, so the implementation was not exercised live.
+
+**Confidentiality:** security-sensitive approval parameters, capture fixtures and working implementation details are intentionally omitted from this repository.
+
+**Positive side findings:** local `0867=242 -> 2.4.2`; local `043C=0000` baseline; no observed regression in retained runtime.
+
+---
+
 # 2026-10-04 — LIVE CALENDAR WRITE EXPERIMENTS EXP399..405
 
 ## EXP405 — PREPARED / NOT RUN — inactive slot0 two-word time-window write
