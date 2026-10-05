@@ -1,3 +1,76 @@
+# 2026-10-05 — EXP425 PREPARED / NOT RUN — repeated 0662 orphan-resume adoption
+
+## Current experiment / status
+
+- **EXP425 — PREPARED / NOT RUN** — tightly-qualified one-shot adoption of the repeated pre-first-0708 `0662/count33` observed in EXP423, followed only by the already-existing exact ordered-resume tail.
+- **EXP424 — SUPERSEDED / NOT RUN** — do not run until the 0662 ownership/recovery gap is resolved.
+- **EXP423 — COMPLETE / INCONCLUSIVE** — aborted before the `044D` geometry write because repeated `0662/count33` was withheld by EXP420.
+- **EXP422 — COMPLETE / POSITIVE**.
+- **EXP421 — COMPLETE / POSITIVE**.
+
+## Hypothesis
+
+The repeated byte-identical `0662/count33` is a retained/orphaned ordered-export page whose predecessor ACK happened before the ESP OTA/reconnect. A one-shot ACK only after repeated exact evidence should release the controller into the already-known tail:
+
+`0662 -> 0683 -> 06A4 -> 06C5 -> 06EA -> 06F1 -> 06F4`.
+
+## Exact controlled change
+
+New authorization exists only for exact `0x0F / FC16 / 0662/count33` when all of the following hold:
+
+- stage40;
+- byteCount 66 / frame length 75;
+- no 0708 answered yet;
+- `configSynced=0`;
+- write state idle, no pending/dirty semantic transaction;
+- EXP378/379/380 states exactly `7/7/7`;
+- EXP410 idle;
+- no recovery, hot-rejoin, or existing resume active;
+- no approval TX in this ESP session;
+- unknown/peer/resync/drop integrity clean;
+- same received frame CRC observed on at least 3 retries with <=5 s gaps.
+
+On the third qualifying repeat EXP425 sends the already-existing standard `0662/count33` ACK once and seeds the existing ordered-resume engine at expected index 16 = `0683/count33`.
+
+During the adopted tail, any 0708 interleave receives only the existing idle W5=0006 response; Configuration autosync and semantic selectors are suppressed until the ordered tail finishes.
+
+No semantic setting value is transmitted by EXP425.
+
+## Evidence behind the discriminator
+
+Replay of the supplied EXP423 failure log found 165 captured `0662/count33` frames; the first three carried the same received CRC field `BB60`, consistent with repeated byte-identical retry behavior.
+
+## Positive criteria
+
+- exactly one EXP425 0662 adoption ACK;
+- next config page is exact `0683/count33`;
+- exact ordered continuation through `06F4/count19`;
+- `EXP425 ORPHAN_TAIL_RESUME_POSITIVE`;
+- no out-of-order page, ACKed-page retry, unknown/peer/resync/drop fault;
+- normal 0708/config synchronization can resume afterwards.
+
+## Negative / abort
+
+No TX if the exact qualifier is not met. Abort/fail-closed on repeated 0662 after the adoption ACK, out-of-order config page, timeout, parser/peer/integrity fault, semantic activity, or session degradation.
+
+## Recovery
+
+If partial adoption leaves the controller retained on a later config page, reverting ESP firmware alone may not clear controller transfer state. Stop TX, revert to the last proven firmware, and use the known controller restart recovery if the retained transfer remains.
+
+## Offline validation
+
+- YAML parse PASS;
+- undefined `id()` references: 0;
+- UART `write_array` sites `63 -> 65`;
+- all original TX expressions preserved in order;
+- exactly two new TX call sites: the one-shot 0662 ACK and idle 0708 response during the adopted tail;
+- no new semantic desired-page TX site;
+- hard-coded 0662 ACK CRC independently recalculated as wire bytes `A0 69`;
+- braces/parentheses balanced;
+- ESPHome compile not run in assistant environment.
+
+---
+
 # 2026-10-05 — EXP423 COMPLETE / INCONCLUSIVE — aborted by pre-target 0662 ACK-ownership regression
 
 ## Current experiment / status
