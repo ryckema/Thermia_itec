@@ -1,3 +1,73 @@
+# 2026-10-05 — EXP422 COMPLETE / POSITIVE — second generic page geometry live-confirmed on 042E/count15
+
+## Current experiment / status
+
+- **EXP422 — COMPLETE / POSITIVE** — the unchanged EXP421 generic desired-page builder/TX primitive is now live-confirmed on a second page geometry, `042E/count15`.
+- **EXP421 — COMPLETE / POSITIVE** — generic helper live-confirmed on `03E8/count14`.
+- **EXP420 — COMPLETE / POSITIVE** — explicit config ACK ownership baseline.
+- **EXP419 — COMPLETE / INCONCLUSIVE**.
+- **EXP418 — COMPLETE / POSITIVE**.
+- **EXP417 — COMPLETE / POSITIVE**.
+
+## Hypothesis
+
+The same generic desired-page byte builder/TX primitive proven on `03E8/count14` preserves the already-proven `042E/count15` semantic write behavior.
+
+## Controlled live action
+
+Existing locally proven target:
+- slave `0x0F`;
+- page `042E/count15`;
+- register `0433`;
+- word 5;
+- local mapping Startup HT / Opstart HT.
+
+Authoritative starting value was 5. The controlled test changed `5 -> 6`, required exact controller confirmation, then restored `6 -> 5` and required exact rollback confirmation.
+
+## Observed live result
+
+### Forward 5 -> 6
+- desired selector executed for `042E/count15`, `0433` word 5;
+- controller pulled `FC03 042E/count15`;
+- EXP421 generic helper emitted `GENERIC_PAGE_TX_EXECUTED page=042E count=15 frameLen=35 txCount=1`;
+- controller republished `FC16 042E/count15` with word 5 = 6;
+- `WRITE_CONFIRMED reg=0433 word=5 original=5 target=6 observed=6 extraDeltaWords=0`;
+- EXP420 ownership identified the confirmation page as `042E_EXP378`.
+
+### Rollback 6 -> 5
+- the same generic helper emitted `GENERIC_PAGE_TX_EXECUTED page=042E count=15 frameLen=35 txCount=2`;
+- controller republished `FC16 042E/count15` with word 5 restored to 5;
+- `WRITE_CONFIRMED reg=0433 word=5 original=6 target=5 observed=5 extraDeltaWords=0`;
+- HA authoritative Startup HT returned to 5.
+
+## Integrity / safety result
+
+After rollback:
+- `genericTX=2`;
+- `buildFail=0`;
+- `lastPage=042E`;
+- EXP420 `noOwner=0`;
+- final visible heartbeat at ~175 s: `stage=40 unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`;
+- EXP418 remained balanced through 9/9 token set/consume;
+- EXP417 suppressions remained 0;
+- no EXP419 085F event.
+
+## Conclusion
+
+**EXP422 COMPLETE / POSITIVE.**
+
+The shared EXP421 desired-page byte builder/TX primitive is now locally live-proven on two distinct page geometries:
+- `03E8/count14`;
+- `042E/count15`.
+
+This materially strengthens the generic-core architecture. The remaining generic call-site geometries `0442/count13` and `0546/count20` are still only offline-equivalence checked under the shared helper, although both page-specific write paths were proven before the consolidation.
+
+## Recommended next action
+
+Prepare EXP423 as one more live geometry check on either `0442/count13` or `0546/count20`, using an already locally proven reversible setting and changing no parser/ACK/W4/session logic.
+
+---
+
 # 2026-10-05 — EXP422 PREPARED / NOT RUN — second generic page geometry validation
 
 ## Current experiment / status
