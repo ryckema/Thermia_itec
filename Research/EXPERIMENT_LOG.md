@@ -1,3 +1,23 @@
+# 2026-10-05 — EXP423 third-geometry validation
+
+## EXP423 — PREPARED / NOT RUN
+
+**Baseline:** EXP422 COMPLETE / POSITIVE.
+
+**Hypothesis:** the same generic desired-page TX helper already proven live on `03E8/count14` and `042E/count15` behaves identically on a third geometry, `0442/count13`.
+
+**Controlled live target:** existing locally proven `044D` / word11 / Cooling Room Hysteresis Low. Read authoritative current value `N`, make one adjacent 0.1 °C change, require exact controller republish, then restore exactly `N` and require exact rollback confirmation.
+
+**Mapping/write source:** EXP379 locally confirmed raw `10 -> 18 -> 10` = `1.0 -> 1.8 -> 1.0 °C`.
+
+**Protocol code delta versus EXP422:** none intended. Only EXP423 labelling/build identification and the Configuration validation-status entity change; obsolete EXP422 target-status entity is removed.
+
+**Offline checks:** YAML PASS; undefined IDs 0; UART TX sites 63 -> 63 with identical ordered TX expressions; hard-coded protocol literals identical; `0442/13` generic-helper call, `044D` scaling/range, exact confirmation guard and EXP420 ownership preserved.
+
+**Status:** PREPARED / NOT RUN.
+
+---
+
 # 2026-10-05 — EXP422 live result
 
 ## EXP422 — COMPLETE / POSITIVE — generic helper on 042E/count15
