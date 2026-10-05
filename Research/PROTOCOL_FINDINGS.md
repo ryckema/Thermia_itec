@@ -1,3 +1,32 @@
+# 2026-10-05 — EXP423 exposed an incomplete EXP420 config-ownership predicate
+
+## PROVEN / locally confirmed
+
+- In the supplied post-OTA local XTR M run, `0662/count33` was repeatedly published while the ESP was already at retained `stage=40`.
+- The EXP420 rule classified the page as unowned and withheld the FC16 ACK.
+- The same `0662/count33` then retried persistently for the entire ~180 s supplied slice; the no-owner counter reached 166.
+- During the retry loop, production writer startup states stayed unsynchronized (`exp378_state=7`, `exp379_state=7`, `exp380_state=7`), `configSynced=0`, `idle0708=0`, and no semantic TX occurred.
+- Parser and bus-integrity counters stayed clean; this was not a parser corruption or generic-page-builder failure.
+
+## STRONGLY SUPPORTED
+
+- The EXP420 config ACK ownership predicate is **too narrow** outside the long retained-runtime context in which EXP420 originally passed.
+- At least one legitimate/relevant pre-first-0708 or unsynchronized transfer context can contain `0662/count33` and requires ownership handling beyond the four production sync pages and existing EXP410/resume owners.
+- The EXP421 generic desired-page core remains unimplicated by this failure because it was never entered.
+
+## OPEN / UNKNOWN
+
+- The exact owner for this `0662/count33` transfer: e.g. interrupted calendar/config export, reconnect continuation, or another startup/resume context.
+- Whether the narrow authorization should be keyed to a preceding page/order token, an unsynchronized-start state, or another explicit session marker.
+- Whether adjacent calendar/config pages would follow after an ACKed 0662 in this exact context.
+
+## DISPROVEN / SUPERSEDED
+
+- **Superseded as a universal rule:** “the EXP420 explicit-owner predicate is sufficient for all stage40 config traffic.”
+- The original EXP420 retained-runtime result itself is not erased: it remains positive for the context actually observed there.
+
+---
+
 # 2026-10-05 — EXP422 generic helper second-geometry validation
 
 ## PROVEN / locally confirmed
