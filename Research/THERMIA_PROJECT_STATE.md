@@ -1,3 +1,49 @@
+# 2026-10-05 — EXP418 PREPARED / NOT RUN — 0870 ACK ownership hardening
+
+## Current experiment / status
+
+- **EXP418 — PREPARED / NOT RUN** — normal-runtime `0870/count17` ACK ownership hardening.
+- **EXP417 — COMPLETE / POSITIVE** — FC03 double-valid-prefix parser hardening, including live bidirectional `03F4` write regression.
+
+## EXP418 hypothesis
+
+Normal-runtime `0870/count17` should be ACKed only when owned by a one-shot session token created after an actually executed ACK of either:
+- qualified all-zero `085F/count5`; or
+- qualified `0864/count4`.
+
+Ordinary `0708` traffic preserves the token. The first normal-runtime `0870` ACK consumes it.
+
+Existing explicit recovery/rejoin contexts are intentionally passed through unchanged:
+- controller recovery in progress;
+- hot-rejoin waiting for runtime;
+- ordered export-resume runtime interleave.
+
+## Controlled change
+
+- remove `0870/count17` from the unconditional runtime ACK whitelist;
+- add the one-shot ownership token and diagnostics;
+- tokenless normal-runtime `0870` becomes capture-only / NO_ACK and is logged as EXP418 negative evidence;
+- do not alter parser logic, 085F payload recognition, W4, 0708 words, generic config ACK policy, semantic writers, approval/bootstrap/recovery state machines or TX frame construction.
+
+## Offline validation
+
+- YAML parse PASS;
+- undefined `id()` references: 0;
+- UART `write_array()` sites unchanged: 66 -> 66;
+- ordered UART write expressions unchanged;
+- existing long hexadecimal protocol literals unchanged;
+- replay of the supplied EXP417 long run: 137 stage40 FC16 publications, 15 token-source `0864` events, 15 `0870/count17` publications, **15/15 authorized, 0 withheld** under the EXP418 rule.
+
+## Positive / negative / abort
+
+**Positive:** retained runtime remains healthy and ordinary `0870` ACKs are preceded by a valid token source and consume exactly one token.
+
+**Negative / discrimination:** a normal-runtime `0870` appears with no token. It must be captured with NO_ACK; do not broaden the rule in the same experiment.
+
+**Abort:** repeated tokenless 0870 retries, session degradation/loss, parser resync/drop, or production write regression. Revert to EXP417; no Thermia setting rollback is required.
+
+---
+
 # 2026-10-05 — EXP417 strengthened by live semantic-write regression
 
 EXP417 remains **COMPLETE / POSITIVE**.
