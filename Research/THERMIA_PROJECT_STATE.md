@@ -1,3 +1,56 @@
+# 2026-10-05 — EXP426 COMPLETE / INCONCLUSIVE — trigger absent; baseline/runtime healthy
+
+## Current experiment / status
+
+- **EXP426 — COMPLETE / INCONCLUSIVE** — the narrow isolated `0662/count33` release-ACK path was not exercised because no `0662/count33` appeared in the supplied ~147 s run.
+- **EXP425 — COMPLETE / NEGATIVE** — one ACK stopped the prior repeated 0662 loop, but the predicted ordered tail did not follow.
+- **EXP424 — SUPERSEDED / NOT RUN**.
+- **EXP423 — COMPLETE / INCONCLUSIVE**.
+- **EXP422 — COMPLETE / POSITIVE**.
+- **EXP421 — COMPLETE / POSITIVE**.
+
+## EXP426 observed result
+
+The ESP entered retained `stage=40` cleanly after OTA. EXP426 diagnostics remained:
+- `repeat=0`;
+- `released=0`;
+- `releaseACK=0`;
+- `resumeStarted=0`.
+
+No `0662/count33` frame appeared anywhere in the supplied log, so the EXP426 active path never transmitted.
+
+Normal startup/runtime synchronization completed without any special 0662 handling:
+- `042E/count15` synchronized;
+- `0442/count13` synchronized;
+- `0546/count20` synchronized;
+- `03E8/count14` Configuration autosync confirmed and writes became READY at ~24 s.
+
+At the final visible heartbeat (~146 s):
+- `stage=40`;
+- `cacheValid=1`, `cache03F4=22`;
+- `refreshReq=1`, `refreshOK=1`;
+- `runtimeFC16ACK=65`, `idle0708=34`;
+- `semanticResponses=0`, `confirmedWrites=0`;
+- `unknown16=0 unknown03=0 peer17=0 peer16ack=0 resync=0 drops=0`.
+
+EXP418 remained balanced (7 tokens set / 7 consumed) and EXP420 showed `ownedACK=4 noOwner=0`.
+
+## Conclusion
+
+**EXP426 is COMPLETE / INCONCLUSIVE for its 0662-release hypothesis.**
+
+This run does NOT show that the isolated release ACK is unnecessary or sufficient; the required repeated-0662 condition simply did not recur.
+
+It does positively confirm that the presentation-only HA cleanup and the retained baseline do not disrupt normal startup synchronization in this run.
+
+## Recommended next action
+
+Keep the EXP426 logic available for a repeat occurrence of the exact 0662 condition. Do not manufacture a 0662 condition with speculative traffic.
+
+Because normal startup is currently healthy, return to the previously interrupted generic-page geometry program: prepare a fresh `0442/count13` validation derived from this cleaned baseline, while leaving the EXP426 0662 safety path dormant/fail-closed.
+
+---
+
 # 2026-10-05 — EXP426 PREPARED / NOT RUN — isolated 0662 release ACK + HA entity cleanup
 
 ## Current experiment / status
