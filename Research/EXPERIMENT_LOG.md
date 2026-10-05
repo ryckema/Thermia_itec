@@ -1,3 +1,32 @@
+# 2026-10-05 — EXP419 retained-runtime 085F ACK-context hardening
+
+## EXP419 — PREPARED / NOT RUN
+
+**Hypothesis:** known `085F/count5` payload shape is necessary but not sufficient ACK authorization in stable retained runtime.
+
+**Baseline:** EXP418 COMPLETE / POSITIVE.
+
+**Controlled change:**
+- retain recognition of the two locally known 085F payload forms;
+- remove payload-only normal-runtime ACK authorization;
+- preserve existing ACK behavior only in explicit fresh-approval, recovery, hot-rejoin or ordered-resume contexts;
+- stable retained known 085F becomes capture-only / NO_ACK;
+- unknown 085F payload remains fail-closed STOP;
+- EXP418 0870 token creation remains after actual all-zero 085F ACK only.
+
+**Safety:** no new transmitted payload is introduced. Target controller publication is slave `0x0F`, FC16, start `0x085F`, count 5. The experiment only withholds an existing standard address/count ACK when context ownership is absent.
+
+**Offline validation:**
+- YAML parse PASS;
+- undefined `id()` refs: 0;
+- UART TX sites remain 66 and ordered expressions are identical;
+- existing protocol literals unchanged;
+- supplied EXP418 retained-runtime trace contains zero `085F/count5`, therefore predicts no behavior difference on that trace.
+
+**Status:** **PREPARED / NOT RUN**. ESPHome compile not claimed.
+
+---
+
 # 2026-10-05 — EXP418 live result
 
 ## EXP418 — COMPLETE / POSITIVE — 0870 ACK ownership hardening
