@@ -1,3 +1,51 @@
+# 2026-10-07 — S11I COMPLETE / POSITIVE — retained 0884 ACK releases to 07D0
+
+## Current experiment / status
+
+- **S11I — COMPLETE / POSITIVE** — in one uninterrupted no-controller-reboot retained run, the locally proven two-step `085F/0708` service release exposed `0884/60`; exactly one ACK0884 then released the controller to `07D0/19` after 2042 ms.
+- **S11H — COMPLETE / NEGATIVE** for the narrower direct-`07D0` endpoint hypothesis; its service-release action itself remained effective and exposed `0884/60`.
+- **S11G FIX1 — COMPLETE / INCONCLUSIVE** — retained `0884` was absent after ESP restart, so ACK0884 was not exercised there.
+
+## S11I observed sequence
+
+Directly qualified retained baseline:
+`085F/5 = 0000 0000 0800 0000 0000` + repeated `0708/6`, zero TX, no FC23, clean integrity.
+
+Controlled actions:
+1. TX1: one proven `0708/6` response with W0..W4=0000, W5=0006;
+2. controller published exact all-zero `085F/5`;
+3. TX2: one standard ACK to `085F/count5`;
+4. controller published `0884/60`;
+5. TX3: one standard ACK to `0884/count60`;
+6. all later ESP TX disabled;
+7. `07D0/19` appeared 2042 ms after TX3.
+
+Final status:
+`result=1`, `tx1=1`, `tx2=1`, `tx3=1`, `seen0884=1`, `seen07D0>=1`, `physicalTX=delivered=writes=3`, `mismatch=0`, `unknown=0`, `drops=0`, `boundary=0`. One parser resync step was present but stable in the supplied slice.
+
+## Evidence classification
+
+**PROVEN / locally confirmed**
+- current retained `085F(0800) <-> 0708` service gate can be released with the proven S10C two-step sequence;
+- that release can expose pending `0884/60` work in this retained controller epoch;
+- exactly one standard ACK to that exposed `0884/60` is locally sufficient to release into `07D0/19` in the same uninterrupted ESP/controller epoch;
+- after ACK0884, the first `07D0/19` followed after 2042 ms, closely matching genuine gateway cadence;
+- the complete retained path required exactly three ESP transmissions and no Thermia/controller reboot.
+
+**STRONGLY SUPPORTED**
+- retained work ownership survives ESP process restarts but may be hidden behind a phase-local `085F/0708` service gate;
+- `0884` is a real pending history/runtime work item whose ACK can complete the retained work and return scheduling to the runtime ring.
+
+**OPEN / UNKNOWN**
+- whether every retained `0884` context can use the same ACK-only release without first restoring the phase-local service gate;
+- whether the generic production emulator should auto-chain this exact retained path or require stronger owner/session classification;
+- whether post-`07D0` runtime can now be resumed directly without replaying earlier service steps in the current controller epoch.
+
+## Recommended next step
+
+Do not spend another controller reboot. The highest-value next live test is a retained runtime continuation from the now-visible `07D0/19`, reusing the already locally proven S10D-fix1 chain (`07D0 -> 07E4 -> 07F8 -> 080C -> 0820 -> 0848`) with exact one-shot ownership guards. This should be treated as a separate experiment; do not silently auto-advance beyond 0848 because the later service boundary is context-sensitive.
+
+---
 # 2026-10-07 — S11H COMPLETE / NEGATIVE for 07D0 endpoint; positive retained release to 0884
 
 ## Current experiment / status
