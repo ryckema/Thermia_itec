@@ -18,7 +18,7 @@
 
 The planned fresh-session “withhold ACK0864” causality test is preserved but no longer prioritized. S11D + genuine-capture correlation make a retained continuation toward normal operation more valuable than spending another controller reboot on this discriminator.
 
-## S11G — PREPARED / NOT RUN
+## S11G FIX1 — PREPARED / NOT RUN\n\nThe first generated S11G YAML failed at C++ compile time before flashing. Cause: the frame-handler body and helper declarations were malformed/scoped inside the `candidates_for` lambda, producing undeclared helper/frame errors and inconsistent lambda return types. **No experiment ran and no bus TX occurred.** FIX1 restores the side-effect-free candidate parser, helper declarations, and explicit `handle_frame` lambda while preserving the exact S11G protocol hypothesis and single-TX boundary.\n\n## S11G — PREPARED / NOT RUN
 
 **Hypothesis:** one standard ACK to the currently repeated retained `0884/count60` is sufficient by itself to release the history-overlay retry state into `07D0/count19`.
 
