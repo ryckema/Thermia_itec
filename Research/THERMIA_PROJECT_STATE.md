@@ -2,7 +2,7 @@
 
 ## Current experiment / status
 
-- **S11G — PREPARED / NOT RUN** — no-controller-reboot retained `0884/count60` release probe. After an ESP-only OTA/restart, require repeated exact `0884/60` plus live `0708/6` polling with zero TX, then permit exactly one standard FC16 address/count ACK to `0x0F:0884/60`; all later traffic is capture-only.
+- **S11G FIX1 — PREPARED / NOT RUN** — corrected compile/scoping defect in the first generated S11G YAML; protocol hypothesis and one-shot `0884/count60` ACK design are unchanged. The first S11G YAML did not compile and therefore never ran.\n- **S11G original YAML — SUPERSEDED / NOT RUN** — ESPHome C++ generation reached compile, then failed because helper/frame-handler code was accidentally spliced inside `candidates_for`; no firmware was flashed and no bus action occurred.\n- **S11G — PREPARED / NOT RUN** — no-controller-reboot retained `0884/count60` release probe. After an ESP-only OTA/restart, require repeated exact `0884/60` plus live `0708/6` polling with zero TX, then permit exactly one standard FC16 address/count ACK to `0x0F:0884/60`; all later traffic is capture-only.
 - **S11F — COMPLETE / POSITIVE** — fresh source-faithful session reached `0884/60` after one qualified ACK to `0870/17`; first `0884` disabled all further TX.
 - **S11E — SUPERSEDED / NOT RUN** — the planned “withhold ACK0864” causality test is retained as an optional scientific discriminator but is no longer the shortest route toward production parity.
 - **S11D — COMPLETE / POSITIVE** — full fresh native session reached capture-only `0870/17` through approval, exact 32-page bootstrap, bounded mailbox/runtime service and qualified `0864/4` completion.
