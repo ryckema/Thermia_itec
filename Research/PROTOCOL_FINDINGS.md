@@ -1,3 +1,36 @@
+# 2026-10-07 — S11D/S11F fresh-session and 0884 retained-overlay findings
+
+## PROVEN / locally confirmed
+
+- A fresh local XTR M native session can progress through canonical approval, exact 32-page settings bootstrap, bounded `0708/6` mailbox service, known runtime pages, `0864/4`, `0870/17`, and `0884/60`.
+- In S11D, the XTR reached `0870/17` after qualified `0864/4` completion and all TX stopped at the capture-only endpoint.
+- In S11F, one qualified standard FC16 ACK to `0870/17` was delivered in the same fresh session; first `0884/60` appeared ~2.04 s later after one additional bounded `0708/6` mailbox response.
+- S11F fail-closed behavior worked: first `0884/60` disabled all further TX; repeated 0884 publications continued while TX stayed fixed at 47.
+- `0834/18` was not required for the exercised fresh-session path to reach `0870` or `0884`; local active ACK safety for 0834 remains OPEN.
+- Local `0864/4` again carried `0867=00F2` (decimal 242) in the exercised session.
+
+## STRONGLY SUPPORTED
+
+- `0864 -> 0870 -> 0884` is part of the normal native runtime/onboarding progression when the surrounding session/mailbox context is qualified.
+- Genuine Online/DCM captures strongly support ACKed `0884/60` as a history/runtime-overlay completion followed by a new runtime cycle.
+- In 19 qualified raw-capture cases, the observed sequence after ACK0884 is `0708 -> 07D0`; median timing from the 0884 request is ~1.277 s to 0708 and ~2.010 s to 07D0.
+
+## OPEN / UNKNOWN
+
+- Whether local retained post-S11F `0884/60` can be safely adopted after an ESP restart with one ACK and no mailbox response. S11G is prepared to test exactly this.
+- Whether ACK0870 alone is sufficient for 0884; S11F retained one mailbox response between those events.
+- Whether source-faithful mailbox service is required immediately after ACK0884 on the local XTR.
+- Local active ACK behavior for `0834/18`.
+- Raw user-facing meanings of modern XTR `0884` history/event record codes.
+
+## GENUINE / CROSS-MODEL 0884 evidence
+
+Across currently available raw captures with explicit `0884/count60` request+ACK pairs, 21/21 explicit requests were ACKed. Nineteen normal-cycle cases then reached `0708/6` followed by `07D0/19`. Two other cases are not normal-cycle comparators because one enters settings/bootstrap traffic and one capture ends before useful follow-on traffic.
+
+This cross-model schedule supports, but does not itself prove, local retained-XTR ACK authorization.
+
+---
+
 # 2026-10-05 — EXP426 trigger absent; normal retained startup remains healthy
 
 ## PROVEN / locally confirmed
