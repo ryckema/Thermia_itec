@@ -1,3 +1,32 @@
+# 2026-10-07 — S11H PREPARED / NOT RUN — replay locally proven S10C retained release
+
+## Current experiment / status
+
+- **S11H — PREPARED / NOT RUN** — no-controller-reboot replay of the locally proven S10C retained release from the currently observed `085F(7EAE5A0A) <-> 0708` boundary.
+- **S11G FIX1 — COMPLETE / INCONCLUSIVE** — retained 0884 prerequisite absent; zero TX.
+
+## S11H hypothesis and baseline
+
+Current S11G FIX1 bus evidence shows repeated `085F/5` signature `7EAE5A0A` plus repeated `0708/6` with zero ESP TX. S10C previously proved that this signature corresponded to `0000 0000 0800 0000 0000` and that the exact two-action sequence below released to `07D0/19`.
+
+S11H does not trust the signature alone: it directly logs and requires the five baseline words before ARM.
+
+## Exact controlled action
+
+```text
+qualified baseline 085F = 0000 0000 0800 0000 0000
++ >=3 baseline 085F and >=3 0708 polls
+-> TX1: one FC03 0708/6 response W=0000,0000,0000,0000,0000,0006
+-> require controller publication exact 085F = 0000,0000,0000,0000,0000
+-> TX2: one standard FC16 address/count ACK to 085F/count5
+-> all later traffic capture-only
+-> positive endpoint 07D0/19
+```
+
+Hard TX ceiling: 2. No setting value is changed. Any payload mismatch, fresh FC23, unexpected family, integrity fault or accounting mismatch fails closed. Thermia/controller reboot is not part of the experiment.
+
+---
+
 # 2026-10-07 — S11G FIX1 COMPLETE / INCONCLUSIVE — retained 0884 absent after ESP-only restart
 
 ## Current experiment / status
