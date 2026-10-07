@@ -153,3 +153,31 @@ Historical YAML remains for provenance. No replacement HP writer is promoted fro
 ## Next action
 
 ATEC-EXP2 is an isolated DCM03 challenge-compatibility bench experiment. It first replays the exact ATEC challenge as positive control, then—only after control success—tests foreign Eco8 challenges.
+
+
+---
+
+## 2026-10-07 — repeated 0884 runtime-cycle evidence
+
+Full-file re-analysis of the genuine ATEC/DCM03 cold-start capture finds 12 explicit `0884/count60` controller publications, all 12 followed by the standard DCM03 address/count ACK.
+
+For all 12 normal cycles, the next native service sequence is:
+
+```text
+ACK0884
+-> 0708/6
+-> 07D0/19
+```
+
+Timing from the 0884 request across these 12 cycles:
+
+```text
+to 0708: 1.253..3.366 s
+to 07D0: 1.979..4.578 s
+```
+
+Most cycles cluster near ~1.28 s to 0708 and ~2.01 s to 07D0.
+
+The ATEC 0708 response after these cycles carries W4=077F and W5=0006, which is generation/profile-specific and must not be imported as local XTR mailbox semantics.
+
+Classification: **GENUINE ATEC/DCM03 evidence**. The scheduling pattern supports the platform-level 0884 overlay model; mailbox literal values remain generation-specific.
