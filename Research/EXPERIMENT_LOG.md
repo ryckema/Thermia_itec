@@ -1,3 +1,157 @@
+# 2026-10-07 — S11X FIX1 COMPLETE / POSITIVE
+
+## Hypothesis
+The `07D0/count19` owner left by S11W and retained across ESP OTA/restart is still the active controller work owner. One standard address/count ACK should release it to the next runtime owner, expected `07E4/count17`.
+
+## Baseline
+Before ARM:
+- recurring `0708/count6`;
+- recurring `07D0/count19` with stable signature `D7EC8823`;
+- no `085F`, no `0884`, no FC23;
+- zero ESP TX;
+- parser/accounting clean apart from a startup resync count that was already stable before TX;
+- qualifier reached 1 repeatedly.
+
+## Controlled change
+After manual ARM, exactly one standard ACK was sent to the next qualified `07D0/count19`. No mailbox response and no other FC16 ACK was permitted. Hard TX ceiling 1.
+
+## Result
+- ARM occurred while the retained baseline was stable.
+- Exactly one ACK07D0 was delivered.
+- `07E4/count17` appeared **2041 ms** after ACK07D0, signature `E7AEFB28`.
+- Subsequent `07E4` publications continued capture-only.
+- Final accounting: `tx=1 delivered=1 writes=1`.
+- `fc23=0 mismatch=0 unknown=0 drops=0 boundary=0`.
+- The pre-existing parser resync counter remained stable.
+
+**Status: COMPLETE / POSITIVE.**
+
+## Interpretation
+Locally on this XTR M:
+`retained 07D0/19 -> ACK07D0 -> 07E4/17`
+is now directly proven.
+
+This also demonstrates that a runtime owner produced in the previous experiment can persist across ESP OTA/restart and be resumed directly without replaying the earlier mailbox/service chain.
+
+## Recovery
+No recovery action required; the controller is now retained at `07E4/count17` and ESP remains capture-only.
+
+---
+
+# 2026-10-07 — S11X original COMPLETE / INCONCLUSIVE
+
+## Hypothesis
+Replay the fully proven S11W chain and add one new edge:
+`0708 response -> all-zero 085F -> ACK085F -> 0884 -> ACK0884 -> 07D0 -> ACK07D0 -> observe`.
+
+## Baseline/result
+After ESP OTA, the expected earlier `0708 + 085F(W2=0800)` start baseline was gone. Instead:
+- `0708/count6` recurred;
+- `07D0/count19` recurred with signature `D7EC8823`;
+- `085F` did not appear;
+- zero TX;
+- parser/accounting clean.
+
+The original S11X harness treated pre-TX `07D0` as unexpected and locked fail-closed.
+
+**Status: COMPLETE / INCONCLUSIVE.** No active action occurred.
+
+## Interpretation
+The `07D0` owner produced by S11W persisted across ESP OTA/restart. Replaying the whole chain was unnecessary; the next experiment should adopt the retained owner directly.
+
+---
+
+# 2026-10-07 — S11W COMPLETE / POSITIVE
+
+## Hypothesis
+Extend the locally proven S11V FIX1 service chain by ACKing the first resulting `0884/count60`; expected next owner `07D0/count19`.
+
+## Controlled sequence
+In one uninterrupted run:
+1. one source-faithful response to a qualified `0708/count6`;
+2. exact all-zero `085F/count5` appeared about 576 ms later;
+3. one ACK085F;
+4. `0884/count60` appeared about 2347 ms later;
+5. one ACK0884;
+6. all later ESP TX disabled.
+
+## Result
+`07D0/count19` appeared **2039 ms after ACK0884**.
+
+Accounting remained exactly `tx=3 delivered=3 writes=3`, with no FC23, mismatch, unknown, resync growth, drops, or boundary failure.
+
+**Status: COMPLETE / POSITIVE.**
+
+## Interpretation
+The following local XTR route is proven in one uninterrupted controller epoch:
+`0708 response -> all-zero 085F -> ACK085F -> 0884 -> ACK0884 -> 07D0`.
+
+---
+
+# 2026-10-07 — S11V FIX1 COMPLETE / POSITIVE
+
+## Hypothesis
+Because the all-zero `085F` state is transient across ESP restart, generate it and ACK it in the same uninterrupted run.
+
+## Controlled sequence
+1. qualified retained `0708 + 085F(W2=0800)` baseline;
+2. one source-faithful `0708` response;
+3. wait for exact all-zero `085F/count5`;
+4. one ACK085F;
+5. hard capture-only.
+
+## Result
+- exact all-zero `085F` appeared about **576 ms** after the `0708` response;
+- one ACK085F was sent;
+- `0884/count60` appeared about **2355 ms** later;
+- exactly two TX; clean accounting.
+
+**Status: COMPLETE / POSITIVE.**
+
+## Interpretation
+The local service transition is proven in one uninterrupted run:
+`0708 response -> all-zero 085F -> ACK085F -> 0884`.
+
+---
+
+# 2026-10-07 — S11V COMPLETE / INCONCLUSIVE
+
+## Hypothesis
+ACK the transient all-zero `085F` state produced by S11U FIX1 after a separate ESP OTA.
+
+## Result
+After OTA, the all-zero prerequisite was gone. The controller had returned to:
+- recurring `0708/count6`;
+- `085F/count5 = 0000 0000 0800 0000 0000`;
+- zero TX.
+
+The harness correctly remained fail-closed.
+
+**Status: COMPLETE / INCONCLUSIVE.**
+
+## Interpretation
+The all-zero `085F` state is not a reliable retained prerequisite across ESP OTA/restart. Generate and consume that transition in one uninterrupted run.
+
+---
+
+# 2026-10-07 — S11U FIX1 COMPLETE / POSITIVE
+
+## Hypothesis
+From retained `0708/count6 + 085F(W2=0800)`, one source-faithful response to `0708` should advance the service state.
+
+## Controlled change
+After qualification and ARM, exactly one source-faithful response was sent to the next `0708/count6`; all later traffic capture-only.
+
+## Result
+Exact all-zero `085F/count5` appeared about **566 ms** after the response. Exactly one TX occurred and accounting remained clean.
+
+**Status: COMPLETE / POSITIVE.**
+
+## Interpretation
+A source-faithful `0708` response is sufficient in this retained service context to move `085F` from the stable W2=`0800` image into the exact all-zero transient state.
+
+---
+
 # 2026-10-07 — S11U FIX1 PREPARED / NOT RUN
 
 ## Hypothesis
