@@ -1,3 +1,98 @@
+# 2026-10-07 — S11F COMPLETE / POSITIVE; S11G PREPARED / NOT RUN
+
+## Current experiment / status
+
+- **S11G — PREPARED / NOT RUN** — no-controller-reboot retained `0884/count60` release probe. After an ESP-only OTA/restart, require repeated exact `0884/60` plus live `0708/6` polling with zero TX, then permit exactly one standard FC16 address/count ACK to `0x0F:0884/60`; all later traffic is capture-only.
+- **S11F — COMPLETE / POSITIVE** — fresh source-faithful session reached `0884/60` after one qualified ACK to `0870/17`; first `0884` disabled all further TX.
+- **S11E — SUPERSEDED / NOT RUN** — the planned “withhold ACK0864” causality test is retained as an optional scientific discriminator but is no longer the shortest route toward production parity.
+- **S11D — COMPLETE / POSITIVE** — full fresh native session reached capture-only `0870/17` through approval, exact 32-page bootstrap, bounded mailbox/runtime service and qualified `0864/4` completion.
+
+## S11F observed result
+
+Local XTR M, one uninterrupted fresh controller session:
+
+```text
+canonical FC23 qualification
+-> approval response
+-> exact settings bootstrap 32/32
+-> bounded 0708/6 mailbox service
+-> runtime progression
+-> 0864/4 ACK
+-> 0870/17
+-> one qualified standard ACK0870
+-> one further bounded 0708/6 response
+-> 0884/60
+```
+
+Key counters at the positive endpoint:
+
+```text
+result=1
+boot=32/32
+mailbox responses=5
+runtime ACKs=9
+ack0870=1
+physicalTX=delivered=writes=47
+mismatch=0 unknown=0 resync=0 drops=0 boundary=0
+```
+
+First `0884/60` arrived about 2.04 s after the qualified ACK0870. Repeated `0884` publications continued after completion while TX stayed fixed at 47.
+
+### Evidence classification
+
+**PROVEN / locally confirmed**
+
+- a fresh XTR session can be driven through approval -> full 32-page bootstrap -> runtime -> `0864` -> `0870` -> `0884` using bounded source-faithful service;
+- one qualified standard FC16 ACK to `0870/17` is locally safe in the exact exercised fresh-session context;
+- the first `0884/60` can be used as a fail-closed capture-only endpoint;
+- after that endpoint, repeated `0884/60` plus `0708/6` continue while ESP TX remains disabled.
+
+**STRONGLY SUPPORTED**
+
+- qualified `0870` completion participates in the normal transition to the `0884` history/runtime overlay;
+- S11F follows the same broad cadence/order as genuine Online/DCM captures.
+
+**CAUSAL LIMITATION / OPEN**
+
+S11F does not prove that ACK0870 alone is sufficient for 0884 because one exact `0708/6` mailbox response occurred between ACK0870 and first 0884. The proven statement is the combined qualified-session path above.
+
+## Offline 0884 correlation used for S11G
+
+Across the currently available raw captures with explicit controller `0884/60` requests and matching gateway ACKs, 21/21 observed requests were ACKed. Nineteen qualified normal-cycle cases then showed:
+
+```text
+ACK0884 -> 0708 poll -> 07D0/19
+```
+
+Timing over those 19 cases:
+
+```text
+0884 request -> next 0708: min 1.253 s, median 1.277 s, max 3.534 s
+0884 request -> next 07D0: min 1.979 s, median 2.010 s, max 4.578 s
+```
+
+Two remaining ACKed 0884 observations do not form a normal-cycle discriminator: one transitions into a settings/bootstrap context and one ends before useful follow-on traffic is visible.
+
+This is genuine/cross-model evidence, not by itself proof of local retained-XTR ACK authorization.
+
+## S11G — retained 0884 release probe
+
+**Hypothesis:** in the exact retained post-S11F state, one standard ACK to repeated `0884/60` is sufficient to release the history-overlay retry loop into the next runtime cycle without a Thermia/controller reboot and without a mailbox response from the ESP.
+
+**Baseline:** S11F COMPLETE / POSITIVE; controller repeatedly publishes `0884/60` and polls `0708/6`; ESP TX is disabled.
+
+**Controlled change:** ESP-only OTA/restart, passive qualification of at least 3 exact `0884/60` publications with at least 2 exact `0708/6` polls and clean integrity, then exactly one standard FC16 address/count ACK to the next `0884/60`. No `0708` response and no other FC16 ACK is allowed after the split.
+
+**Positive:** `07D0/19` appears within 10 s after the one ACK0884 with no second ESP TX. This demonstrates retained release into the normal runtime ring under the isolated action.
+
+**Negative:** controller remains live for >=10 s with repeated `0884/60` and `0708/6`, but no `07D0/19` appears. This is negative only for “ACK0884 alone is sufficient”; it does not reject a source-faithful ACK0884 + mailbox-service path.
+
+**Inconclusive / abort:** retained 0884 is absent after ESP OTA, a canonical FC23/new controller session appears, another runtime/config family arrives before the active split, unexpected geometry appears, or parser/integrity/UART accounting becomes non-clean.
+
+**Safety / recovery:** the only active action is a standard metadata ACK to slave `0x0F`, page `0884`, count 60. The 60-word controller-owned history payload is not modified or replayed. Hard active-TX maximum is 1. After the ACK all traffic is capture-only. A Thermia reboot is not part of S11G and is reserved only for recovery if the controller enters an unexpected persistent state.
+
+---
+
 # 2026-10-05 — EXP426 COMPLETE / INCONCLUSIVE — trigger absent; baseline/runtime healthy
 
 ## Current experiment / status
