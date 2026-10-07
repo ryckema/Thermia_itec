@@ -1,3 +1,29 @@
+# 2026-10-07 — S11H refines retained service/work-owner model
+
+## PROVEN / locally confirmed
+
+- Current retained `085F/5` baseline was directly decoded as `0000 0000 0800 0000 0000` with signature `7EAE5A0A`.
+- One proven idle `0708/6` response (`W0..W4=0000`, `W5=0006`) again changed controller-published `085F/5` to exact all-zero.
+- One standard ACK of that exact changed all-zero `085F/5` again released the retained service boundary.
+- In S11H, the first released runtime family was `0884/60`, not `07D0/19`.
+- After release, repeated `0884/60` and `0708/6` continued while ESP TX stayed fixed at 2 and integrity remained clean.
+
+## STRONGLY SUPPORTED
+
+- `085F/0708` is a service gate layered in front of controller-owned pending runtime/history work, not a fixed return-to-07D0 state.
+- The controller retained work-owner/session context survives ESP process restart and determines which family appears after the service gate is released.
+- The post-S11H `0884/60` is consistent with prior S11F history-overlay work remaining pending across the intervening ESP restart and `085F/0708` boundary.
+
+## DISPROVEN / SUPERSEDED
+
+- The locally proven S10C two-step retained release does not always return directly to `07D0/19`: it did so in S10C but exposed `0884/60` in S11H.
+
+## OPEN / UNKNOWN
+
+- Whether one ACK to the newly exposed S11H `0884/60`, while keeping the same uninterrupted ESP/controller epoch, releases directly to `07D0/19`. S11I is prepared to test exactly this.
+- Exact generic mapping from retained work owner to the service-gate sequence remains open.
+
+---
 # 2026-10-07 — S11G FIX1 retained-state observation
 
 ## PROVEN / locally confirmed
