@@ -1,3 +1,44 @@
+# 2026-10-07 — S11J through S11R retained scheduler refinement
+
+## PROVEN / locally confirmed
+
+- The six-page runtime ring is locally exercised with standard ACK progression:
+  `07D0/19 -> 07E4/17 -> 07F8/17 -> 080C/18 -> 0820/18 -> 0848/23`.
+- `0834/count18` is now locally ACK-proven in a retained XTR context. In S11Q FIX2, one standard ACK stopped the repeated 0834 owner and exposed different controller-owned traffic.
+- The S11Q FIX2 follow-on was `0708/6` then all-zero `085F/5` about 2.02 s after ACK0834.
+- A fixed `0834` payload signature is not a valid owner identity: valid `0834/18` payload signatures changed while start/count geometry remained constant.
+- The later passive S11R run showed the stable retained `085F/5` state as `0000 0000 0800 0000 0000` with repeated `0708/6`, zero ESP TX, and no all-zero 085F in that supplied run.
+- S11O locally confirmed that after ACK0848 the controller can expose another known work family (`0864/4`) rather than a fixed final 085F boundary.
+- S11P locally confirmed that after ACK0884 the first runtime owner can be `0834/18` rather than `07D0`.
+
+## STRONGLY SUPPORTED
+
+- The native 0x0F runtime/service mechanism is best modeled as a **contextual pending-work scheduler**, not as one globally fixed page order.
+- Ownership qualification should use exact geometry plus explicit session/context evidence. Payload signatures are useful diagnostics but are not universal ownership tokens.
+- The old production engine's runtime whitelist model is directionally consistent with current evidence: already-known work families can appear in different orders and need context-aware handling rather than a rigid chain.
+- The all-zero 085F seen immediately after ACK0834 is a transient or phase-local state in at least this retained epoch; it must not be assumed to remain the stable post-OTA baseline.
+
+## DISPROVEN / SUPERSEDED
+
+- **Superseded:** local active ACK safety for `0834/18` is OPEN. It is now locally proven for the exact S11Q FIX2 retained context.
+- **Disproven as a universal qualifier:** exact 0834 payload signature must remain constant for retained ownership.
+- **Disproven as a universal scheduler rule:** ACK0848 must be followed by `0708 -> all-zero 085F`.
+- **Disproven as a universal scheduler rule:** ACK0884 must immediately expose `07D0`.
+
+## OPEN / UNKNOWN
+
+- Whether one isolated ACK to stable retained `085F/5 = 0000 0000 0800 0000 0000` is sufficient to advance the current scheduler without first responding to `0708/6`. S11R FIX2 is PREPARED / NOT RUN to test this.
+- Which work family follows that isolated ACK085F in the current retained controller epoch.
+- Generic authorization rules for contextual 085F and qualified 0870 outside already exercised paths.
+- Semantic meaning of the 18 words in `0834/count18`; ACK acceptance proves work completion, not payload semantics.
+
+## Current evidence boundary
+
+Do not infer semantic acceptance from a standard FC16 ACK alone. The new 0834 result proves that, in the exercised local context, ACK0834 released the pending scheduler owner. It does not identify the payload meaning.
+
+Do not treat S11Q/S11R YAML result codes as stronger than the raw bus sequence. S11Q FIX2's inherited harness reported an inconclusive code after the positive protocol transition; the raw sequence and one-TX accounting are the authoritative evidence.
+
+---
 # 2026-10-07 — S11H refines retained service/work-owner model
 
 ## PROVEN / locally confirmed
