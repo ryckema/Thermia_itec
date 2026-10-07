@@ -1,3 +1,83 @@
+# 2026-10-07 — Current state through S11U FIX1
+
+## Current experiment / status
+
+- **S11U FIX1 — PREPARED / NOT RUN** — current controller state after S11T/S11U is repeated `0708/count6` plus stable `085F/count5 = 0000 0000 0800 0000 0000` (sig `7EAE5A0A`), with `0662/count33` absent. Controlled action: one previously locally exercised source-faithful response to the next post-ARM `0708/count6`; then hard capture-only. Hard TX ceiling 1.
+- **S11U — COMPLETE / INCONCLUSIVE** — after OTA, the controller had already retained the post-S11T state: `0708` was present before any TX, `085F(W2=0800)` remained stable, `0662` was absent, and the fail-closed harness transmitted nothing.
+- **S11T — COMPLETE / POSITIVE** — from stable retained `0662/33 + 085F(W2=0800)`, one standard ACK to `0662/count33` caused `0662` to stop and `0708/count6` to appear about 1.422 s later. Exactly one physical TX occurred.
+- **S11S FIX2 — COMPLETE / INCONCLUSIVE** — corrected the false abort on normal `0662/33` background. The controller remained in `0662/33 + 085F(W2=0800)` with no `0708`; no TX occurred.
+- **S11S FIX1 — SUPERSEDED / NOT RUN** — never reached its active sequence because normal repeated `0662/33` traffic was incorrectly classified as an unexpected FC16 family; zero TX.
+- **S11S — COMPLETE / INCONCLUSIVE** — expected retained post-ACK `085F` signature `9BFE9A42`, but after the next ESP run the controller had returned to stable `085F(W2=0800)`; zero TX.
+- **S11R FIX3 — COMPLETE / NEGATIVE** for its narrow endpoint criterion — one ACK to stable retained `085F(W2=0800)` changed the same `085F/5` geometry to signature `9BFE9A42` but did not expose a different FC16 family within 10 s.
+- **S11R FIX2 — COMPLETE / INCONCLUSIVE** — ARM was refused because the strict pre-click `0708` recency guard was stale; zero TX.
+
+## Last completed experiment
+
+The latest completed experiment is **S11U — COMPLETE / INCONCLUSIVE**. It transmitted nothing because the controller had remained in the post-S11T scheduler state across the ESP OTA/restart.
+
+The latest positive protocol discriminator is **S11T — COMPLETE / POSITIVE**:
+
+`retained 0662/33 + 085F(W2=0800) -> one ACK0662 -> 0662 stops -> first 0708/count6 ~1.422 s later`.
+
+This is locally confirmed on the XTR M and materially narrows the service/scheduler path.
+
+## Current protocol model
+
+The current strongest local model is a contextual pending-work scheduler with an ordered service boundary, not a rigid global page chain.
+
+Newly confirmed local edge:
+
+`0662/count33 pending -> ACK0662 -> 0708 mailbox phase`.
+
+Combined with earlier local evidence, the working service model is now:
+
+`0662 ACK -> 0708 response -> changed 085F -> ACK085F -> next pending runtime/history owner`.
+
+Only the first edge above is newly proven by S11T. The complete combined chain remains a hypothesis until exercised in one uninterrupted run.
+
+S11R FIX3 additionally showed that ACKing stable `085F(W2=0800)` alone is not sufficient to expose a different FC16 family within 10 s. It changes the same `085F/5` payload state instead.
+
+## PROVEN / locally confirmed
+
+- Stable retained `085F/count5 = 0000 0000 0800 0000 0000` is a real XTR state.
+- One standard ACK to that stable `085F` causes a reproducible same-geometry payload/signature transition, but did not release a different FC16 family within the S11R FIX3 10 s window.
+- Stable `0662/count33` can be a pending controller work item in parallel with `085F(W2=0800)`.
+- One standard ACK to retained `0662/count33` locally releases that owner: `0662` stops and `0708/count6` begins about 1.422 s later.
+- The post-S11T `0708 + 085F(W2=0800)` state persisted across an ESP OTA/restart; the ESP restart did not restore `0662`.
+- S11T used exactly one physical TX and remained parser/accounting clean.
+
+## STRONGLY SUPPORTED
+
+- `0662` is part of scheduler/work-drain ordering rather than harmless unrelated traffic in every context.
+- `0708` availability depends on prior pending work completion in at least the S11T retained context.
+- ESP restart/OTA does not necessarily reset the Thermia controller scheduler state.
+- The `085F` signature `9BFE9A42` is consistent with an all-zero five-word payload for this exact FC16 geometry, but exact all-zero words were not directly logged in S11R FIX3 and therefore remain signature-derived there.
+
+## OPEN / UNKNOWN
+
+- Whether one source-faithful `0708` response from the current post-S11T state causes the expected `085F` transition or exposes another pending FC16 owner. **S11U FIX1 tests exactly this.**
+- Whether the locally successful broader service sequence requires strict ordering `0708 response -> changed 085F -> ACK085F`, or whether equivalent contextual orderings exist.
+- Generic production rules for automatically recognizing and draining all retained scheduler states without over-acknowledging unrelated traffic.
+- Semantic meaning of the individual words in `085F`, `0662`, `0834`, and other runtime/history pages beyond locally established transport/scheduler behavior.
+
+## Next experiment — S11U FIX1
+
+**Hypothesis:** in the current retained post-S11T state, one source-faithful response to the next `0708/count6` poll is the missing service step and will change `085F` or expose another controller-owned FC16 family.
+
+**Baseline:** repeated `0708/count6`; at least three exact `085F/count5 = 0000 0000 0800 0000 0000`; no `0662/count33`; no FC23/new session; zero TX; clean parser/UART/accounting.
+
+**Controlled change:** after manual ARM, respond exactly once to the next `0708/count6` using the already locally exercised source-faithful idle mailbox response. No ACK085F or other TX is allowed.
+
+**Positive:** within 10 s, `085F` changes away from `7EAE5A0A/W2=0800`, especially toward the previously seen transition state, or another different 0x0F FC16 family appears.
+
+**Negative:** bus remains live for >=10 s with only unchanged `085F` and repeated `0708`.
+
+**Abort / inconclusive:** `0662` returns before TX, baseline `085F` changes before TX, unexpected FC16/FC03 family appears, FC23/session restart, parser/UART/accounting fault, no post-ARM `0708` within 15 s, any second TX attempt, or post-TX silence.
+
+**Recovery:** hard capture-only immediately after the single response; controller reboot only if a persistent abnormal state is observed.
+
+---
+
 # 2026-10-07 — Current state through S11R FIX2
 
 ## Current experiment / status
