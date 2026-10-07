@@ -1,3 +1,20 @@
+# 2026-10-07 — S11G FIX1 retained-state observation
+
+## PROVEN / locally confirmed
+
+- After the S11F endpoint and a later ESP-only OTA/restart, the observed local controller state in S11G FIX1 was a repeated `085F/count5` + `0708/count6` retained loop, not repeated `0884/count60`.
+- In the supplied S11G FIX1 slice, `q0884=0` while `q0708` increased through at least 27 and `085F` publications increased through at least 54.
+- S11G fail-closed qualification worked: unexpected pre-arm `085F` set `otherPre=1`, locked the test inconclusive, and no TX occurred.
+- No ACK0884 was sent; therefore the S11G ACK0884 hypothesis remains untested.
+
+## OPEN / UNKNOWN
+
+- Whether the transition from the prior repeated-0884 state to the observed `085F/0708` boundary was caused by ESP restart, elapsed controller timeout/state evolution, or another retained-session condition.
+- Whether one retained ACK0884 would release to 07D0 if the exact repeated-0884 state is captured before it disappears.
+- Which minimal retained `085F/0708` service sequence is sufficient to re-enter normal runtime without a controller reboot.
+
+---
+
 # 2026-10-07 — S11D/S11F fresh-session and 0884 retained-overlay findings
 
 ## PROVEN / locally confirmed
