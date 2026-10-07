@@ -72,3 +72,23 @@ Challenge #3 is used because it is an actually observed successful response ordi
 - replay tolerance on the target Eco unit.
 
 No semantic-write result is inferred from this offline analysis.
+
+
+---
+
+## 2026-10-07 — 0884 post-ACK runtime continuation
+
+Re-analysis of the supplied genuine iTec Eco gateway capture adds one explicit normal-cycle `0884/count60` request+ACK pair in `itec_eco5_gateway_20260926.log`.
+
+Observed sequence:
+
+```text
+0884/60 request
+-> standard 0884 ACK
+-> 0708/6 poll about 3.53 s later
+-> 07D0/19 about 4.19 s after the 0884 request
+```
+
+The first 0708 response in this Eco5 case carries all-zero W0..W5.
+
+Classification: **GENUINE CAPTURE / cross-model support** for the interpretation of ACKed 0884 as a history/runtime-overlay completion followed by another runtime cycle. This does not by itself authorize a local retained-XTR ACK.
