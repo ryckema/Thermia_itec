@@ -1,3 +1,64 @@
+# 2026-10-07 — Scheduler/service refinement through S11U
+
+## PROVEN / locally confirmed
+
+### Retained 0662 owner releases directly to the 0708 mailbox phase
+On the local iTec XTR M, a stable retained state existed with repeated `0x0F FC16 0662/count33` and stable `085F/count5 = 0000 0000 0800 0000 0000`, while no `0708` polls were present.
+
+S11T sent exactly one standard address/count ACK to `0662/count33`. After that:
+- repeated `0662` stopped;
+- first `0x0F FC03 0708/count6` appeared about 1.422 s later;
+- `0708` then continued periodically;
+- only one ESP TX occurred.
+
+Current status: **PROVEN / locally confirmed** as a scheduler/work-completion edge.
+
+### Post-S11T scheduler state survives ESP restart/OTA
+S11U started after ESP OTA with `0708/count6` already active, `085F(W2=0800)` still stable, and `0662/count33` absent. No ESP TX occurred in S11U.
+
+Current status: **PROVEN / locally confirmed** that ESP restart/OTA does not necessarily reset this Thermia-controller scheduler state.
+
+### ACK085F changes state but does not by itself release a different owner
+S11R FIX3 locally delivered one standard ACK to stable retained `085F(W2=0800)`. The same `085F/count5` geometry later changed from signature `7EAE5A0A` to `9BFE9A42`, while no different FC16 family appeared within the predeclared 10 s window.
+
+Current status:
+- ACK-induced same-geometry state transition: **PROVEN / locally confirmed**.
+- "ACK085F alone releases a different FC16 owner within 10 s": **DISPROVEN for the exercised retained context**.
+
+## STRONGLY SUPPORTED
+
+### Signature 9BFE9A42 corresponds to all-zero 085F words
+For exact FC16 geometry `0F 10 08 5F 00 05 0A + five words`, the project's signature function maps the known `0000,0000,0800,0000,0000` baseline to `7EAE5A0A`, and five all-zero words to `9BFE9A42`.
+
+S11R FIX3 observed the latter signature after ACK085F. Because that run did not directly print all five post-transition words, the all-zero payload interpretation remains **STRONGLY SUPPORTED**, not directly observed there.
+
+### Ordered service boundary model
+The strongest current combined local model is:
+
+`0662 pending -> ACK0662 -> 0708 mailbox phase -> mailbox response -> changed 085F -> ACK085F -> next pending owner`.
+
+Only `ACK0662 -> 0708` and the previously exercised mailbox/085F interactions are individually locally supported/proven in their respective contexts. The entire combined chain has not yet been run end-to-end from the current state.
+
+## HYPOTHESIS
+
+- A source-faithful response to the current retained `0708/count6` phase will cause `085F` to change or expose another controller-owned FC16 family. S11U FIX1 is prepared to test exactly this with one TX and hard capture-only afterward.
+- The controller's native Online/DCM path is best modeled as a contextual pending-work scheduler plus service/mailbox boundary rather than one rigid page sequence.
+
+## OPEN / UNKNOWN
+
+- Whether S11U FIX1 produces the expected changed `085F` state from the current post-S11T baseline.
+- Whether the exact order `0708 response -> changed 085F -> ACK085F` is mandatory in every retained service context.
+- Generic rules for safely auto-draining `0662`, `085F`, `0834`, `0884`, and other owners without overgeneralizing from one epoch.
+- Semantic meanings of the individual words in these scheduler/runtime blocks remain open unless separately mapped.
+
+## SUPERSEDED / methodological corrections
+
+- Treating recurrent `0662/count33` as harmless background in all contexts is superseded. S11T proves it can be an active pending work owner whose ACK releases `0708`.
+- Requiring the post-ACK `085F` signature `9BFE9A42` to persist across ESP restart is superseded; S11S showed the controller could later be back at stable `7EAE5A0A/W2=0800`.
+- Strict pre-click recency gating for `0708` was too fragile in S11R FIX2; post-ARM epoch qualification is preferred.
+
+---
+
 # 2026-10-07 — S11J through S11R retained scheduler refinement
 
 ## PROVEN / locally confirmed
