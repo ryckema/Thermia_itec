@@ -1,3 +1,30 @@
+# 2026-10-07 — S11H live result and S11I preparation
+
+## S11H — COMPLETE / NEGATIVE for direct 07D0 reproduction
+
+**Hypothesis:** replaying the locally proven S10C retained release in the current `085F/0708` state will reproduce `07D0/19`.
+
+**Observed baseline:** direct repeated `085F/5 = 0000 0000 0800 0000 0000`, repeated `0708/6`, no FC23, zero TX, clean integrity.
+
+**Controlled actions:** one `0708/6` response with `W0..W4=0000`, `W5=0006`; after exact all-zero `085F/5`, one standard FC16 ACK to `085F/count5`; all later TX disabled.
+
+**Observed after TX2:** no `07D0/19`. Instead `0884/60` appeared about 2.33 s later and then repeated, with `0708/6` also continuing. TX accounting stayed exactly 2 and integrity stayed clean.
+
+**Result:** **COMPLETE / NEGATIVE** only for the narrow endpoint hypothesis that this retained release returns directly to 07D0 in the current controller epoch.
+
+**Additional positive evidence:** the two-step sequence did release the service boundary; its exposed next owned work in this epoch was `0884/60`.
+
+## S11I — PREPARED / NOT RUN
+
+Baseline S11H is retained exactly. In the same uninterrupted run, after TX1 mailbox response and TX2 ACK085F produce the first exact `0884/60`, S11I adds exactly one new action: TX3 standard FC16 address/count ACK to `0884/count60`. All later traffic capture-only.
+
+Positive: `07D0/19` within 10 s after TX3, total TX exactly 3.
+
+Negative: live controller traffic continues >=10 s after TX3 but no `07D0/19`.
+
+Abort/inconclusive: any prerequisite deviation, unexpected family, fresh FC23, integrity/UART fault, or TX >3.
+
+---
 # 2026-10-07 — S11H prepared
 
 ## S11H — PREPARED / NOT RUN
