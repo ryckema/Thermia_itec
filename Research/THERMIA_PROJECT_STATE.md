@@ -1,3 +1,86 @@
+# 2026-10-07 — Current state through S11X FIX1
+
+## Current experiment / status
+
+- **S11X FIX1 — COMPLETE / POSITIVE** — from a retained local XTR state with recurring `0708/count6` plus recurring `07D0/count19` (sig `D7EC8823`), exactly one standard ACK07D0 released the runtime owner. `07E4/count17` appeared 2041 ms later. Exactly one physical TX; accounting `tx=1 delivered=1 writes=1`; no FC23, mismatch, unknown page, drops, or boundary faults.
+- **S11X original — COMPLETE / INCONCLUSIVE** — after S11W, ESP OTA/restart did not restore the earlier `085F` baseline. The controller remained retained at recurring `07D0/count19` plus `0708/count6`; original S11X correctly failed closed as an unexpected pre-TX runtime owner and transmitted nothing.
+- **S11W — COMPLETE / POSITIVE** — in one uninterrupted run: one source-faithful `0708` response -> exact all-zero `085F/5` -> ACK085F -> `0884/60` -> ACK0884 -> `07D0/19`. Timings: ~576 ms to all-zero 085F, ~2347 ms ACK085F->0884, ~2039 ms ACK0884->07D0. Exactly three TX with clean accounting.
+- **S11V FIX1 — COMPLETE / POSITIVE** — one uninterrupted service chain: `0708` response -> exact all-zero `085F/5` after ~576 ms -> ACK085F -> `0884/count60` after ~2355 ms. Exactly two TX; clean accounting.
+- **S11V — COMPLETE / INCONCLUSIVE** — the transient all-zero `085F` state produced by S11U FIX1 did not persist across the next ESP OTA/restart; controller returned to `0708 + 085F(W2=0800)`. Zero TX.
+- **S11U FIX1 — COMPLETE / POSITIVE** — one source-faithful response to the retained `0708/count6` poll caused exact all-zero `085F/count5` to appear about 566 ms later. Exactly one TX.
+- **S11U — COMPLETE / INCONCLUSIVE** — after OTA, controller had already retained the post-S11T `0708 + 085F(W2=0800)` state; no active TX.
+
+No new live experiment is currently prepared after S11X FIX1. The next candidate is a retained-`07E4/count17` one-ACK continuation (S11Y), but it is not yet generated or run.
+
+## Last completed experiment
+
+The latest completed experiment is **S11X FIX1 — COMPLETE / POSITIVE**.
+
+Locally confirmed transition:
+
+`retained 07D0/count19 + 0708 -> one ACK07D0 -> 07E4/count17 after 2041 ms`.
+
+The controller then continued publishing `07E4/count17` while ESP TX remained fixed at one.
+
+## Current protocol model
+
+The strongest local model is now a contextual pending-work scheduler with persistent owner state across ESP restarts/OTAs.
+
+A locally reconstructed service/runtime route has now been exercised end-to-end far beyond a single isolated edge:
+
+`0708 response -> all-zero 085F -> ACK085F -> 0884 -> ACK0884 -> 07D0 -> ACK07D0 -> 07E4`.
+
+Important evidence boundary:
+- S11W proves the route through `07D0` in one uninterrupted run.
+- S11X original then proves that the resulting `07D0` owner can persist across ESP OTA/restart.
+- S11X FIX1 proves that one ACK to that retained `07D0` advances to `07E4`.
+
+This does not make the entire scheduler globally rigid. Earlier local runs still show context-dependent branches such as `0834`, `0864`, and alternate post-`0884` ownership.
+
+## PROVEN / locally confirmed
+
+- One source-faithful `0708/count6` response can move the retained `085F(W2=0800)` service state to exact all-zero `085F/count5`.
+- The exact all-zero `085F` state is transient; it should not be assumed to survive an ESP OTA/restart.
+- In the exercised service context, ACK of exact all-zero `085F/count5` releases `0884/count60`.
+- In S11W, ACK `0884/count60` released `07D0/count19` after ~2039 ms.
+- The resulting `07D0/count19` owner persisted across ESP OTA/restart.
+- In S11X FIX1, one ACK to retained `07D0/count19` released `07E4/count17` after 2041 ms.
+- Runtime owner persistence is controller-side, not transient ESP state.
+- The exercised actions remained bounded and accounting-clean.
+
+## STRONGLY SUPPORTED
+
+- Native Online/DCM-style service is best represented as a contextual scheduler/work-drain plus mailbox boundary, not a globally fixed page sequence.
+- Already-proven owner edges can be resumed directly from a retained owner after ESP restart rather than replaying the entire earlier chain.
+- Geometry + explicit state/session context is a stronger owner discriminator than frozen payload signatures.
+- The known runtime ring remains consistent with `07D0 -> 07E4 -> 07F8 -> 080C -> 0820 -> 0848`, but each retained continuation still needs local qualification before production auto-drain.
+
+## OPEN / UNKNOWN
+
+- Whether the current retained `07E4/count17` can be advanced directly by one standard ACK after another ESP OTA/restart.
+- Whether the next owner is again `07F8/count17` in this exact retained epoch.
+- Generic rules for safely auto-adopting retained runtime owners without replaying earlier service steps.
+- Semantic meanings of the words in `07D0`, `07E4`, `085F`, `0884`, and other scheduler/runtime pages unless separately mapped.
+- Whether every native session follows the same service-to-runtime route; earlier branch evidence says not universally.
+
+## Recommended next experiment — S11Y candidate, not yet prepared
+
+**Hypothesis:** the current retained `07E4/count17` owner can be completed directly with one standard address/count ACK and should expose `07F8/count17`.
+
+**Baseline:** repeated `07E4/count17` plus continuing `0708/count6`; no `07D0` owner return; no FC23/new session; zero TX in the new harness; stable geometry; clean parser/UART/accounting.
+
+**Controlled change:** after manual ARM, ACK exactly one new qualified retained `07E4/count17`; then hard capture-only.
+
+**Positive:** `07F8/count17` appears within the observation window. A different new 0x0F FC16 family is secondary positive scheduler advancement.
+
+**Negative:** bus remains live but only `07E4` and/or `0708` continue.
+
+**Abort / inconclusive:** baseline owner changes before TX, FC23/session reset, unexpected family before TX, parser/UART/accounting fault, no new `07E4` after ARM, or any second TX attempt.
+
+**Recovery:** one ACK maximum, then capture-only; controller reboot only for persistent abnormal state.
+
+---
+
 # 2026-10-07 — Current state through S11U FIX1
 
 ## Current experiment / status
