@@ -1,3 +1,95 @@
+# 2026-10-07 — S11R current preparation and S11Q/S11P/S11O results
+
+## S11R FIX2 — PREPARED / NOT RUN
+
+**Hypothesis:** the currently stable retained `085F/count5 = 0000 0000 0800 0000 0000` work owner can be released by one standard FC16 address/count ACK with no mailbox response.
+
+**Baseline:** earlier S11R passive run repeatedly observed exact `085F(0800)` plus `0708/6`, with `physicalTX=delivered=writes=0`, clean geometry/unknown/drop/boundary counters, and no all-zero 085F in the supplied run.
+
+**Controlled change:** after >=3 exact matching 085F frames and >=2 0708 polls, with both last observations <=4 s old and clean zero-TX state, manual ARM permits exactly one ACK to the next matching `085F/count5`. All later traffic is capture-only. Hard TX ceiling = 1.
+
+**Positive:** first different 0x0F FC16 within 10 s after ACK085F.
+
+**Negative:** controller remains live for >=10 s but only repeated 085F and/or 0708 are observed.
+
+**Abort/inconclusive:** payload mismatch, stale qualifier, other pre-ACK 0x0F FC16/FC03 family, FC23/new session, parser/UART/accounting fault, or TX >1.
+
+**S11R FIX1 — SUPERSEDED / NOT RUN.** It used all-zero 085F as the baseline and was replaced before live execution after passive evidence showed the stable retained image is W2=`0800`.
+
+## S11R original — COMPLETE / INCONCLUSIVE
+
+The intended all-zero retained prerequisite was absent. The controller repeatedly published:
+`085F/5 = 0000 0000 0800 0000 0000`
+with repeated `0708/6`.
+
+The harness locked on baseline mismatch before ARM. No active action occurred:
+`physicalTX=0`, `delivered=0`, `writes=0`.
+
+Result: **COMPLETE / INCONCLUSIVE**. The useful result is the directly observed stable retained baseline, not a negative result for ACK085F.
+
+## S11Q FIX2 — COMPLETE / POSITIVE
+
+**Hypothesis:** retained `0834/count18` ownership is qualified by session/context + geometry, not a frozen payload signature; one standard ACK0834 will release it.
+
+**Observed baseline:** repeated valid `0834/18` plus `0708/6`, zero TX. Multiple 0834 payload signatures had already been observed, so signature changes were capture-only.
+
+**Controlled action:** after manual ARM, exactly one standard ACK was sent to the next valid `0834/count18`. All later TX was disabled.
+
+**Observed:** first a `0708/6` poll, then all-zero `085F/5` about 2.02 s after ACK0834. The repeated 0834 owner did not continue. TX accounting was exactly 1/1/1 and transport/integrity counters stayed clean.
+
+**Result:** **COMPLETE / POSITIVE** for owner release. The YAML later set `result=3` because inherited pre-sequence logic misclassified the post-ACK all-zero 085F as a pre-TX mismatch. That is a harness classification defect, not the protocol result.
+
+**Limit:** the ACK proves local scheduler/work completion for 0834 in this context; it does not prove semantics of the 18 payload words.
+
+## S11Q FIX1 — SUPERSEDED / NOT RUN
+
+FIX1 qualified repeated `0834/18` but required one fixed payload signature. A later valid 0834 frame used a different signature, so FIX1 locked fail-closed with zero TX. This locally disproved fixed-signature ownership qualification.
+
+## S11Q original — SUPERSEDED / NOT RUN
+
+After OTA the controller was already retained at repeated `0834/18 + 0708`, while original S11Q still expected the earlier `085F(0800)+0708` entry state. It locked before ARM with zero TX.
+
+## S11P — COMPLETE / INCONCLUSIVE
+
+S11P successfully traversed the already known branch-A service path through ACK0884. The first runtime owner after ACK0884 was then `0834/count18`, not `07D0`. Because local ACK0834 safety was still OPEN, S11P correctly stopped without ACKing it.
+
+This was the direct trigger for the narrow S11Q ACK0834 discriminator.
+
+## S11O — COMPLETE / INCONCLUSIVE
+
+The branch-aware logic selected the direct-`0884` branch, ACKed it, then completed the full runtime ring:
+`07D0 -> 07E4 -> 07F8 -> 080C -> 0820 -> 0848`.
+
+After ACK0848, a `0708` poll appeared, followed by `0864/4` before the rigidly expected final zero-085F. S11O stopped fail-closed with 9 clean TX.
+
+Conclusion: post-0848 scheduling is not a fixed `0708 -> zero-085F` sequence; another already-known pending work family can be exposed.
+
+## S11N — COMPLETE / INCONCLUSIVE
+
+Retained release succeeded through ACK085F, but the next expected-stage FC16 was direct `0884/60`, not `0864/4`. Zero-TX follow-on tolerance after ACK0870 was therefore never exercised.
+
+## S11M — COMPLETE / INCONCLUSIVE
+
+Branch-A progression succeeded through ACK0870. A controller FC16 then appeared before the expected post-0870 mailbox step; the old logger did not record that frame's start/count. No additional speculative ACK was sent.
+
+## S11L FIX1 — COMPLETE / INCONCLUSIVE
+
+From retained `085F(0800)+0708`, one mailbox response caused exact all-zero 085F and one ACK085F was delivered. The next controller-owned FC16 was `0864/4`, not `0884`; test stopped fail-closed.
+
+## S11K FIX1 — COMPLETE / INCONCLUSIVE
+
+After OTA/restart the expected all-zero 085F prerequisite was absent; direct repeated `085F(0800)+0708` remained and no active TX occurred.
+
+## S11J — COMPLETE / POSITIVE
+
+One uninterrupted retained runtime continuation ACKed:
+`07D0/19 -> 07E4/17 -> 07F8/17 -> 080C/18 -> 0820/18 -> 0848/23`.
+
+After ACK0848, first `0708` appeared about 1.434 s later. A later `085F/5` publication followed. Physical TX=6 and transport stayed clean.
+
+Result: **COMPLETE / POSITIVE** for the locally proven six-page runtime ring.
+
+---
 # 2026-10-07 — S11I live result
 
 ## S11I — COMPLETE / POSITIVE
