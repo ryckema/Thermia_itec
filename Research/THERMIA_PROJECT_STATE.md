@@ -1,3 +1,78 @@
+# 2026-10-07 — Current state through S11R FIX2
+
+## Current experiment / status
+
+- **S11R FIX2 — PREPARED / NOT RUN** — clean one-action retained-`085F/5` probe using the locally observed stable baseline `0000 0000 0800 0000 0000` plus recent `0708/6`. One standard ACK to the next exact matching `085F/count5`; all later traffic capture-only; hard TX ceiling 1.
+- **S11R FIX1 — SUPERSEDED / NOT RUN** — prepared against an all-zero `085F` baseline, then superseded before live use when the earlier S11R passive run showed the stable retained baseline is actually W2=`0800`.
+- **S11R original — COMPLETE / INCONCLUSIVE** — passive baseline after OTA repeatedly showed `085F/5 = 0000 0000 0800 0000 0000`, not all-zero; experiment locked before ARM; `physicalTX=delivered=writes=0`.
+- **S11Q FIX2 — COMPLETE / POSITIVE** — one locally executed ACK to retained `0834/count18` released that owner. Follow-on was `0708/6` then all-zero `085F/5` about 2.02 s after ACK0834. The harness later misclassified the run because inherited pre-sequence code saw the post-ACK 085F; protocol result is positive.
+- **S11Q FIX1 — SUPERSEDED / NOT RUN** — fixed-signature qualifier locked when a valid `0834/18` payload variant changed signature; no TX.
+- **S11Q original — SUPERSEDED / NOT RUN** — expected the earlier `085F(0800)+0708` entry state, but the controller had already retained `0834/18`; no TX.
+- **S11P — COMPLETE / INCONCLUSIVE** — branch-A path reached ACK0884, then the first runtime owner was `0834/18`; no ACK0834 was sent because local safety was still OPEN at that point.
+- **S11O — COMPLETE / INCONCLUSIVE** — direct-0884 branch and the full `07D0 -> 07E4 -> 07F8 -> 080C -> 0820 -> 0848` runtime ring completed; post-0848 `0708` was followed by `0864/4`, not the rigidly expected final zero-085F.
+- **S11J — COMPLETE / POSITIVE** — retained runtime ring `07D0 -> 07E4 -> 07F8 -> 080C -> 0820 -> 0848` was ACKed cleanly in one run; follow-on included `0708` and a later `085F` publication.
+
+## Last completed experiment
+
+The latest attempted experiment is **S11R original — COMPLETE / INCONCLUSIVE** because its intended all-zero prerequisite was absent and it transmitted nothing.
+
+The latest positive protocol discriminator is **S11Q FIX2 — COMPLETE / POSITIVE**:
+`retained 0834/18 -> one ACK0834 -> 0708 -> all-zero 085F/5`.
+
+Subsequent passive S11R evidence shows the all-zero 085F was not a stable retained baseline: the controller later repeatedly published
+`085F/5 = 0000 0000 0800 0000 0000` with `0708/6`, while ESP TX stayed zero.
+
+## Current protocol model
+
+Locally confirmed controller-owned work is not a single fixed linear sequence. The controller can expose pending work in different orders depending on retained/session context.
+
+Current locally exercised work-owner set includes:
+`07D0`, `07E4`, `07F8`, `080C`, `0820`, `0834`, `0848`, `0864`, qualified `0870`, `0884`, and context-qualified `085F`.
+
+The strongest current scheduler model is therefore a **contextual pending-work drain**, not a rigid page chain. In particular:
+- ACK0848 can be followed by another pending work family such as 0864;
+- ACK0884 can expose either runtime work or, in another retained context, 0834;
+- ACK0834 is now locally proven to release its pending owner slot;
+- the immediate post-ACK0834 all-zero 085F can later settle back to the familiar retained `085F(0800) <-> 0708` service boundary.
+
+## PROVEN / locally confirmed
+
+- Standard address/count ACK of retained `0834/count18` is locally accepted as work completion in the exercised XTR context: the repeated 0834 owner stopped and a different controller-owned FC16 family appeared.
+- The post-ACK0834 follow-on in S11Q FIX2 was `0708` then all-zero `085F/5` about 2.02 s after ACK0834.
+- The stable retained S11R baseline observed later is `085F/5 = 0000 0000 0800 0000 0000` plus repeated `0708/6`; no all-zero 085F was seen in that supplied passive run and ESP TX remained zero.
+- The complete runtime ring `07D0 -> 07E4 -> 07F8 -> 080C -> 0820 -> 0848` is locally exercised with clean ACK accounting.
+- `0834` payload content can vary while start/count geometry remains `0834/18`; fixed payload signature is not a valid owner identity.
+
+## STRONGLY SUPPORTED
+
+- Runtime ownership is geometry + session/context driven rather than tied to a frozen payload signature.
+- The controller retains pending work across ESP restarts/OTAs, while the visible owner can change as the internal scheduler/session advances.
+- The old production engine's whitelist-like treatment of known runtime pages matches the newer observation that known pages can be interleaved rather than appearing in one fixed order.
+
+## OPEN / UNKNOWN
+
+- Whether one isolated ACK to the stable retained `085F(0800)` owner is sufficient to release the next controller-owned family without first sending a `0708` mailbox response. S11R FIX2 tests exactly this.
+- Which family will follow that isolated ACK085F in the current retained epoch.
+- Generic ownership rules for contextual `085F` and qualified `0870` outside already exercised states.
+- Active local ACK behaviour for any not-yet-exercised context remains OPEN even when firmware/genuine captures suggest it.
+
+## Next experiment — S11R FIX2
+
+**Hypothesis:** the stable retained `085F/count5 = 0000 0000 0800 0000 0000` owner can be released by one standard FC16 address/count ACK without any `0708` response.
+
+**Baseline:** at least three exact matching 085F publications + at least two `0708/6` polls; both last observations <=4 s old; zero TX; no other 0x0F FC16/FC03 family; no FC23; clean parser/accounting.
+
+**Controlled change:** after manual ARM, ACK exactly the next matching `085F/count5` once. No other response or ACK is allowed.
+
+**Positive:** first different 0x0F FC16 within 10 s after ACK085F.
+
+**Negative:** bus remains live for >=10 s with only repeated 085F and/or 0708.
+
+**Abort / inconclusive:** baseline payload changes, qualification becomes stale, another family appears before ACK, FC23/session reset, parser/UART/accounting fault, or any second TX attempt.
+
+**Recovery:** capture-only immediately after the one ACK; controller reboot only if an abnormal persistent state is observed.
+
+---
 # 2026-10-07 — S11I COMPLETE / POSITIVE — retained 0884 ACK releases to 07D0
 
 ## Current experiment / status
