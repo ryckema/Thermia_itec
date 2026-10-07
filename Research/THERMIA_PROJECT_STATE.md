@@ -1,3 +1,33 @@
+# 2026-10-07 — S11G FIX1 COMPLETE / INCONCLUSIVE — retained 0884 absent after ESP-only restart
+
+## Current experiment / status
+
+- **S11G FIX1 — COMPLETE / INCONCLUSIVE** — prerequisite retained `0884/count60` was absent after ESP-only OTA/restart; no ACK0884 was sent and the active hypothesis was not exercised.
+- **S11F — COMPLETE / POSITIVE** — fresh source-faithful session reached `0884/60` and stopped all TX at first 0884.
+
+## S11G FIX1 observed result
+
+The post-OTA controller state was not the expected retained 0884 boundary. Instead the live bus showed a stable repeated pair:
+
+```text
+085F/count5  sig=7EAE5A0A
+0708/count6  polls
+```
+
+S11G counters in the supplied log reached `q0708=27` while `q0884=0`. The first unexpected pre-arm `085F/5` set `otherPre=1`, `locked=1`, and `result=3` (inconclusive), exactly as the fail-closed design intended. `physicalTX=delivered=writes=0`; ACK0884 remained 0; no `07D0` appeared. Parser geometry/unknown/drop/boundary counters remained clean. The nonzero resync counter was already stable at 16 in the visible slice and did not increase there.
+
+### Conclusion
+
+S11G did **not** test whether ACK0884 alone releases to 07D0, because the required retained 0884 state no longer existed when FIX1 observed the bus. Do not classify this as a negative result for ACK0884.
+
+The useful new observation is that, without a Thermia/controller reboot and with zero ESP TX, the controller is now back at the familiar retained `085F(7EAE5A0A) <-> 0708` boundary.
+
+### Recommended next direction
+
+Do not broaden S11G to ACK arbitrary pre-arm traffic. Preserve S11G as inconclusive. If avoiding a controller reboot remains the priority, the next experiment should be a separately scoped retained `085F/0708` continuation using prior S10/S11 evidence; do not reinterpret the missing 0884 as an authorization for ACK0884.
+
+---
+
 # 2026-10-07 — S11F COMPLETE / POSITIVE; S11G PREPARED / NOT RUN
 
 ## Current experiment / status
