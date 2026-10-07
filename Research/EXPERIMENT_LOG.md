@@ -1,3 +1,41 @@
+# 2026-10-07 — native fresh-session progression through 0884
+
+## S11F — COMPLETE / POSITIVE
+
+**Hypothesis:** continuing the S11D fresh-session baseline with one qualified standard FC16 ACK to the first owned `0870/count17`, while preserving bounded source-faithful mailbox service, will allow the controller to advance to `0884/count60`.
+
+**Baseline:** S11D COMPLETE / POSITIVE reached `0870/17` and stopped all TX.
+
+**Controlled change:** S11F ACKed the first qualified `0870/17` once instead of stopping there. `0884/60` remained capture-only.
+
+**Observed:** exact 32/32 settings bootstrap completed; runtime reached `0864/4` with `0867=00F2`; one qualified ACK0870 was delivered at TX46; one further exact `0708/6` mailbox response was delivered at TX47; first `0884/60` arrived ~2.04 s after ACK0870. The experiment immediately disabled all further TX. Repeated 0884 publications continued while `physicalTX=delivered=writes=47`. Integrity stayed clean: mismatch/unknown/resync/drops/boundary all zero.
+
+**Result:** **COMPLETE / POSITIVE**.
+
+**Causal limitation:** because mailbox response #5 occurred between ACK0870 and first 0884, the result proves the qualified combined path, not “ACK0870 alone is sufficient”.
+
+## S11E — SUPERSEDED / NOT RUN
+
+The planned fresh-session “withhold ACK0864” causality test is preserved but no longer prioritized. S11D + genuine-capture correlation make a retained continuation toward normal operation more valuable than spending another controller reboot on this discriminator.
+
+## S11G — PREPARED / NOT RUN
+
+**Hypothesis:** one standard ACK to the currently repeated retained `0884/count60` is sufficient by itself to release the history-overlay retry state into `07D0/count19`.
+
+**Baseline/result:** S11F left the controller repeatedly publishing `0884/60` plus `0708/6` while ESP TX stayed disabled.
+
+**Exact controlled change:** after ESP-only OTA/restart, require >=3 exact 0884/60 publications + >=2 exact 0708/6 polls + clean parser + zero TX; then ACK exactly one subsequent 0884/60. No mailbox response and no other ACK afterwards.
+
+**Positive:** `07D0/19` within 10 s after the ACK with total active TX exactly 1.
+
+**Negative:** >=10 s of live repeated 0884/0708 after the ACK without 07D0. This is only negative for the isolated ACK-only hypothesis.
+
+**Abort/inconclusive:** no retained 0884 after OTA, FC23/new-session transition, unexpected runtime/config family before split, geometry mismatch, parser/integrity/UART fault, or TX count !=1 after action.
+
+**Recovery:** stop TX permanently after the one ACK; controller reboot only if an unexpected persistent state requires recovery.
+
+---
+
 # 2026-10-05 — EXP426 live result
 
 ## EXP426 — COMPLETE / INCONCLUSIVE — no 0662 trigger observed
