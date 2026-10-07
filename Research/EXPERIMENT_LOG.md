@@ -1,3 +1,19 @@
+# 2026-10-07 — S11G FIX1 live result
+
+## S11G FIX1 — COMPLETE / INCONCLUSIVE — retained 0884 prerequisite absent
+
+**Hypothesis:** after ESP-only OTA/restart, repeated retained `0884/60` can be qualified and exactly one ACK0884 can test whether ACK0884 alone releases the controller to `07D0/19`.
+
+**Observed:** the required `0884/60` never appeared in the supplied live slice. Instead the controller repeatedly published `085F/5` with signature `7EAE5A0A` and polled `0708/6`. S11G status showed `q0884=0`, `q0708=22..27`, `otherPre=1`, `locked=1`, `result=3`, `physicalTX=0`, `acked=0`, `seen07D0=0`. No experimental TX occurred.
+
+**Result:** **COMPLETE / INCONCLUSIVE**.
+
+**Reason:** prerequisite retained 0884 state absent; ACK0884 hypothesis not exercised.
+
+**Safety:** fail-closed behavior worked. The first non-0884 runtime publication locked the experiment before ARM, and ESP TX remained zero.
+
+---
+
 # 2026-10-07 — native fresh-session progression through 0884
 
 ## S11F — COMPLETE / POSITIVE
