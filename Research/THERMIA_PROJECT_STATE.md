@@ -1,3 +1,49 @@
+# 2026-10-07 — S11H COMPLETE / NEGATIVE for 07D0 endpoint; positive retained release to 0884
+
+## Current experiment / status
+
+- **S11I — PREPARED / NOT RUN** — no-controller-reboot continuation in one uninterrupted ESP process: replay the proven S11H two-step retained release, then ACK exactly one resulting `0884/60`; capture-only afterwards; endpoint `07D0/19`.
+- **S11H — COMPLETE / NEGATIVE** for the narrow hypothesis that the proven S10C release sequence reproduces `07D0/19` in the current controller epoch. The exact two-step action executed cleanly but exposed repeated `0884/60` instead of `07D0/19`.
+- **S11G FIX1 — COMPLETE / INCONCLUSIVE** — retained `0884` prerequisite absent after ESP restart; zero TX.
+
+## S11H observed result
+
+Baseline qualification directly confirmed repeated `085F/5 = 0000 0000 0800 0000 0000`, repeated `0708/6`, no FC23/new session, zero TX and clean integrity.
+
+At ARM, S11H executed the locally proven S10C sequence: TX1 one 0708/6 response with W0..W4=0000 and W5=0006; controller 085F then changed to exact all-zero; TX2 one standard FC16 ACK to 085F/count5; all later ESP TX disabled.
+
+Both TX were delivered. The controller did not publish `07D0/19` within the 10 s endpoint window. Instead, about 2.33 s after TX2, it began publishing `0884/60`, which then repeated interleaved with `0708/6` while ESP TX remained fixed at 2.
+
+Integrity remained clean: mismatch=0, unknown=0, resync=0, drops=0, boundary=0.
+
+### Interpretation
+
+**PROVEN / locally confirmed**
+- the current retained `085F(0800) <-> 0708` boundary is real and directly word-confirmed;
+- the S10C mailbox step again clears 085F word2 from `0800` to `0000`;
+- one ACK to that exact changed all-zero `085F/5` again releases the service boundary;
+- in this controller epoch, the released next work is `0884/60`, not `07D0/19`.
+
+**DISPROVEN / superseded for this context**
+- the stronger assumption that the same two-step retained release always returns directly to `07D0/19`.
+
+**STRONGLY SUPPORTED**
+- controller/session work ownership survives ESP process restarts and determines which pending runtime family is exposed after the `085F` service gate;
+- the `0884` work seen after S11H is consistent with unfinished S11F/S11G history-overlay work surviving behind the `085F/0708` boundary.
+
+## S11I prepared discriminator
+
+Keep S11H behavior unchanged through the first resulting `0884/60`. The only new active action is one standard FC16 ACK to that exact `0884/60`, in the same uninterrupted ESP/controller epoch. No mailbox response or other ACK after that point.
+
+Positive: `07D0/19` within 10 s after ACK0884 with total physical TX exactly 3.
+
+Negative: controller remains live for >=10 s after ACK0884 but no `07D0/19` appears.
+
+Abort/inconclusive: baseline word mismatch, changed 085F not all-zero, missing 0884 after the proven two-step release, fresh FC23, unexpected family, parser/UART/accounting fault, or TX >3.
+
+No Thermia/controller reboot is part of S11I.
+
+---
 # 2026-10-07 — S11H PREPARED / NOT RUN — replay locally proven S10C retained release
 
 ## Current experiment / status
