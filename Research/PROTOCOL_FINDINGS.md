@@ -1,3 +1,72 @@
+# 2026-10-07 — Service/runtime chain refinement through S11X FIX1
+
+## PROVEN / locally confirmed
+
+### 0708 response creates the transient all-zero 085F service state
+S11U FIX1 locally confirmed that, from the retained `0708 + 085F(W2=0800)` boundary, one source-faithful response to `0708/count6` caused exact all-zero `085F/count5` to appear about 566 ms later.
+
+Status: **PROVEN / locally confirmed**.
+
+### The all-zero 085F state is transient across ESP restart
+S11V started after another ESP OTA/restart and the controller had returned to stable `085F(W2=0800) + 0708`; the all-zero state was absent and no TX occurred.
+
+Status: **PROVEN / locally confirmed** that the all-zero state must not be assumed to persist across ESP restart.
+
+### ACK of freshly generated all-zero 085F releases 0884
+S11V FIX1 generated the all-zero `085F` and ACKed it within the same uninterrupted run. `0884/count60` appeared about 2355 ms after ACK085F.
+
+Status: **PROVEN / locally confirmed** for the exercised context.
+
+### ACK0884 releases 07D0 in the reconstructed chain
+S11W extended that exact chain. After ACK0884, `07D0/count19` appeared about 2039 ms later.
+
+Status: **PROVEN / locally confirmed**.
+
+### 07D0 owner persists across ESP OTA/restart
+S11X original began after ESP OTA/restart with repeated `07D0/count19` plus `0708/count6`, while the earlier `085F` entry state was absent. Zero TX occurred.
+
+Status: **PROVEN / locally confirmed** that this runtime owner state can persist on the Thermia/controller side across ESP restart.
+
+### ACK07D0 releases 07E4
+S11X FIX1 qualified the retained `07D0/count19` owner and sent exactly one standard address/count ACK. `07E4/count17` appeared 2041 ms later. Accounting was exactly 1/1/1 and remained clean.
+
+Status: **PROVEN / locally confirmed**.
+
+### Reconstructed local route
+The following route is now locally exercised across the combined S11U FIX1 -> S11V FIX1 -> S11W -> S11X FIX1 evidence:
+
+`0708 response -> all-zero 085F -> ACK085F -> 0884 -> ACK0884 -> 07D0 -> ACK07D0 -> 07E4`.
+
+S11W proves the portion through `07D0` in one uninterrupted run. S11X original + FIX1 prove persistence and direct continuation from retained `07D0`.
+
+## STRONGLY SUPPORTED
+
+- The native service/runtime mechanism is a contextual pending-work scheduler with a mailbox/service boundary, not a globally rigid page chain.
+- A retained runtime owner can be adopted directly after ESP restart when its geometry and surrounding state are strongly qualified; replaying the complete earlier chain is not always necessary.
+- Geometry + state/session context should dominate owner qualification. Payload signatures are useful local diagnostics but should not be promoted to universal owner identities.
+- The historical runtime ring `07D0 -> 07E4 -> 07F8 -> 080C -> 0820 -> 0848` remains consistent with current local evidence.
+
+## HYPOTHESIS
+
+- The now-retained `07E4/count17` owner can be ACKed directly and should release `07F8/count17` in the current controller epoch.
+- Repeated runtime owners may be safely drained one at a time using exact geometry plus retained-owner qualification, but this is not yet a production-safe generic rule.
+
+## OPEN / UNKNOWN
+
+- Whether `07E4 -> ACK -> 07F8` is reproduced directly from the current retained state after the next ESP OTA/restart.
+- Whether later runtime owners remain equally persistent across ESP restart.
+- Generic authorization rules for automatically resuming arbitrary retained owners.
+- Semantic meaning of runtime page words remains open unless separately mapped.
+- Context-dependent branches involving `0834`, `0864`, `0870`, and alternate post-`0884` paths remain valid evidence against treating the scheduler as globally linear.
+
+## DISPROVEN / SUPERSEDED
+
+- **Superseded:** every new experiment must reconstruct the service chain from `0708 + 085F(W2=0800)`. S11X shows that a retained runtime owner may survive ESP restart and can be continued directly.
+- **Superseded:** the transient all-zero `085F` state is a reliable cross-OTA prerequisite. S11V shows it is not.
+- **Superseded as a universal model:** one fixed page order describes every native session. Earlier branch evidence plus the current retained-owner behavior supports contextual scheduling instead.
+
+---
+
 # 2026-10-07 — Scheduler/service refinement through S11U
 
 ## PROVEN / locally confirmed
