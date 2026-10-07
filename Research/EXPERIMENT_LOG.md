@@ -1,3 +1,31 @@
+# 2026-10-07 — S11H prepared
+
+## S11H — PREPARED / NOT RUN
+
+Baseline: S11G FIX1 left the ESP at zero TX while the controller repeatedly published 085F/5 with signature 7EAE5A0A and polled 0708/6.
+
+S11H replays the already locally proven S10C retained release, but first requires direct word-level confirmation of the baseline 085F image:
+
+```text
+0000 0000 0800 0000 0000
+```
+
+After >=3 matching 085F publications and >=3 0708 polls, manual ARM permits exactly:
+1. one idle 0708/6 response with W0..W4=0000 and W5=0006;
+2. only after the controller publishes exact all-zero 085F/5, one standard FC16 address/count ACK to 085F/count5.
+
+All later traffic is capture-only.
+
+Positive: 07D0/19 within 10 s after the second response with total physical TX exactly 2.
+
+Negative: controller remains live for >=10 s after both actions but 07D0/19 does not appear.
+
+Inconclusive/abort: baseline words differ, post-mailbox 085F is not all-zero, fresh FC23 appears, another work family interrupts the controlled sequence, integrity/UART/accounting fault, or TX exceeds 2.
+
+No Thermia/controller reboot is part of S11H.
+
+---
+
 # 2026-10-07 — S11G FIX1 live result
 
 ## S11G FIX1 — COMPLETE / INCONCLUSIVE — retained 0884 prerequisite absent
