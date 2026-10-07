@@ -1,3 +1,134 @@
+# 2026-10-07 — S11U FIX1 PREPARED / NOT RUN
+
+## Hypothesis
+From the current retained post-S11T state (`0708/count6` + stable `085F(W2=0800)`, no `0662`), one source-faithful response to the next `0708/count6` poll will advance `085F` or expose another controller-owned FC16 family.
+
+## Baseline
+- S11U result: `0708` already active before any TX; `085F/5 = 0000 0000 0800 0000 0000`, sig `7EAE5A0A`; `0662` absent; zero TX.
+- Require repeated `0708`, >=3 exact `085F`, no `0662`, no FC23, clean parser/UART/accounting, zero TX.
+
+## Controlled change
+After manual ARM, respond exactly once to the next `0708/count6` using the already locally exercised source-faithful idle mailbox response. No ACK085F or other TX is allowed.
+
+## Criteria
+- Positive: changed `085F` or a different 0x0F FC16 family within 10 s after the response.
+- Negative: live bus >=10 s with only unchanged `085F` and repeated `0708`.
+- Abort/inconclusive: baseline deviation, `0662` return, unexpected family, FC23/session restart, parser/UART/accounting fault, no post-ARM 0708 within 15 s, second TX attempt, or post-TX silence.
+- Recovery: immediate capture-only after the one response.
+
+---
+
+# 2026-10-07 — S11U COMPLETE / INCONCLUSIVE
+
+## Hypothesis
+Combine the newly proven S11T edge with one source-faithful `0708` response:
+`ACK0662 -> first released 0708 -> one 0708 response -> observe`.
+
+## Result
+After OTA, the prerequisite had already changed. The controller retained the post-S11T state:
+- repeated `0708/count6`;
+- repeated `085F/count5 = 0000 0000 0800 0000 0000`, sig `7EAE5A0A`;
+- no `0662/count33`;
+- no FC23;
+- clean parser/accounting;
+- `physicalTX=delivered=writes=0`.
+
+The fail-closed harness rejected the run because `0708` was already present before TX1. The active two-action hypothesis was therefore not exercised.
+
+## Interpretation
+ESP OTA/restart did not restore the pre-S11T scheduler state. The `ACK0662 -> 0708` transition from S11T persisted on the Thermia/controller side.
+
+---
+
+# 2026-10-07 — S11T COMPLETE / POSITIVE
+
+## Hypothesis
+The retained `0662/count33` settings publication is a pending controller-owned work item. One standard address/count ACK should release or advance the scheduler.
+
+## Baseline
+Stable repeated:
+- `0662/count33`;
+- `085F/count5 = 0000 0000 0800 0000 0000`, sig `7EAE5A0A`;
+- no `0708`;
+- zero TX before ARM;
+- clean parser/accounting.
+
+## Controlled change
+One standard FC16 address/count ACK to the next qualified `0662/count33`. No further TX.
+
+## Result
+- exactly one physical TX/delivery/write;
+- `0662` stopped after the ACK;
+- first `0708/count6` appeared about **1.422 s** after ACK0662;
+- repeated `0708` continued afterward;
+- `085F(W2=0800)` remained visible;
+- no FC23 and no parser/accounting faults.
+
+Status: **COMPLETE / POSITIVE**.
+
+## Conclusion
+Locally confirmed XTR scheduler edge:
+`retained 0662/33 -> ACK0662 -> 0708 mailbox phase`.
+
+This is transport/scheduler proof only; it does not assign semantic meaning to the 33 settings words.
+
+---
+
+# 2026-10-07 — S11S FIX2 COMPLETE / INCONCLUSIVE
+
+## Hypothesis
+Allow known `0662/count33` as background while waiting for the earlier `085F/0708` service sequence.
+
+## Result
+The corrected harness remained clean and no longer false-aborted on `0662`, but the live controller state contained repeated `0662/33 + 085F(W2=0800)` and **no `0708`**. No active response was sent.
+
+Final relevant state: large counts of both `0662` and `085F`, `q0708=0`, `physicalTX=delivered=writes=0`, parser/accounting clean.
+
+Status: **COMPLETE / INCONCLUSIVE**.
+
+## Conclusion
+The blocker was controller scheduler state, not the corrected qualifier. `0708` did not appear spontaneously while retained `0662` remained pending.
+
+---
+
+# 2026-10-07 — S11S FIX1 SUPERSEDED / NOT RUN
+
+The generated FIX1 harness incorrectly treated normal repeated `0662/count33` settings traffic as an unexpected FC16 family. It locked before TX1 and transmitted nothing. Superseded by FIX2, which explicitly allowed `0662/33` capture-only.
+
+---
+
+# 2026-10-07 — S11S COMPLETE / INCONCLUSIVE
+
+Expected the post-S11R FIX3 `085F` transition signature `9BFE9A42`, but after the next ESP run the controller had returned to stable `085F/count5 = 0000 0000 0800 0000 0000` / sig `7EAE5A0A`. Qualification failed closed and no mailbox response was sent. Zero TX.
+
+This shows the post-ACK `9BFE9A42` substate is not guaranteed to remain adoptable across a later ESP run.
+
+---
+
+# 2026-10-07 — S11R FIX3 COMPLETE / NEGATIVE
+
+## Hypothesis
+One standard ACK to stable retained `085F/count5 = 0000 0000 0800 0000 0000` is sufficient to release a different FC16 owner without a `0708` response.
+
+## Controlled change
+Manual ARM -> require a new post-ARM `0708` -> ACK exactly the next matching `085F/count5` once -> capture-only.
+
+## Result
+The one ACK was delivered with clean accounting. About 2.1 s later the same `085F/count5` geometry reappeared with signature `9BFE9A42`. No different FC16 family appeared within the predeclared 10 s window. Bus remained live and healthy.
+
+Status: **COMPLETE / NEGATIVE** for the narrow endpoint hypothesis.
+
+## Interpretation
+The ACK was not ignored: it changed the same `085F` state. For the exact geometry, `9BFE9A42` is strongly consistent with five all-zero words, but those words were not directly logged in this run.
+
+---
+
+# 2026-10-07 — S11R FIX2 COMPLETE / INCONCLUSIVE
+
+The live baseline was correct, but manual ARM occurred while the strict pre-click `0708` recency guard was stale. ARM was refused; a new `0708` arrived shortly afterward. No TX occurred. This was a guard/qualification issue, not a negative protocol result.
+
+---
+
 # 2026-10-07 — S11R current preparation and S11Q/S11P/S11O results
 
 ## S11R FIX2 — PREPARED / NOT RUN
