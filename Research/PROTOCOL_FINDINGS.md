@@ -1,3 +1,29 @@
+# 2026-10-09 — S11Y-AI–AL FIX1 native session and passive observer findings (latest)
+
+## PROVEN / locally confirmed
+- **S11Y-AL FIX1, same ESP boot F59E0699, segment 0:** in two overlapping ESPHome log files, recurrent 0x0F FC16 `0662/33` signature EEEA4167 and `085F/5` words `0000,0000,0800,0000,0000` signature 7EAE5A0A. `0708` polls/answers and new 0864/0870/0884 work pages not seen in sampled window; no FC23 marker. A full `NSH AL HEALTH` at 01:46:54 records 4441 valid frames, 242 085F pages, 0 parser faults, 0 TX, DE=0, invalid=0. Last observed tail 01:47:16 ~8m53 since boot, and 253 085F total captures. The logger reliably observes repeated pages while TX disabled; this proves **only the observed passive segment**, not universal absence of transitions.
+- Local S7 original YAML and S11V FIX1 original YAML both declare the same FC03 `0708/6` response W0–W4=0, W5=0x0006. Their logged post-ACK FC16 successors differ: S7 `0870/17`; V `0884/60`. S7 085F ACK guard is not all-zero; S11V FIX1 checks five zero 085F words before ACK. S11Y-M FIX1 declares all-zero six-word 0708 response; observed 085F W2=0800→0000 with no ACK. These are **separate epochs**.
+- User subsequently states heat pump was heating; whether heating was true **during** AL FIX1 log interval is UNKNOWN. The available AL ESPHome log has no synchronized semantic heating-mode evidence.
+
+## STRONGLY SUPPORTED
+- `0708` mailbox response W5 category **alone does not determine** next native FC16 page: S7/V identical declared W5 but distinct next-page logs. Page choice/ACK eligibility depends on additional (unmeasured) context; no unique selector identified.
+- AL FIX1 shows controller-origin `0662/33` FC16 may recur between `085F/5` repetitions without any `0708` poll in this observation window. Logger's `owner=CONFIG_CONTEXT_REQUIRED` vs `POLICY_OPEN_085F` are **local software classification labels**, not verified internal Thermia owner states.
+
+## HYPOTHESIS
+- Distinct scheduler/service/context states may produce `0708+085F` and `0662+085F` outward patterns. Heating operation may or may not be relevant; requires synchronized independent measurements and same-epoch comparisons.
+
+## OPEN / UNKNOWN
+- Current physical controller epoch and online/DCM ACK admission; exact five 085F words before S7 ACK; S11V standalone independent pre-ACK wire dump; W5=0006 semantics; precise 0662/33 payload and heat-operation semantic relation; what triggers any 0708 poll or 085F all-zero transition; reason for 0870 vs 0884. A standard Modbus FC16 ACK does **not** prove semantic acceptance. Full runtime+restart automation has not been proven.
+
+## DISPROVEN / SUPERSEDED
+- **Superseded missing-file claim:** original S7/S11V ESPHome logs and original executed S7/S11V YAMLs now located. Do not continue to classify their source declarations as unavailable.
+- **Unsupported W5-only branch rule:** contradicted by identical S7/V declared W5 with divergent continuations and genuine ATEC same-W5 diverse runtime successors. This does not disprove W5 having some other semantic role.
+- Earlier S11Y-AA historical 085F + 0708-only window is not the current owner's state; AL FIX1 has 0662+085F, and present physical state remains UNKNOWN.
+
+**Evidence provenance:** S7, S11V, S11Y-M, S11Y-AL FIX1 = XTR M ESPHome local results; W0–W4 mailbox selector map = Thermia Connect CM930 firmware-derived; genuine Eco5/ATEC mailbox W5 distribution = cross-model genuine Online/DCM captures, not XTR proof. No S11Y-AI–AK offline work caused TX. AL FIX1 passive run caused no ESP TX.
+
+---
+
 # 2026-10-09 — S11Y-AE–AH offline scheduler, overlays and retained XTR diagnostics
 
 ## PROVEN / locally confirmed on XTR M (prior executed results, not new AE–AH TX)
