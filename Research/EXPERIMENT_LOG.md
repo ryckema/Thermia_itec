@@ -1,3 +1,9 @@
+## 2026-10-09 — S11Y-AL FIX1 heating-context addendum (observation only)
+
+**Status: COMPLETE / INCONCLUSIVE for heating correlation; no new experiment.** After the passive log (01:38–01:47), the user confirmed the heat pump **was heating at the time of the follow-up question**, but did not know whether heating was already active during capture. Existing `0662/33` signature `EEEA4167` and stable `085F/5` W2=`0800` are local bus observations, not validated heating-status registers. The 33 raw `0662` words are not included in these AL logs; available operating anchors show NaN (unavailable). **Hypothesis:** some `0662` fields may correlate with heating, but the present source cannot confirm this. **Baseline** S11Y-AL FIX1 already executed passive zero TX; **controlled change** offline interpretation only; **positive** would require synchronized heating-state evidence within the log interval; **negative** would be an explicit contrary synchronized measurement; **inconclusive** applies here. **Abort** any inference relying on a signature alone; **recovery** keep observational status UNKNOWN. No TX / YAML / firmware / live experiment occurred. Original S11Y-AL FIX1 entry below remains intact.
+
+---
+
 # 2026-10-09 — S11Y-AI through S11Y-AL FIX1 (newest; historical entries preserved)
 
 ## S11Y-AL FIX1 — passive 085F / 0662 native observer
