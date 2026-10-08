@@ -1,3 +1,34 @@
+# 2026-10-09 — S11Y-AE–AH offline scheduler, overlays and retained XTR diagnostics
+
+## PROVEN / locally confirmed on XTR M (prior executed results, not new AE–AH TX)
+- Local S11B/S11T/S11U/S11V/S11W and S11Y-M/Y FIX2/AA retain their *specific, previously observed* ACK/response and fail-closed outcomes. No AE–AH research sent a bus frame. In last AA ESP epoch, recurring `085F/5` W2=`0800` + `0708/6` polls, no `0662`, ARM denied and TX=0.
+- AH **65/65**, AG **86/86**, AF **44/44**, AE **20/20** are proven *offline software/check outcomes only*, not locally measured controller state advances or ESPHome compilation.
+
+## OBSERVED / genuine Online/DCM cross-model (not automatic XTR proof)
+- Three genuine Eco5/ATEC captures yielded 111 historical ACKed `07D0`-anchored candidate intervals: 47 strictly complete nine-core-page cycles and 64 nonqualifying intervals.
+- Core captured ring `07D0 → 07E4 → 07F8 → 080C → 0820 → 0834 → 0848 → 0864 → 0870`. Of 47 strict complete intervals, 13 had an `0884` overlay, one an `085F` overlay.
+- 321 genuine `085F` requests/10 ACK: 314 requests in `04BA`-preceded service blocks, 4 after `06F4`, 3 after `0848`; 13 `0884` requests had preceding `0870` (within these capture windows). **Temporal evidence, not causality.**
+- Genuine counterexamples: W4=`0100` with `07D0` instead of `0864`; `0884` despite W4=`0000`; `085F` despite W4.bit7=0. W4 values are from *actually answered* 0708 requests; repeated unanswered polls do not reveal W4.
+
+## STRONGLY SUPPORTED
+- Model a base publication ring and asynchronous/context-dependent service overlays as **separate observational axes**, not as one universal strict controller queue.
+- AH shows a safe *diagnostic* classification of the last AA epoch: `BASE_RING=UNKNOWN_REJOIN`, `SERVICE_PENDING=RETAINED_085F0800_WITH_POLL_ONLY_W4_UNKNOWN`, `PROVENANCE=UNKNOWN`, answered W4=UNAVAILABLE, `CAPTURE_ONLY`.
+
+## HYPOTHESIS
+- Controller-side pending work and same-epoch predecessor service help choose which overlay and runtime page is next; actual scheduler internal priority remains unresolved.
+
+## OPEN / UNKNOWN
+- Precise H011 ACK authorization, true internal owner/epoch of current XTR, validated local `0861.bit11` alarm semantics, native hot-rejoin, semantic write-readback acceptance and whether a newer controller epoch differs from the last AA capture.
+
+## DISPROVEN / SUPERSEDED AS GENERAL RULE
+- W4 is an exclusive FIFO/lowest pending bit defines the next FC16 page; all-zero W4 forbids overlay; `085F` must always precede `0864`; all-zero `085F` or a recent ACK licenses TX; 0708 **poll counter** represents an answered W4 image; ESP OTA necessarily resets controller owner. Any earlier universal interpretation is superseded; preserve original observed frames.
+
+**Safety:** no page/bit/shape/recent-ACK-only authorization. All AE–AH classifiers are **CAPTURE_ONLY**. All timing cutoffs in offline scripts are host analysis boundaries, not proven firmware TX deadlines. S11Y-AI OFFLINE candidate NOT RUN; S11Y-AA active PREPARED / NOT RUN, FIX8K RUNNING / PARTIAL, separate formal rebuild S8 NOT RUN.
+
+Detailed public provenance: [S11Y-AE–AH report](protocol%20reduction/S11Y_AE_AH_OFFLINE_SCHEDULER_RECONCILIATION_20261009.md).
+
+---
+
 ## 2026-10-08 H012 supplementary findings (independent offline study)
 
 **GENUINE CROSS-MODEL / OFFLINE OBSERVED:** 321 genuine all-zero `085F/5` requests, 10 ACK, 311 no matched ACK; in an analyst-chosen five-second preceding-ACK window, 9/10 positive and 0/311 negative cases matched. **COUNTEREXAMPLE:** one genuine Eco5 2026-09-28 `085F` ACK lacked a preceding captured ACK within five seconds; a fixed recency predicate is not necessary and is **not proven safe as sufficient**. Observed first later FC16 family after 10 ACKs: `07D0` (4), `03E8` (3), `0864` (2), `085F` (1); do not treat ordering as causation. H012 validated its own offline census/invariants (14/14), not a live XTR ACK rule. **STATUS:** COMPLETE / POSITIVE offline counts/falsification; INCONCLUSIVE for owner authorization. S11Y-AA remains NOT RUN, all unmatched page owners **CAPTURE_ONLY**.
