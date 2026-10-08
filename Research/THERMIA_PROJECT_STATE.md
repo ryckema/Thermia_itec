@@ -1,3 +1,29 @@
+# 2026-10-08 (late) — Native S11Y-AA/AB/AC/AD reconciliation (newest supplement)
+
+**This section supersedes older "current experiment" headings below, without altering historical results.** Last locally observed state, supplied logs ~23:09–23:15: repeating slave `0x0F FC16 085F/count5` words `0000 0000 0800 0000 0000`, signature `7EAE5A0A`, plus `FC03 0708/count6`; `0662/count33` and `0864/count4` absent. This is not a claim about any later controller state.
+
+## Current experiment / last results
+- **S11Y-AA — PREPARED / NOT RUN as an active two-ACK experiment.** Actual ARM attempt at **23:15:21.637** was **COMPLETE / INCONCLUSIVE**: `NSH AA ARM REFUSED ... state=2 0662=0 085F=161 0708=80 tx=0/0/0 NO_TX`. It did not test an ACK to newly all-zero `085F` or an `0864` successor.
+- **S11Y-Y FIX2 — COMPLETE / INCONCLUSIVE for intended two-ACK endpoint.** ACK1 of `0662/33` was delivered (`1/1/1`), following `085F` had all-zero signature `9BFE9A42`, later `0708` appeared. TX2 was refused by the obsolete `0800` signature guard; no `0864` appeared in the observed window. The first-stage transition is positive local evidence.
+- **S11Y-AB — COMPLETE / POSITIVE OFFLINE comparison**, not a new bus test. Existing S11T/S11U/S10C evidence plus Connect 2.1.105 timeout review do not establish a controller timer forcing `0662` after ESP restart.
+- **S11Y-AC — COMPLETE / POSITIVE OFFLINE genuine-corpus analysis**, not a live test. Across genuine Eco5/ATEC Online/DCM captures: 321 all-zero `085F/5` requests, only 10 ACKs. First subsequent work pages include both `0864` and `07D0` in differing cross-model contexts.
+- **S11Y-AD — COMPLETE / POSITIVE OFFLINE classifier checks**, **9/9** (four existing XTR log fixtures, two observation-equivalent distinct predecessor histories, three fail-closed health cases). Implemented classifier covers selected documentary labels only; no on-device compile/CRC validation; **all classifications CAPTURE_ONLY**.
+- Older **FIX8K — RUNNING / PARTIAL** semantic correlation remains uncompleted; no natural operation-mode markers were added. **Formal rebuild S8 remains NOT RUN** in the separate firmware-rebuild track.
+
+## Protocol model, strongest conclusions and unknowns
+- Locally established, *context-specific* edges: S11T `ACK0662 -> 0708`; S11U FIX1 `0708 reply -> all-zero 085F`; S11V FIX1 `ACK fresh zero 085F -> 0884`; S11W `ACK0884 -> 07D0`; S11X FIX1 `ACK07D0 -> 07E4`. S11B observed two ACKs (`0662`, `085F`) and later `0708`, `0864`.
+- **S11B payload-attribution correction:** its all-zero `085F` log is emitted after TX2 in the same receive-event handling order; TX2 to **already all-zero** `085F` is STRONGLY SUPPORTED but not independently pre-TX word-proven. Older shorthand “S11B ACKed `085F(0800)`” is SUPERSEDED AS AN INTERPRETATION ONLY; preserve the original ACKs and follow-on observations.
+- `085F(0800)+0708` occurs after multiple earlier work phases across ESP restarts, **not** proof of identical controller-internal owner/session state. Payload geometry, selector flags, or a prior different session are never sufficient TX authorization.
+- Firmware-derived: `0861.bit11=0800` carries Online/gateway communication-error labels in applicable Connect profiles. **Not XTR UI-confirmed** and not proven to trigger the scheduler. Connect serial/application timeouts are not evidence of controller `0662` regeneration.
+- UNKNOWN: exact retained H011 owner authorization; current internal epoch; why `085F` branches to `0884`, `07D0` or `0864`; generic hot-rejoin; semantic write acceptance.
+
+## Next step / safety
+**S11Y-AE candidate — OFFLINE / NOT RUN.** Compare existing raw XTR and genuine DCM predecessor timestamps, selector images, last observed mailbox answer and ESP restart boundaries; test for counterexamples before inferring pending-work priority. Positive: a reproducible context discriminator for differing next work pages; negative: counterexample disproves proposed rule; inconclusive: missing predecessor history. No bus recovery needed. No AA re-ARM without fresh `0662` baseline, no speculative ACKs, no new writes/resets, no room-sensor disconnection or DCM-dependent captures. Preserve production HA and fail-closed UART health accounting.
+
+Redacted detailed report: [S11Y-AA..AD passive reconciliation](protocol%20reduction/S11Y_AA_AD_PASSIVE_SESSION_RECONCILIATION_20261008.md).
+
+---
+
 # 2026-10-08 — Passive FIX8H–FIX8K evidence and native-path roadmap (supplement to S11X FIX1)
 
 ## Current experiment / status

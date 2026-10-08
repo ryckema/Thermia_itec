@@ -1,3 +1,26 @@
+# 2026-10-08 (late) — S11Y-AD, AC, AB, AA and Y-Y FIX2 addendum (newest first)
+
+Historical records below remain unchanged. These offline studies and the refused ARM are separate from formal rebuild S1–S7.
+
+### S11Y-AD — OFFLINE passive-session classifier
+**COMPLETE / POSITIVE for offline tests only.** Hypothesis: independent RX geometry/payload, predecessor provenance, and parser/TX health can safely classify retained work state without granting ACK permission. Baseline: actual S11B, S11Y-Y FIX2 and two S11Y-AA log windows, prior S10C/S11T/S11U/S11W evidence. Exact change: offline classifier, documentary rule matrix, no device/YAML change. Relevant: slave 0x0F FC16 `0662/33`, `085F/5`, `0884/60`, `07D0/19`, `0864/4`, FC03 `0708/6`, bus-health and TX counters. Positive: conservative labels and no TX permission — **9/9 checks PASS** (four log fixtures, two ambiguous predecessor cases, three fault cases). Negative: shape-only ACK or false qualified state — not produced in fixtures. Abort: missing/inconsistent evidence; recovery: **CAPTURE_ONLY**. Not an ESPHome compile or full RTU CRC test.
+
+### S11Y-AC — OFFLINE genuine DCM branch/timeline audit
+**COMPLETE / POSITIVE for offline comparison.** Hypothesis: callback ordering and real DCM cases can distinguish S11B TX2 payload attribution and universal `085F` rules. Baseline: original S11B, local contrasting S11C FIX1, genuine Eco5/ATEC logs. Change: offline timeline reconstruction only. Observed: all 321 genuine `085F/5` requests zero-word; only 10 ACKed; different `0864` vs `07D0` first follow-ons. S11B emitted all-zero signature after ACK2 within same receive callback; **already-zero pre-TX2 strongly supported, not independently raw proven**. Positive: context/counterexamples documented. Negative: universal next page/shape-only authorization contradicted. Abort/recovery: offline only. Earlier S11B TX2 `0800` attribution superseded as interpretation; raw observation unchanged.
+
+### S11Y-AB — OFFLINE retained service and timeout audit
+**COMPLETE / POSITIVE for offline research only.** Hypothesis: retained `085F(0800)+0708` with no `0662` is consistent with prior controller work completion rather than automatically an ESP parser fault. Baseline: S11T/S11U/S10C plus AA logs. Change: read-only historical logs and Connect source timer inspection. Observation: after ACK0662, `0708` can persist through ESP OTA as `085F(0800)` returns; no identified Connect timer forces controller `0662`. Positive: evidence-grounded retained-state candidate. Negative: mandatory timer-driven restart not found. Abort/recovery: offline only; controller internals still unknown.
+
+### S11Y-AA — active zero-085F hypothesis NOT RUN; ARM refused
+**Active status: PREPARED / NOT RUN; actual ARM attempt COMPLETE / INCONCLUSIVE.** Hypothesis: after a newly qualified `0662/33` owner, one ACK0662 and one ACK of first exact all-zero `085F/5` could expose `0864/4`. Baseline required repeated `0662/33 + 085F(0800)`, healthy parser and zero TX. Controlled YAML change vs Y FIX2: only TX2 signature predicate updated to all-zero, ceiling two physical ACKs, manual ARM/hard stop. Actual ~23:09–23:15 logs instead show repeated `085F(0800)+0708`, `0662=0`. At **23:15:21.637**: `ARM REFUSED ... 085F=161 0708=80 0662=0 tx=0/0/0 NO_TX`. Positive (two ACK then `0864`) and negative (two ACK no `0864` during clean follow-up) **cannot be scored**. Abort: failed initial owner qualifier; recovery: remain passive, no reset needed.
+
+### S11Y-Y FIX2 — local first-stage success, intended two-ACK endpoint incomplete
+**COMPLETE / INCONCLUSIVE for intended endpoint**, with one locally confirmed `0662` ACK. Baseline `0662/33 + 085F(0800)`. Controlled two-ACK sequence had original TX2 `0800` signature check. ACK0662 delivered once (TX=1/1/1); first post-ACK1 `085F` became all-zero (`9BFE9A42`); TX2 refused as signature mismatch (reason 9); later `0708`, no `0864` observed. Positive endpoint required physically delivered ACK2 plus follow-on; negative required ACK2 and no follow-on; neither executed. Abort guard blocked second ACK, leaving capture-only.
+
+Evidence filenames: `Pasted text(20261007-122647)(1).txt` (S11B), `Pasted text(20261008-204320).txt` (Y FIX2), `Pasted text(20261008-211128).txt` and `Pasted text(20261008-211529).txt` (AA). Public summary: [S11Y-AA..AD](protocol%20reduction/S11Y_AA_AD_PASSIVE_SESSION_RECONCILIATION_20261008.md).
+
+---
+
 # 2026-10-08 — FIX8K RUNNING / PARTIAL (passive operating-mode correlation deferred)
 
 ## Hypothesis and baseline

@@ -1,3 +1,34 @@
+# 2026-10-08 (late) — S11Y-AA..AD retained native-service evidence
+
+## PROVEN / locally confirmed (XTR M)
+- S11Y-Y FIX2: ACK `0662/33` delivered; first subsequent `085F/5` had all-zero signature, then FC03 `0708/6` appeared without ACK2; ACK2 was withheld by guard, not a valid negative `0864` test.
+- S11Y-AA after ESP restart: repeated `085F/5 = 0000 0000 0800 0000 0000` plus `0708/6`, absent `0662/33`; manual ARM refused 23:15:21.637 and TX=0. AA's active two-ACK hypothesis is **NOT RUN**.
+- Original S11B: two physically delivered ACKs (`0662`, `085F`) followed by `0708` and `0864`; exact pre-TX2 `085F` bytes were not separately logged.
+- S11Y-AD offline classifier: 9/9 tested log/ambiguity/health fixtures passed with no transmission authority; **not** a locally verified live classifier.
+
+## STRONGLY SUPPORTED
+- S11B's second ACK probably applied to an **already all-zero** `085F`: its receive-event page report is all-zero after TX2 in callback order. Preserve historic facts; supersede prior literal `ACK085F(0800)` shorthand, not the observed ACK/next page.
+- Identical visible `085F(0800)+0708` after different preceding events or ESP restarts is **not** proof of the same internal controller epoch/owner. Passive recognition and reply authorization are separate.
+- A single payload signature, page shape or W4 bit is insufficient to choose `0884`, `07D0` or `0864` as universally next.
+
+## FIRMWARE-DERIVED / GENUINE CROSS-MODEL
+- Applicable Connect profiles label `0861.bit11` (`0x0800`) Online/internet-gateway communication-error; no independent local XTR UI correlation, no proven causality.
+- Genuine different-model Eco5/ATEC Online/DCM: 321 all-zero `085F/5` requests, 10 ACKs, and different next-owner branches `0864` versus `07D0`. These do **not** authorize an XTR `085F` ACK.
+- Observed Connect software timeouts describe serial/application supervision, not a proven heat-pump-controller `0662` reset.
+
+## HYPOTHESIS
+Outstanding selector requests, work priority and *observed* predecessor ACK/response history jointly affect subsequent FC16 page order. `0861.bit11` may signal gateway communication trouble on XTR, but profile semantics are not local confirmation.
+
+## OPEN / UNKNOWN
+True retained internal owner; a safe exact `085F` ACK predicate in present controller context; conditional `0864`/`07D0`/`0884` ordering; robust restart/rejoin; XTR display/alarm mapping; native settings write read-back.
+
+## DISPROVEN / SUPERSEDED
+“TX2 in S11B definitely ACKed W2=0800” superseded as **interpretation**; all-zero pre-TX2 is supported but not separately raw-proven. Universal “all-zero `085F` permits ACK / forces `0864`” contradicted by genuine context variation. ESP reset necessarily restarts controller at `0662` unsupported.
+
+Default remains **CAPTURE_ONLY** with unchanged production HA, parser/health bookkeeping and strict guards. See [redacted S11Y-AA..AD dossier](protocol%20reduction/S11Y_AA_AD_PASSIVE_SESSION_RECONCILIATION_20261008.md).
+
+---
+
 # 2026-10-08 — Passive 07D0 content, 07DF periodicity and owner-context reconciliation
 
 ## PROVEN / locally confirmed
