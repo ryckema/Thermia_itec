@@ -1,3 +1,44 @@
+# 2026-10-08 — Passive FIX8H–FIX8K evidence and native-path roadmap (supplement to S11X FIX1)
+
+## Current experiment / status
+- **FIX8K — RUNNING / PARTIAL (semantic correlation deferred)**. Installed and locally run 2026-10-08; passive log `thermia-exp86-20261008-120937.log` shows repeated `0x0F FC16 07D0/count19` plus `FC03 0708/count6`; final observed summary `07D0=280 0708=140 changes=19 marks=0 tx=0/0/0 integrity=0 mismatch=0 unknown=0 resync=0 drops=0`. The 19 signature changes are attributable to `07DF` edge changes in this capture; no changes to `07D0`, `07D1` or `07E0` recorded. No heating/DHW/idle markers, because there was no naturally occurring demand. Do **not** mark the intended semantic correlation complete; resume only when such operation naturally occurs, without forcing heating/DHW.
+- **FIX8J — COMPLETE / POSITIVE (passive timing)**. Eight full `07DF` cycles in the analysed recording, steady-state rise-to-rise ~64.66–64.78 s, on ~17.21–17.29 s, off ~47.44–47.55 s; passive UART TX=0 and clean parser. Later longer FIX8J recording confirmed continued periodic edges and clean parser. This proves periodicity, not meaning.
+- **FIX8I — COMPLETE / POSITIVE (passive time correlation)**. `07D0/count19` dynamic words `07D0,07D1,07DF`, and cross-run change `07E0` observed; semantics remain unknown.
+- **FIX8H — COMPLETE / POSITIVE (passive full-page capture)**. 130 `07D0/count19` frames and 65 `0708` polls in five minutes; 12 signatures including first, 11 recorded word deltas, no `085F/0884/0662`, no ESP TX, parser faults=0.
+- **S11X FIX1 remains the most recent completed *active native-path experiment* — COMPLETE / POSITIVE**. The locally proven retained `07D0/count19` ACK -> `07E4/count17` edge (~2041 ms) is unaffected by the passive FIX8 observations.
+- **S11Y (active ACK07E4) — NOT PREPARED / NOT RUN**. Latest passive FIX8K runtime is `07D0/count19`, **not** the required retained `07E4/count17` start state. Never assume an earlier post-test owner survives later sessions/OTAs.
+
+## Current protocol model and evidence boundary
+The context-dependent native service/work-owner route remains locally supported as:
+`0708 response -> exact all-zero 085F -> ACK085F -> 0884 -> ACK0884 -> 07D0 -> ACK07D0 -> 07E4`.
+S11W proves the service route up to `07D0` in one continuous run; S11X original/FIX1 proves retained `07D0` ownership and direct continuation to `07E4` in their specific controller epoch. This does **not** establish a universal fixed ring or a complete Online session. The new FIX8K run started in repeating `07D0 + 0708` without TX, and **does not contradict** S11X: owner state is contextual and can change across sessions.
+
+## Next action — passive S11Y-A (candidate, not yet prepared)
+**Hypothesis:** passive capture of the current controller epoch and comparison with earlier S11X plus genuine Online/DCM captures can discriminate the present `07D0` owner from a retained `07E4` owner without transmitting.
+
+**Baseline:** locally verified FIX8K-style capture with repeating `07D0/count19` and `0708/count6`, clean parser and zero ESP TX.
+
+**Controlled change:** offline trace/firmware comparison plus, if needed, read-only owner-geometry/timestamp recording; no new ACK or other TX. Preserve production HA entities and bus-health counters.
+
+**Relevant fields:** `0x0F FC16 07D0/count19`, `07E4/count17` when actually seen, `FC03 0708/count6`, signature and session context; distinguish `07DF` periodic content from owner transition.
+
+**Positive:** independently grounded owner classification and/or naturally observed next owner with clean timing. **Negative:** no `07E4` emergence while only `07D0` continues. **Inconclusive/abort:** log gap, parser integrity fault, unintended ESP TX, FC23/new session, unexpected geometry. **Recovery:** stay capture-only; restore previous proven passive firmware if logging destabilises; controller reboot only for persistent abnormal behaviour.
+
+Only after an actual repeated, qualified `07E4/count17` baseline is observed may a separate, explicitly authorised S11Y-B single-ACK experiment be prepared. A standard FC16 ACK is scheduler/work acknowledgement, **not** proof of semantic acceptance or a write capability.
+
+## Research roadmap
+1. Preserve/reconcile evidence: compare raw XTR captures, genuine collaborator Online/DCM captures, Thermia Connect firmware and exact experiment YAML; classify observed/proven vs hypotheses.
+2. Reconstruct contextual scheduler one proven owner edge at a time, without speculative or unsolicited TX. Document branches `0834`, `0864` and alternate post-`0884` routes.
+3. Qualify restart/session recovery and fail-closed behaviour before any automated owner draining.
+4. Validate read-only native values against independent measurements; resume FIX8K only on naturally occurring heating/DHW.
+5. Assess controlled, reversible settings changes only with confirmed target/current value, documented risks, abort and rollback; never conflate ACK with semantic write acceptance.
+6. Produce a compact production ESPHome/Home Assistant integration after independent stability validation.
+
+## Safety and repository discipline
+No DCM hardware available locally; do not propose capturing with a genuine module attached. Keep passive investigation preferred, do not disturb the room sensor, retain production entities/health telemetry. Retain private emulation/security/mailbox tooling outside this repository's public research docs. No new experiment is complete merely because YAML is generated.
+
+---
+
 # 2026-10-07 — Current state through S11X FIX1
 
 ## Current experiment / status
