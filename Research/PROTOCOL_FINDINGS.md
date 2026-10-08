@@ -1,3 +1,7 @@
+## 2026-10-08 H012 supplementary findings (independent offline study)
+
+**GENUINE CROSS-MODEL / OFFLINE OBSERVED:** 321 genuine all-zero `085F/5` requests, 10 ACK, 311 no matched ACK; in an analyst-chosen five-second preceding-ACK window, 9/10 positive and 0/311 negative cases matched. **COUNTEREXAMPLE:** one genuine Eco5 2026-09-28 `085F` ACK lacked a preceding captured ACK within five seconds; a fixed recency predicate is not necessary and is **not proven safe as sufficient**. Observed first later FC16 family after 10 ACKs: `07D0` (4), `03E8` (3), `0864` (2), `085F` (1); do not treat ordering as causation. H012 validated its own offline census/invariants (14/14), not a live XTR ACK rule. **STATUS:** COMPLETE / POSITIVE offline counts/falsification; INCONCLUSIVE for owner authorization. S11Y-AA remains NOT RUN, all unmatched page owners **CAPTURE_ONLY**.
+
 # 2026-10-08 (late) — S11Y-AA..AD retained native-service evidence
 
 ## PROVEN / locally confirmed (XTR M)

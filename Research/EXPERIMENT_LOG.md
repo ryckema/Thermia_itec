@@ -1,3 +1,7 @@
+## 2026-10-08 — H012 independent OFFLINE context-control addendum
+
+**H012: COMPLETE / POSITIVE for offline replay/counterexamples; COMPLETE / INCONCLUSIVE for deployable live ACK-owner classification.** Hypothesis: short prior-ACK recency can distinguish genuine `085F/5` ACK windows. Baseline: original genuine Eco5/ATEC captures (321 all-zero `085F`, 10 ACK), earlier XTR S7/S11V/M results as **separate historical reports**, not replayed raw evidence. Controlled change: CRC-checked request-centric replay of seven available historical capture files, preceding ACK age, five-second host context, first later FC16 and leave-one-capture-out checks; no physical TX. Positive: 321/10 reproduced, 14/14 offline invariants — met. **Negative:** strict five-second necessity disproven by genuine Eco5 Sep28 ACK with preceding captured ACK ~135.622 s earlier. **Inconclusive:** owner token/safe live H011 predicate. Abort/recovery: offline only; don't authorize responses, **CAPTURE_ONLY**. Five seconds is not a protocol timer. The separately stored H012 raw replay fixtures are not new live data and must not be conflated with S11Y-AA's refused ARM.
+
 # 2026-10-08 (late) — S11Y-AD, AC, AB, AA and Y-Y FIX2 addendum (newest first)
 
 Historical records below remain unchanged. These offline studies and the refused ARM are separate from formal rebuild S1–S7.

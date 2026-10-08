@@ -38,3 +38,8 @@ The implemented offline S11Y-AD prototype recognizes a **subset** of these docum
 **S11Y-AE OFFLINE / NOT RUN:** correlate existing per-session predecessor ACK order, `0708` selector image, actual response availability and ESP firmware restart gaps against the observed `0884`/`07D0`/`0864` first-owner branches. Positive: reproducible discriminator with counterexamples checked; negative: rule contradicted by raw logs; inconclusive: missing predecessor or selector. Offline abort: contradictory/partial corpus; no recovery on physical equipment.
 
 **No new live ACK, write, reset, room-sensor disconnect, DCM hardware capture or automatic owner draining.** One standard FC16 ACK is transport/scheduler acknowledgment, not confirmation of settings acceptance.
+
+## Later independent context-control finding: H012 (OFFLINE)
+
+A separately committed H012 replay of seven already available raw captures reproduced the genuine 321 all-zero `085F/5` requests / 10 ACK / 311 unmatched cases. A previous observed FC16 ACK within an *analyst-defined* five-second window preceded 9 of 10 ACKed `085F` cases but 0/311 unmatched cases. A real Eco5 Sep28 case had its previous captured ACK **135.622 seconds** earlier, disproving necessity. The first next FC16 among 10 acknowledged genuine examples was `07D0/19` (4), `03E8/14` (3), `0864/4` (2), repeated `085F/5` (1); these are temporal facts, not proven ACK-caused transitions. H012's 14/14 offline invariants passed, but the transferable XTR ACK rule remains **INCONCLUSIVE**. This neither advances S11Y-AA nor grants TX. **CAPTURE_ONLY** continues.
+
