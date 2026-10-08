@@ -1,3 +1,69 @@
+# 2026-10-08 — FIX8K RUNNING / PARTIAL (passive operating-mode correlation deferred)
+
+## Hypothesis and baseline
+Hypothesis: selected words in `0x0F FC16 07D0/count19`, including `07D0`, `07D1`, `07D4`, `07DF`, `07E0`, correlate with independently observed heating, DHW or idle operating states. Baseline FIX8J had clean passive 07D0 captures and repeatable ~64.7 s `07DF` cycles.
+
+## Exact controlled change and safety
+FIX8K retained the known-good FIX8J passive logger and production entities, adding user-triggered **local log-only** markers for independently observed heating, DHW and idle. No Modbus ACK, write, mode change or physical UART TX was enabled. Unexpected bus traffic remains capture-only; stop on parser fault or unexpected transmission and restore FIX8J if needed.
+
+## Observed result
+User supplied real run `thermia-exp86-20261008-120937.log` (ESPHome 2026.9.0 on ESP32-S3; log connected 12:09:38 local). Final displayed `FIX8K STATUS` at 12:19:28: `07D0=280 dumps=6 changes=19 sig=535BD826 0708=140 085F=0 0884=0 0662=0 other=0 tx=0/0/0 integrity=0 mismatch=0 unknown=0 resync=0 drops=0`, `MARKERS marks=0 lastMode=0`. The signature/word deltas in this capture are `07DF 0000<->0020`; `changes07D0=0 changes07D1=0 changes07E0=0`. Regular 07DF timing continued. No naturally occurring heating/DHW demand, therefore no manual operation-state labels.
+
+## Interpretation, status and next action
+Passive logging succeeded; hypothesis of *semantic correlation* not tested, and no register-field semantic mapping established. **Status: RUNNING / PARTIAL; semantic portion deferred, not COMPLETE.** Leave untouched until a natural change in heating/DHW occurs; do not force an operating mode. Research focus shifts to native scheduler and existing capture/firmware evidence.
+
+---
+
+# 2026-10-08 — FIX8J COMPLETE / POSITIVE (07DF edge timing)
+
+## Hypothesis and baseline
+FIX8I showed repeated `07DF 0000<->0020` but not yet an independent meaning. Hypothesis: a reproducible timed bit pattern can be measured accurately using passive edge timestamps.
+
+## Controlled change
+Added edge rise/fall timing, elapsed durations and word trends to the known-good passive `07D0/count19` capture; no TX, ACK or control changes.
+
+## Result and criteria
+User-supplied FIX8J capture showed 248 07D0 frames and 26 total signature changes at the reported status point; eight complete `07DF` on/off cycles observed. Stable late-cycle rise-to-rise 64.66–64.78 s, on 17.21–17.29 s, off 47.44–47.55 s. Seen word deltas included `07D0`, `07D1`, `07D4`, `07DF`, `07E0`. TX=0; parser faults=0. Another user FIX8J log `Pasted text(20261008-100730).txt` continued the 07DF pattern with zero TX and clean parser. Positive: regular repeatable edges. Negative criterion would have been no switch in observation window; abort: parser/TX anomalies.
+
+## Interpretation
+**Status: COMPLETE / POSITIVE** for timing observability only; `07DF` bit `0x0020` semantic meaning is unknown. Retain capture-only recovery baseline.
+
+---
+
+# 2026-10-08 — FIX8I COMPLETE / POSITIVE (07D0 timing correlation)
+
+## Hypothesis and baseline
+FIX8H showed changing 19-word runtime payload `07D0/count19`. Hypothesis: timestamped full-page changes and field deltas reveal distinct dynamic fields and regular structure.
+
+## Controlled change
+Added precise receive/previous-frame/previous-`0708` timestamps and per-word delta tracking to known-good FIX8H logger; retained production configuration and disabled TX.
+
+## Observed result
+User FIX8I capture: changing `07D0`, `07D1`, `07DF`; the later full-page sample had `07E0=004B` versus earlier `0032`. Periodic `07DF` toggles were evident, later formally timed in FIX8J. Zero physical TX and no parser errors.
+
+## Interpretation
+**Status: COMPLETE / POSITIVE** for capture observability, not register semantics. A numerical/temperature interpretation is still only a hypothesis.
+
+---
+
+# 2026-10-08 — FIX8H COMPLETE / POSITIVE (passive 07D0 full payload)
+
+## Hypothesis and baseline
+Following FIX8F successful bounded service chain to `07D0` and FIX8G superseded/not-run active action, test whether repeated runtime `07D0/count19` words change without an ACK.
+
+## Exact controlled change
+Passively log six initial full 19-word frames and any changed signature, with per-word `07D0...07E2` deltas. No physical bus TX.
+
+## Observed result
+Five-minute local XTR log: 130 FC16 `07D0/count19`, 65 `0708` polls; 12 signatures including first, 11 subsequent word deltas; no `085F`, `0884` or `0662`; TX=0, parser integrity faults=0. Initial words by offset 0..18:
+`001A 001A FF9C 0033 0032 FF9C FF9C FF9C FF9C FF9C 0010 00E0 001E 0040 0000 0020 0032 000A 0000`.
+`07DF` toggled `0020/0000`; `07D1` and `07D0` each shifted `001A->0019` at different times.
+
+## Interpretation and recovery
+**Status: COMPLETE / POSITIVE** for dynamic passive payload confirmation. Register semantics still unknown; `FF9C` interpreted as signed −100 arithmetically, but no sentinel meaning proven. Preserve known-good passive ESPHome baseline.
+
+---
+
 # 2026-10-07 — S11X FIX1 COMPLETE / POSITIVE
 
 ## Hypothesis
