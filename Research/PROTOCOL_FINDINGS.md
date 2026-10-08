@@ -1,3 +1,35 @@
+# 2026-10-08 — Passive 07D0 content, 07DF periodicity and owner-context reconciliation
+
+## PROVEN / locally confirmed
+- FIX8H, FIX8I, FIX8J and the actually run FIX8K show repeated `0x0F FC16 07D0/count19` with `FC03 0708/count6` continuing without a response from the ESP; passive physical TX counters remain 0 and bus/parser fault counters remain 0. This proves **observable retransmission in the local capture context**, not Online-session completion.
+- FIX8J directly measured repeatable `07DF` bit `0x0020` edges: approximately 64.7 s between rising edges, with ~17.2 s high and ~47.5 s low in the observed steady-state runs. FIX8K reproduced the changes. Meaning/function **not** proven.
+- FIX8H/FIX8I/FIX8J observed local variation in runtime words including `07D0`, `07D1`, `07D4`, `07DF` and `07E0` across runs; FIX8K observed only `07DF` changes in its latest capture.
+- Independent S11X FIX1 local evidence remains valid: a qualified ACK of retained `07D0/count19` released `07E4/count17` after 2041 ms. FIX8K showing `07D0` again on a later date is a **different observed controller epoch**, not evidence against that one-ACK edge.
+
+## STRONGLY SUPPORTED
+- Runtime owner, payload contents and periodic status bit must be kept distinct: the same FC16 geometry can recur with different word payloads, and the same apparent owner may persist across an ESP restart in some contexts. Qualification should use exact geometry plus contemporary session/bus context; a payload signature alone is not a universal identity.
+- A periodic telemetry bit such as `07DF/0x0020` need not indicate heating, DHW or a completed Online session.
+
+## HYPOTHESIS
+- `07DF/0x0020` could be a timer, heartbeat or periodic state flag; no specific semantic claim is validated.
+- Other changing 07D0-page words may represent operating values (possibly scaled measurements); no local heating/DHW/idle correlation yet.
+- The next owner after a newly qualified retained `07E4/count17` ACK could be `07F8/count17`, but no such new experiment has been run, and the current FIX8K baseline is `07D0`, not `07E4`.
+
+## OPEN / UNKNOWN
+- Why the controller is presently at repeated `07D0` after earlier S11X FIX1 observed `07E4`; possible context/session transitions not yet captured and explained.
+- Whether any runtime word maps to a specific sensor, status or writable setting.
+- Whether a fully functioning native Online/DCM session can be sustained autonomously and safely; one standard FC16 ACK is not semantic write acceptance.
+- FIX8K semantic test has **zero manual mode markers**, hence cannot confirm any heating/DHW/idle association.
+
+## DISPROVEN / SUPERSEDED
+- **Superseded as a universal claim:** `07DF 0x0020` is definitely a heating/DHW active flag; periodicity alone does not support that.
+- **Superseded as a current-baseline assumption:** after S11X FIX1, all subsequent controller epochs must still be at `07E4`. Later passive FIX8K explicitly observes repeated `07D0`.
+
+## Safety and next research
+Continue offline genuine Online/DCM capture and Thermia Connect firmware comparison; qualify current owner in passive S11Y-A before considering any **separately authorised** manual, one-shot S11Y-B ACK. No actual Online/DCM module available locally. No new heating/DHW state should be forced solely to produce test data.
+
+---
+
 # 2026-10-07 — Service/runtime chain refinement through S11X FIX1
 
 ## PROVEN / locally confirmed
