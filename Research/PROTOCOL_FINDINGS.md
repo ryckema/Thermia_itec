@@ -1,3 +1,32 @@
+# 2026-10-09 — CM930 source lineage and native Online/DCM integration evidence boundary (OFFLINE)
+
+## PROVEN / firmware-derived (Connect 2.0.18 and 2.1.105 source; NOT automatically XTR M or legacy DCM03 bus behavior)
+- Original user-provided Connect 2.0.18 device_client/cm/client.py and cm/modbus_server15.py compared against 2.1.105 recovered source: the five CM930 event handlers on_registers_request_event, _request_operation_data, on_handshake_state_changed_event, _on_successfull_onboarding, on_registers_received_event are functionally unchanged (four textually equal, one formatting difference in the reviewed comparison).
+- Both versions implement reset_register_read_request after processing a corresponding FC16 group. The 2.1.105 variant additionally informs CMClientParameterUpdateState (readiness/completeness bookkeeping); self-clearing selector semantics were already present in Connect 2.0.18.
+- Both versions' read-all selector logic requests W4=06FF (W4 bit8 excluded from generic request); targeted address sets can separately activate bit8. In examined device_client main.py, events.py and CM930 source paths, _request_info_data and _request_operation_data supply targeted register sets to modbus_request_registers_event; no autonomous periodic full W4 read-all producer was identified in those examined sources. Parameter publication timers do not themselves prove Modbus refresh.
+
+## OBSERVED / genuine cross-model Online/DCM capture
+- ATEC/DCM03 answered FC03 0708/count6 65 times with W4 first 07FF, then 077F for 64 subsequent replies while FC16 runtime publications continued. This is genuine cross-model observed mailbox state, NOT local XTR selector lifecycle. Source code from Connect releases is not evidence that DCM03 uses the same private implementation.
+
+## STRONGLY SUPPORTED
+- The explanation that Connect 2.0.18 has a fundamentally older, non-self-clearing W4 handler is contradicted by original source. Event-driven targeted request re-arming is a firmware-supported mechanism; whether it caused the ATEC observed W4 persistence is not established.
+- Native Online/DCM session development should prioritize confirmed session eligibility, restart/rejoin safety and contextual runtime owner progression over further W4 investigations that cannot resolve those blockers.
+
+## HYPOTHESIS
+- Genuine DCM03 may maintain a persistent/renewed selector demand through an application lifecycle differing from Connect 2.0.18/2.1.105. No DCM03 internal code or event trace currently isolates this.
+
+## OPEN / UNKNOWN
+- Exact DCM03 source lifecycle, timing of selector bit re-arming, native H011 085F ACK eligibility, local XTR automatic retained-epoch owner qualification and semantic write-readback success. No visible W4 bit, ACK, all-zero 085F payload or ACK recency alone authorizes physical TX.
+- Whether an autonomous fresh-to-runtime native session reliably survives controller/ESP restarts without human intervention; whether the locally demonstrated write/read-back mechanism can be used safely on a verified XTR setting.
+
+## DISPROVEN / SUPERSEDED interpretations
+- 'Connect 2.0.18 cannot clear W4 request bits': DISPROVEN by original device_client source.
+- 'A fixed periodic W4=077F timer was found in either Connect device_client tree': NOT SUPPORTED; no such producer was identified. This is not a proof of universal timer absence on all gateway firmware or legacy DCM03.
+- 'ATEC W4=077F proves XTR ACK ownership or a unique next FC16 page': NOT SUPPORTED and contradicted by previously documented counterexamples.
+
+**Research priority / safety:** next NATIVE-SESSION-MVP matrix is OFFLINE / PROPOSED / NOT RUN. Preserve separate controller epochs and R5 FIX2 versus S11Y history. R6 remains CONCEPT / NOT PREPARED / NOT RUN. No speculative writes, unsolicited ACK, controller resets or interruption of production HA. Firmware semantic mappings remain firmware-derived until independently confirmed on local XTR M.
+
+---
 # 2026-10-09 — V5-S8-R5 FIX2: direct 085F→0870 observation and transient 0100 pattern
 
 ## PROVEN / locally confirmed (specific unknown-epoch rejoin context)
