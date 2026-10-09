@@ -1,3 +1,9 @@
+## 2026-10-09 — Heating and 0662 correlation remains OPEN (post-AL FIX1)
+
+**PROVEN locally:** AL FIX1 observed `0662/33` with stable frame signature `EEEA4167` and `085F/5` W2=`0800` during a zero-TX healthy passive capture. **User report:** heat pump was heating at the time of the conversation after the capture. **OPEN / UNKNOWN:** heating state *during* the 01:38–01:47 capture, exact `0662` 33-word values, meaning of its fields, and whether either publication correlates with heating. Available `NaN` heating/operation anchors mean unobserved, not off. **HYPOTHESIS ONLY:** one or more existing controller-origin parameters may reveal heating activity; validate with timestamp-aligned existing HA/energy/controller telemetry or directly proven mappings before labelling any field. The unchanged signature alone cannot date compressor or heating onset. No changes to acknowledged ACK/owner safety rules.
+
+---
+
 # 2026-10-09 — S11Y-AI–AL FIX1 native session and passive observer findings (latest)
 
 ## PROVEN / locally confirmed
