@@ -1,3 +1,28 @@
+# 2026-10-09 — V5-S8-R5 FIX2: direct 085F→0870 observation and transient 0100 pattern
+
+## PROVEN / locally confirmed (specific unknown-epoch rejoin context)
+- User-supplied R5 FIX2 log, ESP boot `D7726116`: following one manually bounded P1 delivery and one manually bounded FC16 ACK to slave `0x0F`, start `0x085F`, count 5, first FC16 `0x0870/17` was received after **2.089 s**. No `0864/4` publication or P3 ACK was observed in the supplied run. This is a *local sequence observation*, NOT a qualified fresh-session rule.
+- 24 complete `0870/17` paired W00–W16 log records; baseline `0519 0000 021D 0291 0000 0000 005E 0000 0000 0000 0000 0000 0000 FD20 0000 0000 0000`. One reception (#12) logged simultaneous `0000→0100` in 0871,0874,0875,087E,087F,0880, reverted in #13.
+- Clean parser counters in visible log, DE low, P3 disabled; separate UART write/delivery indicators show two deliberate transmissions. Generic HEALTH triplet stayed at 1/1/1 after P2, so it cannot be treated as a complete physical-TX count.
+
+## STRONGLY SUPPORTED
+- 0864 is not required as an *immediate, newly observed* predecessor for every 0870 publication in the current XTR unknown-epoch rejoin context. Does not negate S11D's qualified fresh-session 0864→0870 path.
+- Log indices and placeholder counts for W00–W16 in FIX2 are consistent with the observed paired output. The transient six-word bit8 pattern is unlikely to be the earlier FIX1 printf-count mistake, but a separate raw-wire/CRC dump was not available for that frame.
+
+## HYPOTHESIS
+- Six simultaneous `0x0100` words may reflect a shared transient data/state or representation effect; there is no demonstrated association with compressor, heating, DHW or native Online readiness.
+
+## OPEN / UNKNOWN
+- Controller epoch and ownership (`UNKNOWN_CONTROLLER_EPOCH`, `BASE_RING_OBSERVED_ONLY`); no FC23 qualification or READY. Exact S11F 0870 payload not available from the summary. Whether ACK0870 *alone* drives 0884 in this context remains untested; S11F's transition had extra mailbox traffic. Six `0100` words' semantic meaning and independent raw-wire confirmation absent. Aggregate TX bookkeeping mismatch warrants separate audit.
+- Historical XTR and genuine Eco5 0870 payloads differ substantially: cross-model or earlier-session values must not be imposed as a current exact-match response guard.
+
+## DISPROVEN / SUPERSEDED (overgeneralized interpretation only)
+- The claim that **every** XTR `0870/17` requires a newly observed and acknowledged `0864/4` in that same short rejoin sequence is contradicted by R5 FIX2. Historical observations of 0864→0870 in qualified S11D remain valid.
+
+**R6:** CONCEPT ONLY / NOT PREPARED / NOT RUN. Do not extrapolate from FC16 address/count ACK to semantic acceptance or authorize extra bus TX without new safety qualification.
+
+---
+
 ## 2026-10-09 — Heating and 0662 correlation remains OPEN (post-AL FIX1)
 
 **PROVEN locally:** AL FIX1 observed `0662/33` with stable frame signature `EEEA4167` and `085F/5` W2=`0800` during a zero-TX healthy passive capture. **User report:** heat pump was heating at the time of the conversation after the capture. **OPEN / UNKNOWN:** heating state *during* the 01:38–01:47 capture, exact `0662` 33-word values, meaning of its fields, and whether either publication correlates with heating. Available `NaN` heating/operation anchors mean unobserved, not off. **HYPOTHESIS ONLY:** one or more existing controller-origin parameters may reveal heating activity; validate with timestamp-aligned existing HA/energy/controller telemetry or directly proven mappings before labelling any field. The unchanged signature alone cannot date compressor or heating onset. No changes to acknowledged ACK/owner safety rules.
