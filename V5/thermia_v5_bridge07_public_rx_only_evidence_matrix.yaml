@@ -1,0 +1,58 @@
+# V5 Bridge 07 — public RX-only evidence matrix (diagnostic ESPHome package)
+# PREPARED / NOT RUN. Not a standalone production config.
+# Integrator must populate these inputs from a validated passive observer.
+# No UART / TX / ACK / mailbox / write support. Never grants owner authority.
+globals:
+  - {id: v5_b07_integrity_ok, type: bool, restore_value: no, initial_value: 'false'}
+  - {id: v5_b07_fc23, type: uint32_t, restore_value: no, initial_value: '0'}
+  - {id: v5_b07_mail_replies, type: uint32_t, restore_value: no, initial_value: '0'}
+  - {id: v5_b07_ack_links, type: uint32_t, restore_value: no, initial_value: '0'}
+  - {id: v5_b07_runtime_links, type: uint32_t, restore_value: no, initial_value: '0'}
+  - {id: v5_b07_zero085f, type: uint32_t, restore_value: no, initial_value: '0'}
+  - {id: v5_b07_h011085f, type: uint32_t, restore_value: no, initial_value: '0'}
+  - {id: v5_b07_seen0870, type: uint32_t, restore_value: no, initial_value: '0'}
+  - {id: v5_b07_seen0884, type: uint32_t, restore_value: no, initial_value: '0'}
+  - {id: v5_b07_s11f_status, type: std::string, restore_value: no, initial_value: '"NOT_QUALIFIED"'}
+  - {id: v5_b07_s11w_status, type: std::string, restore_value: no, initial_value: '"NOT_QUALIFIED"'}
+  - {id: v5_b07_s11x_status, type: std::string, restore_value: no, initial_value: '"NOT_QUALIFIED"'}
+  - {id: v5_b07_r5_status, type: std::string, restore_value: no, initial_value: '"NOT_QUALIFIED"'}
+  - {id: v5_b07_missing_status, type: std::string, restore_value: no, initial_value: '"NO_LIVE_EPOCH_EVIDENCE"'}
+interval:
+  - interval: 10s
+    then:
+      - lambda: |-
+          // Counter co-occurrence is NOT a validated chronological or owner claim.
+          if (!id(v5_b07_integrity_ok)) {
+            id(v5_b07_s11f_status) = "INTEGRITY_HOLD / NO_AUTH";
+            id(v5_b07_s11w_status) = "INTEGRITY_HOLD / NO_AUTH";
+            id(v5_b07_s11x_status) = "INTEGRITY_HOLD / NO_AUTH";
+            id(v5_b07_r5_status) = "INTEGRITY_HOLD / NO_AUTH";
+            id(v5_b07_missing_status) = "PARSER_OR_DE_UNCERTAIN";
+            return;
+          }
+          const bool fresh = id(v5_b07_fc23)>0;
+          const bool mail = id(v5_b07_mail_replies)>0;
+          const bool ack = id(v5_b07_ack_links)>0;
+          const bool ring = id(v5_b07_runtime_links)>0;
+          const bool p0870 = id(v5_b07_seen0870)>0;
+          const bool p0884 = id(v5_b07_seen0884)>0;
+          id(v5_b07_s11f_status) = fresh && mail && ack && p0870 && p0884
+            ? "COUNTERS_ONLY / ORDER_OWNER_UNPROVEN"
+            : (fresh ? "FRESH_PARTIAL / MISSING_SAME_EPOCH_CHAIN" : "NO_FRESH_BOUNDARY");
+          id(v5_b07_s11w_status) = id(v5_b07_h011085f)>0 && mail && p0884 && ring
+            ? "COUNTERS_ONLY / ORDER_OWNER_UNPROVEN" : "MISSING_085F0800_0708_0884_RING";
+          id(v5_b07_s11x_status) = ring && ack
+            ? "RING_ACK_PRESENT / 07D0_07E4_ORDER_UNPROVEN" : "MISSING_ACK_LINKED_07D0_07E4";
+          id(v5_b07_r5_status) = id(v5_b07_zero085f)>0 && p0870
+            ? "085F_AND_0870_SEEN / ORDER_OWNER_UNPROVEN" : "MISSING_085F_ZERO_TO_0870";
+          id(v5_b07_missing_status) = !fresh ? "NO_FC23_EPOCH / NO_OWNER"
+            : (!mail ? "NO_PAIRED_0708 / NO_OWNER" : "SAME_EPOCH_ORDER_AND_OWNER_UNPROVEN");
+text_sensor:
+  - {platform: template, name: "V5 Bridge07 S11F Fresh Evidence", id: v5_b07_s11f_sensor, entity_category: diagnostic, update_interval: 10s, lambda: 'return id(v5_b07_s11f_status);'}
+  - {platform: template, name: "V5 Bridge07 S11W Service Evidence", id: v5_b07_s11w_sensor, entity_category: diagnostic, update_interval: 10s, lambda: 'return id(v5_b07_s11w_status);'}
+  - {platform: template, name: "V5 Bridge07 S11X Retained Evidence", id: v5_b07_s11x_sensor, entity_category: diagnostic, update_interval: 10s, lambda: 'return id(v5_b07_s11x_status);'}
+  - {platform: template, name: "V5 Bridge07 R5 Zero Service Evidence", id: v5_b07_r5_sensor, entity_category: diagnostic, update_interval: 10s, lambda: 'return id(v5_b07_r5_status);'}
+  - {platform: template, name: "V5 Bridge07 Missing Evidence", id: v5_b07_missing_sensor, entity_category: diagnostic, update_interval: 10s, lambda: 'return id(v5_b07_missing_status);'}
+  - {platform: template, name: "V5 Bridge07 Historical Scope", id: v5_b07_scope_sensor, entity_category: diagnostic, update_interval: 30s, lambda: 'return {"S11F/S11W/S11X/R5 HISTORICAL / NO_TX"};'}
+sensor:
+  - {platform: template, name: "V5 Bridge07 TX Authority", id: v5_b07_tx_auth, entity_category: diagnostic, accuracy_decimals: 0, update_interval: 10s, lambda: 'return 0.0f;'}
