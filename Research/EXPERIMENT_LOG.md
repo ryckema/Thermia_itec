@@ -1,3 +1,24 @@
+# 2026-10-09 — CM930 2.0.18/2.1.105 source and native-session gap audit (OFFLINE, no controller experiment)
+
+**Study ID:** NATIVE-SESSION-SOURCE-AUDIT-20261009. **Status: COMPLETE / POSITIVE for offline comparison only; COMPLETE / INCONCLUSIVE for DCM03 internal selector lifecycle and XTR auto-ACK authorization.** No ESPHome run, physical TX, new YAML, semantic write or controller action took place. This is not a replacement for or progression of R5 FIX2; R6 remains CONCEPT / NOT PREPARED / NOT RUN.
+
+**Hypothesis:** the historical ATEC W4=077F mailbox image may be explained by an older Connect 2.0.18 selector implementation that does not clear received-page request bits, or by a periodic native read-all producer.
+
+**Baseline / provenance:** genuine ATEC DCM03 capture showed 65 answered FC03 0708/count6 mailbox snapshots: first W4=07FF, remaining 64 W4=077F; controller FC16 pages repeatedly published in the meantime. Earlier firmware audit confirmed Connect 2.1.105 reset_register_read_request and request_read_all_registers. Newly provided original Connect 2.0.18 appfs source files (client.py, modbus_server15.py, full device_client package), plus available recovered Connect 2.1.105 sources; firmware source comparisons in Thermia_Connect_Firmware repository.
+
+**Controlled change:** offline source-only comparison of exactly five CM930 handlers (on_registers_request_event, _request_operation_data, on_handshake_state_changed_event, _on_successfull_onboarding, on_registers_received_event), selector helpers, and event producers/timers in main.py/events.py/event loop. No changes to ESP config, HA or bus.
+
+**Relevant source and on-wire fields:** CM930 0708/6 mailbox W2=070A, W3=070B, W4=070C; FC16 runtime groups 085F/5, 0864, 0870, 0884; W4 06FF read-all default excluding bit8 and special targeted requests. Source functions request_read_all_registers, set_register_read_request, reset_register_read_request, modbus_request_registers_event, _request_info_data, _request_operation_data.
+
+**Observed offline results:** all five compared CM930 handler bodies functionally match across 2.0.18 and 2.1.105 (four textually identical, fifth formatting-only as previously reported). Both versions clear the corresponding selector on consumed FC16. 2.1.105 additionally informs CMClientParameterUpdateState, an application-level readiness tracker absent in 2.0.18. Both device_client code trees' identified internal request producers pass targeted register sets, not a None full read-all payload; no periodic read-all producer was identified in those searched files. Runtime publication timers and hourly parameter-map checks must not be misclassified as a Modbus W4 re-arm scheduler.
+
+**Positive criterion:** original older source confirms self-clearing logic and identifies concrete request/event mechanisms — MET. **Negative criterion for hypothesis:** 2.0.18 lacks reset-register-bit behavior — FALSIFIED by source. **Inconclusive:** genuine legacy DCM03 source unavailable; no internal DCM03 event trace proving why W4 remains 077F; this alternative remains OPEN. Absence of an identified timer in these code trees is not proof that no other service or older DCM03 periodically rearms requests.
+
+**Abort/recovery:** offline only; conflicting source versions or incomplete provenance stop promotion to protocol fact; no bus recovery needed. **Comparison to previous:** agrees with genuine ATEC raw frames but disproves the specific older-Connect-no-bitclear explanation. An ACK remains a transport/scheduler observation, never proof of semantic write acceptance or authorization.
+
+**Next study proposed, NOT RUN:** NATIVE-SESSION-MVP offline transition/owner matrix using existing S11F/S11W/S11X/R5 raw sources and genuine Online/DCM captures to identify first blocker to safe unattended runtime; explicit controller epoch, predecessor evidence, exact geometry, integrity/TX guards and CAPTURE-ONLY handling. Do not invent a new live experiment or change R6 status.
+
+---
 # 2026-10-09 — V5-S8-R5 FIX2 — closed local capture experiment (separate from S11Y series)
 
 **Number:** V5-S8-R5 FIX2. **Status:** **COMPLETE / POSITIVE** for full passive 0870/17 payload logging; **COMPLETE / INCONCLUSIVE** for the original three-stage 0864 gate; P3 **NOT RUN**. User supplied `Pasted text(20261009-095219).txt`, boot `D7726116`. This branch must not be conflated with latest S11Y-AL FIX1.
