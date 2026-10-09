@@ -1,3 +1,23 @@
+# 2026-10-09 — V5-S8-R5 FIX2 — closed local capture experiment (separate from S11Y series)
+
+**Number:** V5-S8-R5 FIX2. **Status:** **COMPLETE / POSITIVE** for full passive 0870/17 payload logging; **COMPLETE / INCONCLUSIVE** for the original three-stage 0864 gate; P3 **NOT RUN**. User supplied `Pasted text(20261009-095219).txt`, boot `D7726116`. This branch must not be conflated with latest S11Y-AL FIX1.
+
+**Hypothesis:** keeping the R5 manual phase behavior intact while fixing the 0870 printf argument count permits capture of all 17 received words without changing bus transmissions. **Baseline:** previous R5 reached 0870 but omitted raw words; R5 FIX1 introduced W00–W16 logger but had a compiler warning (nine format placeholders for eight W09–W16 arguments), not safe to flash unchanged. **Controlled change in FIX2:** correct the second passive logging format string only; preserve three manual phase controls and known-good production entities.
+
+**Observed timeline:** 11:50:59.405 P1 ARM accepted, 11:50:59.628 exactly one P1 delivery; 11:51:05.420 P2 ARM accepted; 11:51:06.663 exactly one FC16 ACK 085F/5; 11:51:08.752 first 0870/17 (**2.089 s after P2**). 24 RX0870_A/B pairs through 11:51:58, all matching boot/seq within pairs. `0864/4` was **not observed** and P3 remained state 0, TX 0. The run therefore reached 0870 *without* phase 3; it does not prove a general bypass of the 0864 step.
+
+**Payload:** usual W00–W16 `0519 0000 021D 0291 0000 0000 005E 0000 0000 0000 0000 0000 0000 FD20 0000 0000 0000`. At capture n=12, 11:51:32.469–.480, positions 0871,0874,0875,087E,087F,0880 were `0100` instead of `0000`; next reception n=13 reverted. **No validated semantic interpretation** and no independent raw-wire dump of anomalous frame.
+
+**Health:** no geometry mismatch, unknown FC16 pages, parser resync, RX drops, boundary faults in shown log; DE low. P1 and P2 each show one physical delivery and UART write count became 2, but generic `[S8] HEALTH TX=1/1/1` did not track this aggregate consistently; retain this observability limitation rather than silently resolving it. Controller epoch UNKNOWN; `BASE_RING_OBSERVED_ONLY`; no FC23 qualification, no READY.
+
+**Positive criterion achieved:** complete paired W00–W16 captures with clean parser, no extra phase-3 TX. **Three-stage hypothesis inconclusive:** its necessary 0864 input never occurred, so no ACK0864 occurred. **Negative criterion not met:** no evidence of a capture-format failure after FIX2. **Abort criteria for any repetition:** unexpected or unowned pages, mismatched current 0870 payload, UART/parser/de failures, unexpected TX, or controller state change; stop TX/capture-only. **Recovery:** leave all arms disarmed and TX disabled, retain passive observer/known-good configuration; no controller restart implied or required.
+
+**Comparison:** historical genuine and local 0870 captures contain different full payloads, so matching address/count and timing does not establish the same controller session. S11F's 0884 follow-on included another mailbox response after ACK0870; standalone ACK sufficiency remains unknown.
+
+**Next:** no active R6 yet; qualify owner/epoch/payload from existing evidence first. R6 remains conceptual/not run.
+
+---
+
 ## 2026-10-09 — S11Y-AL FIX1 heating-context addendum (observation only)
 
 **Status: COMPLETE / INCONCLUSIVE for heating correlation; no new experiment.** After the passive log (01:38–01:47), the user confirmed the heat pump **was heating at the time of the follow-up question**, but did not know whether heating was already active during capture. Existing `0662/33` signature `EEEA4167` and stable `085F/5` W2=`0800` are local bus observations, not validated heating-status registers. The 33 raw `0662` words are not included in these AL logs; available operating anchors show NaN (unavailable). **Hypothesis:** some `0662` fields may correlate with heating, but the present source cannot confirm this. **Baseline** S11Y-AL FIX1 already executed passive zero TX; **controlled change** offline interpretation only; **positive** would require synchronized heating-state evidence within the log interval; **negative** would be an explicit contrary synchronized measurement; **inconclusive** applies here. **Abort** any inference relying on a signature alone; **recovery** keep observational status UNKNOWN. No TX / YAML / firmware / live experiment occurred. Original S11Y-AL FIX1 entry below remains intact.
