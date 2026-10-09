@@ -1,0 +1,300 @@
+# Thermia iTec XTR M — V5 Session Bridge 02 (public, RX-only)
+# PREPARED / NOT RUN. Passive subset of the private V5 research harness.
+# No TX pin, no UART write calls, no ACK or handshake emulation, no mailbox tooling.
+# Only observed CRC-valid frames inform the PageStore and candidate labels.
+# EPOCH_UNPROVEN / OWNER_UNPROVEN never imply transmit authorization.
+# Standalone diagnostic ESPHome device; NOT a drop-in replacement for production YAML.
+
+substitutions:
+  device_name: thermia-v5-bridge02
+  friendly_name: Thermia V5 Bridge02
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  on_boot:
+    - priority: 1000
+      then:
+        - switch.turn_off: thermia_rs485_de
+
+esp32:
+  variant: esp32s3
+  flash_size: 16MB
+  framework:
+    type: esp-idf
+psram:
+  mode: octal
+  speed: 80MHz
+
+api:
+  encryption:
+    key: !secret thermia_api_encryption_key
+  reboot_timeout: 0s
+ota:
+  - platform: esphome
+    password: !secret thermia_ota_password
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  power_save_mode: none
+  reboot_timeout: 30min
+  ap:
+    ssid: Thermia V5 Observer
+    password: !secret thermia_fallback_password
+captive_portal:
+
+logger:
+  level: WARN
+  baud_rate: 0
+  logs:
+    thermia_v5: WARN
+
+switch:
+  - platform: gpio
+    id: thermia_rs485_de
+    internal: true
+    pin:
+      number: GPIO21
+      inverted: false
+    restore_mode: ALWAYS_OFF
+
+globals:
+  - { id: v5_frames, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: v5_pages, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: v5_faults, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: v5_last_rx_ms, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: v5_last_valid_ms, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: v5_last_gap_ms, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: v5_bus_returns, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: v5_last_work_ms, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: v5_last_work_address, type: uint16_t, restore_value: no, initial_value: '0' }
+  - { id: v5_last_work_count, type: uint16_t, restore_value: no, initial_value: '0' }
+  - { id: v5_work_streak, type: uint16_t, restore_value: no, initial_value: '0' }
+  - { id: v5_settings_words, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: v5_operation_words, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: v5_settings, type: 'std::array<uint16_t,810>', restore_value: no, initial_value: 'std::array<uint16_t,810>{}' }
+  - { id: v5_settings_valid, type: 'std::array<uint8_t,810>', restore_value: no, initial_value: 'std::array<uint8_t,810>{}' }
+  - { id: v5_operation, type: 'std::array<uint16_t,240>', restore_value: no, initial_value: 'std::array<uint16_t,240>{}' }
+  - { id: v5_operation_valid, type: 'std::array<uint8_t,240>', restore_value: no, initial_value: 'std::array<uint8_t,240>{}' }
+  - { id: v5_epoch, type: std::string, restore_value: no, initial_value: '"UNKNOWN / EPOCH_UNPROVEN"' }
+  - { id: v5_work, type: std::string, restore_value: no, initial_value: '"NONE / OWNER_UNPROVEN"' }
+  - { id: v5_last_event, type: std::string, restore_value: no, initial_value: '"BOOT / RX_ONLY"' }
+
+uart:
+  id: thermia_uart
+  # RX pin only: no physical UART transmit facility in this build.
+  rx_pin:
+    number: GPIO18
+    inverted: false
+  baud_rate: 9600
+  data_bits: 8
+  parity: EVEN
+  stop_bits: 1
+  rx_buffer_size: 4096
+  debug:
+    direction: RX
+    dummy_receiver: true
+    after:
+      timeout: 5ms
+    sequence:
+      - lambda: |-
+          static std::vector<uint8_t> pending;
+          const uint32_t now=millis();
+          const uint32_t prev_rx=id(v5_last_rx_ms);
+          id(v5_last_rx_ms)=now;
+          const bool saw_gap=(prev_rx!=0u && uint32_t(now-prev_rx)>=5000u);
+          if(saw_gap){
+            id(v5_last_gap_ms)=uint32_t(now-prev_rx);
+            id(v5_epoch)="BUS_RETURN_CANDIDATE / EPOCH_UNPROVEN";
+            id(v5_last_event)="BUS_SILENCE / CAPTURE_ONLY";
+            id(v5_last_work_address)=0;
+            id(v5_work_streak)=0;
+            id(v5_work)="NONE / OWNER_UNPROVEN";
+            ++id(v5_bus_returns);
+            if(!pending.empty()){
+              ++id(v5_faults);
+              pending.clear();
+              id(v5_epoch)="UNKNOWN / PARTIAL_AT_RETURN";
+            }
+          }
+          auto crc16=[](const uint8_t *p,size_t n)->uint16_t {
+            uint16_t c=0xFFFF;
+            for(size_t i=0;i<n;i++){
+              c^=p[i];
+              for(unsigned k=0;k<8;k++)c=(c&1u)?uint16_t((c>>1)^0xA001u):uint16_t(c>>1);
+            }
+            return c;
+          };
+          auto u16=[](const std::vector<uint8_t>& f,size_t k)->uint16_t {
+            return uint16_t((uint16_t(f[k])<<8)|f[k+1]);
+          };
+          auto geometry=[](uint16_t a)->uint16_t {
+            switch(a){
+              case 0x03E8:return 14;case 0x03FC:return 11;case 0x0410:return 22;
+              case 0x042E:return 15;case 0x0442:return 13;case 0x0456:return 12;
+              case 0x046A:return 18;case 0x047E:return 19;case 0x0492:return 11;
+              case 0x04A6:return 13;case 0x04BA:return 22;case 0x04D8:return 27;
+              case 0x04F6:return 14;case 0x050A:return 19;case 0x051E:return 10;
+              case 0x0532:return 18;case 0x0546:return 20;case 0x055A:return 33;
+              case 0x057B:return 33;case 0x059C:return 33;case 0x05BD:return 33;
+              case 0x05DE:return 33;case 0x05FF:return 33;case 0x0620:return 33;
+              case 0x0641:return 33;case 0x0662:return 33;case 0x0683:return 33;
+              case 0x06A4:return 33;case 0x06C5:return 33;case 0x06EA:return 7;
+              case 0x06F1:return 3;case 0x06F4:return 19;
+              case 0x07D0:return 19;case 0x07E4:return 17;case 0x07F8:return 17;
+              case 0x080C:return 18;case 0x0820:return 18;case 0x0834:return 18;
+              case 0x0848:return 23;case 0x085F:return 5;case 0x0864:return 4;
+              case 0x0870:return 17;case 0x0884:return 60;
+              default:return 0;
+            }
+          };
+          pending.insert(pending.end(),bytes.begin(),bytes.end());
+          if(pending.size()>4096u){
+            pending.clear();++id(v5_faults);
+            id(v5_epoch)="UNKNOWN / RX_OVERFLOW";
+            id(v5_work)="NONE / OWNER_UNPROVEN";
+            return;
+          }
+          while(pending.size()>=5u){
+            const uint8_t slave=pending[0],fc=pending[1];
+            const bool known_slave=slave==0x01||slave==0x02||slave==0x03||
+              slave==0x04||slave==0x05||slave==0x06||slave==0x0A||
+              slave==0x0F||slave==0x14||slave==0x1E||
+              slave==0xA4||slave==0xA5||slave==0xC8;
+            const bool known_fc=(fc&0x80u)||fc==1||fc==2||fc==3||fc==4||
+              fc==5||fc==6||fc==8||fc==0x0F||fc==0x10||fc==0x16||fc==0x17;
+            if(!known_slave||!known_fc){
+              pending.erase(pending.begin());++id(v5_faults);continue;
+            }
+            std::vector<size_t> lens;
+            auto add=[&](size_t n){if(n>=5&&n<=256 &&
+              std::find(lens.begin(),lens.end(),n)==lens.end())lens.push_back(n);};
+            if(fc&0x80u)add(5);
+            if(fc>=1&&fc<=4){
+              add(8);
+              if(pending.size()>=3&&pending[2]<=240)add(5u+pending[2]);
+            }
+            if(fc==5||fc==6||fc==8)add(8);
+            if(fc==0x0F||fc==0x10){
+              add(8);
+              if(pending.size()>=7&&pending[6]<=240)add(9u+pending[6]);
+            }
+            if(fc==0x16)add(10);
+            if(fc==0x17){
+              if(pending.size()>=3&&pending[2]<=240)add(5u+pending[2]);
+              if(pending.size()>=11&&pending[10]<=240)add(13u+pending[10]);
+            }
+            size_t chosen=0;
+            bool incomplete=false;
+            for(auto n:lens){
+              if(n>pending.size()){incomplete=true;continue;}
+              if(crc16(pending.data(),n-2)==uint16_t(
+                  uint16_t(pending[n-2])|(uint16_t(pending[n-1])<<8))){
+                chosen=std::max(chosen,n);
+              }
+            }
+            if(!chosen){
+              if(incomplete)break;
+              pending.erase(pending.begin());++id(v5_faults);
+              continue;
+            }
+            std::vector<uint8_t> f(pending.begin(),pending.begin()+chosen);
+            pending.erase(pending.begin(),pending.begin()+chosen);
+            ++id(v5_frames);
+            id(v5_last_valid_ms)=now;
+            if(f[0]==0x02&&f[1]==0x17){
+              id(v5_last_event)="CONTROLLER_FC23_OBSERVED";
+            }
+            if(f[0]==0x0F&&f[1]==0x17){
+              // A challenge is an epoch boundary, not authorization.
+              id(v5_epoch)="UNKNOWN / FC23_CONTEXT_INVALIDATED";
+              id(v5_last_event)="NATIVE_FC23_CAPTURE_ONLY";
+              id(v5_work)="NONE / OWNER_UNPROVEN";
+              id(v5_work_streak)=0;id(v5_last_work_address)=0;
+              id(v5_settings_valid).fill(0);
+              id(v5_operation_valid).fill(0);
+              id(v5_settings_words)=0;id(v5_operation_words)=0;
+            }
+            if(f[0]!=0x0F||f[1]!=0x10||f.size()<9u)continue;
+            const uint16_t start=u16(f,2),count=u16(f,4);
+            if(f[6]!=2u*count||f.size()!=size_t(9u+f[6]))continue;
+            ++id(v5_pages);
+            if(geometry(start)!=count){
+              ++id(v5_faults);
+              id(v5_last_event)="FC16_GEOMETRY_UNKNOWN / CAPTURE_ONLY";
+              id(v5_work)="NONE / OWNER_UNPROVEN";
+              id(v5_work_streak)=0;
+              continue;
+            }
+            for(size_t k=0;k<count;k++){
+              const uint32_t addr=uint32_t(start)+uint32_t(k);
+              const uint16_t value=u16(f,7u+2u*k);
+              if(addr>=0x03E8u&&addr<0x03E8u+810u){
+                size_t i=addr-0x03E8u;
+                if(!id(v5_settings_valid)[i]){id(v5_settings_valid)[i]=1u;++id(v5_settings_words);}
+                id(v5_settings)[i]=value;
+              }
+              if(addr>=0x07D0u&&addr<0x07D0u+240u){
+                size_t i=addr-0x07D0u;
+                if(!id(v5_operation_valid)[i]){id(v5_operation_valid)[i]=1u;++id(v5_operation_words);}
+                id(v5_operation)[i]=value;
+              }
+            }
+            const bool same=(id(v5_last_work_address)==start &&
+              id(v5_last_work_count)==count && id(v5_last_work_ms)!=0u &&
+              uint32_t(now-id(v5_last_work_ms))<=4000u);
+            id(v5_work_streak)=same?uint16_t(std::min<unsigned>(
+              65535u,uint32_t(id(v5_work_streak))+1u)):1u;
+            id(v5_last_work_address)=start;id(v5_last_work_count)=count;
+            id(v5_last_work_ms)=now;
+            if(id(v5_work_streak)>=3u){
+              char label[70];
+              snprintf(label,sizeof(label),"REPEATED_%04X_%u / OWNER_UNPROVEN",
+                unsigned(start),unsigned(count));
+              id(v5_work)=label;
+              id(v5_epoch)="REPEATED_WORK_CANDIDATE / EPOCH_UNPROVEN";
+            }else{
+              id(v5_work)="OBSERVED_PAGE / OWNER_UNPROVEN";
+            }
+            id(v5_last_event)="FC16_PAGE_CAPTURE_ONLY";
+          }
+
+interval:
+  - interval: 1s
+    then:
+      - switch.turn_off: thermia_rs485_de
+
+binary_sensor:
+  - platform: template
+    name: V5 Bus Healthy
+    id: v5_bus_healthy
+    entity_category: diagnostic
+    lambda: |-
+      return id(v5_last_valid_ms)!=0u &&
+        uint32_t(millis()-id(v5_last_valid_ms))<=10000u &&
+        id(v5_faults)==0u;
+
+sensor:
+  - { platform: template, name: V5 Valid Frames, id: v5_frames_sensor, entity_category: diagnostic, accuracy_decimals: 0, update_interval: 10s, lambda: 'return float(id(v5_frames));' }
+  - { platform: template, name: V5 Native FC16 Pages, id: v5_pages_sensor, entity_category: diagnostic, accuracy_decimals: 0, update_interval: 10s, lambda: 'return float(id(v5_pages));' }
+  - { platform: template, name: V5 Parser Faults, id: v5_faults_sensor, entity_category: diagnostic, accuracy_decimals: 0, update_interval: 10s, lambda: 'return float(id(v5_faults));' }
+  - { platform: template, name: V5 Bus Return Candidates, id: v5_returns_sensor, entity_category: diagnostic, accuracy_decimals: 0, update_interval: 10s, lambda: 'return float(id(v5_bus_returns));' }
+  - { platform: template, name: V5 Last Bus Gap, id: v5_gap_sensor, entity_category: diagnostic, unit_of_measurement: ms, accuracy_decimals: 0, update_interval: 10s, lambda: 'return float(id(v5_last_gap_ms));' }
+  - { platform: template, name: V5 Work Streak, id: v5_streak_sensor, entity_category: diagnostic, accuracy_decimals: 0, update_interval: 10s, lambda: 'return float(id(v5_work_streak));' }
+  - { platform: template, name: V5 Settings Image Words, id: v5_settings_words_sensor, entity_category: diagnostic, accuracy_decimals: 0, update_interval: 10s, lambda: 'return float(id(v5_settings_words));' }
+  - { platform: template, name: V5 Operation Image Words, id: v5_operation_words_sensor, entity_category: diagnostic, accuracy_decimals: 0, update_interval: 10s, lambda: 'return float(id(v5_operation_words));' }
+  - platform: template
+    name: V5 Room Setpoint Raw
+    id: v5_room_setpoint_raw
+    entity_category: diagnostic
+    accuracy_decimals: 0
+    update_interval: 10s
+    lambda: |-
+      const size_t i=0x03F4u-0x03E8u;
+      return id(v5_settings_valid)[i]?float(id(v5_settings)[i]):NAN;
+
+text_sensor:
+  - { platform: template, name: V5 Epoch Witness, id: v5_epoch_sensor, entity_category: diagnostic, update_interval: 5s, lambda: 'return id(v5_epoch);' }
+  - { platform: template, name: V5 Work Candidate, id: v5_work_sensor, entity_category: diagnostic, update_interval: 5s, lambda: 'return id(v5_work);' }
+  - { platform: template, name: V5 Last Event, id: v5_event_sensor, entity_category: diagnostic, update_interval: 5s, lambda: 'return id(v5_last_event);' }
+  - { platform: template, name: V5 TX Policy, id: v5_policy_sensor, entity_category: config, update_interval: 15s, lambda: 'return std::string("RX_ONLY / NO_TX_PIN / OWNER_UNPROVEN");' }
