@@ -1,3 +1,25 @@
+# 2026-10-09 — Native Online/DCM MVP focus and CM930 source-diff reconciliation (OFFLINE ONLY)
+
+**Primary goal:** reproduce a safe native Thermia Online/Connect/DCM ESP32/ESPHome session on local XTR M for stable HA reads and eventually validated desired-value writes. Stop diverting into W4 minutiae unless needed for a specific blocker.
+
+**Most recent locally completed live branch:** V5-S8-R5 FIX2 COMPLETE / POSITIVE for full passive 0870/17 words, COMPLETE / INCONCLUSIVE for the intended three-stage 085F→0864→0870 continuation (P3 never ran). One bounded P1 mailbox response plus one bounded P2 ACK085F were delivered; first 0870 arrived after 2.089s without a newly observed 0864. Controller epoch UNKNOWN; READY=0; reported aggregate HEALTH TX 1/1/1 conflicts with separately evidenced two transmissions. S11F qualified 32/32 bootstrap and 0884 progression is a separate controller epoch confounded by additional mailbox traffic. **R6 CONCEPT / NOT PREPARED / NOT RUN.**
+
+**Separate status:** S11Y-AL FIX1 latest local S11Y passive observer COMPLETE / POSITIVE only for clean zero-TX observation, INCONCLUSIVE for owner/session transition and heating correlation. FIX8K semantic correlation RUNNING / PARTIAL. Formal native rebuild S8 NOT RUN. Do not merge experiment lines or infer current physical owner from prior captures.
+
+**2026-10-09 source audit — COMPLETE / POSITIVE OFFLINE only:** original Connect 2.0.18 appfs device_client sources (user supplied) were compared with recovered 2.1.105 device_client. Five CM930 handlers examined: on_registers_request_event, _request_operation_data, on_handshake_state_changed_event, _on_successfull_onboarding, on_registers_received_event. The reviewed handlers are functionally unchanged (four textually equal and one formatting-only difference in earlier comparison). Both releases clear W2/W3/W4 on application processing of corresponding FC16; 2.1.105 adds CMClientParameterUpdateState completeness notification. Read-all seeds W4=06FF (bit8 excluded). Internal _request_info_data and _request_operation_data produce targeted register sets; no autonomous periodic read-all/W4 refresh producer found in either examined device_client tree. This disproves the narrow theory that Connect 2.0.18 lacked self-clearing selectors, but does NOT determine legacy genuine DCM03 application behavior. Genuine ATEC W4=07FF once, then 077F 64 times remains CROSS-MODEL CAPTURE evidence, not a timer/ACK permission rule. See Thermia_Connect_Firmware findings/CONNECT_2.0.18_VS_2.1.105_PROTOCOL_DIFF.md and findings/CM930_SOFTWARE_ARCHITECTURE.md. Do not publish confidential emulation or security implementation.
+
+**Five integration gaps:**
+- HANDSHAKE: locally reproduced in qualified sessions; automatic fresh/rejoin ownership and restart recovery unproven.
+- BOOTSTRAP: 32/32 reached in S11F; unattended repeatable acquisition across arbitrary epochs unproven.
+- RUNTIME: bounded locally proven context-specific edges; no globally qualified automatic owner/ACK policy (especially 085F H011 and 0864/0870/0884 branches). FC16 ACK is not semantic acceptance.
+- READS: preserve known-good ESPHome/HA production entities and bus-health counters; native feed not yet a validated unattended production source.
+- WRITES: firmware-derived desired/read-back route exists but no validated production-safe semantic XTR setting change follows from a transport ACK.
+
+**Next: NATIVE-SESSION-MVP — OFFLINE / PROPOSED / NOT RUN.** Reconcile existing S11F/S11W/S11X/R5 and genuine captures into a compact evidence-linked state-transition/authorization matrix: locally proven same-epoch edges; manually demonstrated non-generalizable edges; and CAPTURE-ONLY unknowns. Positive: independently justified exact owner/epoch/health guards; negative: captured counterexample rules out a proposed generalization; inconclusive: missing raw/epoch/ACK provenance. No TX/YAML/controller recovery in this offline task. Only then select the first actual blocker; any later active bus action needs separate authorization and fail-closed manual boundaries.
+
+**Safety:** preserve production functions and health bookkeeping; unexpected traffic capture-only, zero unsolicited TX; no unqualified ACK, unknown writes, controller reset, room-sensor disconnection or tests needing a genuine DCM. No experiment is advanced by document edits.
+
+---
 # 2026-10-09 — V5-S8-R5 FIX2 closeout (separate retained/rejoin branch; latest supplied local log)
 
 **Current evidence:** **V5-S8-R5 FIX2 COMPLETE / POSITIVE** for the *passive full 17-word 0870/17 capture objective*, and **COMPLETE / INCONCLUSIVE** for reproducing the originally planned three-stage 085F→0864→0870 path (P3 was never run). Source: user-supplied ESPHome log `Pasted text(20261009-095219).txt`, boot `D7726116`, 11:50:31–11:51:58 on 2026-10-09. This is **not** S11Y-AL or a new qualified fresh-session epoch; the software reports `UNKNOWN_CONTROLLER_EPOCH` / `MANUAL_ZERO_085F_REJOIN_EPOCH_UNKNOWN`; session label `BASE_RING_OBSERVED_ONLY`; READY=0.
