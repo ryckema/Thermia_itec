@@ -1,5 +1,7 @@
 # 2026-10-10 — Native session/epoch evidence and cross-model RTC mirror (OFFLINE ONLY)
 
+**Historical evidence reconciliation (2026-10-10):** de genuine cross-model RTC-cluster `0858–085E` was **al gedocumenteerd op 2026-10-05** in `Thermia_Connect_Firmware/findings/CM930_UNMAPPED_PATTERN_CLASSIFICATION.md`. De nieuwe bijdrage van OFFLINE-EPOCH-WITNESS-02 is de onafhankelijke woord-/tijdcontrole tegen de firmware-klok `06EA–06F0` plus de classificatie als **ongeschikt zelfstandig controller-epoch-bewijs**. De bestaande firmwarefinding blijft prioritaire eerdere ontdekking; lokaal XTR-bewijs ontbreekt.
+
 ## PROVEN / locally confirmed on XTR M — bounded observations, NOT new experiment
 - Previously supplied S11F local log documents a manually qualified fresh handshake and 32/32 bootstrap, with later runtime page progression. At least one further service reply followed the bounded 0870 acknowledgement before 0884 appeared; **the standalone causal sufficiency of the acknowledgement is not proven**.
 - S11W locally observed the service-path progression to 07D0/19. S11X original after ESP OTA still saw recurring 07D0/19, but its observed payload signature differed from the S11W payload; the original S11X response harness failed closed with TX=0. S11X FIX1 observed the same recurring signature as S11X original and documented a manually qualified one-response transition toward 07E4. These local facts support *stateful controller work*, **not independently verified unchanged controller power epoch**.
