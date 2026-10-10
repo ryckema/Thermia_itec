@@ -1,3 +1,28 @@
+# 2026-10-10 — CURRENT STATE: B11D independent raw RX fault / original-C++ offline integration reconciled
+
+**Newest supplied local XTR M evidence:** [LIVE_B11D_RX_VALIDATION_20261010.md](LIVE_B11D_RX_VALIDATION_20261010.md) — supplied passive ESPHome log 15:04:31–15:08:43. **LIVE-B11D-RX-VALIDATION-01 RUNNING / PARTIAL** for planned duration and first-fault-onset investigation; **bounded COMPLETE / NEGATIVE** for independent B11D raw stream continuation. No new firmware, RX/TX hardware action or controller reboot during this documentation reconciliation.
+
+**Current physical controller epoch: UNKNOWN. Pending native work owner: UNQUALIFIED. TX/ACK/write: DENY.** No new automatic takeover or semantic write acceptance is proven.
+
+**Latest bounded local findings:**
+- V5 Valid Frame Count **151,615 → 153,659** (+2,044), V5 geometry/resync/drops zero. B11C original portable using V5-delimited frames **151,818 → 153,604** (+1,786), count/byte differences zero and zero recorded TX; **NOT independent raw framing**.
+- Independent B11D rawFrames=portableFrames=comparedV5 **56,714, frozen** while callbacks +5,377, received bytes +38,429; sticky fault=1/incomplete=1 and first-fault class **RAW_NO_VALID_CRC_CANDIDATE_AT_IDLE**, already present at the beginning of the supplied log. No valid new independent raw frames, no fresh parity after this fault; displayed countDiff/byteDiff=0 are stale snapshots.
+- B11D physical output counters ioTx=0, DE=0, native owner UNKNOWN. The fault onset and raw bytes preceding it are **NOT CAPTURED**; no causal claim about UART/25-ms timing may be made.
+- The supplied observation is **~4m12s**, not the requested 20–30 min; do not mark the duration experiment complete.
+
+**Offline original-source host evidence now reconciled (NOT hardware proof):**
+- Metadata-only NATIVE-OBSERVER-06: 4,809 native cross-model events, correlations 374 FC03 / 1,324 FC16 / 7 FC23.
+- Bridge07: original pinned C++ host + 4,809 synthetically rebuilt CRC-valid frames, no TX; full real original source replay not run yet at that stage.
+- Bridge08: **25,031 genuine cross-model raw ADUs through original pinned C++ RX bridge and observer**, GCC/Clang/sanitizers PASS; [private CI 38051370371](https://github.com/ryckema/Thermia_Connect_Firmware/actions/runs/38051370371).
+- Bridge09: **25,031 genuine frames × 3 synthetically timed UART callback fragmentation/coalescing models** through raw framer → original C++ → observer; 75,093 frame-occurrences per compiler build, GCC/Clang/sanitizers PASS, no host TX; [private CI 38053859261](https://github.com/ryckema/Thermia_Connect_Firmware/actions/runs/38053859261).
+- These host tests **do not establish** on-device ESP32 scheduler behaviour, true Modbus t3.5, native controller power epoch, ownership or write authority.
+
+**Last completed locally controlled active experiment remains R5 FIX2**, as documented below; the planned third phase was NOT RUN. **R6 remains CONCEPT / NOT PREPARED / NOT RUN.** The older S11 and native rebuild branches stay separate. Do not reinterpret the new passive log as a fresh handshake or completed active experiment.
+
+**Next:** seek log covering the FIRST B11D fault transition (about 20–30 s before), including scheduling/heap/loop details if available; otherwise separately prepare an **ESP-only, RX-only startup observation** preserving known-good production configuration, with no Thermia controller power-cycle, no active bus responses, and fail-closed handling. Not performed yet. Abort further live testing on V5 health regressions or any unexpected TX/DE.
+
+---
+
 # 2026-10-10 — Native session/epoch offline reconciliation + EPOCH-WITNESS-02 (NO LIVE CHANGE)
 
 **Historical evidence reconciliation (2026-10-10):** de genuine cross-model RTC-cluster `0858–085E` was **al gedocumenteerd op 2026-10-05** in `Thermia_Connect_Firmware/findings/CM930_UNMAPPED_PATTERN_CLASSIFICATION.md`. De nieuwe bijdrage van OFFLINE-EPOCH-WITNESS-02 is de onafhankelijke woord-/tijdcontrole tegen de firmware-klok `06EA–06F0` plus de classificatie als **ongeschikt zelfstandig controller-epoch-bewijs**. De bestaande firmwarefinding blijft prioritaire eerdere ontdekking; lokaal XTR-bewijs ontbreekt.
