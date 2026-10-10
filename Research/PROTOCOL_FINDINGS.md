@@ -1,3 +1,17 @@
+# 2026-10-10 LATEST — R6-P14–R6-P17 native restart and stage evidence
+
+**PROVEN / genuine cross-model observations (NOT local XTR):** Original author documents Eco5 Sep26 3 power cycles A/B/A gateway present/absent/present and Sep28 4 cycles gateway present. Raw time gaps 3+4 all-address >5s; all five exceptional FC23 intervals cross restart boundaries, while all 156 within-phase FC23 intervals lie 3.8–4.7s. Six cross-model post-restart phases show an FC23 reply followed by no further recorded FC23 requests in that phase. One gateway-absent phase contains 41 requests without a reply. Sep26/Sep28 19,893 CRC-valid frames rechecked, with six recorded reply-bearing restart phases: each later has 03E8 request/ACK and 07D0 runtime and all six have matching 085F FC16 ACK before first 07D0. Three 085F ACKs occur BEFORE FC23 response, three AFTER. Two phase first-03E8 ACK delays exceed 108s. ACK means only address/count geometry, not semantic acceptance.
+
+**STRONGLY SUPPORTED / inference:** Native cross-model startup has distinct gateway availability, challenge/reply, settings transfer and service/runtime progression stages. No universal strict FC23→085F→07D0 order. FC23 requests stop in recorded successful-gateway phases; no proven independent effect of challenge response versus gateway because gateway-absent natural control differs on many factors. Local XTR EXP270 previously independently reported a specific 085F-ACK→07D0 transition, but R6-P17 itself is only cross-model evidence.
+
+**DISPROVEN / SUPERSEDED INTERPRETATION:** R6-P14/P15 five FC23 gaps were initially interpreted as possible interrupted heartbeat within uninterrupted operation. R6-P16 shows each spans a documented power-cycle boundary; the earlier measured timestamps/counts remain valid, but do NOT demonstrate in-session pause. Claim that the holes necessarily show logger failure also unproven; original sniffer logs CRC-valid ADUs with software timestamps but no physical power-on markers, loss counters or calibrated wire-idle.
+
+**HYPOTHESIS:** FC23 may be a startup-dependent session exchange; 085F ACK might be one independent prerequisite for runtime. Exact causal logic and physical controller epoch still open.
+
+**OPEN / UNKNOWN:** Local XTR native online owner and dynamic session handshake meaning, 7 recorded FC23 responses' semantic acceptance, exact physical power instants and byte-loss detection, six startup ACK semantic meaning, independent causality of gateway presence. No new live TX authorization; R6-P10 FIX1 is RUNNING / PARTIAL with first-fault HA latch still untested.
+
+---
+
 # 2026-10-10 LATEST — R6-P11/P12/P13
 PROVEN IN GENUINE CROSS-MODEL CAPTURES (NOT LOCALLY XTR): 25,031 CRC-valid ADUs previously replayed from seven captures; 164 0x0F FC23 requests and only 7 recorded immediate responses, fixed request read 0x0730 count8 and write 0x071C count8; response length21 bytes, 29–63ms timestamp gap. These addresses are NOT authorized XTR write targets; captured FC23 reply is not semantic acceptance.
 STRONGLY SUPPORTED CROSS-MODEL TIMING: on Sep26/Sep28 FC23 request median 4.2335/4.241s; 085F page median 2.1245/2.131s; 04A6 page median 1.383/1.411s. 96/99 and 58/64 FC23 have previous 085F and following 04A6 within 10s. Independent 085F->next 04A6 median is 1.451/1.4555s, nearly same as FC23-containing 1.473/1.4915s. Several periodic cadences overlap; causal handshake not proven. Recording windows can start mid-session and do not prove physical bootstrap order.
