@@ -1,3 +1,15 @@
+2026-10-10 newest R6 experiments:
+
+R6-P10 FIX1 PREPARED / NOT RUN — hypothesis: first fault diagnostic lost when logger disconnects; baseline R6-P10 live sticky failure + offline audit. Controlled change: one string global, one diagnostic HA text sensor, one assignment in existing first_fault from already computed pending/age/remainder/header byte2/candidate range/idle/batch. Positive: subsequent first B11D scheduler fault keeps HA snapshot and RX-only V5 health. Negative: scheduler first-fault without snapshot, or regression. Inconclusive: no fault. Abort any TX/DE, V5 errors or lost production entities; recover prior known-good RX-only firmware. YAML parse/unique IDs and diff passed; not compiled or flashed. Other FIFO/TX fault branches excluded.
+
+R6-P10 OFFLINE AUDIT COMPLETE / POSITIVE for diagnosing missing persistence, inconclusive root cause. The first_fault lambda logged pending/length metadata ONCE, retained in HA only short fault reason. Post-fault sample cannot recover the event; last-callback V5.has_pending snapshot overwritten continuously; residual byte2 not necessarily a bytecount.
+
+R6-P10 LIVE COMPLETE / POSITIVE recurrence; COMPLETE / NEGATIVE B11D continuity; COMPLETE / INCONCLUSIVE fault root cause. First log 18:25–18:26 healthy. Second 18:57–19:01 starts after fault: B11D first RAW_NO_VALID_CRC_CANDIDATE_AT_IDLE, frames=4269, batches=1746 frozen, incomplete=1; UART/V5/B11C advance; V5 >16000 valid, resync/drops zero; TX=0 DE=LOW. No onset FIRST_FAULT_DIAG in supplied logs. No native owner/epoch proof.
+
+R6-P9 COMPLETE / POSITIVE offline 13/13 source-rule tests: 7 bytes and unique 180-byte candidate match FC23-shaped header under source candidate_lengths, not proven actual FC23. R6-P8 COMPLETE / POSITIVE offline 12/12 split-frame simulation of 25ms idle sticky framing; not local cause proof. R6-P7 COMPLETE / POSITIVE offline 12/12 first-fault metadata arithmetic 32-25=7, V5 complete 8+17=25; actual residual bytes unknown.
+
+---
+
 # 2026-10-10 — R6-P1 to R6-P6 FIX1 (newest first)
 
 ## R6-P6 FIX1 — PREPARED / NOT RUN
