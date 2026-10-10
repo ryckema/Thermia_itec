@@ -1,3 +1,39 @@
+# 2026-10-10 — LIVE-B11D-RX-VALIDATION-01 and offline observer reconciliation (newest first)
+
+## LIVE-B11D-RX-VALIDATION-01 — RUNNING / PARTIAL (user-provided passive log)
+
+**Baseline:** previous local Bridge11D-A FIX1 bounded 7,159/7,159 independent raw-versus-V5 matching frames with no fault in that window; legacy V5 and V5-delimited Bridge11C remained functional. **Hypothesis:** independent raw framer continues matching V5 for ~20–30 minutes with no CRC/geometry error and no TX.
+**Controlled change:** NONE. User supplied only a log from existing running XTR ESPHome configuration; no new YAML, active responder, OTA, controller reset, physical UART TX, or wiring change. Source: [LIVE_B11D_RX_VALIDATION_20261010.md](LIVE_B11D_RX_VALIDATION_20261010.md), time 15:04:31.683–15:08:43.810 (~4m12s).
+
+**RESULT / observed:** V5 valid 151,615→153,659 (+2,044), V5 drops/resync/geometry errors 0; B11C original portable with V5-delimited frames 151,818→153,604 (+1,786), zero frame differences/faults. B11D independent rawFrames=portableFrames=comparedV5 froze at 56,714. Its callbacks +5,377 and bytes +38,429 continued while batches froze at 23,178. A sticky fault=1, incomplete=1 with first-fault reason **RAW_NO_VALID_CRC_CANDIDATE_AT_IDLE** existed before the sample started. B11D countDiff=byteDiff=0 are **stale after the fault**. TX attempts / DE = 0, owner and controller power epoch UNKNOWN.
+
+**Positive:** safe capture-only behaviour, continued V5/V5-delimited C++ RX, zero TX within supplied capture.
+**Negative:** independent raw frame continuity NOT MET. **Inconclusive:** physical root cause of first CRC idle fault, controller epoch and owner. **Duration criterion NOT MET:** requested 20–30m is NOT contained in this log. Do not promote current live test to fully complete.
+**Abort:** any new V5 resync/drop, unauthorized TX/DE, ESP loop regression or loss of HA production functionality; refrain from active bus responses.
+**Recovery / next:** request first actual fault transition and 20–30s of preceding log; if absent, a **separately reviewed RX-only ESP-only startup capture** (PREPARED / NOT RUN), without Thermia controller power reset, and without automatically clearing sticky faults. No next live experiment executed based on this log.
+
+## OFFLINE-BRIDGE09 — COMPLETE / POSITIVE (host synthetic UART-callback replay only)
+
+**Hypothesis / baseline:** Bridge08 had matched all 25,031 genuine raw cross-model ADUs through unchanged original C++ and observer using known pre-delimited frames; determine whether reconstructed callbacks/coalescing also preserve frames and fail closed.
+**Controlled change:** host simulated callback segmentation (1 ADU per callback; 2 ADUs split into 3-byte callbacks; 8 ADUs split into 1-byte callbacks) and synthetic 25ms idle boundary; no live ESP action.
+**RESULT:** per compiler build 25,031 genuine cross-model ADUs × 3 = 75,093 original portable C++ frame-occurrences, 4,809 native events per pattern. GCC/Clang/ASan+UBSan PASS, frame differences 0, physical output attempt count 0; CRC/noise/truncated/mid-frame idle/overflow/tick rollover tests fail closed. [Private CI 38053859261](https://github.com/ryckema/Thermia_Connect_Firmware/actions/runs/38053859261).
+**Positive:** host callback reassembly and C++ integration under tested artificial segmentation. **Negative/inconclusive:** does **NOT** validate real ESP32 callback latency or Modbus RTU electrical t3.5; the later live B11D sticky fault is not contradicted.
+**Abort/recovery:** any frame mismatch or TX fails CI; restart offline test only. Controller epoch / owner UNKNOWN.
+
+## OFFLINE-NATIVE-BRIDGE-08 — COMPLETE / POSITIVE (genuine original-source HOST replay only)
+
+**Hypothesis / baseline:** Bridge07 original C++ had processed 4,809 synthetic CRC-valid ADUs projected from genuine event metadata. Can all 25,031 genuine cross-model ADUs be run through unchanged original portable C++ and observer?
+**Controlled change:** replace synthetic ADUs with seven genuine source captures, no ESPHome or heat-pump change.
+**RESULT:** 25,031/25,031 original raw ADUs and 4,809/4,809 native events matched; FC03 374, FC16 1,324, FC23 7 temporal/geometric correlations; all original sources unchanged; GCC, Clang and ASan/UBSan PASS; host TX=0. [Private CI 38051370371](https://github.com/ryckema/Thermia_Connect_Firmware/actions/runs/38051370371).
+**Positive:** original C++ and observer exact bounded host replay. **Negative/inconclusive:** no physical native session owner, XTR-specific semantics, true bus-silence timing or live ESP32 validation.
+**Abort/recovery:** CRC mismatch, event drift, unintended TX or sanitizer fault abort host run. Temporary sensitive raw fixtures removed from private branch current HEAD; private Git history may retain them.
+
+## OFFLINE-NATIVE-BRIDGE-07 / OFFLINE-NATIVE-OBSERVER-06 — COMPLETE / POSITIVE (bounded host test)
+
+Metadata-only observer 06 processed 4,809 native cross-model events without TX capabilities. Bridge07 linked unchanged original portable C++ for 4,809 synthetic CRC-valid frames derived from genuine event geometry/timestamps, confirmed 4,809/4,809 event parity, observer error atomicity and owner UNKNOWN, no TX; genuine raw corpus original-source link was NOT RUN until subsequent Bridge08. Earlier historical results are retained below without retroactively rewriting what was run.
+
+---
+
 # 2026-10-10 — Three offline-only native-session studies (NO controller experiment; newest first)
 
 **Historical evidence reconciliation (2026-10-10):** de genuine cross-model RTC-cluster `0858–085E` was **al gedocumenteerd op 2026-10-05** in `Thermia_Connect_Firmware/findings/CM930_UNMAPPED_PATTERN_CLASSIFICATION.md`. De nieuwe bijdrage van OFFLINE-EPOCH-WITNESS-02 is de onafhankelijke woord-/tijdcontrole tegen de firmware-klok `06EA–06F0` plus de classificatie als **ongeschikt zelfstandig controller-epoch-bewijs**. De bestaande firmwarefinding blijft prioritaire eerdere ontdekking; lokaal XTR-bewijs ontbreekt.
