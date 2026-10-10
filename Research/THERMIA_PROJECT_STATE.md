@@ -1,3 +1,22 @@
+# 2026-10-10 — Native session/epoch offline reconciliation + EPOCH-WITNESS-02 (NO LIVE CHANGE)
+
+**Current physical controller epoch/owner: UNKNOWN / UNQUALIFIED. Auto-TX/ACK: DENY.** This is an **offline research update**, not a new bus experiment or a claim that a controller reset was witnessed. The deployed Bridge 11C Public RX-shadow is unchanged; its observed bounded CRC subtest was positive (1,546/1,546 checked V5-delimited frames, zero CRC mismatches, no observed TX/DE), but it does **not** establish independent portable RTU framing or native session ownership. Do not extrapolate from the last submitted log to the device's present physical state.
+
+**Last completed local live branch:** R5 FIX2 — COMPLETE / POSITIVE for the bounded 0870/17 word-capture objective, COMPLETE / INCONCLUSIVE for the planned three-stage 0864 gate (P3 NOT RUN; controller epoch unknown). Keep S11Y-AL FIX1, FIX8K and the separate formal native rebuild branch distinct. **R6: CONCEPT / NOT PREPARED / NOT RUN.** No subsequent active experiment is authorized by this update.
+
+**Offline studies closed 2026-10-10 (do not count as controller experiments):**
+- NATIVE-SESSION-MVP matrix and timestamp reconciliation — COMPLETE / POSITIVE for source/time-order reconstruction; COMPLETE / INCONCLUSIVE for a universal, unattended runtime owner or ACK policy. S11F's later runtime page followed an ACK **and** another service reply: ACK-alone sufficiency is unresolved. S11W→S11X showed recurring 07D0/19 through ESP firmware changes, but content changed across the first boundary; S11X original→FIX1 retained matching content, followed by a manually qualified one-ACK progression. ESP OTA is not proof of controller power-epoch continuity.
+- NATIVE-SESSION-EPOCH-CONTINUITY audit — COMPLETE / POSITIVE for classifying observed ESP restart boundaries and excluding inadequate witnesses; COMPLETE / INCONCLUSIVE for controller boot identity. No independent controller uptime/resetcounter or synchronized power-event marker was established.
+- OFFLINE-EPOCH-WITNESS-02 — COMPLETE / POSITIVE for a seven-file, **cross-model reference** audit (2,500 complete slave-0x0F FC16 frames with valid CRC) and for identifying a **calendar-clock mirror** at 0858–085E in genuine reference captures; COMPLETE / INCONCLUSIVE for a unique, locally proven XTR M controller-epoch witness. Connect firmware semantically labels 06EA–06F0 as date/time; the 0858–085E mirror mapping is derived from reference words and **NOT locally proven on this XTR M**. RTC values, defrost counters, compressor hours and monotone short windows cannot authorize TX or prove reset identity.
+
+**Strongest remaining blocker:** differentiate the ESP restart from an independently verified controller-epoch change, then prove pending runtime work ownership inside that epoch. Address/count, successful CRC, payload repetition, a valid RTC, and a standard FC16 ACK are individually insufficient.
+
+**Next action (offline, read-only):** search existing **local XTR** captures for complete 0848/count23 words W16–W22 (0858–085E) and 06EA/count7 time data, especially near any already documented controller reset. If unavailable, prepare a separately reviewed RX-only observer without changing known-good production entities; **do not flash or run it without a new request**. Do not propose a new write, mailbox response or active ACK stage from these results.
+
+**Provenance:** local S11F/G/H/W/X experiment logs and canonical R5 FIX2 record versus genuine cross-model Online/DCM reference captures and Connect firmware 2.0.18/2.1.105 profile semantics. Detailed private evidence: `ryckema/Thermia_Connect_Firmware/findings/NATIVE_SESSION_MVP_TIMESTAMP_RECONSTRUCTION_20261010.md`, `NATIVE_SESSION_EPOCH_CONTINUITY_AUDIT_20261010.md`, and `OFFLINE_EPOCH_WITNESS_02_RESULT_20261010.md`. Keep cross-model and firmware-derived interpretation separate from PROVEN/local XTR evidence.
+
+---
+
 # 2026-10-09 — Native Online/DCM MVP focus and CM930 source-diff reconciliation (OFFLINE ONLY)
 
 **Primary goal:** reproduce a safe native Thermia Online/Connect/DCM ESP32/ESPHome session on local XTR M for stable HA reads and eventually validated desired-value writes. Stop diverting into W4 minutiae unless needed for a specific blocker.
