@@ -1,3 +1,34 @@
+# CURRENT 2026-10-11 — R6-P24 LIVE and R6-P25–P29 evidence classification
+
+> Older R6-P24 PREPARED / NOT FLASHED text below is historical. Superseded as current status by actual user-supplied live logs. Recent R6-P25–P29 research was entirely offline; no private native responder implementation is placed in this public file.
+
+## PROVEN / locally confirmed (context-bounded)
+- R6-P24 diagnostic HA text sensors are live on XTR M and report NO_CALLBACK_GAP_SEEN/EPOCH_UNKNOWN/NO_TX in two normal-traffic windows; gap=0, cold=0, physical TX=0, DE LOW. Parser health was stable over bounded slices (one previously recorded resync remains historical). Actual controlled power-cycle/cold-start witness branch NOT TESTED. Status RUNNING/PARTIAL.
+- Earlier executed local S9J–S10A and S11F manually qualified handshake/32/32 bootstrap, followed by native runtime and mailbox service. Earlier local S10C exposed 07D0 after retained 0708 reply plus exact changed-085F ACK; local S11H under analogous action exposed 0884 instead. Historical executed S11I and S11W each ACKed context-owned 0884 and then observed 07D0 (~2.042s and ~2.039s). Historical S11X FIX1 used one qualified manual ACK07D0→07E4 (~2.041s). Local test results are not universal unattended authorizations.
+
+## OBSERVED / genuine Online/DCM cross-model, NOT automatically proven XTR behavior
+- R6-P25: six original genuine captures, 22,344 CRC-good frames; old DCM hot-rejoin following 16 unanswered FC03 0708 polls while other controller frames continued. First answered 0708 with W2:W3=7FFF:FFFF selected exactly 31 settings pages excluding 06F4, all with matched FC16 ACKs, then regular mailbox state. Independent physical power state unmonitored; W4=0080 also observed without that full-sync in control.
+- R6-P28: seven-file genuine corpus 25,031 CRC-good frames; 392 FC03 0708 polls, 367 paired responses. First subsequent native runtime page after W4=0000 is not unique (can include 07D0, 0884 or other pages). This is retrospective ordering, not causality.
+
+## STRONGLY SUPPORTED
+- Firmware-derived CM930 2.0.18/2.1.105 uses W2/W3 as gateway-maintained configuration refresh/request masks, W4 for runtime/service request/completeness; these do NOT prove the controller's current pending work owner. Separately retained runtime/history work may underlie S10C-vs-S11H divergence, but no unique owner selector has been demonstrated.
+- Repeated native FC16 geometry across ESP OTA is consistent with retained work but cannot identify the *same* immutable work item: S11W→X 07D0 signatures differ (8721F668 vs D7EC8823); X original→FIX1 signatures agree but lack uninterrupted recording.
+
+## HYPOTHESIS
+- Controller may preserve outstanding work across gateway/ESP process reboot; a unique independently readable controller generation/uptime/work ID may exist outside examined data, but has not been found in this research. A separately justified physical RX-only sniffer could fill future observation gaps, not infer owner by itself.
+
+## OPEN / UNKNOWN
+- Autonomous XTR native hot-rejoin/work ownership, controller physical epoch; actual R6-P24 cold-start witness positive detection, historical B11D long-run issue, safe unattended answer/ACK/semantic write with readback.
+- R6-P29 uncovered S11F→G, S11W→X, and X→FIX1 log-to-log intervals 45m05.715s, 6m02.749s and 7m29.287s respectively; they are NOT measured bus-silence or complete OTA-span timings. No original local byte-perfect XTR raw replay was newly performed for P29. Step 2 external hardware sniffer is only PREPARED/NOT RUN; independent software parsers Bridge11C/D share the original ESP.
+
+## DISPROVEN / SUPERSEDED universal shortcuts
+- FC03 0708 poll, any single mailbox response, W4=0080, W5=0007, W4=0000, all-zero 085F, fixed native ACK order, or matching page geometry/signature is not a universal controller-owner / next-page predictor. FC16 address/count ACK alone is not semantic acceptance.
+- Old below-the-fold status R6-P24 PREPARED/NOT FLASHED is superseded by the actual user-provided R6-P24 live observation; cold-start branch remains not run.
+
+**Current safe gate:** UNKNOWN controller epoch/owner, autonomous FC23/FC16 ACK/0708 response/write DENY. Keep local production RX-only and HA functionality; experimental controls under Configuration; no unsolicited TX or controller restart. Preservation and further analysis of genuine/cross-model and firmware material do not authorize hardware actions. R6-P25 40/40, P26 55/55, P27 54/54, P28 62/62 and P29 step1 32/32 checks were offline host validations, not extra local runs.
+
+---
+
 # 2026-10-11 R6-P24 prepared passive start witness — NOT local live proof
 
 **PREPARED / NOT RUN / NOT FLASHED:** an additive RX-only Bridge15C observer can log callback-gap, CRC-good first-return, exact 0x02 A80E/A80F status and native follow-on geometry as separate diagnostic events. Actual YAML compiled in isolated host C++17 harness, **37/37** checks; **no complete ESPHome compile** and no physical ESP32/controller test yet. A callback gap, A80F=0005 and new FC23 activity are each individually insufficient to prove electrical controller power cycling, unique epoch or current pending-work owner. No automatic reply/readiness flag is introduced. Current device remains Bridge15C RX-only; epoch UNKNOWN, owner UNPROVEN, ACK/TX/write DENY. Private provenance/report: Thermia_Connect_Firmware/findings/R6_P24_PASSIVE_CONTROLLER_START_WITNESS_PREPARED_20261011.md.
