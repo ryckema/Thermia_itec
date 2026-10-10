@@ -1,0 +1,11 @@
+# R6-P16 — offline capture provenance and segmentation (2026-10-10)
+
+**Status:** COMPLETE / POSITIVE (restart provenance and FC23 interval correction); COMPLETE / INCONCLUSIVE (lossless UART, semantic acceptance, XTR behavior).
+
+**Hypothesis/baseline:** R6-P14 identified five anomalous gaps between FC23 0x0F requests and R6-P15 five all-address gaps. Determine whether recording loss or genuine controller power cycles explain them. **Controlled change:** offline re-segmentation of the same genuine Sep26/28 Eco5 logs and inspection of collaborator's original public capture documentation and passive sniffer source; no bus or firmware changes.
+
+**Observed cross-model data:** The original author describes three power cycles in Sep26 with gateway present, absent, present; four power cycles Sep28 with gateway present. Three and four >5-s all-address inter-frame gaps mark restart boundaries. Five anomalous FC23 intervals >5.1s all cross a restart boundary. Of the 161 FC23 inter-request intervals between the two logs, **156/156 within the same post-restart segment are 3.8–4.7s**. First recorded FC23 after restored traffic occurs ~0.981–1.210s into each applicable segment. Six reply-bearing restart segments stop recording further FC23 requests after the observed response; one gateway-absent segment produces 41 unanswered recorded requests.
+
+**Strong conclusion:** The five supposed 'long in-session FC23 pauses' were actually intervals censored by controller power cycles; their timestamps remain observations but their prior heartbeat-pause interpretation is superseded. The passive sniffer records CRC-valid frames with software timestamps and no independent dropped-byte counter or physical power timestamp, so wire silence and lossless recording are not proven.
+
+**Hypothesis:** FC23 is a periodically repeated startup/session task until response or another stopping condition. **Unknown:** exact cause of cessation, semantic acceptance, actual physical epoch, local XTR applicability. Positive: 5/5 corrected boundary classifications, 156/156 intra-segment normal periods. Negative: uninterrupted-session dropout premise. Inconclusive: physical serial completeness, gateway state causality. Abort: inconsistent source counts, sensitive payload disclosure, assumption of write authorization. Recovery: none, offline. Next R6-P17.
