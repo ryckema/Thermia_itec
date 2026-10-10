@@ -1,3 +1,28 @@
+# 2026-10-11 LATEST — R6-P18–P23 (offline-only results); Bridge15C live partial
+
+## R6-P23 — COMPLETE/POSITIVE historical controller-restart audit; NEGATIVE standalone epoch shortcut; INCONCLUSIVE owner
+**Baseline:** R6-P22, XTR EXP355/EXP94/95/123, S11F/W/X, R5 FIX2, current Bridge15C. **Hypothesis:** independent controller-restart evidence exists in local XTR history. **Controlled change:** offline-only record/epoch provenance classification; no live action. **Observed:** EXP355 controller was physically restarted while ESP stayed powered, bus silence exceeded 5s, returned with A80E/A80F=0000/0005 and completed fresh 32/32 bootstrap plus runtime. Original raw EXP355 log not newly parsed. 28/28 host checks. **Positive:** documented controlled restart event. **Negative:** BUS_GAP, A80F=5, ESP boot and FC23 alone do not prove UNIQUE controller-epoch/work owner. **Inconclusive:** universal epoch-ID and arbitrary hot rejoin. **Abort:** absent physical restart/source/health; **recovery:** none offline; current RX-only.
+
+## R6-P22 — COMPLETE/POSITIVE seven pre-first-reply starts; NEGATIVE page/FC23 owner candidates
+**Baseline:** R6-P21, genuine Eco5 Sep26/Sep28. **Hypothesis:** controller-only request/payload before any gateway response uniquely distinguishes a native owner. **Controlled change:** passive CRC replay restricted to pre-first-reply events, including gateway-absent control. **Observed:** 19,893 CRC-good original ADUs, first 04BA image and 085F zeros same in seven starts, 192 first 0x0F request geometries shared in Sep26 present/absent comparison, FC23 request bytes vary within a startup. 30/30 tests. **Negative:** no unique owner found in tested patterns. **Inconclusive:** unknown controller fields elsewhere. **Abort:** bad CRC/provenance/segment; **recovery:** offline n/a.
+
+## R6-P21 — COMPLETE/POSITIVE prefix replay; NEGATIVE zero-085F discriminator
+**Baseline:** R6-P19/P20 genuine six complete starts. **Controlled change:** strictly prior-to-07D0 event prefixes. **Observed:** three early service ACK routes recognised at 06F4 ACK (~77–78ms before 07D0) and three late routes after genuinely answered 0708 (~585–625ms before 07D0). Pre-response zero-valued 085F repeats in both. 28/28 checks. Same training/evaluation set; not independently predictive. **Abort:** missing ACK or interval => UNKNOWN. **Recovery:** offline n/a. No TX.
+
+## R6-P20 — COMPLETE/POSITIVE observer; NEGATIVE automatic reply authority
+**Baseline:** R6-P19 CRC events. **Controlled change:** metadata-only ACK and mailbox event matcher, independently of P19 labels. **Observed:** nine genuine segments 3 early/3 late/3 UNKNOWN; ten documentary local cases 2 late/8 UNKNOWN; 65/65 host checks. Route only assigned after observing 07D0, so never permit earlier ACK. **Abort:** bad geometry, integrity or sample boundary. **Recovery:** offline n/a.
+
+## R6-P19 — COMPLETE/POSITIVE distinct startup paths; NEGATIVE universal linear handshake
+**Baseline:** R6-P18 + local EXP270/271, S11F/W/X/R5. **Controlled change:** original genuine frame/CRC reparse, exact ACK and FC03 0708 pairing. **Observed:** 3 early 085F ACK before FC23, fast 06F4→07D0; 3 late 085F ACK after 06F4 with answered 0708→07D0; genuine ACK07D0→07E4 ~2.130–2.256s. 28/28 host tests. **Inconclusive:** causal response rule and owner. **Abort:** incomplete/ambiguous frame; **recovery:** n/a.
+
+## R6-P18 — COMPLETE/POSITIVE relative ordering; NEGATIVE universal immediate path
+**Baseline:** R6-P16/17. **Controlled change:** CRC recomputation and time order of FC23, FC16 085F/06F4/03E8 and 07D0 in Sep26/28 genuine starts. **Observed:** all six response-bearing starts had both ACK085F and ACK06F4 before first 07D0; three 085F before FC23, three after 06F4. 19,893/19,893 CRC-good. No semantic acceptance conclusion. **Abort:** source/CRC mismatch; **recovery:** offline n/a.
+
+## Bridge15C — RUNNING/PARTIAL live
+**Baseline:** Bridge13B/13C production RX-only. **Controlled change:** four text sensors, five metadata arrays, observer after existing V5 validation, no TX. **Observed:** ~7m38s at 23:25–23:33 Oct10; four parameter pages not seen (rx=0) even during active heating; 04A6/13 and 085F/5 received; latest V5=3943, no parser/portable differences or physical TX, DE LOW. **Positive:** absent-page and no-TX path; **not run:** page-positive freshness/invalidations. **Abort:** TX/DE or production/parser regression; **recovery:** prior RX-only Bridge13B image; no controller restart.
+
+---
+
 # 2026-10-10 NEWEST — R6-P17 / P16 / P15 / P14 results (append-only history below)
 
 ## R6-P17 — COMPLETE / POSITIVE cross-model sequence; COMPLETE / NEGATIVE universal instant handshake; COMPLETE / INCONCLUSIVE semantic acceptance

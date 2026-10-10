@@ -1,3 +1,21 @@
+# 2026-10-11 LATEST — R6-P18–P23 native route / epoch evidence reconciled
+
+**PROVEN / local XTR, historically executed:** EXP355 contains a controlled Thermia controller reboot while ESP stayed powered; after observed bus gap the controller status became A80E=0000/A80F=0005, a 32/32 native bootstrap completed and runtime was requalified. This proves one context-specific controlled restart *event*, not a controller-generated unique boot/generation ID. EXP94/95 reproduce early A80E/A80F progression. R6-P23 recovered this from canonical history, NOT by fresh original raw-EXP355 CRC replay.
+
+**PROVEN / locally sampled (Bridge15C):** live RX-only V5 of 04A6/13 and 085F/5 with 0 observed new TX/DE and 0 bounded V5/B11C/B11D mismatch; H021 page targets 03E8/14, 042E/15, 0442/13, 0546/20 did NOT arrive in ~7m38s while heat pump was actively heating. Missing page data is not evidence of idle heating or broken RTU.
+
+**OBSERVED / genuine cross-model, NOT automatically XTR:** R6-P18/19 six response-bearing Eco5 startup phases out of 19,893 CRC-valid captured ADUs. Every phase showed terminal 06F4 and 085F FC16 ACK preceding 07D0. Three ACKed 085F before FC23 and reached 07D0 77–78ms after 06F4; three ACKed 085F after 06F4 and had genuinely answered 0708 before 07D0. R6-P20 replay classified six correctly and three other original segments UNKNOWN. R6-P21 in-sample prefix history differentiates them only using prior *responses*, NOT controller-only 085F zeros. R6-P22 seven pre-first-reply startup segments (including gateway absent) have identical first 04BA and 085F images; simple packet/payload and FC23 sequences are no unique owner proof.
+
+**STRONGLY SUPPORTED:** handshake, page transfer, selector-dependent service and runtime overlay are context-dependent tasks, not one universal linear exchange. A known controlled cold-boot event can be detected under guarded observed conditions, but neither ESP reboot nor bus silence, A80F=5, RTC clock, FC23 repeated request or same page-signature establishes unique physical controller generation / outstanding owner. FC16 address/count ACK never proves semantic setting adoption.
+
+**HYPOTHESES/OPEN:** controller may retain pending native work across ESP OTA, but identity over log gaps is UNKNOWN. A controller-owned uptime/reset counter may exist outside recovered profiles. Need passive evidence linking continuous ESP boot + bus interruption + controller 0x02 startup values while preserving NO_TX. Never reuse historical qualified active experiment as general response authorisation.
+
+**DISPROVEN / SUPERSEDED as universal interpretations:** mandatory fixed FC23→085F→06F4→0708→07D0; any all-zero 085F or first 04BA as session ID; single 5s gap as power-cycle certainty; in-session FC23-pause interpretation already superseded by R6-P16 deliberate restarts.
+
+**Current gate:** local physical controller epoch UNKNOWN, native work owner UNPROVEN, autonomous FC23 response / FC16 ACK / 0708 answer / write DENY. R6-P24 observer is NEXT / PREPARED, not yet flashed or tested. Full private offline source synopsis: Thermia_Connect_Firmware/findings/R6_P18_P23_OFFLINE_NATIVE_SESSION_SYNTHESIS_20261011.md. Preserve prior findings below.
+
+---
+
 # 2026-10-10 LATEST — R6-P14–R6-P17 native restart and stage evidence
 
 **PROVEN / genuine cross-model observations (NOT local XTR):** Original author documents Eco5 Sep26 3 power cycles A/B/A gateway present/absent/present and Sep28 4 cycles gateway present. Raw time gaps 3+4 all-address >5s; all five exceptional FC23 intervals cross restart boundaries, while all 156 within-phase FC23 intervals lie 3.8–4.7s. Six cross-model post-restart phases show an FC23 reply followed by no further recorded FC23 requests in that phase. One gateway-absent phase contains 41 requests without a reply. Sep26/Sep28 19,893 CRC-valid frames rechecked, with six recorded reply-bearing restart phases: each later has 03E8 request/ACK and 07D0 runtime and all six have matching 085F FC16 ACK before first 07D0. Three 085F ACKs occur BEFORE FC23 response, three AFTER. Two phase first-03E8 ACK delays exceed 108s. ACK means only address/count geometry, not semantic acceptance.
