@@ -1,3 +1,28 @@
+# 2026-10-10 — R6-P1 to R6-P6 FIX1 (newest first)
+
+## R6-P6 FIX1 — PREPARED / NOT RUN
+Hypothesis: after a latched safety fault FC23 must not erase original fault reason, and expired runtime candidate reason must say STALE. Baseline R6-P5 safe RX-only and P6 audit. Controlled change: only two diagnostic classifier fixes; production V5/Bridge11C/B11D, Home Assistant entities and TX lock unchanged. Offline YAML parse and 8/8 Python tests reported PASS. No compile/flash/live result supplied. Positive: safe live RX-only, diagnostics consistent if edges occur. Negative: replicated overwrite/stale mismatch. Abort: TX/DE-high, V5 errors, loss of production entities. Recovery: rollback known-good R6-P5, no controller reboot. No bus response authorized.
+
+## R6-P6 — COMPLETE / POSITIVE offline audit; COMPLETE / INCONCLUSIVE live runtime branch
+Baseline R6-P5. Controlled change: offline source examination and simulated scenario replay only, no physical action. 15/15 Python behavior tests and 25,031 genuine cross-model ADUs replayed; zero TX. Found FC23 could overwrite latched reason without unlocking, stale status and reason could conflict, V5 CRC validation is trusted rather than repeated in classifier, B11D independent health separate. No compiled-C++ replay or local live runtime 07D0/07E4 branch proven. Abort on unintended authority grant; no hardware recovery.
+
+## R6-P5 — COMPLETE / POSITIVE bounded local RX-only integration; COMPLETE / INCONCLUSIVE runtime classification
+Baseline R6-P1 known-good production V5. Controlled change: passive V5-fed runtime classifier with three HA text sensors; no TX. Local log 16:31:00–16:34:03 (~3 min, 3,758 lines): V5 valid=1626, known FC16=266, geometry/unknown/resync/drops=0; B11D raw=1621, faults=0; B11C diffs=0; UART writes/TX/DE=0/0/LOW. Class=UNQUALIFIED/NO_TX, reason ESP_BOOT_UNQUALIFIED, node NONE; 085F/5 and 04A6/13 present, no qualified runtime/FC23/0708/ACK. Positive safe production RX; inconclusive transition logic. Abort and rollback R6-P1 if V5/HA regression or TX.
+
+## R6-P4 — COMPLETE / POSITIVE cross-model raw replay; COMPLETE / INCONCLUSIVE local XTR
+Seven genuine Eco5/ATEC reference captures, 25,031 CRC-valid ADUs, 2,500 slave 0F FC16, 794 recognized runtime geometries all denied as local XTR authority. Hypothetical source-bypass test 749 first/45 repeated but no TX. Offline only.
+
+## R6-P3 — COMPLETE / POSITIVE reconstructed offline scenarios; COMPLETE / INCONCLUSIVE actual source replay
+10/10 Python classifier scenarios reconstructed from historical findings; states UNQUALIFIED, RUNTIME_NODE_SEEN, RETAINED_CANDIDATE; TX always DENY. No raw historical local S11 replay at this stage.
+
+## R6-P2 — COMPLETE / POSITIVE historical comparisons; COMPLETE / INCONCLUSIVE owner inference
+S11W→S11X, EXP313→EXP315 establish historical retained 07D0/07E4 after ESP OTA and occasional post-07D0 0708, not a mandatory universal bootstrap nor independent physical epoch proof. No action.
+
+## R6-P1 — COMPLETE / POSITIVE first-fault metadata; COMPLETE / NEGATIVE long-run independent raw framing
+Baseline R6-P0 B11D fault after ~26min without capture metadata. Controlled change RX-only FIRST_FAULT_META, no TX. Supplied local log 15:56:09–16:28:43; FIRST_FAULT at 16:26:44.824 RAW_NO_VALID_CRC_CANDIDATE_AT_IDLE, batch 6406, raw 32, cursor25, 7 remain, expected2, candidate length180, one needs-more, zero CRC-valid remainder; B11D frame count later frozen ~15688, V5/B11C advanced, TX/DE zero. Cause unknown. Abort V5 regressions or unexpected TX; leave RX-only, rollback previous firmware if needed.
+
+---
+
 # 2026-10-10 — LIVE-B11D-RX-VALIDATION-01 and offline observer reconciliation (newest first)
 
 ## LIVE-B11D-RX-VALIDATION-01 — RUNNING / PARTIAL (user-provided passive log)
