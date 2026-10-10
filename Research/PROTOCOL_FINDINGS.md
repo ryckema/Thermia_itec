@@ -1,3 +1,27 @@
+# 2026-10-10 — R6-P1 through R6-P6 FIX1 evidence update
+
+## PROVEN / locally confirmed XTR M
+- R6-P1: first B11D independent raw RX failure at 16:26:44.824, RAW_NO_VALID_CRC_CANDIDATE_AT_IDLE, 32-byte batch cursor25/remnant7, hypothetical frame length180, no remainder CRC candidate. V5 and V5-delimited B11C continue, TX=0. Exact cause unknown; countDiff=0 *after* B11D stall is a stale snapshot.
+- R6-P5 bounded ~3-minute run: V5 1,626 valid/266 known FC16, geometry/resync/drops/unknown zero, TX/DE zero/LOW; passive classifier UNQUALIFIED/NO_TX, reason ESP_BOOT_UNQUALIFIED, node NONE. Observed service 085F/5 and config 04A6/13, no qualified runtime 07D0/07E4. Short healthy B11D run does not establish long-run reliability.
+
+## STRONGLY SUPPORTED
+- Runtime geometry recognition, independent controller epoch and TX ownership must remain distinct. Source-faithful repeated pages alone cannot authorize automatic ACK. V5-delimited good RX does not imply B11D independent good RX.
+
+## OFFLINE SOFTWARE ONLY / NOT LOCAL PROTOCOL PROOF
+- R6-P3 10/10 reconstructed event scenarios; R6-P4 25,031 CRC-valid genuine *cross-model* ADUs and 794 recognized runtime geometries with local provenance denied. R6-P6 15 simulated behavior tests and cross-model replay; fault reason overwrite after FC23 and inconsistent STALE reason identified in R6-P5 implementation.
+- R6-P6 FIX1 changes those two diagnostics; offline YAML parser and 8 behavioral tests PASS; PREPARED / NOT RUN (ESPHome compile/flash not confirmed).
+
+## HYPOTHESIS
+- 25ms software idle aggregation or cursor/frame-boundary misalignment may explain incomplete B11D candidate; captured metadata do not distinguish buffer truncation, electrical errors, or scheduling.
+
+## OPEN / UNKNOWN
+- Independent physical controller epoch and owner, local live 07D0/07E4 classification, B11D fault mechanism, FIX1 on-device diagnostics, automatic Online/DCM responder authorization.
+
+## DISPROVEN / SUPERSEDED
+- Stale zero count/byte mismatch after sticky B11D error cannot be treated as continuing parity. Historical header calling R6 conceptual has been superseded by actual R6-P1 and R6-P5 runs. Preserve all historical records below.
+
+---
+
 # 2026-10-10 — Bridge11D local raw-framing fault and private original-C++ offline host validation
 
 **Sources and scopes:** locally supplied XTR M ESPHome diagnostic log 15:04:31–15:08:43 ([live report](LIVE_B11D_RX_VALIDATION_20261010.md)); genuine **cross-model** Online/DCM historical captures and the unchanged private original Thermia portable C++ source used in offline host tests. Never equate host success with physical native XTR write readiness. Owner/physical epoch UNKNOWN; auto TX, ACK and writes DENY.
