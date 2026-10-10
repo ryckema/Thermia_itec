@@ -1,3 +1,9 @@
+# 2026-10-11 R6-P24 prepared passive start witness — NOT local live proof
+
+**PREPARED / NOT RUN / NOT FLASHED:** an additive RX-only Bridge15C observer can log callback-gap, CRC-good first-return, exact 0x02 A80E/A80F status and native follow-on geometry as separate diagnostic events. Actual YAML compiled in isolated host C++17 harness, **37/37** checks; **no complete ESPHome compile** and no physical ESP32/controller test yet. A callback gap, A80F=0005 and new FC23 activity are each individually insufficient to prove electrical controller power cycling, unique epoch or current pending-work owner. No automatic reply/readiness flag is introduced. Current device remains Bridge15C RX-only; epoch UNKNOWN, owner UNPROVEN, ACK/TX/write DENY. Private provenance/report: Thermia_Connect_Firmware/findings/R6_P24_PASSIVE_CONTROLLER_START_WITNESS_PREPARED_20261011.md.
+
+---
+
 # 2026-10-11 LATEST — R6-P18–P23 native route / epoch evidence reconciled
 
 **PROVEN / local XTR, historically executed:** EXP355 contains a controlled Thermia controller reboot while ESP stayed powered; after observed bus gap the controller status became A80E=0000/A80F=0005, a 32/32 native bootstrap completed and runtime was requalified. This proves one context-specific controlled restart *event*, not a controller-generated unique boot/generation ID. EXP94/95 reproduce early A80E/A80F progression. R6-P23 recovered this from canonical history, NOT by fresh original raw-EXP355 CRC replay.

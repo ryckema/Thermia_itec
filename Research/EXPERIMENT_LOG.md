@@ -1,3 +1,9 @@
+# 2026-10-11 R6-P24 PREPARED / NOT RUN / NOT FLASHED
+
+**Hypothesis:** existing Bridge15C RX-only V5/Bridge03 pipeline can passively report a >=5s UART-callback-gap followed by CRC-good return and exact slave-0x02 A80E/A80F cold-start-like status without claiming a unique controller epoch or work owner. **Baseline:** Bridge15C live + historical locally executed EXP355 controller restart and EXP94/95 boot signatures; R6-P23 offline audit. **Exact controlled change:** two globals, 2 HA diagnostic text sensors, one raw-gap metadata hook and one CRC-validated frame witness; no existing code lines removed, no TX or ACK paths changed. **Relevant:** controller 0x02 FC23 A80C/count7 carrying A80E/A80F; native 0x0F FC23, 04BA/22, 03E8/14. **Positive future criterion:** healthy RX-only entities and, only if naturally observed, bounded callback-gap + clean first controller/outdoor frame + exact cold-status candidate; always EPOCH_ID_UNKNOWN/NO_TX. **Negative:** valid actual frame sequence missed or unqualified sequence promoted. **Abort:** UART TX/DE, parser resync/drop, B11C/B11D fault, device or HA regressions. **Recovery if later flashed:** restore known-good Bridge15C ESP firmware, do not reboot controller. Offline YAML/static PASS, 125 additions/0 deletions, extracted C++17 actual lambdas 37/37 host checks; **full ESPHome compile NOT RUN, no flash, no user device log.** Source sha256 c08b8fa6afc437b59730e457703d50bf9c2957593a80c12a9e9ace60999df8bb. Report archived in private firmware repo. Status stays PREPARED until actual result supplied.
+
+---
+
 # 2026-10-11 LATEST — R6-P18–P23 (offline-only results); Bridge15C live partial
 
 ## R6-P23 — COMPLETE/POSITIVE historical controller-restart audit; NEGATIVE standalone epoch shortcut; INCONCLUSIVE owner

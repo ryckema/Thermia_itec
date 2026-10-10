@@ -1,3 +1,9 @@
+# 2026-10-11 R6-P24 — PREPARED / NOT RUN / NOT FLASHED (latest status)
+
+R6-P24 passive controller-start witness was now prepared against live Bridge15C, preserving all existing production/bus-health and all TX locks. Two metadata-only globals, two diagnostic text sensors and two additive RX observation hooks; **125 added, 0 existing lines changed**. Source SHA256 c08b8fa6afc437b59730e457703d50bf9c2957593a80c12a9e9ace60999df8bb (baseline Bridge15C SHA256 9d2be8d2d8411ae7a1394cc93d086658d1d1f93f2db87e1d920fe3d8adace76b). YAML parsed offline; extracted actual C++17 gap/observer/sensor lambdas compiled and passed **37/37** host checks. **No full ESPHome compile, no OTA, no live execution.** Physical controller epoch UNKNOWN, owner UNPROVEN, auto TX/ACK/write DENY. No heat-pump restart requested. Prepared private report: Thermia_Connect_Firmware/findings/R6_P24_PASSIVE_CONTROLLER_START_WITNESS_PREPARED_20261011.md. Existing historical experiment details below unchanged.
+
+---
+
 # 2026-10-11 NEWEST — R6-P18–P23 offline reconciled; R6-P24 next (NOT RUN)
 
 **Live baseline:** Bridge15C RX-only on XTR M (two 10 Oct logs totalling approximately 7m38s). Native 04A6/13 and 085F/5 received. Four targeted H021 pages 03E8/14, 042E/15, 0442/13, 0546/20 each rx=0 even while heat pump was actively heating. Latest V5 3943 valid; observed CRC/resync/drops/geometry and B11C/B11D differences zero; physical TX=0, DE LOW. Bridge15C is RUNNING/PARTIAL: absent-page diagnosis positive, positive four-page reception and expiry NOT RUN. Previous longer-term B11D raw framing failures remain open.
