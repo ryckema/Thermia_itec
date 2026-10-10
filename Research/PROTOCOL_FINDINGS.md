@@ -1,3 +1,10 @@
+# 2026-10-10 LATEST — R6-P11/P12/P13
+PROVEN IN GENUINE CROSS-MODEL CAPTURES (NOT LOCALLY XTR): 25,031 CRC-valid ADUs previously replayed from seven captures; 164 0x0F FC23 requests and only 7 recorded immediate responses, fixed request read 0x0730 count8 and write 0x071C count8; response length21 bytes, 29–63ms timestamp gap. These addresses are NOT authorized XTR write targets; captured FC23 reply is not semantic acceptance.
+STRONGLY SUPPORTED CROSS-MODEL TIMING: on Sep26/Sep28 FC23 request median 4.2335/4.241s; 085F page median 2.1245/2.131s; 04A6 page median 1.383/1.411s. 96/99 and 58/64 FC23 have previous 085F and following 04A6 within 10s. Independent 085F->next 04A6 median is 1.451/1.4555s, nearly same as FC23-containing 1.473/1.4915s. Several periodic cadences overlap; causal handshake not proven. Recording windows can start mid-session and do not prove physical bootstrap order.
+HYPOTHESIS: slower FC23 periodic session maintenance/handshake exchange interleaved with 085F and 04A6 scheduler tasks. Archived Connect firmware has separate settings/operation/handshake areas, but firmware semantics are not XTR bus proof.
+OPEN / UNKNOWN: 157 unpaired requests' actual responses, server semantics, internal scheduler, real controller epoch/owner, XTR FC23 behavior or transmit eligibility. R6-P10 FIX1 HA snapshot entity exists live with NONE and no B11D fault to trigger, while V5 early resync=1 (observer recovered), TX/DE=0.
+DISPROVEN / SUPERSEDED: proximity of 085F->FC23->04A6 does NOT show a universal compulsory one-shot handshake or accepting semantic write; retain historical observed facts.
+---
 2026-10-10 R6-P7–P10 evidence update:
 
 PROVEN / LOCAL: R6-P10 repeats independent B11D sticky RAW_NO_VALID_CRC_CANDIDATE_AT_IDLE; frames freeze at 4269, batches=1746, incomplete=1 while V5 and B11C continue RX with zero resync/drop; TX/DE=0. Zero frame/byte mismatches after freeze are STALE, not continued parity.
