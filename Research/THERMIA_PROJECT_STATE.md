@@ -1,3 +1,15 @@
+# 2026-10-10 — CURRENT STATE: R6-P6 FIX1 PREPARED / NOT RUN (newer than historical R6 concept note)
+
+**Latest live XTR M experiment:** R6-P5 COMPLETE / POSITIVE for bounded RX-only classifier integration; COMPLETE / INCONCLUSIVE for native runtime-node exercise. User log 16:31:00–16:34:03: V5 1,626 valid frames and 266 known 0x0F FC16 pages; geometry/unknown/resync/drops 0; Bridge11C differences 0; B11D raw frames 1,621 with no fault during this brief run; physical TX 0, DE LOW. Classifier remained UNQUALIFIED / NO_TX, reason ESP_BOOT_UNQUALIFIED, observed node NONE because only 085F/5 service and 04A6/13 configuration appeared. Controller epoch UNKNOWN, owner UNQUALIFIED, TX/ACK/write DENY.
+
+**R6-P1 long-run observation:** COMPLETE / POSITIVE for actual first-fault metadata, COMPLETE / NEGATIVE for independent B11D long-run continuity. At 16:26:44.824, RAW_NO_VALID_CRC_CANDIDATE_AT_IDLE: batch=6406, raw=32 bytes, cursor=25, 7 remaining, calculated candidate length 180, 1 needs-more candidate and 0 valid remainder CRC. V5 and V5-delimited Bridge11C continued safely while independent B11D froze; root cause unknown. Do NOT rely on stale zero-difference counters after B11D fault. Supersedes old note stating first-fault onset unavailable for a DIFFERENT, earlier log only.
+
+**Offline R6 milestones:** P2 historical retained-runtime comparison COMPLETE / POSITIVE for reconstruction but inconclusive for independent epoch/owner. P3 reconstructed event classifier 10/10 offline scenarios. P4 seven genuine Eco5/ATEC cross-model captures: 25,031 CRC-valid raw frames, 794 runtime-shaped requests rejected as local XTR authority, zero TX. P6 offline audit 15 scenario tests and 25,031 cross-model replay: latched fault reason could be overwritten on FC23; STALE reason could diverge. Cross-model replay and Python behavioral simulations are not locally proven XTR runtime.
+
+**NEXT: R6-P6 FIX1 PREPARED / NOT RUN.** Exactly two passive classifier diagnostic fixes (preserve latched fault reason on FC23; align STALE reason with state) in full production-preserving ESPHome YAML. Offline YAML parse and 8 behavior tests reported PASS; no user-confirmed compile, flash or live result. Preserve known-good R6-P5 and TX-deny. Abort if unexpected TX/DE, V5 resync/drops/geometry or production sensor regressions; rollback R6-P5 firmware, no controller reboot. Last completed LIVE experiment is R6-P5, not R5 FIX2.
+
+---
+
 # 2026-10-10 — CURRENT STATE: B11D independent raw RX fault / original-C++ offline integration reconciled
 
 **Newest supplied local XTR M evidence:** [LIVE_B11D_RX_VALIDATION_20261010.md](LIVE_B11D_RX_VALIDATION_20261010.md) — supplied passive ESPHome log 15:04:31–15:08:43. **LIVE-B11D-RX-VALIDATION-01 RUNNING / PARTIAL** for planned duration and first-fault-onset investigation; **bounded COMPLETE / NEGATIVE** for independent B11D raw stream continuation. No new firmware, RX/TX hardware action or controller reboot during this documentation reconciliation.
