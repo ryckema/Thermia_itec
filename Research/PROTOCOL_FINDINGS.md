@@ -1,3 +1,38 @@
+# 2026-10-10 — Native session/epoch evidence and cross-model RTC mirror (OFFLINE ONLY)
+
+## PROVEN / locally confirmed on XTR M — bounded observations, NOT new experiment
+- Previously supplied S11F local log documents a manually qualified fresh handshake and 32/32 bootstrap, with later runtime page progression. At least one further service reply followed the bounded 0870 acknowledgement before 0884 appeared; **the standalone causal sufficiency of the acknowledgement is not proven**.
+- S11W locally observed the service-path progression to 07D0/19. S11X original after ESP OTA still saw recurring 07D0/19, but its observed payload signature differed from the S11W payload; the original S11X response harness failed closed with TX=0. S11X FIX1 observed the same recurring signature as S11X original and documented a manually qualified one-response transition toward 07E4. These local facts support *stateful controller work*, **not independently verified unchanged controller power epoch**.
+- R5 FIX2's local captured 0870/17 followed its bounded 085F response without newly observed 0864. The planned third phase was not run; do not reinterpret this as general 0864 bypass, owner authorization or standalone ACK proof.
+- The existing Bridge 11C Public CRC-only RX-shadow observation checked 1,546 V5-framed messages without CRC mismatch and without observed TX. This is **not** independent portable stream framing, authenticated Online ownership or proof of present ongoing device state.
+
+## STRONGLY SUPPORTED — inference limited to the observed local sessions
+- Retained runtime-family requests may survive ESP OTA/reboot, but a stable address/count cannot uniquely identify the outstanding request or controller generation. Matching frame payload signatures across a second ESP restart increase confidence in observed continuity, not in a unique controller-epoch ID.
+- A safe offline classifier must track three distinct things: ESP boot boundary, controller epoch (may be UNKNOWN), and qualified pending work ownership. All automatic TX remains denied while controller epoch/ownership is unqualified. A CRC-valid request and a standard FC16 address/count ACK do not establish semantic completion.
+
+## OBSERVED IN GENUINE CROSS-MODEL ONLINE/DCM REFERENCES — NOT PROVEN ON LOCAL XTR M
+- OFFLINE-EPOCH-WITNESS-02 checked 2,500 complete CRC-valid 0x0F FC16 requests across seven **cross-model** reference captures. In reference `0848/count23` frames, words at `0858–085E` behave as **seconds, minutes, hours, day, month, year-minus-2000, weekday**. Independent temporal consistency checks with the firmware-labelled `06EA–06F0` date/time fields yielded 332 s versus 332.199 s and 344 s versus 343.914 s. This is a directly observed **RTC-like mirror**, not a documented local XTR register mapping and not a controller-uptime marker.
+- Repeated FC23 handshakes in genuine DCM captures can occur at roughly 4.2 s cadence; the frame family alone is not a unique controller reboot witness.
+
+## PROVEN / firmware-derived in Connect source (NOT automatically local bus proof)
+- Connect 2.0.18/2.1.105 profile semantics include date/time at `06EA–06F0`. The name/meaning for the candidate mirror `0858–085E` was derived from genuine reference data, **not** a corresponding named semantic object in the audited profile catalogue.
+- Connect uses distinct handshake, onboarding/runtime and page-acquisition/completeness states; receipt/ACK of one page is not application OPERATION or desired-value readback. Requested page selectors and firmware profiles are context dependent.
+
+## HYPOTHESIS
+- `0858–085E` may form an RTC mirror on the XTR M as well, but full local `0848/count23` words and `06EA/count7` correlation are still required.
+- A controller-owned resetcount/uptime/session-generation witness may exist in unexamined native words or controller firmware but was not established by the 564-address/4,744-object multi-profile semantic catalog or the available reference time series.
+- An observed native work item with stable geometry and content may indicate pending scheduler work in that particular controller context, without proving a particular power epoch or authorizing a response.
+
+## OPEN / UNKNOWN; NO GENERIC WRITE/TX LICENSE
+- Unique locally validated controller power-epoch witness over an independently documented controller restart: **UNKNOWN**.
+- Semantics of unexplained XTR runtime word changes, stable owner across arbitrary OTA/controller resets, unattended fresh/rejoin classification: **UNKNOWN**.
+- RTC jumps, defrost elapsed/count and compressor operation hours are **DISPROVEN as sufficient standalone epoch witnesses**. This does NOT disprove their usefulness as telemetry or the possible existence of an as-yet unidentified boot counter.
+- Cross-model mapping never promoted to PROVEN/local XTR without a local word-level check. Suggested continuation: search *existing* local XTR captures offline for full 0848/count23 W16–W22 and 06EA/count7; keep current ESP RX-only; no new active test or R6.
+
+**Evidence origin and complete detail:** local S11F/G/H/W/X logs, canonical R5 FIX2; genuine Eco5/Online/DCM captures; firmware-source profile study. Private source-linked reports and CSV data in `ryckema/Thermia_Connect_Firmware/findings/`: `NATIVE_SESSION_MVP_TIMESTAMP_RECONSTRUCTION_20261010.md`, `NATIVE_SESSION_EPOCH_CONTINUITY_AUDIT_20261010.md`, `OFFLINE_EPOCH_WITNESS_02_RESULT_20261010.md` and associated ledgers. This section is a **new interpretation layer only**; it preserves all earlier empirical outcomes and their historical statuses.
+
+---
+
 # 2026-10-09 — CM930 source lineage and native Online/DCM integration evidence boundary (OFFLINE)
 
 ## PROVEN / firmware-derived (Connect 2.0.18 and 2.1.105 source; NOT automatically XTR M or legacy DCM03 bus behavior)
