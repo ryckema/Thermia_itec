@@ -1,3 +1,35 @@
+# 2026-10-10 — Three offline-only native-session studies (NO controller experiment; newest first)
+
+## OFFLINE-EPOCH-WITNESS-02 — COMPLETE / POSITIVE (reference audit and RTC mirror); COMPLETE / INCONCLUSIVE (XTR controller epoch)
+
+**Hypothesis:** existing complete controller-origin FC16 pages and Thermia Connect semantic profiles may contain an independently usable controller boot/uptime/session-generation witness. **Baseline:** earlier NATIVE-SESSION-EPOCH-CONTINUITY audit, S11F/G/H/W/X and R5 FIX2 canonically recorded evidence, genuine Online/DCM reference captures and Connect firmware profile definitions. **Controlled change:** offline parsing of complete existing slave 0x0F FC16 frames and 16-bit register time series; no YAML edit, OTA, controller reboot, UART TX/DE or live action.
+
+**Evidence:** 2,500 complete CRC-valid FC16 requests from seven genuine **cross-model** reference files. A second calendar-clock tuple appeared at 0858–085E in reference 0848/count23; independent time correlation was found with firmware-labelled date/time at 06EA–06F0. Example reference comparisons: a 332 s displayed-clock increment over 332.199 s capture time, and a 344 s increment over 343.914 s. The new mirror address mapping is **reference-observed, not firmware-labelled for those same addresses, and not verified locally on XTR M**. The apparent monotone 0859 candidate was the minute-of-hour clock word. Other screened register words represented or plausibly followed operational temperature/status/defrost behaviour. No unique controller epoch ID was identified.
+
+**Positive criterion:** independently controller-sourced boot/generation marker with known semantics and local XTR pre/post-controller-reset evidence — **NOT MET**. Secondary positive goal, eliminating false monotone witnesses and reproducing the reference RTC correlation — **MET**. **Negative/inconclusive:** no counter/reset marker from this available dataset; existence elsewhere NOT DISPROVEN. **Abort/safety/recovery:** missing complete CRC/geometry, ambiguous model identity, or no independent controller reset evidence prevents owner inference; remain CAPTURE_ONLY with ACK/DENY and no TX. Offline analysis requires no recovery.
+
+**Next:** offline search existing local XTR 0848/count23 W16–W22 and 06EA/count7; any RX-only logger is a **separate future PREPARED / NOT RUN** action requiring review. R6 unchanged.
+
+## OFFLINE-CONDITION-REJOIN-01 / NATIVE-SESSION-EPOCH-CONTINUITY — COMPLETE / POSITIVE (boundary classification); COMPLETE / INCONCLUSIVE (power epoch)
+
+**Hypothesis:** prior fresh/rejoin experiments might share a provable controller-owned continuity token across ESP OTA. **Baseline:** NATIVE-SESSION-MVP timestamp study. **Controlled change:** offline comparison of existing restart timestamps, controller page geometries, payload signatures, FC23 occurrence, recorded physical TX counts and missing power markers. No new live experiment.
+
+**Observed:** S11F fresh handshake/bootstrap from a controlled experiment contrasted with S11G's later 085F + service polling and no retained 0884 in its visible segment. S11H's bounded service step led to 0884 but not target 07D0 within its timeout (the historical negative outcome is preserved). S11W repeated 07D0/19 with signature 8721F668; after an ESP firmware change, S11X original repeated the **same address/count but different signature D7EC8823**. That latter signature remained stable through the next ESP change in S11X FIX1, after which one manually qualified response preceded 07E4. The intervals between runs were not continuous and no independent controller power marker was present.
+
+**Positive criterion:** invariant payload or independent controller generation witness straddling known ESP-only reboot — partially useful repeated payload in the S11X original→FIX1 pair, **not a proven power-epoch ID**. **Negative/inconclusive:** payload match alone, lack of FC23, or no change in local logging does not prove an unchanged controller epoch. **Abort/recovery:** uncertain epoch/owner => capture-only; none needed offline.
+
+## NATIVE-SESSION-MVP timestamp/firmware reconciliation — COMPLETE / POSITIVE (chronology); COMPLETE / INCONCLUSIVE (unattended ACK eligibility)
+
+**Hypothesis:** chronology of existing locally controlled fresh and retained branches plus Connect firmware semantics can identify the first missing authorization requirement. **Baseline:** S11F, S11W, S11X original and FIX1 original local logs; R5 FIX2 from canonical summary where original R5 log could not be directly reopened. **Controlled change:** offline event/time alignment and firmware cross-check only.
+
+**Observed:** S11F bootstrap 32/32 and its subsequent runtime progression included an additional service response between the bounded 0870 ACK and subsequent 0884, so ACK-alone causality is **unresolved**. S11W service-path ACK0884 preceded 07D0 by ~2.039 s; S11X FIX1's one qualified retained ACK07D0 preceded 07E4 by ~2.041 s. R5 FIX2 reached 0870 ~2.089 s after ACK085F without a fresh observed 0864; controller epoch stayed UNKNOWN and the third R5 phase was NOT RUN. These are **context-specific** sequences, not a global deterministic scheduler or a proven owner-claim policy.
+
+**Positive criterion:** timestamp cross-check and evidence classes — MET. **Negative/inconclusive:** no same-controller-power-epoch evidence across all compared captures and no isolated ACK-alone sufficiency. **Abort/recovery:** no physical action in study; auto-TX DENY until a separately proven owner/epoch gate exists.
+
+**Source provenance:** original supplied local ESPHome logs for S11F/W/X; canonical experiment history for R5; genuine cross-model DCM captures; firmware-derived Connect 2.0.18/2.1.105 semantics. Full private source-linked reports, ledger and register audit CSVs under `Thermia_Connect_Firmware/findings/` with the 20261010 filenames. **No existing experiment history has been superseded or deleted by this research entry.**
+
+---
+
 # 2026-10-09 — CM930 2.0.18/2.1.105 source and native-session gap audit (OFFLINE, no controller experiment)
 
 **Study ID:** NATIVE-SESSION-SOURCE-AUDIT-20261009. **Status: COMPLETE / POSITIVE for offline comparison only; COMPLETE / INCONCLUSIVE for DCM03 internal selector lifecycle and XTR auto-ACK authorization.** No ESPHome run, physical TX, new YAML, semantic write or controller action took place. This is not a replacement for or progression of R5 FIX2; R6 remains CONCEPT / NOT PREPARED / NOT RUN.
