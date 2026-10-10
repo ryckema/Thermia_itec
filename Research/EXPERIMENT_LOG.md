@@ -1,5 +1,7 @@
 # 2026-10-10 — Three offline-only native-session studies (NO controller experiment; newest first)
 
+**Historical evidence reconciliation (2026-10-10):** de genuine cross-model RTC-cluster `0858–085E` was **al gedocumenteerd op 2026-10-05** in `Thermia_Connect_Firmware/findings/CM930_UNMAPPED_PATTERN_CLASSIFICATION.md`. De nieuwe bijdrage van OFFLINE-EPOCH-WITNESS-02 is de onafhankelijke woord-/tijdcontrole tegen de firmware-klok `06EA–06F0` plus de classificatie als **ongeschikt zelfstandig controller-epoch-bewijs**. De bestaande firmwarefinding blijft prioritaire eerdere ontdekking; lokaal XTR-bewijs ontbreekt.
+
 ## OFFLINE-EPOCH-WITNESS-02 — COMPLETE / POSITIVE (reference audit and RTC mirror); COMPLETE / INCONCLUSIVE (XTR controller epoch)
 
 **Hypothesis:** existing complete controller-origin FC16 pages and Thermia Connect semantic profiles may contain an independently usable controller boot/uptime/session-generation witness. **Baseline:** earlier NATIVE-SESSION-EPOCH-CONTINUITY audit, S11F/G/H/W/X and R5 FIX2 canonically recorded evidence, genuine Online/DCM reference captures and Connect firmware profile definitions. **Controlled change:** offline parsing of complete existing slave 0x0F FC16 frames and 16-bit register time series; no YAML edit, OTA, controller reboot, UART TX/DE or live action.
