@@ -1,3 +1,17 @@
+2026-10-10 R6-P7–P10 evidence update:
+
+PROVEN / LOCAL: R6-P10 repeats independent B11D sticky RAW_NO_VALID_CRC_CANDIDATE_AT_IDLE; frames freeze at 4269, batches=1746, incomplete=1 while V5 and B11C continue RX with zero resync/drop; TX/DE=0. Zero frame/byte mismatches after freeze are STALE, not continued parity.
+
+STRONGLY SUPPORTED / CODE: original R6-P10 first-fault pending/length diagnostics output only once through logger, not exposed persistently to Home Assistant; late log cannot retrieve onset data. Alternative FIFO/TX faults do not call this diagnostic.
+
+HYPOTHESIS / OFFLINE: R6-P7 12/12 arithmetic tests align 32 raw bytes, 25 processed, 7 leftover. R6-P8 12/12 synthetic tests show 25ms idle handling can sticky-fault split frames. R6-P9 13/13 source rule checks indicate 180-byte single candidate with seven residual bytes FC23-shaped but actual received valid FC23 unproven.
+
+OPEN / UNKNOWN: actual raw residual, V5.has_pending/age at R6-P10 first fault, whether 180-byte recurrence, physical failure mechanism and native Online/DCM owner/epoch.
+
+R6-P10 FIX1 PREPARED / NOT RUN: bounded latched HA diagnostic snapshot, YAML/IDs/diff checked, not compiled or flashed; no TX authorization.
+
+---
+
 # 2026-10-10 — R6-P1 through R6-P6 FIX1 evidence update
 
 ## PROVEN / locally confirmed XTR M
