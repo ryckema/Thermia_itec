@@ -1,3 +1,41 @@
+# 2026-10-10 — Bridge11D local raw-framing fault and private original-C++ offline host validation
+
+**Sources and scopes:** locally supplied XTR M ESPHome diagnostic log 15:04:31–15:08:43 ([live report](LIVE_B11D_RX_VALIDATION_20261010.md)); genuine **cross-model** Online/DCM historical captures and the unchanged private original Thermia portable C++ source used in offline host tests. Never equate host success with physical native XTR write readiness. Owner/physical epoch UNKNOWN; auto TX, ACK and writes DENY.
+
+## PROVEN / locally confirmed — XTR M bounded, passive diagnostic observations
+- Local V5 Valid Frame Count advanced **151,615→153,659** (+2,044), V5 buffer drops/resync/geometry problems 0, and physical TX/DE 0 in this log.
+- Bridge11C **V5-delimited** original portable RX frame count advanced **151,818→153,604** (+1,786) with zero observed count/byte mismatch or original portable RX fault. This is **NOT independent raw UART framing**.
+- Bridge11D **independent raw RX** had already entered a sticky failure state: rawFrames=portableFrames=comparedV5 **56,714 frozen**, though its callback count advanced +5,377 and input bytes +38,429. Failure class **RAW_NO_VALID_CRC_CANDIDATE_AT_IDLE**, incomplete=1, fault=1, independent batches unchanged. A countDiff=0 / byteDiff=0 snapshot taken after the fault **does not demonstrate continued raw/V5 parity**.
+- No first-fault onset or pre-fault byte sequence is present in this ~4m12s capture; it cannot prove electrical noise, lost UART bytes, scheduler-latency error, or the exact fault origin. Production V5 continuity and independent B11D framing continuity are separate claims.
+- No observed FC23/epoch/owner qualification; RX-only no TX. Previous bounded 7,159-frame B11D parity success remains valid **only for its earlier window**, not for this later sticky-fault interval.
+
+## STRONGLY SUPPORTED — bounded engineering interpretation
+- Independent B11D rawframer is fail-closed after its earlier error while V5 and V5-delimited C++ parsing remain active. The current obstacle is **real-ESP raw framing and fault onset**, not proof that the original portable C++ can never accept valid ADUs.
+- Distinguish completed frame timestamps from electrical Modbus RTU character silence. The software **25 ms callback-idle boundary** has not been calibrated/validated against physical UART timing on this ESP32.
+
+## PROVEN IN HOST TEST ONLY — NOT LOCAL NATIVE SESSION PROOF
+- OFFLINE-NATIVE-OBSERVER-06: metadata-only, no-TX observer with **4,809 native cross-model event records**.
+- Bridge07: unmodified original C++ + **synthetic projected ADUs** reproduces 4,809 event records. True raw original-source replay was not yet complete in Bridge07.
+- Bridge08: 25,031 genuine cross-model source ADUs → unchanged original C++ → observer, 4,809 native events, **GCC/Clang/ASan/UBSan PASS**, output-TX=0. Source: private [CI Bridge08](https://github.com/ryckema/Thermia_Connect_Firmware/actions/runs/38051370371).
+- Bridge09: same genuine input ADUs × 3 **synthetic callback grouping/fragmentation and idle-gap schedules**, 75,093 frame occurrences per compiler run, independent host rawframer → original C++ → observer, exact frame/event parity, fail-closed fault injections, GCC/Clang/sanitizers PASS, output-TX=0. Source: private [CI Bridge09](https://github.com/ryckema/Thermia_Connect_Firmware/actions/runs/38053859261).
+- The full genuine cross-model replay does **not** prove actual electrical on-device ESP32 scheduling, unique controller boot identity, semantic FC16 ACK success, Online/DCM authenticated ownership, or any safe write action.
+
+## HYPOTHESIS
+- Callback scheduling jitter, prematurely applied 25 ms software idle boundary, truncated ADU, or noise may explain the first raw idle CRC failure. These alternatives are **not ranked or locally confirmed**; do not silently choose a cause.
+- A healthy independent RX-only startup can be remeasured only when the original fault onset is captured. A proposed ESP-only restart is **NOT RUN** and is not evidence of controller power-cycle.
+
+## OPEN / UNKNOWN
+- Earliest idle CRC failure: raw bytes, exact callback-boundary timeline, loop/heap context.
+- Real XTR physical controller power epoch, qualified native work owner, and independently validated full Online/DCM session.
+- RTU t3.5 versus chosen 25 ms callback-idle gap; effects of ESP32 scheduler and Home Assistant/ESPHome logging load.
+
+## DISPROVEN / SUPERSEDED (specific overly broad interpretations only)
+- **Disproven inference:** “Bridge11D countDiff=byteDiff=0 in this log proves continuing parity” — counters were frozen after sticky raw fault.
+- **Superseded status only:** “full 25,031 ADU replay through original source NOT RUN” was true for Bridge07, but **was later completed in Bridge08**. Preserve Bridge07's original historical test scope.
+- **Not disproven:** host C++ bridge integrity, XTR sensor register mapping, or native Online integration potential. These findings do not promote write readiness.
+
+---
+
 # 2026-10-10 — Native session/epoch evidence and cross-model RTC mirror (OFFLINE ONLY)
 
 **Historical evidence reconciliation (2026-10-10):** de genuine cross-model RTC-cluster `0858–085E` was **al gedocumenteerd op 2026-10-05** in `Thermia_Connect_Firmware/findings/CM930_UNMAPPED_PATTERN_CLASSIFICATION.md`. De nieuwe bijdrage van OFFLINE-EPOCH-WITNESS-02 is de onafhankelijke woord-/tijdcontrole tegen de firmware-klok `06EA–06F0` plus de classificatie als **ongeschikt zelfstandig controller-epoch-bewijs**. De bestaande firmwarefinding blijft prioritaire eerdere ontdekking; lokaal XTR-bewijs ontbreekt.
