@@ -1,3 +1,33 @@
+# 2026-10-11 — R6-P37/P39/P40 evidence reconciliation
+
+## PROVEN / locally confirmed
+- R6-P37 was compiled/flashed by user to existing Waveshare. Last XTR window reported 3510 valid frames, 573/573 known FC16, zero resync/drops/geometry mismatch, zero B11C/B11D differences, UART writes/TX attempts=0, DE reported LOW. Controller FC23=0, 0708=0 and bootstrap=0/32; source H021 pages absent. This confirms RX-only stability only for sampled interval, NOT native full session or electrical GPIO fail-low at reset.
+- Historical XTR EXP355 and EXP386 proved controlled restart fresh bootstrap 32/32 and runtime recovery in their specific active V4.1 context. EXP388 has two positive restart subtrials but is still RUNNING/PARTIAL; cancellation branches not tested.
+
+## PROVEN / offline model only
+- R6-P39 offline decision supports PREPARING a bounded responder design, NOT active V5 go-live.
+- R6-P40 isolated Python model: 7/7 tests, 2048 synthetic prerequisite combinations and 500 retries; strongest result REVIEW_ONLY_NO_TX; ALL actual TX/ACK/0708/semantic actions DENY. No real controller or UART test occurred.
+- R6-P38 did NOT independently verify a complete ESPHome compile; user compiled/flashed P37 separately.
+
+## STRONGLY SUPPORTED
+- Controller-restart + continuous independent state/capture is a historically useful bounded context, but neither FC23 frame shape nor bus silence nor A80F=0005 nor ESP boot marker identifies a unique physical epoch/owner. A valid FC16 ACK is transport only, not semantic acceptance.
+- First native FC23 response, individual bootstrap FC16 ACKs, 0708 mailbox and semantic writes must be authorized independently, not as automatic stages.
+
+## OBSERVED / genuine cross-model only
+- Complete 32/32 fresh sessions; selected 31/31 refresh; interrupted mixed 28/28; prolonged first-page retry in some Eco5 captures. These DO NOT authorize XTR TX.
+
+## HYPOTHESIS
+- A separately approved single-slot first-response test may someday be possible in a controller-confirmed fresh context, but one answer without follow-up could leave the controller waiting for ACKs. No active P37 response is authorized.
+
+## OPEN / UNKNOWN
+- Controller unique physical epoch; hot-rejoin ownership; controller pending state after unACKed bootstrap; physical DE at reset/crash; new active responder response timing; EXP388 two unexercised cancellation branches.
+
+## DISPROVEN / SUPERSEDED
+- Treating CRC-valid FC23, 085F zero streak, generic ACK, or successful host-only guard flags as TX authorization is unsupported. P37 RX-only regression must not be described as full native Online readiness.
+
+**Safety:** native TX DENY, no extra hardware/wiring desired, active flashable YAML only after explicit separate approval. R6-P41 pending offline first-response aftermath analysis. Prior evidence and negative/inconclusive findings preserved below.
+
+---
 # CURRENT FINDINGS — 2026-10-11 R6-P30 Stage A/B/C update
 
 > This new section supersedes earlier CURRENT headings only for live and latest completed statuses. Earlier raw observations, negative results and unresolved protocol hypotheses remain historically intact.
