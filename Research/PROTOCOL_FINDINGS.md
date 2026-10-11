@@ -1,3 +1,31 @@
+# CURRENT FINDINGS — 2026-10-11 R6-P30 Stage A/B/C update
+
+> This new section supersedes earlier CURRENT headings only for live and latest completed statuses. Earlier raw observations, negative results and unresolved protocol hypotheses remain historically intact.
+
+## PROVEN / locally confirmed on XTR M
+- **R6-P30 Stage B LIVE RX-only census, bounded:** user-flashed ESPHome 2026.9.0 API log 01:59:17.735–02:01:14.407: both new diagnostics exist; 12 samples reached cfg=1/32, rt=1/11, H021=0/4 pages/0/22 aliases, 174/174 native 0x0F FC16 geometries matched, no other page family in that sample. Observed are 04A6/13 configuration and 085F/5 service/runtime only. **No current H021 numeric page values can be promoted**; NaN/read-only placeholder is correct.
+- Stage B TX/DE stayed 0/LOW, while old production entities and Bridge11C/D transport remained active. No FC23/cold-start witness event seen. Initial V5 resync=4 and Bridge02 integrity fault=1 were already present at first visible sample, then stable; passive Bridge04 later recovered. Bridge13 ABORT_NO_TX denotes refused dispatch, not an actual UART transmit.
+- Historical manually bounded local native bootstrap 32/32 and runtime handoffs (S10A/S11F/S11I/S11W/S11X) remain source-specific; Stage B did NOT recreate them and has no automatic owner authority.
+
+## STRONGLY SUPPORTED / code or host evidence (not local live integration proof)
+- **R6-P30 Stage A:** offline nontransmitting Python adapter correctly respects 43 XTR page geometries and 22 H021 static alias entries, guarded source origin; 31/31 host tests.
+- **R6-P30 Stage C:** 42/42 additional host tests, 73/73 including Stage A. Synthetic 32/32 full-page/matched ACK timeline produces 22/22 typed H021 fixture values. Program specifically blocks live publishing and any TX on unknown controller epoch/owner, parser/source/ESP restart faults or stale/partial pages. Stage C is **offline ONLY**, not integrated into running ESPHome or HA registry.
+- Stage A replay of 22,580 CRC-valid original genuine cross-model ADUs with 2,321 XTR-compatible geometries only establishes **geometry compatibility**, not local XTR parameter data provenance. XTR- and ATEC-geometry differences must not be blurred.
+
+## OPEN / UNKNOWN
+- Independently proven controller power epoch/work owner on current XTR; general autonomous Online/DCM hot-rejoin; current run full 32/32 bootstrap and receipt of H021 settings pages; real live H021 publishing; actual HA-registry IDs and production completeness; semantic setting write confirmation; long-duration B11D framing issue; cold-start success detection of R6-P24.
+- 32/32 page+ACK sequence is a useful qualified **transport event**, not a unique physical epoch ID and not blanket TX permission. Normal-traffic polling 04A6/085F with no target pages remains insufficient for read-only engineering values.
+- No stage C YAML/firmware was flashed; R6-P30 Stage D remains PROPOSED / NOT RUN. Do not elevate synthetic fixture values as new locally observed registers or deploy H021 write controls.
+
+## DISPROVEN / SUPERSEDED universal claims
+- Prior Stage B PREPARED/NOT FLASHED **as current deployment status**: superseded by actual user logs. It was correct at preparation time, so preserve its history.
+- A host 32/32 PASS, FC16 address/count ACK, matching XTR geometry in a cross-model capture, repeated 085F/04A6, or W4/W5 selectors cannot prove independent owner, current HA value or semantic acceptance.
+- Zero *new* resync during Stage B does **not** mean V5 parser had zero historic resync. Local census hold=0 is not a certificate for independent no-fault controller epoch.
+
+**SAFETY / AUTHORITY:** device presently RX_ONLY. Autonomous FC23 response, 0708 mailbox answer, FC16 ACK, semantic writes and any unsolicited TX remain DENY, subject to exact current owner/session evidence and explicit future authorization. Unexpected traffic capture-only. No room-sensor-emulation detour, no genuine DCM attachment required.
+
+---
+
 # CURRENT 2026-10-11 — R6-P24 LIVE and R6-P25–P29 evidence classification
 
 > Older R6-P24 PREPARED / NOT FLASHED text below is historical. Superseded as current status by actual user-supplied live logs. Recent R6-P25–P29 research was entirely offline; no private native responder implementation is placed in this public file.
