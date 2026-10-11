@@ -1,3 +1,16 @@
+# 2026-10-11 — CURRENT STATUS OVERLAY: R6-P37 to R6-P40
+
+**Current installed firmware:** R6-P37 DENY-only RX-only on the existing Waveshare ESP32-S3 (user compiled/flashed). Last examined local XTR log at ~20:33:15–20:36:42: 3510 valid frames, FC16 573/573 recognized, no geometry mismatch/resync/drop, no B11C/B11D count or byte differences, UART TX attempts/writes=0, DE reported LOW. FC23=0, 0708 mailbox=0, bootstrap=0/32, H021 NaN because target pages absent. This is limited live RX-only proof, not a fresh native Online session or evidence of electrical fail-low at reset.
+
+**Latest completed experimental step:** R6-P40 COMPLETE/POSITIVE for isolated offline host-only single-slot review model (7/7 methods; 2048 guard combinations; 500 repeat attempts). All actual TX/FC16 ACK/mailbox/semantic actions DENY; it did not run on the bus. R6-P39 COMPLETE/POSITIVE as offline readiness review, immediate active V5 NO-GO/NOT RUN. R6-P38 assistant full ESPHome build INCONCLUSIVE (dependencies unavailable), but user subsequently successfully compiled/flashed P37; do not conflate these. R6-P37 COMPLETE/POSITIVE for bounded live RX-only regression. Earlier P31–P36 are offline audits and models, not active XTR trials.
+
+**Locally proven historical native operation:** EXP355 and EXP386 show guarded controller cold-restart fresh-session recovery with ESP remaining on and 32/32 initial page synchronization followed by runtime qualification; EXP388 restarted successfully twice in selected subtrials, but remains RUNNING/PARTIAL because pre-semantic and refresh-only cancellation cases have not been separately tested. Last historically fully completed active V4.1 experiment EXP387. The current live P37 has no active UART-write or DE-on code and cannot be treated as an active responder.
+
+**Protocol model:** genuine cross-model DCM captures support complete 32/32 fresh session, 31/31 selective refresh, and >100s retries on initial 03E8. Cross-model results are not XTR authorization. Controller physical epoch UNKNOWN; native work owner UNPROVEN; hot-rejoin after ESP restart NOT PROVEN; native TX DENY. First FC23 response, each FC16 ACK, 0708 mailbox and semantic write require separately bounded permissions. An FC16 ACK alone is not semantic acceptance.
+
+**Safety and next experiment:** user does not want additional hardware/wiring, and immediately compiles+flashes any supplied YAML. No active YAML should be supplied without separate explicit approval of a live active experiment. R6-P41 proposed OFFLINE/NOT RUN: analyze controller pending state after an initial native response without subsequent page ACKs using existing captures and historical records; define abort/recovery and open unknowns. No reboot/TX planned. P39/P40 did not alter installed firmware, warm pump or GitHub. Raw original EXP355/386/388 logs were not independently reparsed in P39/P40.
+
+---
 # CURRENT — 2026-10-11 R6-P30 Stage C offline complete; Stage B actually LIVE RX-only
 
 > Supersedes prior **current-status** headings lower in this file, including the preceding R6-P24 / R6-P29 update. Historical experiment observations below are retained unmodified. Do not infer a new native owner or bus action from Stage C host tests.
