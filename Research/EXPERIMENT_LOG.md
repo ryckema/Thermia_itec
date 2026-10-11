@@ -1,3 +1,30 @@
+# 2026-10-11 — Newest reconciliation R6-P37–R6-P40
+
+## R6-P40 — COMPLETE/POSITIVE (offline contract); ACTIVE NOT RUN
+**Hypothesis:** a strictly one-shot synthetic first-response review context can be represented without granting actual native TX or follow-up privilege.
+**Baseline:** R6-P39 decision, on-device R6-P37 RX-only, historical EXP355/386 and partial EXP388.
+**Exact controlled change:** isolated Python contract model and tests; NO YAML, UART code, TX, controller restart or semantic write.
+**Relevant fields:** historically documented slave 0x0F FC23 071C/count8 and 0730/count8; subsequent 03E8/count14 initial FC16 page export and 0708 mailbox remain excluded. No private reply payload or CRC is included in this Research entry.
+**Result:** 7/7 test methods, exhaustive 2048 combinations of eleven synthetic guards, 500 repeat attempts. Maximal outcome REVIEW_ONLY_NO_TX; all physical actions return DENY. No raw on-bus replay or fresh controller event in P40.
+**Positive criterion:** one bounded review, no output; met. **Negative/abort:** missing guard, stale deadline, second attempt, reset, fault, page ACK, mailbox or write DENY; passed offline. **Recovery:** none for offline test; future live abort must latch DENY, return DE LOW where possible, inspect heating/DHW and roll back to RX-only. ESP rollback may not terminate controller waiting state.
+
+## R6-P39 — COMPLETE/POSITIVE (offline decision); ACTIVE NO-GO/NOT RUN
+**Hypothesis:** old locally observed V4.1 coldstart recovery supports a bounded new design review, not direct P37 response activation.
+**Baseline:** EXP355 COMPLETE/POSITIVE, EXP386 COMPLETE/POSITIVE, EXP388 RUNNING/PARTIAL (two successful restart subtests; two cancellation branches remain untested), P37 RX-only.
+**Exact change:** source and log history analysis only.
+**Result:** GO for offline review model; NO-GO to flash active V5 because P37 has no active TX adapter, contemporary epoch/owner unknown, missing physical reset/response-slot validation. First reply, page ACK, mailbox and semantics are independent authority scopes. No new payload or on-wire experiment.
+
+## R6-P38 — COMPLETE/INCONCLUSIVE for assistant's independent build attempt
+Assistant runtime lacked ESPHome/PlatformIO dependencies so independent full build NOT VERIFIED. User resolved missing r6p37_deny_only.hpp header and independently compiled/flashed P37; user compile success is not an assistant compile.
+
+## R6-P37 — COMPLETE/POSITIVE live bounded RX-only regression
+**Baseline:** known-good RX-only FIX4. **Controlled change:** P37 central DENY-only adapter substituted for two guarded physical TX paths; user installed on existing ESP, no wiring changes.
+**Local result:** latest ~20:33:15–20:36:42 log: V5 valid=3510, FC16 573/573 known, geometry mismatch/resync/drop=0, B11C/B11D difference/fault=0, UART writes/TX attempts=0, DE reported LOW. No FC23/0708, 0/32 bootstrap, H021 NaN since source pages not received.
+**Positive:** RX-only bus/bridge regression over observed intervals. **Unproven:** autonomous native session, physical controller epoch/owner, indefinite stability, physical fail-low through reset. No observed need to abort/recover.
+
+**Historical EXP388 remains RUNNING/PARTIAL.** The P-series offline reviews do not close its remaining live branches. R6-P41 proposed offline/not run.
+
+---
 # 2026-10-11 — R6-P30 Stage A/B/C experiment records (newest first)
 
 > New actual R6-P30 Stage B live result supersedes its earlier prepared-only state. Earlier PREPARED snapshots and all historical negative/inconclusive results below are intentionally preserved. Updating GitHub is NOT running a new device experiment.
