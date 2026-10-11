@@ -1,3 +1,35 @@
+# 2026-10-11 — R6-P41–P49 offline experiment reconciliation
+
+**Shared baseline:** deployed R6-P37 RX-only, historical EXP355/386 full native cold-restart success, EXP388 RUNNING/PARTIAL. All entries below are COMPLETE/POSITIVE **within offline scope**; R6-P43 isolated abort causality is INCONCLUSIVE, R6-P44 active NO-GO. **Shared positive criterion:** bounded evidence extraction or host tests with no physical TX. **Shared negative/abort criterion:** ambiguous frame, unproven owner, bad CRC/geometry, unexpected peer, unauthorized TX or false controller-state promotion -> capture-only/DENY. **Recovery:** no device intervention was performed; reset of a host fixture does not prove real controller recovery, and P37 stays installed. Frame descriptions are public geometries only, no private responses or control tooling.
+
+## R6-P49 — Host C++ raw RX chunks→event bridge — COMPLETE / POSITIVE OFFLINE
+**Hypothesis:** Host C++ raw RX chunks→event bridge. **Baseline:** P47/P48. **Exact controlled change:** bounded accumulator; external frame-end input; CRC/geometry/prefix failure DENY. **Relevant frames/fields:** FC03/04 ambiguity; FC16/23 request shapes. **Positive/result:** 25,031 framed records ×3 =75,093 replays; 1,171,252 sanitizer assertions, no TX. **Negative/abort/unknown:** unbounded/ambiguous/bad frame rejected; boundary not independently proven. **Recovery:** host DENY/reset only; no bus state changed.
+
+## R6-P48 — Source identity versus CRC frame geometry — COMPLETE / POSITIVE OFFLINE
+**Hypothesis:** Source identity versus CRC frame geometry. **Baseline:** P37/P45/P47. **Exact controlled change:** seven genuine cross-model captures indexed and conservative classifier tested. **Relevant frames/fields:** FC23 requests 5096/replies 3532; FC16 requests 4872/ACK shapes 3730; FC03/04 and FC06. **Positive/result:** 25,031/25,031 CRC valid; 125,167 assertions; owner/epoch/TX promotions=0. **Negative/abort/unknown:** no physically authenticated sender or UART-boundary proof. **Recovery:** host DENY/reset only; no bus state changed.
+
+## R6-P47 — P37-like RX-to-P45 normalized adapter — COMPLETE / POSITIVE OFFLINE
+**Hypothesis:** P37-like RX-to-P45 normalized adapter. **Baseline:** P45/P46. **Exact controlled change:** host C++ event adapter and synthetic fixtures; no firmware wiring. **Relevant frames/fields:** 32 staged FC16 requests; FC23/0708 observations. **Positive/result:** 8,000,146 sanitizer assertions, 100,000 randomized sequences; all TX DENY. **Negative/abort/unknown:** wrong origin/order/peer/reset/prefix abort; synthetic session ID not real owner. **Recovery:** host DENY/reset only; no bus state changed.
+
+## R6-P46 — Adapter interface source audit — COMPLETE / POSITIVE OFFLINE
+**Hypothesis:** Adapter interface source audit. **Baseline:** P44/P45 and installed P37. **Exact controlled change:** audit 15 source boundaries; adapter not yet implemented. **Relevant frames/fields:** P37 RX FC23/FC16/0708, UART 9600 8E1, DE. **Positive/result:** 14/14 static checks; no P37 executable output. **Negative/abort/unknown:** unknown origin/slot/physical DE forbids active bridge. **Recovery:** host DENY/reset only; no bus state changed.
+
+## R6-P45 — Host-only session model — COMPLETE / POSITIVE OFFLINE
+**Hypothesis:** Host-only session model. **Baseline:** P40/P44; historical EXP355/386. **Exact controlled change:** C++17 32-stage observer, 2048 guard cases and deliberate firmware compilation fence. **Relevant frames/fields:** 03E8/count14 to 06F4/count19 and 085F/0708. **Positive/result:** 3,920,085 assertions; 100,000 random sequences, TX DENY. **Negative/abort/unknown:** misorder/timeout/peer/ESP compilation abort; no physical proof. **Recovery:** host DENY/reset only; no bus state changed.
+
+## R6-P44 — Full-session feasibility — COMPLETE / POSITIVE OFFLINE
+**Hypothesis:** Full-session feasibility. **Baseline:** EXP355/386, partial EXP388, P41–43. **Exact controlled change:** compare historical V4.1 vs P37 source, 14 safety gates. **Relevant frames/fields:** first 0x0F FC23, 32 FC16 pages, runtime 085F/0708. **Positive/result:** 7/7 source checks; historical full recovery distinguished. **Negative/abort/unknown:** physical driver/DE/owner/slot/uncompleted-bootstrap recovery not proven; active NO-GO. **Recovery:** host DENY/reset only; no bus state changed.
+
+## R6-P43 — Can incomplete bootstrap be recovered? — COMPLETE / POSITIVE OFFLINE (CAUSAL RECOVERY INCONCLUSIVE)
+**Hypothesis:** Can incomplete bootstrap be recovered?. **Baseline:** P41/P42 plus EXP355/386. **Exact controlled change:** re-read existing captured episodes and historical logs; 11 evidence checks. **Relevant frames/fields:** first FC23 reply, 03E8 first page and ACK. **Positive/result:** 11/11; full historically local restart recovery exists. **Negative/abort/unknown:** no captured intentionally ACK-less first reply: causal recovery INCONCLUSIVE. **Recovery:** host DENY/reset only; no bus state changed.
+
+## R6-P42 — Abort/pending-state conservative model — COMPLETE / POSITIVE OFFLINE
+**Hypothesis:** Abort/pending-state conservative model. **Baseline:** P40/P41, historical EXP355/386. **Exact controlled change:** host-only policy for hypothetical first response and missing ACK. **Relevant frames/fields:** 03E8 initial FC16; later FC16 ACK, mailbox/write excluded. **Positive/result:** 10/10 tests; 529 event pairs and 102 synthetic retries; all DENY. **Negative/abort/unknown:** ESP rollback not controller abort, pending state unresolved. **Recovery:** host DENY/reset only; no bus state changed.
+
+## R6-P41 — First-response aftermath in genuine references — COMPLETE / POSITIVE OFFLINE
+**Hypothesis:** First-response aftermath in genuine references. **Baseline:** P40 and seven cross-model captures. **Exact controlled change:** read-only extraction of FC23 paired episodes through first 03E8 ACK. **Relevant frames/fields:** 0x0F FC23 then 03E8/count14. **Positive/result:** 7/7 paired windows proceed to 03E8 ACK; 2 Eco5 episodes ~108s with 102 focused first-page requests. **Negative/abort/unknown:** zero intentional response-only/no-ACK windows; controller timeout UNKNOWN. **Recovery:** host DENY/reset only; no bus state changed.
+
+---
 # 2026-10-11 — Newest reconciliation R6-P37–R6-P40
 
 ## R6-P40 — COMPLETE/POSITIVE (offline contract); ACTIVE NOT RUN
