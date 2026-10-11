@@ -1,3 +1,57 @@
+# 2026-10-11 — NEWEST EVIDENCE OVERLAY: R6-P41–P59 (OFFLINE; ACTIVE NO-GO)
+
+> This overlay updates current evidence classification only. Earlier logs, historical positive and negative experiments, register interpretations and source quotations below remain intact. No step P41–P59 transmitted to an XTR, compiled/flashed a new ESPHome YAML, or verified on-device TX.
+
+## PROVEN / locally confirmed on this XTR M — **NO NEW PROTOCOL PROOF from P41–P59**
+
+- Historical **EXP355** and **EXP386**: with older active Write Beta V4.1, a real controller restart followed by guarded first response, full ordered 32/32 controller page export (03E8/count14 through 06F4/count19), and fresh runtime qualification. **EXP388 RUNNING / PARTIAL**: two successful controller-restart subtrials; pre-semantic and refresh-only cancellation branches still not live tested. Last fully completed historical active EXP387.
+- Currently installed **R6-P37** RX-only: prior bounded local XTR capture 3,510 valid frames, 573/573 recognized FC16, zero resync/drops and B11C/B11D parity issues, zero software TX attempts, DE *reported* LOW. Native first response, initial bootstrap and 0708 mailbox **not observed in that interval**. No electrical DE reset-fail-low proof.
+- Nothing in P41–P59 promotes old full-restart success to proof of active V5 readiness, an isolated first-response-only recovery, a safe controller abort, or physical epoch/owner.
+
+## PROVEN / offline host-code and source analysis **ONLY**
+
+- **P41–P43:** seven *genuine cross-model* paired FC23 first-response episodes all followed by a first 03E8 request and eventually a matching ACK; two Eco5 windows ~108 seconds of first-page retries (102 requests within the focused analysis windows, different scope from wider P31 episode counters). **Zero** intentionally isolated first reply with no first-page ACK. P42: 10/10 tests, 529 event-pair scenarios; P43: 11/11 evidence checks. Host abort policy keeps hypothetical controller pending-state **UNRESOLVED**.
+- **P44:** 7/7 source checks and 14 active-safety gates reviewed; historic V4.1 active responder and P37 output-free receiver are different implementations.
+- **P45–P47:** host-only C++ 32-page/session model and normalized RX-event adapter, 3,920,085 P45 and 8,000,146 P47 assertions plus 14/14 P46 source checks. Synthetic IDs or guard flags supplied by a fixture are not current XTR facts and never authorize physical action.
+- **P48–P49:** seven archived cross-model raw logs contain **25,031/25,031 CRC-good pre-delimited frame records**, among them 5,096 FC23-request shapes and 4,872 FC16-request shapes. The request-shape sum is **9,968**. P48 passed 125,167 assertions; P49 processed those records under three chunk partitionings (75,093 replays; 1,171,252 sanitizer assertions). No raw on-device UART-callback framing or actual physical sender was independently verified. Source recognition is **shape**, not owner proof.
+- **P50:** 15/15 source checks: B11D captures bytes independently before V5 parser and reconstructs CRC candidates after >=25 ms since last UART callback; B11C checks already V5-framed ADUs. B11D counts but does not categorically reject competing CRC-valid candidate lengths. Parity stability in earlier local logs is a consistency observation, **not** electrical Modbus RTU wire-end measurement.
+- **P51–P55:** integrated host-only RX→event→session pipeline, **1,828,923 ASan/UBSan assertions**, 50,000 seeded error cases and 75,093 chunk replays. P55 **23/23 static source checks** show preservation of existing P37 production blocks/entities versus FIX4, allowing only the known P37 diagnostic addition; no new ESPHome build or live implementation.
+- **P56–P59:** old V4.1 source contains **58 textual write_array occurrences and 58 flush occurrences** (not 58 distinct confirmed transfers); new host-only centralized scope review requires separate synthetic evidence for first response, each of 32 ACK proposals and later runtime/mailbox/write. Sticky DENY on invalid/duplicate/out-of-context attempts. Integrated **735,721 sanitizer assertions**, 60,000 deterministic adversarial cases, 25,031 cross-model records, 9,968 FC16/FC23 request shapes, P59 **15/15 static checks + 4/4 compile barriers**. All real UART/GPIO/DE output actions remain DENY.
+
+## OBSERVED / genuine Online/DCM captures — **cross-model, not present XTR authority**
+
+The seven historical Eco5/ATEC raw references prove the captured frame-shape sequences and retries in those models. They **do not** give a controller-epoch signal, live XTR ownership, physical sender authentication, safe first-response slot or unique universal timeout. The pre-delimited file boundaries do not independently validate on-wire UART idleness or callback scheduling. A standard FC16 address/count ACK is not semantic acceptance.
+
+## STRONGLY SUPPORTED
+
+- Per-action, single-consumer, fail-closed authority is a useful **software architectural separation** from historical distributed TX sites. Current RX metadata should be kept distinct from response permission. This remains **host model evidence**, not validated heat-pump response behavior.
+- Unknown/ambiguous CRC-good frame boundaries and provenance must remain capture-only until separately resolved; paired independent parsers can share correlated assumptions and cannot prove electrical framing.
+- A real controller restart plus fresh full bootstrap has historically requalified a local XTR session, but is **not** an independently proven recovery for a deliberately unfinished handshake or ESP rollback.
+
+## HYPOTHESES
+
+- The future ESPHome observer could adopt provenance-labelled host boundaries without changing production RX controls; no device-side implementation/compile has yet been supplied or run.
+- After an isolated first response without ACK, the controller **might** retry or remain pending before an unknown timeout; no captured intentional zero-ACK episode tests that causal question. No infinite stall, lockup, or heating/DHW impact is asserted.
+
+## OPEN / UNKNOWN
+
+1. Independently measured physical GPIO21/RS485 DE safe-low through boot, OTA, reset and brownout.
+2. Bounded, fault-safe real UART TX execution/flush and DE release on the Waveshare.
+3. Independent, contemporaneous controller epoch, sender/owner and collision-free native reply slot.
+4. Guaranteed physical frame-end boundary when callback idle and CRC-valid prefixes disagree.
+5. Controller-side timeout/abort/recovery after incomplete page export; live pre-semantic and refresh-only EXP388 cancellation branches.
+6. Future ESPHome integration/compile and safe user-reviewed on-device RX-only regression; active V5 native TX remains **NO-GO / NOT RUN**.
+
+## DISPROVEN / SUPERSEDED claims
+
+- “A CRC-valid frame, slave address, 25 ms callback-idle gap, B11C/B11D parity agreement or successful synthetic fixture authorizes native replies” is **not supported** and must not be used as a TX gate.
+- “ESP software rollback proves the Thermia controller left a pending bootstrap” is **not supported**.
+- “P41–P59 host-only success means an active V5 native Online integration has run” is **false**.
+- P50 provides **NEGATIVE** evidence for the assertion that current B11D callback-idle measurement by itself proves a physical wire boundary; it does **not** disprove normal B11D operation or earlier bounded local parity observations.
+
+**Safety/current direction:** P37 deployed and unchanged, native output DENY, EXP388 still RUNNING/PARTIAL. R6-P60 is **proposed only, NOT RUN** as a passive ESPHome integration-readiness assessment. No private 0x0F response code, recovered security material or command-mailbox tooling is included in this canonical evidence overlay.
+
+---
 # 2026-10-11 — R6-P37/P39/P40 evidence reconciliation
 
 ## PROVEN / locally confirmed
