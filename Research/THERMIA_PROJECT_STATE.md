@@ -1,3 +1,25 @@
+# 2026-10-12 — CURRENT STATE: R6-P74AI closed; R6-P74AB installed RX-only
+
+> **Newest dated reconciliation.** This section supersedes *status statements* in older P74B–P74L overlays, not their historical observations. Older content remains below unchanged. Do not interpret delivery of a YAML as a live test.
+
+**Current installed / locally observed:** **R6-P74AB COMPLETE / POSITIVE — bounded live RX-only normal runtime**, from user-supplied `Pasted text(20261012-095002).txt` (2026-10-12 11:46:13–11:49:33). P74AB EVENT 823→1101 (21 snapshots); P74W streaming and P74L journal consistent at their separately sampled times. Ordinary native `0x0F FC16 04A6/13` and `085F/5`; no new FC23, 32-page bootstrap or response ownership. V5 parser resync/drops, bridge byte/count differences and software TX indicators remain zero in observed window; P74D reports DENY_LOCKED and software DE LOW. **Not** an electrical DE/brownout/FIFO proof, complete production-HA regression, or live controller session approval. Configuration dump button not exercised.
+
+**Latest completed experiment:** **R6-P74AI COMPLETE / POSITIVE (OFFLINE, bounded direct original-Core parity)**. The *entire original* `Thermia_Connect_Firmware/tools/xtr_dcm_reference_core.py` was SHA-verified to Git blob `671af7b27d2fbc2df988f4f080d13c7f06e6c496`, imported and directly executed against the unchanged C++ P74AF metadata projector: 4488/4488 default-unqualified owner decisions match; 4394 line-linked genuine Eco5/ATEC raw ADUs, 94 collaborator shape-only metadata; 16 local XTR journal metadata and seven explicitly synthetic qualified cases checked. In the raw-enriched fixture, 164 canonical FC23 shapes become `POLICY_OPEN / tx=False` (not `NO`); 334 prior OTHER are decoded FC03 responses. Prior P74AI RUNNING/PARTIAL is **superseded for the direct-execution blocker only**, not erased; this is not full stateful equivalence or live TX approval.
+
+**Other recent results (preserving exact scope):**
+- P74W COMPLETE/POSITIVE live RX-only; P74X COMPLETE/POSITIVE offline post-prefix classification; P74Y COMPLETE/POSITIVE offline cross-model episode provenance; P74Z COMPLETE/INCONCLUSIVE for genuine controller cancellation; P74AA COMPLETE/POSITIVE offline; P74AB COMPLETE/POSITIVE live (normal RX only).
+- P74AC COMPLETE/POSITIVE source audit; P74AD COMPLETE/POSITIVE source-only checks; P74AE COMPLETE/NEGATIVE *for current active-TX readiness* (architecture NO-GO, no failed physical TX trial).
+- P74AF, P74AG, P74AH COMPLETE/POSITIVE OFFLINE (metadata-only response intent, sticky DENY/HOLD, replay/regression); **not deployed**. P74AJ COMPLETE/INCONCLUSIVE for independently identified controller epoch; P74AK COMPLETE/POSITIVE OFFLINE deny-review contract; **active NO-GO**.
+- Historical XTR V4.1 EXP355/386 COMPLETE/POSITIVE constrained controller-restart 32/32 bootstrap; EXP387 COMPLETE/POSITIVE active-path historical; **EXP388 RUNNING/PARTIAL** (pre-semantic and refresh-only cancellation branches untested).
+
+**Protocol model and safety:** geometry/payload recognition, host-policy `POLICY_OPEN`, ordered synthetic 32/32 and FC16 address/count ACK are not exclusive response-slot ownership, semantic acceptance or authority to transmit. `0x085F`, recovery/retained service and `0x0708` require evidence-bound authorization not present in installed P74AB. Native TX **HARD DENY**; no autonomous FC23 response, ACK, mailbox service or semantic write. Never infer controller reboot from ESP reboot, constant A80F or A80E fluctuations (observed 0000↔0020 with no independent reset marker).
+
+**Next:** preserve P74AB; offline/source work only until an independently verified same-controller-epoch/work owner, physical frame-end/response slot and DE/FIFO fail-low safety contract can be established. No new active experiment is prepared or authorized. User has no genuine DCM and cannot record one locally; room sensor is not the target and must remain connected.
+
+**Detailed additive evidence record:** [R6-P74W_TO_P74AI_RECONCILIATION_20261012.md](R6_P74W_TO_P74AI_RECONCILIATION_20261012.md). Public artifacts deliberately omit private emulation payloads/implementation.
+
+---
+
 # 2026-10-12 — CURRENT STATUS OVERLAY: R6-P74B through R6-P74L (latest user evidence)
 
 > **Current superseding status only; older observations and experiments below remain intact.** This overlay reconciles results supplied in the project conversation after the 2026-10-11 P41–P59 overlay. The repository had not yet reflected these newer live tests. No additional experiment was run by this documentation update.

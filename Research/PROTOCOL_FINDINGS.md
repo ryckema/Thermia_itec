@@ -1,3 +1,38 @@
+# 2026-10-12 — R6-P74W through P74AI protocol findings (newest additive overlay)
+
+## PROVEN / locally confirmed on XTR M, strictly bounded
+- **P74W** streaming RX-only user log: monotone native event stream 78→342 while 32-entry journal overwrites old metadata; no observed parser/drop/bridge diff or software TX, no fresh FC23/32/32.
+- **P74AB** user-live RX-only log: 21 P74AB snapshots EVENT 823→1101, 0 retry/follow/quarantine/eventgaps, stage0/prefix0/32, P74D DENY_LOCKED, zero visible software TX and no new parser anomalies. Only ordinary FC16 04A6/13 and 085F/5 observed. Software `DE_LOW` is **not** independent electrical confirmation.
+- **Historical EXP355/386** locally completed guarded active V4.1 fresh native 32/32; those older conditional successes do not establish authorization for current V5, retained hot rejoin or general controller epoch.
+
+## PROVEN / offline source, historical cross-model replays or synthetic tests ONLY
+- P74X fixes synthetic post-prefix false HELD without authorizing known FC16 follow-on; P74Y reconstructs seven unique response-anchored FC23→first-page candidate episodes; P74Z confirms two repeated-first-page Eco5 windows but not controller cancellation; P74AA ledger integrity 1341/1341.
+- P74AC reconciles six TX route families from the prior 58 *source-site* v4.1 inventory, not 58 wire-transmissions. P74AD 38/38 current P74AB static source checks; P74AE concludes TX-readiness NO-GO due to 11 unresolved or partially proven of 12 gates.
+- P74AF/AG/AH: P74AB event metadata → potential `NO`/`POLICY_OPEN` intent only; sticky HOLD after integrity gap; 956305 sanitizer assertions and 48/48 source checks. No UART/DE interface or ESPHome deploy for offline components.
+- **P74AI:** complete original SHA-pinned public Python `Core` directly imported/executed against C++ shape projector: 4488/4488 owner outputs agree **in default-unqualified state**. Evidence 4394 CRC-valid raw cross-model ADUs, 94 collaborator metadata-only records, 16 local XTR journal *metadata* and 7 synthetic qualified reference cases. Raw-enriched 164 canonical FC23 requests correctly classify `POLICY_OPEN, tx=False`; 334 earlier `OTHER` events decode as FC03 responses. Original previous P74AI `RUNNING/PARTIAL` due to missing direct import is superseded. **No claim of universal state-machine equivalence, physical sender identification, electrical slot or local live FC23 response.**
+- P74AK host safety boundary: 436720 sanitizer assertions, 34/34 static checks, output always `TX=DENY` even with all synthetic evidence inputs true.
+
+## STRONGLY SUPPORTED
+- Actual per-frame RX provenance is required to classify native shape but cannot independently establish owner/sender/epoch; preserving canonical FC23 read/write metadata prevents false `NO` in offline classifications without granting permission.
+- The Python public reference owner taxonomy and C++ P74AF metadata projection agree for the tested unqualified dataset, while *qualified owner state* remains a separate safety requirement.
+
+## HYPOTHESIS
+- A future single controlled output boundary behind independently established owner, epoch and response slot could reuse the passive event adapter and hardened reference architecture; no approval for active code or test is implied.
+
+## OPEN / UNKNOWN
+- Current same-controller-epoch continuity after ESP OTA; independently qualified outstanding-work owner; physical wire-end/response slot and DE reset/brownout fail-low/FIFO-drain; post-32 XTR live rebootstrap; retained 085F service authorization; native write semantic acceptance in this V5 baseline; actual EXP388 pre-semantic/refresh-only cancellation.
+- P74AJ: A80E repeatedly fluctuated 0000↔0020 without independently verified controller reset, invalid as **standalone** epoch proof; A80F constant per sampled run does not establish an epoch.
+- P74AB Configuration dump action and HA production-entity regression not fully exercised in supplied log.
+
+## DISPROVEN / SUPERSEDED
+- Older top-level GitHub status `P74E installed; P74L PREPARED` superseded by later user-live P74W/P74AB results; historical P74L prepared record preserved below.
+- `Original Python Core never executed` superseded by direct source-verified P74AI run; earlier source-faithful selected-methods test remains historical fact.
+- FC23 canonical geometry, FC16 page shape or address/count ACK, and `POLICY_OPEN` are **not** native TX authorization or semantic acceptance. Repeated FC23 requests are not repeated successful handshake episodes.
+
+**Policy:** native TX HARD DENY. No secrets, private approval responses, 0x0F active emulation implementation or 0x0708 command tooling are included in this public documentation.
+
+---
+
 # 2026-10-12 — NEWEST FINDINGS OVERLAY: R6-P74B–P74L
 
 > Classification applies to the current evidence only. All older raw observations and interpretations remain preserved below. P74L is **PREPARED / NOT RUN**; P74J/K and P74F–I are offline; no new native active TX occurred.

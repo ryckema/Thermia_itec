@@ -1,3 +1,56 @@
+# 2026-10-12 — R6-P74W–P74AI newest-first experiment reconciliation
+
+> Dated additive entries; older experiment narratives remain intact below. **Offline successes never imply ESPHome compilation or physical bus execution.** Restore last user-proven P74AB for any later passive deployment regression; no live TX is authorized.
+
+## R6-P74AI — COMPLETE / POSITIVE (DIRECT ORIGINAL PYTHON CORE, OFFLINE)
+**Hypothesis/baseline:** unchanged P74AF C++ metadata owner projector agrees with original public Python `Core` for unqualified recorded states; previous P74AI was RUNNING/PARTIAL because full original module had not actually run. Baseline P74AB live RX-only, AF–AH offline, original module blob `671af7b27d2fbc2df988f4f080d13c7f06e6c496`. **Controlled change:** import and run SHA-pinned original `xtr_dcm_reference_core.py`, directly re-decode archived raw ADUs and enrich *offline-only* metadata; no projector/YAML change. **Frames:** slave 0x0F FC16/FC03/FC23; canonical 0730/8 read and 071C/8 write FC23 shape; exact start/count and owner class. **Positive observed:** 4488/4488 Python↔C++ owner parity, 4394 raw genuine Eco5/ATEC ADUs and 94 collaborator shape-only metadata, 16/16 local XTR journal metadata, 7/7 synthetic cases; 164 FC23 canonical shapes `POLICY_OPEN, tx=False`, 334 OTHER→FC03 response; zero live TX. **Negative criterion:** failed SHA/CRC, owner mismatch, guessed missing bytes or physical TX; none observed. **Abort/recovery:** stop offline run on mismatch; discard enriched fixture, P74AB unaffected. **Scope:** direct Python methods in default-unqualified state, *not* exhaustive stateful equivalence or physical ownership. This supersedes P74AI earlier PARTIAL status without deleting the original observation.
+
+## R6-P74AK — COMPLETE / POSITIVE OFFLINE; ACTIVE NO-GO
+**Hypothesis/baseline:** central response-review boundary can remain physically nontransmitting for any model intent or evidence flags; baseline AF–AH and P74AB live RX. **Change:** host-only HARD-DENY review contract, no output API. **Fields:** candidate owner/response type and eight simulated evidence booleans. **Positive:** 436720 C++ ASan/UBSan assertions; 34/34 static checks; even all-true test evidence cannot trigger TX. **Negative/abort:** any `tx_allowed=true`, UART/GPIO/DE/serializer source or missing deny => stop; no such path introduced. **Recovery:** discard host code only. No ESPHome build/flash.
+
+## R6-P74AJ — COMPLETE / INCONCLUSIVE (CONTROLLER EPOCH)
+**Hypothesis/baseline:** local full-word archives contain an independent controller-epoch indicator; baseline P74W/P74AB local logs and earlier native reconnection evidence. **Change:** read-only analysis of two local logs plus seven existing archives. **Fields:** A80E, A80F, FC23, callback gap and controller-power marker. **Positive criterion:** defined register and independently verified controller reset/uptime before/after. **Result:** not met. A80E switched 0000↔0020 eleven times over two recorded windows without established reset; inadequate as standalone epoch witness. A80F constant *within* each sampled run but unvalidated. **Negative criterion:** fluctuation without independent reset disqualifies A80E as a standalone witness; **abort/recovery:** offline-only, exclude wrongly attributed captures, no bus action.
+
+## R6-P74AH — COMPLETE / POSITIVE OFFLINE (REPLAY)
+**Hypothesis/baseline:** AF/AG no-TX classifier withstands real shape metadata and mutations; P74AB/AF/AG baseline. **Change:** host replay and fault injection only. **Frames:** native FC03/FC16/FC23, 32 XTR config geometries, service/runtime metadata. **Positive:** 956305 ASan/UBSan assertions; 4488 cross-model shape records, 16 local events, synthetic 32/32, 30000 malformed/mutated, 100000 runtime; P74X 127/127, P74W 30/30, Y–AA 1341/1341 and 48/48 source checks. **Negative/abort:** false owner promotion, unexpected TX or missing HOLD; abort host migration if seen. **Recovery:** remove offline adapter. Full original Python module was *not yet* run at AH; see subsequent AI closure.
+
+## R6-P74AG — COMPLETE / POSITIVE OFFLINE (DENY LEDGER)
+**Hypothesis/baseline:** a single central passive ledger can classify intents and sticky-HOLD integrity/sequence faults; AF and P74AB baseline. **Change:** standalone `IntentLedger`, no UART/DE. **Fields:** seq, integrity, FC/start/count, possible owner. **Positive:** sticky HOLD and never physical TX in host tests; **negative/abort:** any privilege promotion or continued hypothetical intent after eventgap. **Recovery:** remove host-only ledger; no device action.
+
+## R6-P74AF — COMPLETE / POSITIVE OFFLINE (RESPONSE-INTENT)
+**Hypothesis/baseline:** P74AB's journal metadata can be mapped to public reference owner/response-class ontology without fabricated payload or session authority. **Change:** standalone pure C++ shape mapper, original ESPHome unchanged. **Frames:** FC23, FC16, FC03, XTR config and runtime geometry. **Positive:** exact known shape/enum source alignment; owner at most `POLICY_OPEN`; `tx_allowed=false`. **Negative/abort:** incorrect geometry, invented owner, physical TX API. **Recovery:** discard offline code; continue P74AB.
+
+## R6-P74AE — COMPLETE / NEGATIVE (ACTIVE TX READINESS; OFFLINE ASSESSMENT)
+**Hypothesis/baseline:** current V5/P74AB may already meet physical/session authorization conditions; baseline P74AC/AD. **Change:** evaluate 12 readiness gates, no bus test. **Positive criterion:** independently proven epoch, owner, slot, physical DE/FIFO and safe device adapter. **Negative result:** only normal RX-only health is locally proven, other 11 gates remain unmet/partial; **NO-GO**. **Abort/recovery:** retain P74AB HARD DENY; no attempted TX or rollback of controller needed.
+
+## R6-P74AD — COMPLETE / POSITIVE SOURCE-ONLY
+**Hypothesis/baseline:** P74AB retains exactly one CRC-qualified receive fanout and no new live TX route; P74AB YAML and nine headers baseline. **Change:** static source audit only. **Frames:** 0x0F callback/journal/stream/ledger. **Positive:** 38/38 checks; **negative/abort:** duplicated reader, added TX/DE path, altered production blocks. **Recovery:** no source modification made.
+
+## R6-P74AC — COMPLETE / POSITIVE SOURCE AUDIT
+**Hypothesis/baseline:** original V4.1 active TX sites reduce to existing owner families. **Change:** offline spot-check of original v4.1 blob `8e8a82689e53528a8b751a1abbd901f683b6b238` against prior 58-site route inventory (not fresh 58-site recount). **Relevant:** 2 handshake sites, 32 ordered bootstrap, 1 legacy export recovery, 1 runtime ACK, 18 mailbox paths, 4 semantic paths. **Positive:** six-family inventory reconciled; **negative/abort:** do not equate source sites to confirmed emitted frames or reuse broad old runtime allowances. **Recovery:** no device change.
+
+## R6-P74AB — COMPLETE / POSITIVE LIVE RX-ONLY, NORMAL RUNTIME
+**Hypothesis/baseline:** P74X corrected P74W plus P74YZ provenance ledger preserves RX performance; baseline P74W live. **Change:** one additional observer and passive post-prefix classifier, existing callback, no TX. **User evidence:** `Pasted text(20261012-095002).txt` 11:46:13–11:49:33; P74AB 823→1101, stage0, prefix0/32, retry/follow/quarantine/gap0, no FC23 or paired ACK, epoch/owner/slot unknown, all displayed software TX and new parser/drop discrepancies0. **Positive:** bounded normal-runtime observer health. **Negative/abort:** new parser errors, unexpected DE/software TX or HA regression; none evidenced. **Not exercised:** manual Configuration dump, bootstrap, cancellation or independent physical DE. **Recovery:** restore known-good P74W RX-only if later regression; maintain P74AB otherwise.
+
+## R6-P74AA — COMPLETE / POSITIVE OFFLINE
+**Hypothesis/baseline:** passive provenance/cancellation ledger remains fail-closed; P74W/X baseline. **Change:** C++ ledger plus static YAML checks. **Frames:** FC23, FC16 ordered config, runtime and FC03 metadata. **Positive:** 1341/1341 ASan/UBSan, 15/15 provenance and 24/24 YAML/source checks. **Negative/abort:** any TX or owner promotion. **Recovery:** discard code; no bus operation.
+
+## R6-P74Z — COMPLETE / INCONCLUSIVE (ACTUAL CANCELLATION)
+**Hypothesis/baseline:** distinguish legitimate first-page retry from interrupted bootstrap and controller cancellation; EXP388 partial, Eco5 historical captures. **Change:** passive first-page retry classification. **Frames:** first 03E8/14, rest of 32-page sequence. **Positive software result:** in four of six Eco5 candidate windows full geometry, two windows repeated first 03E8 geometry 102 times; observer still denies TX. **Actual cancellation not proven:** EXP388 pre-semantic and refresh-only cancellation branches remain unexecuted. **Negative/abort/recovery:** on uncertain interrupted bootstrap remain capture-only/HOLD; no controller action.
+
+## R6-P74Y — COMPLETE / POSITIVE OFFLINE (PROVENANCE)
+**Hypothesis/baseline:** distinguish seven unique response-anchored handshake episodes instead of counting repeated FC23 requests separately; P74G/H/I baseline. **Change:** CRC-valid source-capture metadata extraction, request dedup and source tagging. **Frames:** FC23 shape and first FC16 03E8 (Eco5 /14, ATEC /13). **Positive:** 4488 native 0x0F records, seven candidate episodes; 15/15 checks; 21 ATEC intervening logged frames. **Negative/abort:** logger timestamp not physical wire-end, sender/owner unproven; exclude uncertain candidate, no bus changes.
+
+## R6-P74X — COMPLETE / POSITIVE OFFLINE (POST-PREFIX GUARD)
+**Hypothesis/baseline:** P74W false HELD after hypothetical synthetic 32/32 prefix can be eliminated without unsafe promotion. **Change:** passive post-prefix event classification only. **Frames:** known FC16 follow-on capture-only; unexpected FC23 or 03E8/14 new-epoch candidate sticky HELD; CRC/seq faults HOLD. **Positive:** 127/127 sanitizer tests and P74W regression 30/30. **Not live-deployed on its own**; included in later P74AB. **Abort/recovery:** revert host patch on regression.
+
+## R6-P74W — COMPLETE / POSITIVE LIVE RX-ONLY
+**Hypothesis/baseline:** persistent eventstream survives P74L 32-entry journal overwrite; baseline user-live P74L. **Change:** passive streaming observer, no production UART/TX change. **Evidence:** user log `Pasted text(20261012-083525).txt` P74W events 78→342, journal overwrite, zero observed parser drops/resync/byte diff/software TX, no FC23/32/32. **Positive:** bounded normal RX; **negative/abort:** RX regression/DE high; **recovery:** last known-good P74L RX-only.
+
+**Historical EXP388 remains RUNNING / PARTIAL. No physical responder or new device flash is implied by the offline tests.**
+
+---
+
 # 2026-10-12 — R6-P74B–P74L newest-first reconciliation
 
 > This is an additive summary of newly reviewed experiment evidence. Keep all older P1–P74A and EXP history below. For every live result below, software-reported GPIO LOW and zero counters are **not** oscilloscope proof of physical DE fail-low. Controller epoch/owner/slot remain UNKNOWN; native TX DENY.
