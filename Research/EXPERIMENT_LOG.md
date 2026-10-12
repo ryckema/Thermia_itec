@@ -1,3 +1,45 @@
+# 2026-10-12 — R6-P74B–P74L newest-first reconciliation
+
+> This is an additive summary of newly reviewed experiment evidence. Keep all older P1–P74A and EXP history below. For every live result below, software-reported GPIO LOW and zero counters are **not** oscilloscope proof of physical DE fail-low. Controller epoch/owner/slot remain UNKNOWN; native TX DENY.
+
+## R6-P74L — PREPARED / NOT RUN
+**Hypothesis:** an RX-only V5/P60 per-frame callback journal can provide ordered individual native events for a later P74J adapter without changing existing receive semantics. **Baseline:** user-deployed P74E RX-only, P74J/P74K offline models. **Controlled change:** prepared full YAML plus bounded last-32-event C++ journal; configuration diagnostic button dumps up to 16 events. **Frames/fields:** received slave 0x0F FC16/FC23 metadata, sequence, callback timestamp, address/count, parser integrity and provenance limitations. **Positive:** user compile/flash, stable production HA/RX, monotonic event IDs and correctly decoded metadata, no new drops/mismatch and TX=0. **Negative:** malformed metadata, missing events or new RX regression. **Abort:** unexpected software TX, DE HIGH, crash, new parser fault or production outage. **Recovery:** restore the last user-proven P74E RX-only firmware and capture logs; rolling back ESP does not prove clearing controller pending state. **Result:** prepared source/host checks only; **no user build, flash or live result received**. No native active TX allowed.
+
+## R6-P74K — COMPLETE / POSITIVE (OFFLINE ADAPTER ONLY)
+**Hypothesis:** P74E counters can be safely adapted without fabricating P74J ordered events. **Baseline:** P74E live, P74J synthetic event model. **Change:** offline cumulative-counter adapter, tests and two overlapping P74E log replays. **Fields:** 43 P74E snapshots, FC16 up to 392, FC23=0, mailbox=0, RX status; no individual ACK events. **Positive:** 10/10 host tests, no fictional bootstrap/authority. **Negative:** no complete 32/32 timeline inferable from counters. **Abort/recovery:** host DENY on counter reset/missing progression; no bus action.
+
+## R6-P74J — COMPLETE / POSITIVE (OFFLINE MODEL ONLY)
+**Hypothesis:** event-driven bounded state progression models native first-response and 32-page export without authorizing actual output. **Baseline:** historical V4.1 EXP355/386 and genuine cross-model reference episodes. **Change:** Python synthetic 33-step machine and 10 host tests, selected first-page episode replay. **Frames:** 0x0F FC23, 03E8/count14 first page, 32 XTR page geometries, runtime qualifications. **Positive:** 10/10 host tests; correct incomplete/out-of-profile DENY. **Negative:** capture replay is not new full 32/32 XTR or sender evidence. **Abort/recovery:** sticky HELD/DENY for resets, duplicate/unknown actions; offline reset only.
+
+## R6-P74I — COMPLETE / POSITIVE (OFFLINE SOURCE PROVENANCE)
+**Hypothesis:** original sniffer source and firmware research clarify logger times and ATEC capture identity. **Baseline:** P74G/H. **Change:** read-only inspection of `thermia-bus-sniffer` code and Thermia Connect research. **Fields:** original `<seconds> <hex>` format, host `time.time()` after receive chunk, 20261003 ATEC count13. **Positive:** source-level chunk timestamp semantics and documented ATEC attribution. **Negative:** logger revision used in each capture not independently proved. **Abort/recovery:** no bus action.
+
+## R6-P74H — COMPLETE / POSITIVE (OFFLINE CAPTURE AUDIT)
+**Hypothesis:** source provenance and timestamp quality can be qualified before timing conclusions. **Baseline:** P74G. **Change:** re-read three genuine capture files. **Positive:** 10719-frame Eco5 (26 Sep), 9174-frame Eco5 (28 Sep), 2687-frame (3 Oct) inventories; nondecreasing host times, distinct geometry. **Negative:** raw logs alone do not state exact model or wire-end timing; 3 Oct ATEC attribution established later in P74I, not retroactively claimed as P74H direct evidence. **Abort/recovery:** no bus action.
+
+## R6-P74G — COMPLETE / POSITIVE (OFFLINE TEMPORAL REPLAY)
+**Hypothesis:** genuine archived request/response/first-page episodes permit ordering and approximate host timestamp intervals, not exclusive TX windows. **Baseline:** P74F, existing Eco5 and 3 Oct captures. **Change:** seven offline episode extractions (six Eco5, one later attributed ATEC). **Frames:** FC23 request→response→03E8; Eco5 first page count14, ATEC count13. **Positive:** seven answer-followed-by-first-page sequences; 3 Oct has 21 intervening frames. **Negative:** 29–63 ms FC23 host intervals not electrical on-wire safe slots. **Abort/recovery:** no bus action.
+
+## R6-P74F — COMPLETE / POSITIVE (OFFLINE HISTORICAL SOURCE RECONSTRUCTION)
+**Hypothesis:** V4.1 source and canonically recorded EXP355/386 identify historical native bootstrap phases. **Baseline:** P74E live and V4.1 guarded restart work. **Change:** source-only sequence/stage comparison, no new raw EXP355/386 trace available in that analysis. **Positive:** first FC23, 32 ordered page stages, later runtime clarified. **Negative:** current P74E lacks physical epoch/owner/slot evidence. **Abort/recovery:** no bus action.
+
+## R6-P74E — COMPLETE / POSITIVE (LIVE RX-ONLY SLOT MONITOR)
+**Hypothesis:** monitor source evidence separately from approval. **Baseline:** P74D alternative live RX-only. **Change:** new source-only slot evidence monitor, no TX. **User result:** two overlapping real P74E logs, FC16 progressing, FC23=0, mailbox=0, resync=0, drops=0, B11C/D differences=0; user triggered P74E audit; owner/epoch/sender/wire-end/slot UNKNOWN and TX=DENY. **Positive:** monitor correct and no observed RX regression in window. **Negative:** no physical responder slot qualified. **Abort/recovery:** any new parser/DE/TX anomaly => restore P74D; not observed.
+
+## R6-P74D alternative — COMPLETE / POSITIVE (LIVE DENY EXECUTOR ONLY)
+**Hypothesis:** integrate Executor with read-only health axes while keeping native TX hard disabled. **Baseline:** P74B FIX1 live. **Change:** Executor ticks in DenyLocked and separate historic P5 from new RX fault. **User result:** P74D logs show UART present, DENY_LOCKED, current RX clean, P5_HISTORY=1, NEW_HOLD=0, resync stable at 9, UART writes/TX attempts=0, DE software LOW. **Positive:** monitor runs on ESP and fails closed. **Negative:** physical TX/drain/DE behavior not exercised. **Abort/recovery:** P74B RX-only rollback if new faults; none confirmed.
+
+## R6-P74D isolated bench proposal — SUPERSEDED / NOT RUN
+**Hypothesis:** externally isolated UART/DE bench would validate physical TX error paths. **Baseline:** P74C audit. **Controlled design:** optional separate board and isolated A/B, never installed. **Result:** user rejected all rewiring/additional ESP; proposal superseded by P74D alternative. **No live or active output occurred.**
+
+## R6-P74C — COMPLETE / POSITIVE (OFFLINE SOURCE AUDIT)
+**Hypothesis:** P5 sticky-historical faults are distinguishable from live RX and P74B UART probe is not physical TX proof. **Baseline:** P74B FIX1 source and two live logs. **Change:** static/source readiness checks (25/25), 14-gate matrix audit (zero physical TX permission). **Positive:** explains absolute P5 resync latch and baseline-delta healthy RX coexistence; P74B only inspects borrowed UART. **Negative:** no physical owner/epoch/slot/DE validation. **Abort/recovery:** no live change.
+
+## R6-P74B FIX1 — COMPLETE / POSITIVE (LIVE BORROWED UART RX-ONLY)
+**Hypothesis:** ESPHome borrowed UART can be identified without transmitting. **Baseline:** P74A RX-only positive. **Change:** corrected ESP-IDF/ESPHome header compatibility after initial compile failure. **User result:** compiled/flashed FIX1; repeated logs show UART 0 present, RX stable, software DE LOW, owner/slot unknown, no UART write/TX. **Positive:** compiler/device-level RX-only preflight. **Negative:** no instantiated physical executor or FIFO/drain proof. **Abort/recovery:** return to known-good passive image if RX destabilizes; no such result supplied.
+
+---
+
 # 2026-10-11 — Newest reconciliation R6-P50–P59 (all OFFLINE)
 
 **Shared baseline:** user-flashed R6-P37 DENY-only RX-only; historical full-restart 32/32 native XTR EXP355/386 COMPLETE/POSITIVE, EXP388 RUNNING/PARTIAL. R6-P41–P49 results are retained below, newest-first. **Every P50–P59 step used offline source/capture/host fixtures only:** no new YAML, flash, GPIO/DE high, UART TX or controller recovery. **Shared positive criterion:** reproduce correct host-only handling without a physical-output path; **negative/abort:** wrong address/count, ambiguous prefix, bad CRC, unknown owner, peer or false evidence upgrade => sticky DENY. **Recovery:** software-only reset/drop, never claim that an ESP rollback clears controller-side pending state. The genuine seven captures were already frame-delimited and are from other models.
