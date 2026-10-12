@@ -1,3 +1,40 @@
+# 2026-10-12 — NEWEST FINDINGS OVERLAY: R6-P74B–P74L
+
+> Classification applies to the current evidence only. All older raw observations and interpretations remain preserved below. P74L is **PREPARED / NOT RUN**; P74J/K and P74F–I are offline; no new native active TX occurred.
+
+## PROVEN / locally confirmed (bounded RX-only XTR M)
+- User-flashed **P74B FIX1** borrowed UART inspection confirms UART present in existing ESPHome setup and stable RX with software TX=0; not physical TX proof.
+- User-flashed **P74D alternative** confirms `Executor::tick`-integrated `DENY_LOCKED`, P5 historic latch separately indicated from clean current RX and NEW_HOLD=0, zero software TX, software DE LOW; absolute parser resyncs during boot need not imply new ongoing RX fault.
+- User-flashed **P74E** confirms live slot-evidence monitor reports ordered counters and RX clean during two overlapping logs, zero parser resync/drop, no B11C/D differences, zero FC23/mailbox/TX, epoch/owner/wire-end/sender/slot UNKNOWN. Repeated `04A6/13`, `085F/5` remain passive observations. No fresh bootstrap or newly established owner.
+- Historical **EXP355/386** V4.1 controlled cold controller-restart + native 32/32/bootstrap remains locally proven within old active context; **EXP388 RUNNING / PARTIAL** remains open. Do not equate modern P74E live monitor with historical active responder.
+
+## PROVEN / source or offline tests ONLY
+- **P74C:** 25/25 source checks; P5 status uses sticky absolute boot resync and no clear, whereas newer preflight checks baseline deltas; 14 TX gates remain closed. P74B borrowed UART inspection is not Executor/FIFO/drain test.
+- **P74F–I:** seven genuine FC23 request/response/first-page episodes across Eco5 and ATEC; host log timestamps do not establish wire silence or exclusive slave reply windows. `20261003` is identified in firmware research as ATEC, supported by `03E8/count13` and other legacy geometry; modern XTR/Eco5 `03E8/count14`. `thermia-bus-sniffer.py` source uses `time.time()` after reading UART/TCP chunks and assigns each extracted frame the chunk time, but exact logger version/provenance for every archive is not independently proven.
+- **P74J:** 10/10 offline tests of bounded event-driven native session model; accepted synthetic XTR first-page and 32 stages are not live bus proof and never grant physical TX.
+- **P74K:** 10/10 offline tests with 43 P74E status snapshots; cumulative frame counters cannot establish individual FC23 challenge/answer direction, ACK linkage or unique controller epoch.
+- **P74L:** source/host-prepared RX-only 32-event V5/P60 journal and button, **not compiled/flashed or live confirmed**. New event evidence would still inherit V5 framing/provenance limits.
+
+## STRONGLY SUPPORTED
+- A single explicit native eventstream with direction/provenance uncertainty is better suited than cumulative counters to support an offline observer-state adapter; no physical slot ownership follows solely from event ordering.
+- On 3 Oct ATEC episode, 21 intervening frames between FC23 response and 03E8 request disprove a simplistic exclusive uninterrupted interstage ownership assumption for that capture. Logged 29–63ms request-to-response intervals cannot be promoted to bus electrical timing targets.
+
+## HYPOTHESIS
+- Future P74M may connect real ordered P74L frame journal to offline P74J model, without promoting parser-recognized frames to physical sender/ownership or permission. Must await P74L user live result first.
+
+## OPEN / UNKNOWN
+- Independent electrical DE GPIO21 fail-low during reset/brownout, UART FIFO/drain/release on the actual board, physical RTU byte boundary, sender attribution, controller epoch/owner/exclusive native response slot, safe incomplete-bootstrap recovery; EXP388 two cancellation branches.
+- Exact logger revision/hardware for every Eco5/ATEC capture; host timestamps cannot resolve first/last byte.
+
+## DISPROVEN / SUPERSEDED
+- Labelling `thermia_capture_20261003_165355.log` as an unidentified XTR source is superseded by documented ATEC provenance; count13 must not become the XTR count14 template.
+- Treating FC16 totals, source host timestamp gaps, CRC-good frames, V5/B11C/B11D agreement, P74D DenyLocked, or host 32/32 tests as physical TX authorization is unsupported.
+- Older top-level state claiming P37 is the installed image is superseded by user live P74D/P74E results, **not** erased from historical records.
+
+**Safety:** native TX and all semantic writes DENY. Preserve production functions. No DCM hardware or rewiring required, no native 0x0F private response or mailbox payload in public docs. P74L remains PREPARED/NOT RUN until user reports actual compile/flash/log.
+
+---
+
 # 2026-10-11 — NEWEST EVIDENCE OVERLAY: R6-P41–P59 (OFFLINE; ACTIVE NO-GO)
 
 > This overlay updates current evidence classification only. Earlier logs, historical positive and negative experiments, register interpretations and source quotations below remain intact. No step P41–P59 transmitted to an XTR, compiled/flashed a new ESPHome YAML, or verified on-device TX.
