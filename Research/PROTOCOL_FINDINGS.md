@@ -1,3 +1,35 @@
+# 2026-10-12 — R6-P74AQ / P74AR phase 1–8 evidence reconciliation (newest overlay)
+
+> Additive interpretation; historical observations preserved. Detailed, sanitized handoff: [R6_P74AQ_P74AR_20261012_HANDOFF.md](R6_P74AQ_P74AR_20261012_HANDOFF.md).
+
+## PROVEN / locally confirmed — bounded iTec XTR M
+- **P74AQ live:** 200.261s logged RX-only shadow-gate sample, seven AQ samples EV 715→964, HOLD=0, TX=DENY; parser resync/drops/geometry/unknown and software UART writes zero at sampled reports. This does not establish a full five-minute test, HA production regression, electrical DE safety or a new native approval owner. Status COMPLETE/POSITIVE *only for supplied smoke scope*.
+- **Historical EXP355/386:** guarded active V4.1 cold controller restart then 32/32 native bootstrap and runtime qualification in their specific old contexts. EXP388 untested cancellation branches remain RUNNING/PARTIAL. No direct replay of their original raw timestamp logs was performed in P74AR.
+
+## STRONGLY SUPPORTED — genuine Online/DCM cross-model captures, NOT local XTR V5
+- Four of six genuine Eco5 FC23-response-anchored windows show 32 ordered controller FC16 page shapes with at least one associated short FC16 address/count ACK shape for each page; two other windows end at 10/32 and 12/32 and show long first-`03E8/14` retries (~108 seconds until first associated ACK in host timestamps). ATEC `03E8/13` differs and is not counted as XTR/Eco5 32-page geometry.
+- 163 CRC-valid canonical Eco5 FC23 requests in seven host-gap-defined groups (99+64), plus one ATEC request in the separate broader corpus. Host grouping does not identify seven physical controller epochs. ACK-shape linkage does not identify physical response owner or controller semantic acceptance.
+- Genuine cross-model runtime `0858–085E` clock/calendar tuple matches firmware-labelled `06EA–06F0` clock under raw-word/host-time checks. This RTC mirror was already identified in the older firmware research; it is **not new local-XTR proof** or a boot counter.
+
+## PROVEN / offline software safety only (not hardware)
+- P74AR phases 2–5 independently anchored episodes, reconstructed raw CRC/page/short-ACK sequences and built a linked passive state machine; 12/12 + 18/18 + 32/32 recorded host tests (distinct phase scopes), no physical TX permission.
+- P74AR phase 6 30/30 fail-closed owner/epoch tests; phase 7 20/20 firmware/register/RTC checks; phase 8 26/26 C++ sanitizer host tests and 20/20 source checks. These are **offline** verdicts; no ESPHome firmware compile, physical DE waveform or current controller owner is implied.
+
+## DISPROVEN / SUPERSEDED — generalizations explicitly rejected
+- Any rule `one FC23 == one controller reboot/unique epoch`, `ESP reboot == controller reboot`, `A80E/A80F alone == unique epoch`, `same FC16 geometry/hash == same session work item`, `RTC/defrost/firmware version == boot generation` or `32/32 ACK shapes == physical TX authority`.
+- `FC16 short address/count ACK == semantic setting success` is false. A native protocol handshake state is not an independent controller-power-generation identifier; firmware `RESPONSE_SENT` and `ACCEPTED` are separate axes.
+- Universal EXP420 config owner predicate is **too narrow** in EXP423 repeated orphan `0662/count33` retained-sync context; do not erase the positive tested EXP420 subset. EXP425 one-shot ACK did stop the `0662` retry but **did not** yield the expected ordered tail; retain NEGATIVE result. EXP426 `0662` trigger absent; INCONCLUSIVE, not proof of a universal fix.
+
+## HYPOTHESIS — explicit unverified interpretations
+- A V5 stateful native DCM shadow model may reproduce the prior guarded fresh and retained response contexts after full source-to-source V4.1↔V5 reconciliation, but recognized page geometry or historical success alone does not confer present-session ownership.
+- The cross-model RTC mirror might occur on local XTR M; neither its presence nor its reset behavior was confirmed in the bounded AQ log.
+
+## OPEN / UNKNOWN — active transmission remains NO-GO
+- Unique controller epoch/G01, present native reply owner/G02, physical wire-end/G03, exclusive response slot/G04, hardware FIFO/shifter/DE release/G05 (host-only partial), physical DE fail-low on boot/brownout/G06, unresolved retained `085F` and orphan `0662` owner, EXP388 cancellation branches, full HA regression.
+- P74AR parent RUNNING/PARTIAL. Phase 9 passive electrical measurement **PREPARED / NOT RUN and deprioritized**. **Next proposed, NOT RUN:** offline V4.1↔V5 gap audit focusing historical EXP355–455, preserving existing successful behavior and negative/inconclusive cases. No physical bus response/ACK/write authorized; installed P74AQ continues RX-only `HARD DENY`.
+
+---
+
 # 2026-10-12 — R6-P74W through P74AI protocol findings (newest additive overlay)
 
 ## PROVEN / locally confirmed on XTR M, strictly bounded
