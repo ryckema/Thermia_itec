@@ -1,3 +1,38 @@
+# 2026-10-13 — Newest bounded R6-P74BW–CD offline evidence and provenance reconciliation
+
+> Only public-safe observational evidence. Full [BW–CD report](R6_P74BW_TO_CD_OFFLINE_20261013.md); chronological [experiment log](EXPERIMENT_LOG.md). The historical findings below remain unchanged; their original scope is not overwritten by later, broader counting windows.
+
+## PROVEN / locally confirmed on this XTR M — no new live bus proof
+- Historical EXP355/386 controlled old V4.1 restart→32/32→runtime and EXP387 qualified delayed 0708 recovery remain positive *only in their locally tested contexts*. EXP388 cancellation remains RUNNING/PARTIAL; EXP425 remains COMPLETE/NEGATIVE for the predicted ordered 0683 tail after one orphan-0662 ACK.
+- Recent user XTR BM-candidate retained RX-only logs show bounded parser/B11D parity and no observed new drops/software TX in sampled windows. Exact compiled/flashed BM binary identity and full HA regression remain unproven (BO/BQ explicitly COMPLETE/INCONCLUSIVE). No fresh local FC23, 32/32, controller epoch, sender, owner or reply slot gained from BW–CD.
+
+## STRONGLY SUPPORTED — genuine cross-model Eco5/ATEC capture observations
+- Seven Eco5 status/startcontext windows and 164 total genuine cross-model FC23 request shapes (163 Eco5 + 1 ATEC) were previously source-anchored. BW records 6 Eco5 context windows with an FC23 response shape followed by first configuration-page request; 1 window, Eco5-26 line 2512, records **41 FC23 requests and no FC23 response shape**.
+- **Important source-provenance addition:** the firmware research README dated 2026-10-10 states these Eco5 intervals were deliberately **collaborator-operated controller restarts**, with gateway present/absent/present on Sep26; the 41-request interval was **reported gateway-absent**. This is human experiment-context evidence distinct from the raw bus ADUs. It is NOT a per-frame electrical controller reboot mark, unique current XTR epoch, proof of hardware delivery or isolated cause-effect test. Earlier BU/BV conclusions derived *only from raw hostlogs* remain valid for their restricted scope, but must not conceal the independently available collaborator operation notes.
+- **Different counting windows are not interchangeable:** newer BX counted six 32/32 FC16 short ACK-shape chains over *wide context-to-context windows*, including two with >100 first-page retries. Older P74AR P4/P5 reported **4 complete and 2 partial 10/32,12/32** using narrower response/episode bounds. Retain BOTH as separate observations; **OPEN / SCOPE MISMATCH**, not a proof the partial P74AR chains completed in their original windows. ACK shape is neither sender ownership nor semantic acceptance.
+- CA confirms 331/331 genuine cross-model 0x0F FC16 `085F/count5` requests carried all-zero values; 20 had a subsequent short ACK-shaped frame within a host 1-second association. CB counted 23 genuine `0662/count33` and 28 `0683/count33` requests. Presence of `0683` in cross-model sources cannot reverse locally NEGATIVE EXP425.
+
+## PROVEN — host/offline software only, no physical approval
+- BY sensitivity: 7 timing scenarios, 28 counterfactual record/status mutations and 4,608 artificial chunk/reassemble CRC checks; host classification sensitive at a ±100ms perturbation. Host timestamps are NOT physical RTU end-of-frame or safe TX slot.
+- BZ compiled and ran actual unchanged BM/P74AT observer under host g++/UBSan on 4,809 CRC-derived genuine native metadata events; 10 source checks and no authority promotion. Original V4.1 original executable NOT directly exercised in BZ, so full V4↔V5 state parity remains unproven.
+- CC source-contract-only EXP388 test: 8,192 synthetic main/subengine state combinations, 1,296 safe software intent cancellations and cache invalidations, 2,800 in-flight STOPs, 4,096 repeated-recovery STOPs. This does not complete unrun live EXP388 branches.
+- CD integrated: 25,031 original pre-delimited CRC-good ADUs, 7 extra real BM C++ host metadata scenarios and 210 deliberate CRC corruptions all handled fail-closed; no native output.
+
+## HYPOTHESIS — not promoted
+- The cross-model gateway-absent natural control plausibly distinguishes nonparticipation of that gateway from response-present cases; there are confounded changes (restarts/epoch/logging) so an exact causal FC23 criterion is NOT proven.
+- Retained `085F`, repeated orphan `0662` and fresh/restarted 32-page phases may be explained by a common owner/epoch model, but no current XTR exclusive owner or present response right is established.
+
+## DISPROVEN / SUPERSEDED
+- “Every FC23 request indicates controller reboot” is rejected by 157 routine status→FC23 requests in the genuine corpus. “A special startcontext guarantees response” is refuted by the 41-request response-absent recorded gateway-absent interval.
+- “An FC16 ACK automatically starts the ordered `0683` tail” remains NEGATIVE in local EXP425. “Six wide BX chains erase P74AR's two partial chains” is an invalid equivalence because the time windows differ.
+- A host-gap, status pair, CRC-good page, gateway operator report, ESP boot ID or host-C++ synthetic all-true case alone cannot confer an authenticated physical wire frame, unique XTR epoch or TX authority.
+
+## OPEN / UNKNOWN and active safety
+- G01 unique current controller-epoch **OPEN**; G02 exclusive current-work owner **OPEN**; G03 physical wire-end **OPEN**; G04 exclusive response slot **OPEN**; G05 actual FIFO/drain/DE release **PARTIAL HOST ONLY**; G06 reset/brownout DE fail-low **OPEN**. EXP388 cancellation remaining branches not run; partial-bootstrap controller recovery still unknown.
+- **NATIVE TX HARD DENY**, no new live response/ACK/0708 or speculative write. Next research should first reconcile P74AR narrow and BX broad raw source-line bounds while retaining both results.
+
+---
+
 # 2026-10-12 — R6-P74AQ / P74AR phase 1–8 evidence reconciliation (newest overlay)
 
 > Additive interpretation; historical observations preserved. Detailed, sanitized handoff: [R6_P74AQ_P74AR_20261012_HANDOFF.md](R6_P74AQ_P74AR_20261012_HANDOFF.md).
