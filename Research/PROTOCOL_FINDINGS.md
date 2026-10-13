@@ -1,3 +1,37 @@
+# 2026-10-13 — Latest R6-P74CH–CW reconciliation: local RX-only + cross-model first-page ACK shapes
+
+> Authoritative bounded evidence reports: [CH–CS handoff](R6_P74CH_TO_CS_20261013_HANDOFF.md) and [CT–CW offline findings](R6_P74CT_TO_CW_20261013.md). Historical raw observations, especially EXP388 PARTIAL and EXP425 NEGATIVE, are preserved below.
+
+## PROVEN / locally confirmed on iTec XTR M (bounded)
+- User-confirmed **CH** RX-only V5 log soak 17m51.752s without sampled parser differences or software native TX; later **CN** live RX-only >15-min uptime without sampled resync/drop/B11C/B11D differences, 4 API buffer warnings. The CN frame-shape adapter was compiled/flashed but its internal varied shape classes were not yet live witnessed.
+- User **CO** installed and HA Configuration on-demand P74L dump produced `[R6-P74CO] CN_SHAPES accepted=214 rejected=0 ... FC16_REQ=214 FC16_ACK_SHAPE=0 FC23_REQ=0 FC23_RSP_SHAPE=0 source_latched=0 ... TX=DENY`. This **proves the live retained-shape counter path**, not a current XTR fresh bootstrap or response.
+- CO log one early V5 parser resync, 0 drops, old P5 historical fault latch, passive observer recovery and five B13 `ABORT_NO_TX` diagnostics; all sampled physical/software TX counters remain zero. The on-demand dump occurs **after** the resync and cannot have caused that earlier event. A CO firmware regression or exact cause is **UNKNOWN/INCONCLUSIVE**; CH/CN logged windows are not matched cold-start controls.
+
+## STRONGLY SUPPORTED — genuine cross-model Eco5/ATEC original captures
+- Seven original cross-model source logs remain 25,031/25,031 CRC-good pre-delimited frames (original SHA-256 checked by CJ). Eco5 context windows: six FC23 response-shaped records followed by broad 32/32 FC16 ACK-**shape** chains, one response-absent interval (41 FC23 request shapes, collaborator-reported gateway absent). **No sender, controller acceptance or XTR owner proven.**
+- CT: two Sep28 Eco5 contexts (line 3205/5457) have **102 first-page `03E8/count14` FC16 requests each, 101 repeats**, with first short matching ACK shapes at **108.653** and **108.507 host seconds** after response shape. Four other Eco5 response contexts show first ACK shapes in **0.122–0.137 host seconds**. They are NOT physical UART turnaround intervals.
+- CU: each slow response-to-first-ACK interval includes **102 STATUS** records, 102 first-page requests, **0 extra FC23/FC03 requests** and 611–612 OTHER records. Last status pair before first ACK and first after are both **(40,10)**, repeatedly present before. No new decoded STATUS-pair/FC23/FC03 request shape marks this boundary. OTHER and physical behavior unclassified.
+- CQ reconciles different boundaries without overwriting P74AR: the two contexts have **10/32 and 12/32** ACK-shape prefix in a newly defined 120-second response-relative window but **32/32** under CJ/BX broad context-to-context windows; P74AR original window implementation was **not** literally rerun. ATEC first-page `03E8/13` differs from Eco5 `03E8/14`.
+
+## PROVEN — OFFLINE software contracts only
+- CI–CM host tests produce an explicit CM typed shape contract; P74L journal alone lacks independent ACK/response kind fields. CN's new tap adds no native parser, second P74AT reducer or TX.
+- CW 7/7 context classification and 256/256 deterministic negative *metadata mutations* preserve owner, epoch, sender, physical EOF, slot, semantic acceptance and native TX **FALSE**. Synthetic checks are not physical bus tests.
+
+## HYPOTHESIS (not elevated)
+- A genuine gateway or other peer may become present or change behavior during the two long first-page retries. No raw evidence here isolates this cause; no unclassified OTHER-frame content, security/algorithm or physical sender inference authorized.
+- Fast/slow first-ACK timing is an observational outcome grouping, **not** a prospective predictor of success or an ACK-semantic validation.
+
+## DISPROVEN / SUPERSEDED
+- **CR NEGATIVE:** repeated retained `04A6/13` + `085F/5` together with FC23 request shapes is NOT sufficient to identify an FC23 response/owner. The 41-request nonresponse context has both retained families.
+- **CU NEGATIVE:** the first ACK boundary is NOT accompanied by a new unique decoded STATUS-pair or FC23/FC03 request shape in the two slow captured contexts. This does not disprove other signaling.
+- Historical EXP425 expected `0683` after orphan `0662` short ACK remains **COMPLETE/NEGATIVE**; newer broad other-model chains cannot reverse that local negative.
+
+## OPEN / UNKNOWN — no native active action
+- Current XTR native fresh bootstrap, unique controller epoch G01, exclusive owner G02, physical EOF G03, safe reply slot G04, real FIFO/DE hardware G05, fail-low physical DE G06 and semantic acceptance remain OPEN / HOST-ONLY-PARTIAL as previously documented. EXP388 cancellation incomplete.
+- **NATIVE TX HARD DENY**. Next action: offline source/firmware-supported classification of OTHER event kinds; CO RX-only can remain installed. No new controller restart, DCM attachment, room sensor disconnection, speculative ACK or mailbox write.
+
+---
+
 # 2026-10-13 — Newest bounded R6-P74BW–CD offline evidence and provenance reconciliation
 
 > Only public-safe observational evidence. Full [BW–CD report](R6_P74BW_TO_CD_OFFLINE_20261013.md); chronological [experiment log](EXPERIMENT_LOG.md). The historical findings below remain unchanged; their original scope is not overwritten by later, broader counting windows.
