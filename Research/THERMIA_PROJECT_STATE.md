@@ -1,3 +1,17 @@
+# 2026-10-14 — G04 evidence reconciled; B6 installed; G04-07 deferred
+
+> Latest additive canonical overlay. Full details: [G04-01..07 evidence](G04_RESPONSE_SLOT_G04_01_TO_G04_07_20261014.md). Preserve all history below; no new native TX, no OTA flash, no controller restart.
+
+**Current installed firmware:** user explicitly confirms R6-P74DI-B6 RX-only is running. The uploaded filename's PREPARED_NOT_FLASHED label is historical; installed binary/hash not independently checked. ESPHome 2026.9.0, Dashboard 1.15.0 user-confirmed. UART 9600 8E1, RX GPIO18, TX GPIO17, DE GPIO21; software debug timeout 5ms.
+
+**Most recent G04 result:** G04-05 COMPLETE/PARTIAL bounded user-live software latency/RX integrity audit (88 B4 and 88 B3 events in 5000-line log; early callback-to-decision median 1545us, early decision median 6us; later B3 median 4169us). Zero parser resync/drop/geometry errors, zero software TX counters in reported live window. One API buffer-full warning. Original one-shot B5/B6 event missing from excerpt. G04-01..04 and G04-06 COMPLETE/POSITIVE within explicitly offline evidence/feasibility scopes; G04-07 **PREPARED / NOT RUN, user deferred**. Driver metadata prototype NOT compiled, NOT integrated, NOT flashed; do not treat as OTA-ready.
+
+**Safety/protocol:** G04 exclusive physical reply slot OPEN; G01/G02/G03/G06 OPEN; G05 electrical FIFO/DE PARTIAL/HOST-ONLY. RX software timestamps and cross-model FC23 adjacency do not demonstrate electrical EOF, exclusive owner or permissible native TX. **Native 0x0F TX HARD DENY**. Historical local V4.1 EXP355/386/S11F/387 functionality retained as scoped positive reference; EXP388 PARTIAL, EXP419/423 INCONCLUSIVE, EXP425 NEGATIVE, EXP383 NOT RUN remain unchanged.
+
+**Next step:** no immediate test: user postponed G04-07 due to complexity. When resumed verify full compile against ESPHome 2026.9.0 of single-owner UART metadata patch before separately approving any RX-only OTA. Do not use new physical wiring or a genuine DCM requirement.
+
+---
+
 # 2026-10-13 — G01 offline results reconciled, G02 research planned, native TX HARD DENY
 
 > Additive newest overlay, preserving all earlier negative, partial and prepared observations below as historical snapshots. See [G01 synthesis](G01_CONTROLLER_EPOCH_20261013_SYNTHESIS.md), [G02 plan](G02_EXCLUSIVE_OWNER_PLAN_20261013.md) and [DI-B12 provenance erratum](R6_P74DI_B10_B12_PROVENANCE_RECONCILIATION_20261013.md).
