@@ -1,3 +1,27 @@
+# 2026-10-14 — G04-01..07 native timing and response-slot findings
+
+> Newest classified additive overlay; details in [G04 audit](G04_RESPONSE_SLOT_G04_01_TO_G04_07_20261014.md). Earlier contradictory historical snapshots are not current state; original observations remain preserved.
+
+## PROVEN / locally confirmed XTR in bounded user B6 live evidence
+User confirms installed R6-P74DI-B6 RX-only despite historical not-flashed filename. ESPHome 2026.9.0 and Dashboard 1.15.0 user confirmed, binary hash unverified. G04-05 user-live excerpt of 5000 log lines contains 88 matched B4/B3 software-timing records. B4 callback-to-decision 1474/1545/3124 microseconds (min/median/max), early evaluation 5/6/11 microseconds, B3 later diagnostic 3370/4169/5056 microseconds. RX parser errors/resync/drop/geometry mismatch 0 in reported counters, software TX calls/attempts 0, DE software reading LOW; one API buffer full message. Two retained native FC16 geometries 085F/5 and 04A6/13 present; H021 four target pages not freshly observed, values remain NaN. Second-match eligibility text state=2 is previously latched, **the actual B5/B6 transition event was not captured in this excerpt**. Software DE LOW is not electrical reset/brownout fail-low proof.
+
+## STRONGLY SUPPORTED / genuine cross-model only
+G04-01: 25,031 CRC-valid recognized records, 164 native FC23 request shapes and 7 immediately adjacent FC23 response-shaped records in genuine/collaborator captures. 29–63ms host timestamps cannot establish electric stopbit time or local physical sender. G04-02 V4.1 historical source has multiple response guards beyond CRC/shape; current B6 owner/epoch not established by cross-model pairs. G04-03 nine conditional contexts remain separate; no universally safe reply permission.
+
+## PROVEN / offline source-code inspection, not live XTR electrical timing
+G04-04 software UART debugger 5ms timeout does not timestamp physical frame EOF. G04-06 ESPHome 2026.9.0 ESP-IDF UART driver installs with eventqueue depth=0 and null event pointer; UART hardware RXFIFO timeout events do not reach current B6 YAML lambda as events. A second byte reader could compete with existing RX; preferred theoretical route is same-owner passive driver metadata. G04-07 prototype patch prep only, **PREPARED / NOT RUN, USER DEFERRED**: not compiled, integrated, flashed or tested. Eventqueue processing timestamps are still not physical stopbit ISR timestamps.
+
+## HYPOTHESIS
+Future single-owner UART driver metadata could distinguish event processing and callback overhead without changing bytes or HA entities. Must prove via actual ESPHome 2026.9.0 compilation and later separately approved RX-only test. This cannot by itself certify exclusive reply slot or native work owner.
+
+## OPEN / UNKNOWN
+G04 exclusively permitted physical reply slot remains OPEN; independent controller epoch G01, physical owner G02, physical EOF G03, DE electrical FIFO/drain G05 PARTIAL/HOST-ONLY, DE reset/brownout fail-low G06 OPEN. No physical DE waveforms, device sender or authorization from G04 experiments. Current B6 TX HARD DENY. EXP388 cancellation PARTIAL, EXP419/423 inconclusive, EXP425 negative and EXP383 not run unchanged.
+
+## DISPROVEN / SUPERSEDED interpretations
+B6 filename PREPARED_NOT_FLASHED does not represent current state after explicit user installed-firmware confirmation; it remains accurate only as historical draft label. Debug callback micros latency, host FC23 adjacency and a 100ms V4.1 echo heuristic are not physical EOF or exclusive response-window proof.
+
+---
+
 # 2026-10-13 — G01 controller epoch, G02 owner, DI-B12 provenance findings
 
 > Additive evidence labels; prior raw observations and NEGATIVE/INCONCLUSIVE records below preserved. [G01](G01_CONTROLLER_EPOCH_20261013_SYNTHESIS.md), [G02](G02_EXCLUSIVE_OWNER_PLAN_20261013.md), [DI-B12](R6_P74DI_B10_B12_PROVENANCE_RECONCILIATION_20261013.md).
