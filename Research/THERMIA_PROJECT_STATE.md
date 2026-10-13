@@ -1,3 +1,23 @@
+# 2026-10-13 — CURRENT STATE: R6-P74BW–CD completed OFFLINE; native TX HARD DENY
+
+> Newest overlay, preserving every prior dated experimental observation. Detailed public-safe offline report: [R6_P74BW_TO_CD_OFFLINE_20261013.md](R6_P74BW_TO_CD_OFFLINE_20261013.md). Historical 2026-10-12 P74AQ/P74AR state below remains authentic for its date but is superseded for the current offline research progress.
+
+**Most recently completed:** **R6-P74CD COMPLETE / POSITIVE (bounded integrated host-only offline regression)**. Sequential R6-P74BW, BX, BY, BZ, CA, CB, CC, CD are each COMPLETE / POSITIVE for explicitly documented **offline scope only**. Seven genuine **cross-model** archives 25,031 CRC-good pre-delimited frames, 4,809 native metadata events host-executed through unchanged BM/P74AT C++, 8,192 synthetic V4.1 cancellation-state combinations, and 210 deliberate CRC-corruption checks; all native output **HARD DENY**. No live ESPHome compile/flash, controller restart, direct XTR TX or new current owner/epoch proof. Public scripts/results are a separate local artifact, not published private emulation tooling.
+
+**Prior recent progression (not erased):** BM RX-only staged and bounded user XTR logs strongly match its source and show no new sampled parser/resync/drop/B11D-parity or software TX issues. The exact flashed BM binary identity has not been independently established. BO and BQ were explicitly administratively closed as **COMPLETE / INCONCLUSIVE**, despite positive measured RX slices; BP and BR/BS offline positives, BT/BU/BV offline positives for bounded research, physical-epoch proof inconclusive. Do not call a prepared firmware compiled or user-flashed without direct evidence. Existing RX-only fallback is the user-known-good P74BC/P74AV family.
+
+**Most material new result:** The original `Thermia_Connect_Firmware` research README attributes the Eco5 September 26 sequence to collaborator-reported controller restarts and **gateway present/absent/present** conditions. The 41 FC23 polls without recorded response in BW were in the **gateway-absent** segment according to that external intervention note. This is provenance, not independently sampled controller power rails or a new XTR current-session owner. BW 6/7 contexts have recorded response shapes. BX finds **6 broad context-to-context** 32/32 ACK-**shape** chains; earlier P74AR phases 4/5 documented **four full plus two partial 10/32,12/32** in more narrowly bounded episodes. **This is an OPEN SCOPING DIFFERENCE**, not license to rewrite P74AR observations or promote semantic ACK success. BY host-timing threshold classification is sensitive to ~100 ms adversarial synthetic shifts, so never use it for a live reply slot.
+
+**Historical XTR:** EXP355/386/387 bounded V4.1 successes remain; EXP388 still **RUNNING / PARTIAL** with untested cancellation; EXP419 INCONCLUSIVE; EXP420 contextually POSITIVE; EXP423 INCONCLUSIVE orphan 0662; EXP425 **COMPLETE / NEGATIVE for expected 0683 ordered tail after ACK**; EXP426 INCONCLUSIVE trigger absent. Old successes cannot authorize new V5 TX. Cross-model source provenance never equals local XTR proof.
+
+**Native Online/DCM protocol state:** main differences are fresh start, retained service `085F/5`, orphan `0662/33`, session cancellation and controller provenance. Present XTR BM retained RX-only `0x0F` FC16 usual `04A6/13`, `085F/5`, no fresh `FC23`, `0708` or current owner. All output stays HARD DENY: no unsolicited ACK, mailbox or semantic write.
+
+**Safety gates:** G01 independent controller epoch OPEN; G02 exclusive owner OPEN; G03 physical frame EOF OPEN; G04 reply slot OPEN; G05 hardware FIFO/drain/DE-release HOST ONLY / PARTIAL; G06 DE fail-low physical OPEN. Sender authentication and controller outcome of incomplete bootstrap UNKNOWN.
+
+**Next proposed / NOT RUN:** reconcile original P74AR narrow episode boundaries with P74BX broad context-to-context windows at exact original source lines; then reassess whether any genuinely new offline evidence remains. Do not propose a new physical DCM module, disconnect the room sensor or initiate TX based on the host successes. Production ESPHome/HA unchanged.
+
+---
+
 # 2026-10-12 — CURRENT STATE ADDENDUM: P74AQ user-live; P74AR phases 1–8 offline
 
 > **Newest project-state overlay.** Supersedes only the *current-status* statements in older overlays (which had P74AB installed). Original observations below remain unchanged. Full dated, public-safe handoff: [R6_P74AQ_P74AR_20261012_HANDOFF.md](R6_P74AQ_P74AR_20261012_HANDOFF.md).
