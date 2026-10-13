@@ -1,3 +1,32 @@
+# 2026-10-14 — G04-01..07 evidence and experiment status update
+
+> See [full source-linked G04 record](G04_RESPONSE_SLOT_G04_01_TO_G04_07_20261014.md). This is a documentation reconciliation of already completed offline work and user-provided B6 live log; no new active experiment, OTA flash, controller restart or native TX.
+
+## G04-07 — PREPARED / NOT RUN; USER DEFERRED
+Hypothesis: ESPHome 2026.9.0 same-owner ESP-IDF UART timeout metadata could separate driver event processing from 5ms debug callback. Baseline: confirmed running R6-P74DI-B6 RX-only, complete YAML/21 includes. Controlled change (not applied): bounded event queue/metadata in existing UART driver only; preserve one uart_read_bytes owner, parser, entity IDs, production HA and TX HARD DENY. Positive: full ESPHome compilation and separately approved future live RX-only test show consistent events, clean parser/HA, software TX=0. Negative: build error, missing discrimination or unpaired event. Abort: TX/DE HIGH, resync/drop, HA regression, reboot/queue overflow. Recovery exact installed B6, no controller restart. **Prototype is not compiled, integrated or flashed.** User explicitly postpones.
+
+## G04-06 — COMPLETE / POSITIVE OFFLINE conditional feasibility
+Baseline B6 UART.debug timeout 5ms and ESPHome ESP-IDF UART sources. Controlled change: offline source investigation. Found uart_driver_install event depth=0 and queue=null; hardware RXFIFO_TOUT and debugger callback distinct. Positive code path explained; negative claim of direct physical EOF measurement rejected. Abort promoting software event time to slot. Recovery no changes.
+
+## G04-05 — COMPLETE / PARTIAL bounded USER-LIVE B6 software timing
+Hypothesis B6 early RX-only decision timing is measurable without new firmware. Baseline user-confirmed running B6, 9600 8E1 and 5ms debugger grouping; user log 5000 lines 00:34:21–00:37:31. Change: offline statistics of already collected live diagnostics. 88 B4 and 88 B3 measurements; B4 entry-to-decision min/median/max 1474/1545/3124us, eval 5/6/11us, B3 entry-to-diagnostic 3370/4169/5056us. Zero reported parser resync/drops/geometry mismatch, software TX 0; one API buffer full warning. **Partial:** original one-shot B5/B6 transition not in log; repeated state=2 match_transition=0. Positive software latency and bounded RX-integrity confirmed; negative electrical EOF/slot timing not measured. Abort unintended TX/DE, framing faults, HA outage. Recovery unchanged B6; no flash.
+
+## G04-04 — COMPLETE / POSITIVE OFFLINE feasibility
+Baseline B6 debugger callback. Controlled change code examination; confirmed 5ms software grouping not physical last stopbit. No live TX or new physical measurement. Abort treating callback time as response deadline. Recovery none.
+
+## G04-03 — COMPLETE / POSITIVE OFFLINE context matrix
+Baseline historic V4.1 EXP355/386/S11F/387, EXP388 PARTIAL, EXP419/420/423/425; cross-model G04-01/02. Controlled change nine-category context decision matrix: fresh, retained, recovery, service, orphan, cancel, other responder, malformed, genuine DCM. Positive context separation; no exclusive owner. Negative previous EXP425 remains; abort granting TX. Recovery documentation only.
+
+## G04-02 — COMPLETE / POSITIVE OFFLINE V4.1 guard comparison
+Baseline V4.1 working local XTR reference versus seven genuine cross-model DCM response-shaped pairs. Controlled change source guard audit. Positive exact shape plus session/one-shot/peer integrity/cancellation guards identified. Unknown internal seven-pair owner/electrical state. Abort inferred current authority. Recovery none.
+
+## G04-01 — COMPLETE / POSITIVE OFFLINE cross-model FC23 adjacency
+Baseline seven historical genuine/collaborator logs. Controlled change CRC verification and immediately adjacent FC23 response audit. 25,031 CRC-valid recognized log records, 164 native FC23 request shapes, seven immediately adjacent response shapes with 29–63ms HOST log timestamps; NOT wire EOF or local XTR owner evidence. Abort host timestamp promoted to bus response-slot proof. Recovery documentary only.
+
+**Project gate:** G04 physical exclusive reply slot OPEN. G04-07 deferred, not a new live experiment. Historical negative, partial and prepared experiment outcomes below are preserved.
+
+---
+
 # 2026-10-13 — G01-01..06 offline results; G02 owner plan PREPARED/NOT RUN
 
 > Newest additive historical record; all previous logs preserved. Source and full bounded criteria: [G01](G01_CONTROLLER_EPOCH_20261013_SYNTHESIS.md), [G02](G02_EXCLUSIVE_OWNER_PLAN_20261013.md), [DI-B12 erratum](R6_P74DI_B10_B12_PROVENANCE_RECONCILIATION_20261013.md). No new native TX, flash or controller restart.
