@@ -1,3 +1,37 @@
+# 2026-10-13 — R6-P74CX–DC newest classified findings (DD–DH NOT RUN)
+
+> Detailed additive public-safe evidence: [CX–DC / DD–DH](R6_P74CX_TO_DC_20261013_RESULTS_AND_DD_DH_PLAN.md). Cross-model, historical local XTR and CM930 firmware-derived conclusions remain separately labelled.
+
+## PROVEN / locally confirmed (historical; no new XTR hardware test)
+- XTR EXP355: controlled controller power cycle with ESP remaining on, qualified one-shot native start, 32/32 configuration page ACKs and runtime requalification. Documentary bus return 00:51:29.662 and terminal ACK 00:52:03.257 (elapsed 33.595s); full original raw XTR log not independently re-parsed in DA/DB. This **disproves a universal 118–120s bus-return-to-first-ACK rule for the XTR** in that bounded historical setup.
+- XTR EXP386 / S11F: separate historically confirmed guarded fresh 32/32 + runtime contexts; S11F third qualified FC23→first settings ACK documented 591ms, not power-on elapsed time. EXP387 bounded semantic re-arm remains historically positive. EXP388 cancellation remains RUNNING/PARTIAL; EXP425 `0662→0683` predicted tail remains COMPLETE/NEGATIVE.
+- User-live R6-P74CO: RX-only diagnostics for retained FC16, no freshly observed FC23/ACK/32-page session. CO early resync historical latch persists with INCONCLUSIVE cause; no new bus TX.
+
+## STRONGLY SUPPORTED / observed genuine cross-model Eco5 only
+- CX reclassification of 13 CJ-`OTHER` frame shape types yields **no hidden 0x0F frame in OTHER**. `0x02 FC23` response-shape, `0x06 FC23` request-shape, `0x0A FC23` request-shape. The two Sep28 slow contexts' `0x06` one-byte payload change occurs ~49.953 seconds after FC23 response, long before first ACK; `0x0A` one-byte transient occurs **after** first ACK, not before. No causal responder owner evidenced by these address families.
+- CY original same-body first page repeats: two slow contexts each **102 identical-content `03E8/count14` FC16 request shapes, 101 retries**, first ACK shape 108.653/108.507 host seconds after FC23 response, 62/31ms after latest retry; subsequent broad 32/32 chains. Thus a changed request body is NOT the observed reason for delay.
+- CZ all six Eco5 first `03E8` ACK shapes at **118.478–120.296 host seconds from first logged post-gap frame** in documented restart contexts. This is an observational host-time pattern, **not** a confirmed controller or gateway 120s timer and not electrical power-on time.
+- DB four Sep28 Eco5 starts share observed controller status order `0000/0005 → 0008/003C → 0008/0005 → 0028/0005 → 0028/000A`. Later status appears ~+66s, ACK ~+118–120s; gateway-absent Sep26 control reaches later status without recorded native ACK. Status alone NOT sufficient to establish response readiness.
+- All six offline results use previously obtained originals, not six new captures; SHA/CRC checks, synthetic safety tests and log-window scope cannot prove physical sender or present XTR context.
+
+## FIRMWARE-DERIVED (not proven live XTR application state)
+- CM930 `0x0F` slave software separates approval `NOT_ACCEPTED → RESPONSE_SENT → ACCEPTED`, onboarding/runtime `WAITING_FOR_DEVICE_INFO → WAITING_FOR_SET_DEVICE_INFO → OPERATION` and bus work for controller-owned FC16 settings, FC03 desired page pulls, runtime/mailbox image.
+- Internal `ACCEPTED` happens upon qualifying *received* FC16 after challenge service, not simply upon seeing wire FC16 short ACK; neither establishes semantic application acceptance. DC source audit: current CO authority flags deliberately disallow active response; 512/512 synthetic non-authority cases stay denied. These are bounded host-only contracts, not full live state replay.
+
+## DISPROVEN / SUPERSEDED interpretation only
+- **Universal 118–120-second post-bus-return first ACK timeout on XTR:** contradicted by historically confirmed EXP355 timing, though no universal absolute power-on-to-ACK claim is possible.
+- **Controller status pair by itself proves native readiness:** NEGATIVE with genuine gateway-absent Eco5 control.
+- **A changed first-page payload explains two slow Eco5 ACKs:** NEGATIVE (identical first-page request bodies).
+- **CJ OTHER hides a necessary `0x0F` handshake:** NEGATIVE within the original `OTHER` type census.
+- EXP388 negative/incomplete branches and EXP425 negative result remain unchanged, not superseded by other-model observation.
+
+## HYPOTHESES / OPEN UNKNOWN
+- Cross-model gateway availability, controller scheduler or internal service startup could explain differing handshake timing; **no single cause isolated**. Old XTR V4.1 success doesn't automatically transfer TX permission to CO/V5.
+- Current XTR G01 unique controller epoch, G02 exclusive current native work owner, G03 electrical EOF, G04 exclusive slot, G05 physical FIFO/drain/DE release, G06 DE fail-low during ESP reset/brownout all OPEN (G05 host-only PARTIAL). Semantic acceptance and cause of CO early resync OPEN.
+- Next: DD–DG offline source/evidence model work, DH conditional passive user test **PREPARED / NOT RUN**. **Native TX HARD DENY**; no new FC23 handshake reply, FC16 ACK, `0708` mailbox action or semantic write authorized.
+
+---
+
 # 2026-10-13 — Latest R6-P74CH–CW reconciliation: local RX-only + cross-model first-page ACK shapes
 
 > Authoritative bounded evidence reports: [CH–CS handoff](R6_P74CH_TO_CS_20261013_HANDOFF.md) and [CT–CW offline findings](R6_P74CT_TO_CW_20261013.md). Historical raw observations, especially EXP388 PARTIAL and EXP425 NEGATIVE, are preserved below.
