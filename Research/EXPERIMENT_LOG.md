@@ -1,3 +1,36 @@
+# 2026-10-13 — G01-01..06 offline results; G02 owner plan PREPARED/NOT RUN
+
+> Newest additive historical record; all previous logs preserved. Source and full bounded criteria: [G01](G01_CONTROLLER_EPOCH_20261013_SYNTHESIS.md), [G02](G02_EXCLUSIVE_OWNER_PLAN_20261013.md), [DI-B12 erratum](R6_P74DI_B10_B12_PROVENANCE_RECONCILIATION_20261013.md). No new native TX, flash or controller restart.
+
+## G01-06 — COMPLETE/POSITIVE offline witness review, physical INCONCLUSIVE; external LIVE PREPARED/NOT RUN
+Baseline G01-01..05, EXP355/386/S11F and R6-P24. Hypothesis independent controller start needs external verified witness. Exact change offline review and 15/15 checks. Result no independent source; user confirms no HA/Shelly indoor supply monitor. Abort synthetic/protocol proof claimed physical. Recovery RX-only, no controller restart.
+
+## G01-05 — COMPLETE/POSITIVE offline CO/B6 preflight, new user LIVE PREPARED/NOT RUN
+Baseline CO, actual DI-B6 log and P24. Hypothesis existing passive diagnostics suffice. Change source/log audit only, 11/11. B6 bounded 631 V5 frames/105 pages, no gaps/FC23/new resync/drop/software TX. Abort new TX/DE or HA/parser regression; recovery unchanged RX-only.
+
+## G01-04 — COMPLETE/NEGATIVE original offline physical-proof projector; COMPLETE/POSITIVE new host gate 2087/2087
+Baseline G01-02 38/38 regular tests. Hypothesis malicious metadata can falsely promote epoch. Change seven counterexamples and provenance/continuity guard plus 2048 streams/40993 synthetic events. Result seven false promotions in old standalone Python, all blocked by new offline-only guard. Abort TX or synthetic proof considered local. Recovery do not deploy old projector.
+
+## G01-03 — COMPLETE/POSITIVE 48/48 offline chronology; independent physical epoch INCONCLUSIVE
+Baseline EXP355/386/S11F and raw EXP318/319 excerpts. Controlled change historical source-typed replay. Fresh versus retained classified, but complete original EXP355/386 raw not rechecked. Abort documentary evidence presented as independently physical proof. Recovery source labels offline.
+
+## G01-02 — COMPLETE/POSITIVE 38/38 initial offline projector, physical epoch INCONCLUSIVE
+Baseline DE/V4.1/CO. Controlled change session candidate/physical evidence axes, no IO. Later G01-04 invalidated seven original adversarial proof paths, not normal candidate classification. Abort owner/TX grant. Recovery hardened host-only logic.
+
+## G01-01 — COMPLETE/POSITIVE bounded source audit, PARTIAL binary provenance
+Baseline EXP355/386 V4.1 and CO. Change 21/21 include SHA and guard mapping; no hardware. Positive scoped source checks; physical controller boot unknown. Abort ESP restart/callback gap as unique controller ID. Recovery no ESP change.
+
+## R6-P74DD-DH offline scope refinement
+R6-P74DD PARTIAL exact as-built binary/dependency provenance, source audit bounded positive; DE COMPLETE/POSITIVE offline session projection (27 host checks); DF COMPLETE/POSITIVE bounded historical documentary replay, full original local raw XTR replay INCONCLUSIVE; DG COMPLETE/POSITIVE offline fail-closed host checks; DH COMPLETE/POSITIVE OFFLINE PREFLIGHT, new user-live measurement PREPARED/NOT RUN. None licenses native TX.
+
+## DI-B10-B12 — COMPLETE/POSITIVE offline parsing/profile, XTR-origin interpretation SUPERSEDED
+Baseline genuine cross-model originals and separate local EXP318/319. Change CRC/context and firmware/model audit. Result twelve cross-model zero085F/ACK shapes, October ATEC, September uncertain legacy-like; unrelated to twelve local XTR. Negative universal 085F-ACK->0884 and universal 10x6 profile; sender/EOF inconclusive. Recovery preserve raw and correct provenance.
+
+## G02-01..06 PREPARED/NOT RUN; G02-07 PROPOSED/NOT RUN
+Baseline EXP355/386/S11F, EXP419/420/423/425, current RX-only and CM930; hypothesis sender, work owner, response window can be assessed separately. Controlled changes not yet executed. Criteria and recovery per G02 plan; any unearned exclusive owner/TX inference is abort. Native output DENY.
+
+---
+
 # 2026-10-13 — R6-P74CX–DC COMPLETE OFFLINE; R6-P74DD–DH PREPARED / NOT RUN (newest)
 
 > Full baseline, controlled-change, criteria, evidence origin and abort/recovery for every experiment: [CX–DC result / DD–DH plan](R6_P74CX_TO_DC_20261013_RESULTS_AND_DD_DH_PLAN.md). Original source reports were written offline on 2026-10-13. **No user-live XTR test, reflash, external gateway hardware, native TX or register write in CX–DC.** Previous log history below is unchanged.

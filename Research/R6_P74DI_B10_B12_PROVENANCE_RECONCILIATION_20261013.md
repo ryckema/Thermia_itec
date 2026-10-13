@@ -1,0 +1,11 @@
+# DI-B10-B12 provenance and firmware reconciliation, 2026-10-13
+
+Status: COMPLETE/POSITIVE for bounded offline parsing and firmware cross-check; INCONCLUSIVE for physical sender, electrical EOF, response ownership and causality. No new hardware experiment.
+
+Critical erratum: twelve CRC-valid all-zero 0x0F FC16 085F/count5 requests and short ACK shapes from thermia_capture_20260925_090209.log (2), thermia_capture_20260925_090550.log (8) and thermia_capture_20261003_165355.log (2) were GENUINE COLLABORATOR/CROSS-MODEL captures, NOT twelve locally proven XTR M ACKs. The October 3 recording is documented ATEC plus DCM03. September recordings have legacy/ATEC-like page and alarm-history profiles, but exact physical model provenance is unresolved. Older project notes called September Eco5; retain that historical note but classify the present identity as UNKNOWN. Cross-model Eco5 gateway logs from Sep26/28 remain separate. Twelve ACK delays 12-17ms are host-record times, not electrical turnaround.
+
+Firmware-derived: Connect W4 bit7 selects 085F..0863 (5-word alarm/service group), W4 bit10 selects 0884..08BF (60-word history group); they are separate request groups, not a proven forced 085F ACK to 0884 transition. The firmware exception for generic FC16-induced internal handshake acceptance includes 085F. A wire ACK is not firmware ACCEPTED. The 0861 bit11 0x0800 has model-dependent Online gateway-communication-error naming, not independently verified XTR UI meaning.
+
+Profile-dependent: legacy ATEC history uses 10 records of 6 words, while modern Eco5 and observed local XTR use 8 records of 7 words plus 4 remaining words. Same start/count does not establish identical semantics or model.
+
+Locally confirmed XTR EXP318/319 (distinct from collaborator captures) and S11Y-M FIX1 show conditioned 085F/0708 alarm/service evolution. S11Y-M FIX1 observed 0861 transition from 0800 to 0000 after qualified 0708 service without an 085F ACK. Neither history nor firmware proves that an arbitrary 085F transport ACK alone allows 0884, or that the present ESP32 has exclusive ownership. All native TX remains HARD DENY. Sources: original genuine archives and local XTR logs, CM930_MODBUS_FLAGS_MAP.md, CM930_PRODUCT_PROFILE_DIFFERENCES.md, XTR_S11Y_C_TO_L_NATIVE_RUNTIME_085F_20261008.md, and Research/Atec/ATEC_DCM03_COLD_START_20261003.md.

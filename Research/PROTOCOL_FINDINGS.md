@@ -1,3 +1,24 @@
+# 2026-10-13 — G01 controller epoch, G02 owner, DI-B12 provenance findings
+
+> Additive evidence labels; prior raw observations and NEGATIVE/INCONCLUSIVE records below preserved. [G01](G01_CONTROLLER_EPOCH_20261013_SYNTHESIS.md), [G02](G02_EXCLUSIVE_OWNER_PLAN_20261013.md), [DI-B12](R6_P74DI_B10_B12_PROVENANCE_RECONCILIATION_20261013.md).
+
+## PROVEN / locally confirmed historically
+EXP355 and EXP386 guarded controlled XTR restart -> 32/32 -> runtime, S11F fresh/runtime scoped, not current V5 TX authorization. DI-B6 user-run RX-only witness normal sample observed no independent boot, no sampled software TX.
+
+## PROVEN / host-only software tests, not physical controller evidence
+G01-01 21/21 CO include-hashes; G01-02 38/38 session tests; G01-03 48/48 documentary/raw-excerpt checks; G01-05 11/11 preflight; G01-06 15/15 offline witness review. G01-04 uncovered seven original Python false physical-epoch promotions, then guarded host-only gate passed 2087/2087 checks (2048 synthetic streams, 40993 events). Original physical-proof rule is DISPROVEN for adversarial metadata; corrected code is not on ESP.
+
+## STRONGLY SUPPORTED / firmware-derived only
+CM930 slave 0x0F internal handshake RESPONSE_SENT/ACCEPTED, runtime/selectors and service data are distinct. Connect W4 bit7 085F (alarm/service) and W4 bit10 0884 (history) have independent request roles; 0861.bit11 possible gateway-error label needs local UI validation. ATEC legacy 0884 history 10x6, modern Eco5 and local XTR 8x7 plus four. H003/H004/H005/H009 work-owner software contracts are conservative models, not proven externally leased work IDs.
+
+## DISPROVEN / SUPERSEDED interpretations
+DI-B10/B11 claim of twelve local XTR zero-085F ACK pairs: actual twelve are collaborator/cross-model; October genuine ATEC/DCM03, September physical model UNKNOWN with ATEC-like geometry, older conflicting Eco5 label retained historically. No universal 085F-ACK -> 0884 rule or uniform 0884 ABI. ESP OTA, FC23, 32/32, callback gap, clock/defrost, W4 or ACK-shape alone do not uniquely identify controller physical boot, sender or owner. EXP425 mandatory 0662 ACK -> 0683 tail remains NEGATIVE.
+
+## OPEN / UNKNOWN
+G01 current independently verified controller-power epoch (user has no confirmed indoor supply meter), G02 exclusive physical responder/controller-work ownership; G02-01..06 PREPARED/NOT RUN. G03 physical EOF, G04 exclusive reply slot, G05 physical FIFO/DE PARTIAL/HOST-ONLY, G06 reset/brownout fail-low OPEN. EXP388 PARTIAL and EXP419/423 INCONCLUSIVE retained. Native FC23/FC16/0708 and semantic writes HARD DENY.
+
+---
+
 # 2026-10-13 — R6-P74CX–DC newest classified findings (DD–DH NOT RUN)
 
 > Detailed additive public-safe evidence: [CX–DC / DD–DH](R6_P74CX_TO_DC_20261013_RESULTS_AND_DD_DH_PLAN.md). Cross-model, historical local XTR and CM930 firmware-derived conclusions remain separately labelled.

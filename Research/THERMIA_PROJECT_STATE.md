@@ -1,3 +1,21 @@
+# 2026-10-13 — G01 offline results reconciled, G02 research planned, native TX HARD DENY
+
+> Additive newest overlay, preserving all earlier negative, partial and prepared observations below as historical snapshots. See [G01 synthesis](G01_CONTROLLER_EPOCH_20261013_SYNTHESIS.md), [G02 plan](G02_EXCLUSIVE_OWNER_PLAN_20261013.md) and [DI-B12 provenance erratum](R6_P74DI_B10_B12_PROVENANCE_RECONCILIATION_20261013.md).
+
+**G01:** G01-01 source-check POSITIVE (21/21 includes; as-built PARTIAL), G01-02 offline 38/38, G01-03 offline 48/48, G01-04 old-projector robustness NEGATIVE (seven false epoch promotions), hardened host-only gate POSITIVE 2087/2087, G01-05 offline preflight POSITIVE 11/11 with new user-live NOT RUN, G01-06 offline evidence review POSITIVE 15/15 and independent physical boot witness NOT RUN. User confirms no Shelly/HA supply-power measurement for Thermia indoor unit. **Independent current controller epoch G01 OPEN.**
+
+**G02:** physical sender, controller-work owner and actual reply permission are separate predicates. G02-01..06 PREPARED/NOT RUN; G02-07 PROPOSED/NOT RUN. Exclusive current responder/work owner OPEN. Next: G02-01 and G02-02 OFFLINE only.
+
+**DD-DH updated offline scopes:** R6-P74DD PARTIAL exact as-built binary/dependency provenance, source audit bounded positive; DE COMPLETE/POSITIVE offline session projection (27 host checks); DF COMPLETE/POSITIVE bounded historical documentary replay, full original local raw XTR replay INCONCLUSIVE; DG COMPLETE/POSITIVE offline fail-closed host checks; DH COMPLETE/POSITIVE OFFLINE PREFLIGHT, new user-live measurement PREPARED/NOT RUN. None licenses native TX.
+
+**DI-B10/11 provenance SUPERSEDED:** twelve all-zero 085F/5 + ACK-shape pairs were genuine collaborator/cross-model, not twelve locally proven XTR. October 3 confirmed ATEC DCM03; September 25 legacy-like profile with physical model UNKNOWN, conflicting historic Eco5 labels below retained. DI-B12 firmware bit7 085F vs bit10 0884, legacy 10x6 vs modern 8x7+4 history, no universal 085F-ACK to 0884. Raw observations retained; false provenance withdrawn.
+
+**On-device:** CO historically last canonically confirmed RX-only, later separate DI-B6 user-run bounded log exists; exact CURRENT flashed firmware not independently checked. No G01/G02 research caused a flash, bus TX or controller restart.
+
+**Safety:** G01/G02/G03/G04/G06 OPEN, G05 physical FIFO/DE only PARTIAL/HOST-ONLY; native FC23/FC16 ACK/0708/semantic writes HARD DENY. EXP388 RUNNING/PARTIAL; EXP419 and EXP423 INCONCLUSIVE; EXP425 COMPLETE/NEGATIVE unchanged.
+
+---
+
 # 2026-10-13 — CURRENT PROJECT STATE: R6-P74DC last completed OFFLINE; DD–DH PREPARED / NOT RUN; native TX HARD DENY
 
 > **Newest additive overlay:** full scoped evidence and controls in [CX–DC results + DD–DH plan](R6_P74CX_TO_DC_20261013_RESULTS_AND_DD_DH_PLAN.md). Prior CW/BW–CD status sections remain below as historical snapshots, not the latest active-status claim. Preserve all negative and partial experiments.
