@@ -1,3 +1,19 @@
+# 2026-10-14 — G02 conditional closure approved; G03 next; native TX HARD DENY
+
+> Latest additive canonical overlay. User explicitly accepts `G02 COMPLETE/POSITIVE (CONDITIONAL)` for the **unchanged, documented XTR M installation**, not for universal electrical exclusivity or current TX authorization. Full basis and experiment limitations: [G02-09..11B conditional closure](G02_09_TO_11B_CONDITIONAL_CLOSURE_20261014.md). Earlier dated G02 OPEN/NO-GO passages below are historical snapshots superseded for *scoped research acceptance only*; their negative and unknown observations remain valid.
+
+**Current project status:** G01-09 `COMPLETE/POSITIVE INTERVENTION_ANCHORED` video+RX observed, autonomously electrically proven new controller epoch OPEN. G02-09 `COMPLETE/POSITIVE OFFLINE` finite capture role classification; G02-10 `COMPLETE/POSITIVE OFFLINE INVENTORY`, physical exclusivity INCONCLUSIVE; G02-11A `COMPLETE/POSITIVE BOUNDED HISTORICAL PROTOCOL WORK OWNER`; G02-11B `COMPLETE/INCONCLUSIVE ELECTRICAL EXCLUSIVITY`, `CONDITIONAL POSITIVE` one known external DCM interface/no DCM installed. **G02 overall: COMPLETE/POSITIVE (CONDITIONAL), installation-scoped decision made by user**. This does NOT prove all physical transmitters absent or grant live native reply rights.
+
+**Known installation:** XTR hub two RJ45: `122 Display` with display; `123 Ext.` intended accessory path / ESP32 connection. ATEC p7 is cross-model; local PCB markings, photos and user installation statement corroborate roles, not exact copper or hypothetical other transceivers. No separate Online/Connect/DCM installed per user. User-video-anchored RX-only G01-09 24 FC23 requests and 0 observed peer response shapes in bounded window. Historical native XTR controller-work sessions exist; unknown concurrent physical responder not universally excluded.
+
+**Invalidate conditional G02 immediately:** any additional Online/DCM, splitter/new wiring/board/profile, peer `0x0F` response/conflict, unknown current epoch or session owner, CRC/RX integrity failure. Then `G02=UNKNOWN/HOLD` for current context. The previous strict `G02_OPEN_NO_GO` electrical rule is NOT disproven: conditional acceptance is a changed scoped research policy.
+
+**Installed baseline:** user-confirmed B6 RX-only, actual image hash not independently checked; no change to production HA. **Separate G03 physical EOF OPEN; G04 exclusive reply slot OPEN (G04-07 deferred); G05 electrical FIFO/DE PARTIAL/HOST-ONLY; G06 DE reset/brownout fail-low OPEN. Native 0x0F TX HARD DENY.** Do not unlock a TX interlock simply because G02 scope accepted. Last live user experiment G01-09; latest G02-09..11B work offline/documentary only.
+
+**Next:** G03 offline investigation with existing UART owner/driver and captures; preserve no TX and no flash until independently approved.
+
+---
+
 # 2026-10-14 — G02-01..08 historical offline results reconciled; G02-09 PREPARED/NOT RUN
 
 > Newest additive G02 overlay. Source-linked [G02 full offline evidence synthesis](G02_01_TO_08_OWNER_EVIDENCE_RECONCILIATION_20261014.md); preceding G01-09 video-anchored event remains POSITIVE within manual intervention scope. All dated material below remains historical; no hardware, firmware or HA changes were made for this reconciliation.
