@@ -1,3 +1,19 @@
+# 2026-10-15 — V41V5-GAP-01..05 offline migration progress; GAP-06 PROPOSED / NOT RUN
+
+> Newest additive status. Detailed source-scoped report: [V41V5 GAP-01..05 offline](V41V5_GAP01_TO_05_OFFLINE_20261015.md). All previous G01–G06 overlays and historical results below are retained; their electrical unknowns are NOT silently closed.
+
+**Current experiment:** V41V5-GAP-05 **COMPLETE/POSITIVE (bounded metadata-only dispatcher tests 31/31)** and **PARTIAL/INCONCLUSIVE (full V4.1 branch/W0–W5 byte equivalence and actual positive local-XTR raw replay NOT RUN)**. GAP-04: **COMPLETE/POSITIVE offline mailbox policy 136/136**, full behavioral parity INCONCLUSIVE. GAP-03: **COMPLETE/POSITIVE offline synthetic/documentary session tests 114/114**, exact original-XTR byte replay INCONCLUSIVE. GAP-02: **COMPLETE/POSITIVE offline portable C++ adapter/replay**, semantic 69/69 and revocation 46/46; **18,507/18,507** decisions safely denied without authority in real *cross-model* replay. GAP-01: **COMPLETE/POSITIVE offline route inventory 58/58** (five owners plus an explicitly rejected legacy path). **None of GAP-01..05 installed as production firmware, and no native TX performed.**
+
+**Live software baseline:** User-provided V5-TX-04B FIX1 log shows `[TX04B-FIX1] CALLBACK_ONLY` and the `V5 TX04B FIX1 Callback Timing (NO TX)` entity; software callback instrumentation is **COMPLETE/POSITIVE for bounded function**, no observed RX regressions or TX attempts in evaluated log. **G03 physical wire EOF→callback remains OPEN**: largest software callback gap is not wire-end latency. Current as-built firmware hash / full compile log not independently verified.
+
+**Canonical protocol model:** V4.1's 58 distinct TX call sites map to approval 2; ordered 32-page bootstrap; generic runtime 1; mailbox 18; desired full-page responses 4; one legacy 04A6 recovery site explicitly denied. Consolidated development direction: one native session/ownership core with separate logical owner families, one fail-closed eventual output boundary. `085F` and `0884` cannot be ACK-authorized from page shape alone. GAP-03 detected a broad `0884` host-only RuntimeOverlay candidate; supplemental policy keeps unqualified `0884` capture-only. GAP-05 synthetic conflicting workfamilies default DENY, intentionally not full first-match V4.1 parity.
+
+**Risk decision:** User accepts unresolved G01–G06 as **engineering research risks**, not automatic blockers for **offline development**. G02 remains **COMPLETE/POSITIVE CONDITIONAL** for unchanged installation only. G01 new controller epoch autonomous proof OPEN; G03 physical EOF OPEN; G04 exclusive response slot OPEN; G05 physical drain/DE PARTIAL HOST-ONLY; G06 reset/brownout DE fail-low OPEN. This acceptance does **not** make unknown predicates observed or authorize an unrequested active bus test. **Native V5 TX HARD DENY.**
+
+**Next experiment:** V41V5-GAP-06 **PROPOSED / NOT RUN**, offline positive *local-XTR* event-fixture differential replay including mailbox owner/priorities, `085F/0884` source-qualified context, page freshness, cancellation and recovery. Positive: exact per-fixture state/owner parity; negative: false owner, unqualified ACK or stale page mutation; inconclusive: missing complete capture. Abort at any payload/TX/public private-implementation exposure; recovery keep existing RX-only YAML. No wiring, flash or GitHub sourcecode implementation change required.
+
+---
+
 # 2026-10-14 — G03-02R correlation audit COMPLETE/INCONCLUSIVE; G03 current physical EOF OPEN
 
 > Newest additive status after user-approved G02 conditional closure. [G03-01R source revalidation](G03_01R_OFFLINE_REVALIDATION_20261014.md) and [G03-02R Saleae/ESPHome correlation](G03_02R_SALEAE_ESPHOME_CORRELATION_20261014.md). Prior dated current-state blocks preserved as historical. No new physical action or native TX.
