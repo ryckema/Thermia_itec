@@ -1,3 +1,20 @@
+# 2026-10-14 — G01-07R / G01-08 / G01-09 source-linked results (additive)
+
+> Detailed observations and limitations: [G01-07R/08/09 evidence](G01_07R_08_09_CONTROLLER_RESTART_20261014.md). Historical original experiments (including negatives and inconclusive results) preserved below. No code was flashed and no native reply was transmitted for the G01-09 observation.
+
+## G01-09 — COMPLETE / POSITIVE, bounded VIDEO / INTERVENTION_ANCHORED; strict electrical boot witness OPEN
+**Hypothesis:** filmed normal power intervention/display restart correlates with fresh native protocol start while independently powered ESP logs continuously. **Baseline:** G01-07R six historical restart candidates, G01-08 offline classifier and current user-confirmed B6 RX-only. **Exact controlled change:** user performs one normal Thermia power-cycle while filming switch/display and leaving current ESPHome capture RX-only; no experimental response, write, flash or HA configuration change. **Relevant fields:** controller `A80E=0000/A80F=0005`; 0x0F FC23; first valid `0x1E` return; 0x0F `03E8` page 0/32, 11D parser consistency and TX software counters. **Observed:** 15:41:15.736 callback gap 11,944 ms; first CRC return 15:41:15.749; status 15:41:16.460; FC23 counted by 15:41:17.021; 24 repeated by 15:42:55.315, TX=0, 32/32 absent and fail-closed HOLD. Video two clicks/display off/on, user confirms same event. ESP counters/boot identity continuous, no ESP reboot observed; no separate exact uptime samples. **Positive:** intervention correlated with protocol restart; achieved. **Negative/abort:** video/log ambiguity, ESP reset, RX corruption, unexpected TX/DE or main-rail electrical proof being assumed; not observed for software integrity, but rail measurement absent. **Recovery:** RX-only baseline, normal controller restart procedure; no further recovery required. **Verdict:** COMPLETE/POSITIVE `INTERVENTION_ANCHORED`; strict physically measured controller epoch INCONCLUSIVE/OPEN. Native TX HARD DENY.
+
+## G01-08 — COMPLETE / POSITIVE OFFLINE candidate validation; INCONCLUSIVE for autonomous physical epoch
+**Hypothesis:** passively identify protocol-start candidates without promoting to physical boot/TX. **Baseline:** EXP293–297, EXP344, G01-04 false-physical-epoch caution; TX16 retained negative; ESP-only OTA. **Change:** standalone offline replay/fail-closed fixture runner only. **Result:** 5 clean historical CANDIDATE, EXP296 HOLD (resync=1), 8 new fixed negative controls and 2,048 adversarial streams with no false candidate within tested fixture space; original seven G01-04 false-positive vectors not literally available for rerun. **Abort:** physical epoch or TX=true from software sequence; none promoted. **Recovery:** offline detector only, no on-device change.
+
+## G01-07R — COMPLETE / POSITIVE historical source review; physical rail INCONCLUSIVE
+**Hypothesis:** older local XTR logs include independent ESP-powered controller-start sequences. **Baseline:** older EXP293–297/344 raw logs. **Change:** source-typed offline event extraction with CRC/continuity metadata; exclude cross-model Eco5. **Result:** six start candidates after >=5s recorded/detected silence and FC23 in 1.05–1.30s; EXP296 parser resync HOLD; historical 32/32 followed active responses and not eligible as passive prerequisite. **Abort:** software timing or cross-model shape promoted to physical electrical proof. **Recovery:** offline-only reclassification.
+
+**Next experiment:** G02 offline provenance/work-owner audit, not a new power-cycle or live 0x0F response. 
+
+---
+
 # 2026-10-14 — G04-01..07 evidence and experiment status update
 
 > See [full source-linked G04 record](G04_RESPONSE_SLOT_G04_01_TO_G04_07_20261014.md). This is a documentation reconciliation of already completed offline work and user-provided B6 live log; no new active experiment, OTA flash, controller restart or native TX.
