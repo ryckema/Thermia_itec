@@ -1,3 +1,11 @@
+# 2026-10-14 — G02 plan execution overlay (historical 2026-10-13 plan preserved below)
+
+> The original G02-01..07 PREPARED statuses below were correct at drafting time. Source-typed offline analysis has since been performed. Detailed current statuses: [G02-01..08 reconciliation](G02_01_TO_08_OWNER_EVIDENCE_RECONCILIATION_20261014.md). This overlay supersedes only their *current execution status*, not old plans, safety conditions or negative history.
+
+**G02-01 RUNNING/PARTIAL** original XTR full raw replay; **G02-02 COMPLETE/POSITIVE inspected CM930 2.1.105** cross-version direct recheck PARTIAL; **G02-03 COMPLETE/POSITIVE genuine cross-model raw**; **G02-04 COMPLETE/POSITIVE DOCUMENTARY_ONLY** original raw replay INCONCLUSIVE; **G02-05 COMPLETE/POSITIVE HOST-ONLY** reducer tests; **G02-06 COMPLETE/POSITIVE OFFLINE PREFLIGHT**, optional on-device test SUPERSEDED/NOT RUN; **G02-07 COMPLETE/POSITIVE OFFLINE NO-GO decision**; **G02-08 COMPLETE/POSITIVE OFFLINE** local G01-09 FC23-no-peer-response analysis; **G02-09 PREPARED/NOT RUN** offline cross-context classifier. Hardware physical owner G02 OPEN, native TX HARD DENY.
+
+---
+
 # G02 exclusive native work owner: research plan, 2026-10-13
 
 Status G02-01 to G02-06: PREPARED / NOT RUN. G02-07: PROPOSED / NOT RUN decision only. No bus TX, ESP flashing, register write, genuine DCM attachment, room sensor disconnection or controller restart required. Physical controller epoch G01 is OPEN. Native TX HARD DENY.
