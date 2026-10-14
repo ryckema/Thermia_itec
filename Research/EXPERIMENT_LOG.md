@@ -1,3 +1,15 @@
+# 2026-10-14 — G03-01R and G03-02R offline results (additive)
+
+> Source reports: [G03-01R](G03_01R_OFFLINE_REVALIDATION_20261014.md) and [G03-02R](G03_02R_SALEAE_ESPHOME_CORRELATION_20261014.md). Both completed OFFLINE; original G03-01 and G03-03..05 prior results preserved; no new RX capture, ESP flash, controller restart, TX, or G04-07 execution.
+
+**G03-02R COMPLETE/INCONCLUSIVE physical EOF-to-B6 callback timing, COMPLETE/POSITIVE source audit.** Hypothesis: historical Saleae edge captures can be time-aligned to same-session ESPHome raw logs. Baseline G03-03/05 D2, G03-01R B6 and G04-05. Controlled change only original Saleae acquisition metadata read and full CRC frame byte matching across 22 locally available ESPHome logs. Frames include `0x0F` FC16 `03E8/14` and `085F/5`, plus `0x02/0x1E` as candidate markers. Result 55+156+1047 CRC-good D2 ADUs, but no verifiably simultaneous Sep 4 ESPHome log; repeated frame values across different days cannot establish shared clock. Positive criterion unique same-session multi-frame marker + calibrated time offset NOT MET. Inconclusive criterion missing common epoch MET. Abort any invented time offset, host timestamp as EOF, native TX. Recovery none, offline only. Next check pre-existing Sep 4 logs or plan separately approved passive synchronized capture.
+
+**G03-01R COMPLETE/POSITIVE source-baseline revalidation; current physical EOF OPEN.** Hypothesis: stock ESPHome UART debug callback time is not physical last stopbit. Baseline original G03-01, Saleae G03-03..05, G04-06/07 source and user-confirmed B6. Controlled change only offline YAML/source recheck, no device changes. Relevant 9600 8E1, RX GPIO18, TX GPIO17, DE GPIO21, debug 5ms, software `micros()` callback. Result one consumer; ESPHome driver no UART event queue in inspected source; hardware RX timeout metadata possible only via version-matched instrumentation, not direct YAML; 3.5T=4.010417ms theoretical, not physical timestamp. Positive source distinction MET, negative strict electrical EOF unresolved. Abort double-reader, TX/DE, loss of parser integrity; recovery keep B6 RX-only. G04-07 deferred.
+
+**All gates:** G02 conditional installation-scoped; G03/G04/G06 OPEN, G05 hardware partial. Native TX HARD DENY.
+
+---
+
 # 2026-10-14 — G02-09..11B reconciled; G02 conditional acceptance (no TX)
 
 > Additive record of earlier locally reported offline work, photos and explicit user approval of **scoped G02 closeout**. Source classifications, baselines, controlled changes, frames, criteria, abort and recovery: [G02-09..11B full report](G02_09_TO_11B_CONDITIONAL_CLOSURE_20261014.md). This GitHub documentation update itself did NOT rerun offline scripts, ESPHome compilation, a live heat pump restart or active TX. All older experiments/negative results below kept verbatim.
