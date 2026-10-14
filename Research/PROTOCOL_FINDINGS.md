@@ -1,3 +1,26 @@
+# 2026-10-14 — G03-01R/02R UART physical EOF evidence update
+
+> [G03-01R source report](G03_01R_OFFLINE_REVALIDATION_20261014.md), [G03-02R original Saleae/ESPHome cross-clock audit](G03_02R_SALEAE_ESPHOME_CORRELATION_20261014.md). Older protocol observations below remain historically valid; G02 conditional installed-topology decision unchanged.
+
+## PROVEN / locally confirmed bounded
+- Local historical Saleae D2 reconstructed edge captures contain 1,258 CRC-valid ADUs in three 2026-09-04 sessions (55, 156, 1,047); this is historical physical UART-edge timing, not currently flashed B6 callback correlation.
+- B6 YAML RX debug timeout 5ms and callback-entry `micros()` are software grouping/timestamps, not the last stopbit measured on RS485.
+- In 22 locally available ESPHome logs, no verifiably same-session Sep 4 log was found; later exact frame-byte matches are recurrent and insufficient to synchronize clocks.
+
+## STRONGLY SUPPORTED / ESPHome source and timing
+- ESPHome 2026.9.0 UART ESP-IDF previously inspected driver eventqueue disabled in baseline; `UART_DATA.timeout_flag` could be exposed with a single-owner patch, but callback/dequeue timestamp cannot be assumed to be ISR/physical EOF. 9600 8E1 theoretical 3.5T = 4.010417ms; debug 5ms is not an observed bus gap.
+
+## HYPOTHESIS
+- A separately approved synchronized passive D2 and current B6 RX-only capture with independently observable clock marker could bound EOF-to-callback lag. No current patch built or flashed; G04-07 deferred.
+
+## OPEN / UNKNOWN
+- Current B6 physical last-stopbit→callback latency and its uncertainty, independently synchronized time anchor, physical G04 reply slot, G05 electrical drain, G06 fail-low. **Native TX HARD DENY.**
+
+## DISPROVEN / SUPERSEDED
+- A byte-identical frame from different days does not establish same recording or a shared timebase. No previous G03 result should be rewritten as a negative wire-edge capture: original historical Saleae evidence remains positive within its scope.
+
+---
+
 # 2026-10-14 — G02 conditional installation-scoped acceptance (newest classification)
 
 > [Source-scoped G02-09..11B decision report](G02_09_TO_11B_CONDITIONAL_CLOSURE_20261014.md); old G02_OPEN_NO_GO findings below remain true for strict universal electrical proof and old test time, not a reversal of past raw results. User explicitly approved a narrower `COMPLETE/POSITIVE (CONDITIONAL)` research criterion; no new TX/OTA/electric measurement.
