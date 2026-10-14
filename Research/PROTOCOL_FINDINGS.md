@@ -1,3 +1,27 @@
+# 2026-10-14 — G01-07R to G01-09 local XTR restart evidence (current overlay)
+
+> Evidence and source boundaries: [G01-07R/08/09 reconciliation](G01_07R_08_09_CONTROLLER_RESTART_20261014.md). Earlier dated statements remain historical observations; do not promote them to current unqualified TX readiness.
+
+## PROVEN / locally confirmed (bounded video + XTR software capture)
+- User-recorded one physical switching intervention; video shows clicks and display off/on, and user identifies the matching 4,660-line ESPHome log. Video is **independent of the RS485 decoder**, but is **not a voltage measurement of the main controller**.
+- RX-only ESP sees 11,944ms callback gap, a CRC-valid return with slave `0x1E`, cold-pattern `A80E=0000/A80F=0005`, then a new FC23 sequence with 24 cumulative requests by end. No ESP software TX, no ordered 32/32; observer held TX=DENY.
+- Five clean historical XTR protocolstart candidates, one EXP296 HOLD due to resync. ESP-only OTA and long retained TX-16 sample discriminate software reboot or status changes from the actual start prefix within tested cases.
+
+## STRONGLY SUPPORTED
+- G01-09 `INTERVENTION_ANCHORED` is **COMPLETE/POSITIVE** for a specifically video-documented controller intervention linked by user and corresponding log sequence. Monotonic software/boot counters and API continuity support ESP surviving the event; independently published ESP Uptime samples during that exact transition were absent.
+- G01-08 offline fail-closed candidate recognizer passed five positive clean cases, one HOLD, eight new negatives, 2,048 adversarial negative streams. Not deployed; original seven G01-04 physical-epoch false positives could not be literally rerun.
+
+## HYPOTHESIS
+- Native protocolstart signature supports manual verified restart correlation in similar future events, but may not uniquely identify an electrical boot without an independent supply/boot signal.
+
+## OPEN / UNKNOWN
+- Direct main-controller rail loss, validated unique controller boot ID and unattended/future `EXTERNAL_BOOT_WITNESSED` remain OPEN; video is not a substitute for a measured rail. G02 physical responder/work owner, G03 EOF, G04 exclusive reply slot and G06 electrical reset DE fail-low OPEN; G05 FIFO/DE electrical drain PARTIAL/HOST-ONLY. Native 0x0F TX HARD DENY.
+
+## DISPROVEN / SUPERSEDED
+- A80E/A80F, FC23, 32/32, software callback gap or video display blackout alone do not prove a unique autonomous physical controller epoch, exclusive responder or TX authorization. Old G01-04 projector false physical-epoch promotions remain DISPROVEN. Any earlier note that no video-anchored live XTR observation exists is superseded by G01-09, not erased.
+
+---
+
 # 2026-10-14 — G04-01..07 native timing and response-slot findings
 
 > Newest classified additive overlay; details in [G04 audit](G04_RESPONSE_SLOT_G04_01_TO_G04_07_20261014.md). Earlier contradictory historical snapshots are not current state; original observations remain preserved.
