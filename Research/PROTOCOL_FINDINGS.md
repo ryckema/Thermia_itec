@@ -1,3 +1,29 @@
+# 2026-10-14 — G02 exclusive native owner: offline and RX-only findings (current overlay)
+
+> Source and limits: [G02-01..08 synthesis](G02_01_TO_08_OWNER_EVIDENCE_RECONCILIATION_20261014.md) and [G01-09 local video-start evidence](G01_07R_08_09_CONTROLLER_RESTART_20261014.md). Older notes preserve their original observations. No new native TX or writable firmware.
+
+## PROVEN / locally confirmed XTR bounded software observation
+- User-anchored G01-09 RX-only epoch shows 24 cumulative FC23 request shapes and 0 reported matching peer response shapes in the bounded log; ordered settings bootstrap 0/32; software TX 0; CRC parser/resync/drop sampled clean. This proves **NO_RESPONSE_SHAPE_OBSERVED_IN_THIS_WINDOW** by the installed observer, not physical peer absence or exclusive bus entitlement.
+- Historic EXP420 bounded owner-context positive and EXP425 predicted 0662 ACK -> ordered 0683 continuation NEGATIVE remain valid within their original experiments. EXP419/423/426 intended target branches INCONCLUSIVE unchanged.
+
+## PROVEN / host-only tests, not XTR electrical evidence
+- G02-05 passive reducer re-run 38/38 and 25,031 genuine cross-model frame parsing, 4,096 synthetic streams / 655,360 fail-closed checks; G02-06 16/16 host-only preflight; G02-07 26/26 host-only NO-GO policy decision. No reviewer grants TX or proves actual owner.
+
+## STRONGLY SUPPORTED / genuine cross-model and firmware only
+- Original ATEC/Eco5 captures contain 164 FC23 request shapes / seven response shapes across seven genuine files, including an Eco5 window of 41 requests with no matched response while other traffic continued. Presence/absence per window does not authenticate electrical sender.
+- Inspected original CM930 2.1.105 handler paths and firmware research indicate an internal handshake plus controller-driven FC16/work-mailbox state, **no explicit on-wire exclusive lease identified in inspected paths**; not proof of universal absence. 2.0.18 independent direct redo not performed within G02-02.
+
+## HYPOTHESIS
+- One assumed responder and controller-master polling may supply an implicit work protocol rather than an explicit ownership-claim frame. It is NOT locally proven physical uniqueness or safe collision-free reply authority.
+
+## OPEN / UNKNOWN
+- G02 physical responder exclusivity/current controller-work-owner **OPEN**. G02-01 complete raw local historic replay PARTIAL, G02-02 independent version re-diff PARTIAL, G02-04 full raw replay INCONCLUSIVE. G02-09 PREPARED/NOT RUN. G01 hand-anchored episode positive but direct electrical/future auto-epoch OPEN; G03 physical EOF, G04 slot, G06 reset DE fail-low OPEN; G05 drain/DE physical release partial. Native 0x0F TX HARD DENY.
+
+## DISPROVEN / SUPERSEDED
+- Treating Modbus CRC/ACK-shape/W4 bits/FC23 retries/response-absence as unique physical sender or leased owner is unjustified. Historical G02 plan statuses PREPARED apply to the old plan date, not these subsequently completed scope-specific offline reports. EXP425 mandatory 0683 successor hypothesis remains NEGATIVE.
+
+---
+
 # 2026-10-14 — G01-07R to G01-09 local XTR restart evidence (current overlay)
 
 > Evidence and source boundaries: [G01-07R/08/09 reconciliation](G01_07R_08_09_CONTROLLER_RESTART_20261014.md). Earlier dated statements remain historical observations; do not promote them to current unqualified TX readiness.
