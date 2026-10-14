@@ -1,3 +1,39 @@
+# 2026-10-15 — V41V5-GAP-01..05 protocol/software migration evidence
+
+> Detailed additive offline report: [V41V5 GAP-01..05](V41V5_GAP01_TO_05_OFFLINE_20261015.md). These results classify implementation architecture; they do **not** establish new on-wire XTR response behavior. Older proof classes and source observations remain below as dated history.
+
+## PROVEN / locally confirmed on XTR in earlier experiments (unchanged)
+- Historical native approval/bootstrap, selected runtime continuation and several desired-page/controller-FC16-readback transactions succeeded under their original locally controlled session contexts. These proofs remain context-bounded, do not grant authority to a new firmware run.
+- The user's new V5-TX-04B FIX1 local RX log shows **working callback-only instrumentation** and preserved DENY/no physical TX in the observed run. Software callback intervals are not physical EOF timestamps.
+
+## PROVEN / host-only software (not on-wire XTR confirmation)
+- V4.1 has **58** historical output sites in committed source: **2 approval, 32 bootstrap, 1 runtime ACK, 18 mailbox, 4 desired page replies, 1 isolated legacy recovery**. GAP-01 maps them to **five logical owners plus one explicit legacy rejection**; no TX integration.
+- GAP-02 portable C++ adapter compiled/tested: synthetic 32/32 bootstrap, semantic 69/69, revocation 46/46; 18,507/18,507 simulated route checks under missing authority DENY across input from genuine **cross-model** traces. This is negative-policy test coverage.
+- GAP-03 passes 114/114 synthetic/documentary assertions and identifies a broad portable `0884/60` RuntimeOverlay candidate not directly justified by the local S11F capture-only endpoint. Additional shadowpolicy withholds general 0884 ACK. This is a **software policy difference**, not a bus fault.
+- GAP-04 passes 136/136 for 18 mailbox route types: 8 idle/guard, 6 current-refresh, 4 desired-selector. No automatically authorized `085F`/`0884` without owner-context evidence.
+- GAP-05 passes 31/31 abstract mailbox-routing tests, covering 18 V4.1 route variants; 12 no-site outcomes. Multi-family conflict handling is intentionally stricter than V4.1 first-match. **Neither exact W0–W5 byte parity nor native output logic is tested.**
+
+## STRONGLY SUPPORTED / firmware-derived and cross-model
+- A controller-poll-driven native `0x0F` Online/Connect session can be expressed as separate approval, ordered bootstrap, runtime owner, mailbox and desired-page transaction responsibilities.
+- Existing firmware/capture evidence supports selector roles and context-dependent `085F`/runtime ownership; the source-driven offline model does not independently establish these on today's XTR bus.
+
+## HYPOTHESIS
+- Replacing V4.1's scattered response sites with one well-guarded output boundary and separately qualified owners may preserve historically observed behavior after full event-order differential replay, proper payload-authority logic, and dedicated native integration tests.
+
+## OPEN / UNKNOWN
+- Full **positive byte-by-byte local-XTR** differential replay, W0–W5 parity, simultaneous work priority/rollback semantics, `085F` and `0884` comprehensive owner authorization, portable-to-ESPHome native session integration and original approval adapter deployment.
+- Physical G03 EOF, G04 exclusive reply slot, G05 electrical drain, G06 DE reset-fail-low, independent current-epoch/owner witness remain unresolved. Software counters and host replays cannot substitute for physical proof.
+- **Native TX HARD DENY.** User accepts unresolved gates as research risks for continuing *development*, not as established facts or blanket authorization for a new live TX probe.
+
+## DISPROVEN / SUPERSEDED / NOT PROMOTED
+- `0884/60` "runtime-qualified" alone is not a universally safe ACK predicate; GAP-03 shadow review blocks such promotion pending context-specific verification.
+- The 18 V4.1 mailbox response sites do not represent 18 unrelated wire endpoints; they are source branches around `0x0F FC03 0708/6`, distinguishable by context and intent.
+- GAP-05's abstract dispatcher is **not** a demonstrated drop-in equivalent for full V4.1 priority and packet contents; no equivalent on-wire behavior has been claimed.
+
+**Next offline experiment:** V41V5-GAP-06 **PROPOSED / NOT RUN**, source-typed positive local-XTR event fixtures, no live TX.
+
+---
+
 # 2026-10-14 — G03-01R/02R UART physical EOF evidence update
 
 > [G03-01R source report](G03_01R_OFFLINE_REVALIDATION_20261014.md), [G03-02R original Saleae/ESPHome cross-clock audit](G03_02R_SALEAE_ESPHOME_CORRELATION_20261014.md). Older protocol observations below remain historically valid; G02 conditional installed-topology decision unchanged.
