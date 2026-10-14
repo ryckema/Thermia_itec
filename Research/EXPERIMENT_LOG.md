@@ -1,3 +1,27 @@
+# 2026-10-14 — G02-01..08 offline research reconciled, G02-09 PREPARED / NOT RUN
+
+> Detailed experiment hypotheses, baselines, exact controlled changes, frame families, success/abort/recovery and sources: [G02 evidence report](G02_01_TO_08_OWNER_EVIDENCE_RECONCILIATION_20261014.md). Original dated histories preserved below. No new physical TX, ESP flash, controller restart or writable YAML generated.
+
+**G02-08 COMPLETE / POSITIVE OFFLINE, G02 physical owner INCONCLUSIVE.** Hypothesis: video-anchored G01-09 RX-only cold-start log can classify response absence without inventing responder identity. Baseline G02-01..07 genuine cross-model plus local XTR G01-09. Change only offline SHA/timestamp/counter assertion; source 4,660 lines SHA `a66541b2c8d91661863c6a315003ef26eb4ca3d8960e324479ff2a43cd8acb2e`. FC23 repeated 24 times; matching peer response shapes reported 0, bootstrap 0/32, observed native/software TX 0; RX parity/resync/drop counters remain clear in reported window. Positive bounded absence result met; negative/no-go physical owner identity remains UNKNOWN. Abort if peer absence promoted to permanent no peer or an ACK is authorized. Recovery offline-only reclassify, existing RX-only untouched.
+
+**G02-07 COMPLETE / POSITIVE OFFLINE FORMAL NO-GO; physical owner OPEN.** Hypothesis already-collected evidence can make strict decision without live action. Baseline G02-01..06 plus G01 and G03–G06 current gates. Controlled change offline decision test only; 26/26 PASS re-run 2026-10-14. Positive `G02_OPEN_NO_GO`, no TX. Abort synthetic metadata treated as electrical proof, recovery reclassify offline. No test on warmtepomp.
+
+**G02-06 COMPLETE / POSITIVE OFFLINE preflight; optional live SUPERSEDED/NOT RUN.** Baseline CO/CN/P74L/DI-B6 software counts, G02-05; no exact compiled as-built proof. Change host-only validation 16/16 PASS re-run. Positive enough existing diagnostics to avoid new flash. Negative external sender still unproven, abort TX promotion, recovery leave RX-only image intact.
+
+**G02-05 COMPLETE / POSITIVE HOST-ONLY; physical owner OPEN.** Baseline genuine cross-model capture and CM930 audited work families, historical local XTR contexts. Change standalone reducer/fuzz only; re-run 38/38 units, 25,031 cross-model CRC-good frames, 4,096 synthetic streams / 131,072 events / 655,360 fail-closed checks, always `tx_authorized=false`. Positive source-typed DENY, negative actual sender/lease unproven. Abort any non-deny decision; recovery offline only, no deployed ESP reducer.
+
+**G02-04 COMPLETE / POSITIVE DOCUMENTARY_ONLY; original local raw replay INCONCLUSIVE.** Baseline EXP419/420/423/425/426 outcomes; change status-preserving local historic context classification only. Positives context segregation and preservation of EXP420 scoped positive/EXP425 NEGATIVE; negatives orphan ACK is not semantic acceptance or ordered 0683 successor. Abort reinterpret past negatives; recovery documentary correction.
+
+**G02-03 COMPLETE / POSITIVE OFFLINE bounded genuine cross-model capture replay; electrical owner INCONCLUSIVE.** Baseline seven source-typed ATEC/Eco5 or unknown-model originals. Change CRC-verified presence/absence matrix; 25,031 frames, 164 FC23 requests, seven response shapes, 41 unanswered Eco5 FC23 in one bounded window. Positive shape windows identified, negative identity unknown; abort assigning Eco5 result to local XTR or host times as wire EOF; recovery offline reclassification.
+
+**G02-02 COMPLETE / POSITIVE inspected 2.1.105 CM930 paths; direct cross-version independent recheck PARTIAL.** Baseline real firmware and 2.0.18/2.1.105 comparison report. Change handler review only. No explicit owner-lease identified in inspected FC23/FC16/FC03/mailbox paths, not globally disproved; abort publishable secret transform/claim permanent bus lock; recovery documentary source check.
+
+**G02-01 RUNNING / PARTIAL full source ledger; typed matrix POSITIVE.** Baseline historic XTR EXP355/386/S11F and EXP419–426, genuine ATEC/Eco5 and firmware. Change offline provenance ledger only; source/owner/slot separated. Full original XTR raw review missing, so not COMPLETE for that scope. Abort ACK geometry to owner inference; recovery correct classification.
+
+**G02-09 PREPARED / NOT RUN.** Hypothesis: cross-source windows can be partitioned into REQUEST_WITHOUT_RESPONSE_OBSERVED, RESPONSE_SHAPE_PRESENT_SENDER_UNKNOWN, ASSIGNED_WORK_CANDIDATE or HOLD without granting exclusivity. Baseline G02-01..08; change planned offline-only comparator; positive proper provenance+TX DENY; negative false ownership; abort any new native transmission/secret leakage; recovery host-only correction. **No execution result yet.**
+
+---
+
 # 2026-10-14 — G01-07R / G01-08 / G01-09 source-linked results (additive)
 
 > Detailed observations and limitations: [G01-07R/08/09 evidence](G01_07R_08_09_CONTROLLER_RESTART_20261014.md). Historical original experiments (including negatives and inconclusive results) preserved below. No code was flashed and no native reply was transmitted for the G01-09 observation.
