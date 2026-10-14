@@ -1,3 +1,15 @@
+# 2026-10-14 — G02-01..08 historical offline results reconciled; G02-09 PREPARED/NOT RUN
+
+> Newest additive G02 overlay. Source-linked [G02 full offline evidence synthesis](G02_01_TO_08_OWNER_EVIDENCE_RECONCILIATION_20261014.md); preceding G01-09 video-anchored event remains POSITIVE within manual intervention scope. All dated material below remains historical; no hardware, firmware or HA changes were made for this reconciliation.
+
+**G02 overall:** `OPEN / UNKNOWN` physical exclusive responder/work-owner; **`G02_OPEN_NO_GO` for native TX**, despite completed bounded offline analyses. `G02-01 RUNNING/PARTIAL` for full original local-XTR raw audit (ledger complete within typed source scope); `G02-02 COMPLETE/POSITIVE` inspected CM930 2.1.105 paths with 2.0.18 independent re-diff PARTIAL; `G02-03 COMPLETE/POSITIVE OFFLINE` seven genuine cross-model captures; `G02-04 COMPLETE/POSITIVE DOCUMENTARY_ONLY` historic local XTR work context; `G02-05 COMPLETE/POSITIVE HOST-ONLY` reducer; `G02-06 COMPLETE/POSITIVE OFFLINE PREFLIGHT`, optional on-device live SUPERSEDED/NOT RUN; `G02-07 COMPLETE/POSITIVE OFFLINE DECISION` = NO-GO; `G02-08 COMPLETE/POSITIVE OFFLINE` new locally supplied G01-09 FC23/owner-zero-response audit. None establishes physical exclusive owner or electrical TX authority.
+
+**Reproduced 2026-10-14:** G02-05 38/38 units, 25,031 genuine cross-model CRC-valid records, 4,096 synthetic streams / 655,360 invariant checks; G02-06 16/16; G02-07 26/26. New locally witnessed RX-only G01-09 after video intervention: 11,944ms gap, 24 cumulative FC23 requests, zero matching peer response shapes in logged window, no ordered bootstrap, software TX=0. This supports bounded `NO_RESPONSE_OBSERVED`, **not** permanent address freedom, physical sender or owner exclusivity.
+
+**NEXT:** `G02-09 PREPARED / NOT RUN` for source-typed same-epoch offline comparison only, positive/negative/abort/recovery per linked synthesis. No on-device response test now. G01 manual video event POSITIVE, strict measured controller-rail/future autonomous epoch OPEN; G03/G04/G06 OPEN, G05 electrical partial. **Native 0x0F TX HARD DENY** remains unchanged.
+
+---
+
 # 2026-10-14 — G01 video-anchored controller restart reconciled; G02 next (NO NATIVE TX)
 
 > Newest additive state. Primary source: [G01-07R/08/09 video + RX evidence](G01_07R_08_09_CONTROLLER_RESTART_20261014.md). The user-provided original video and 4,660-line ESPHome log were reviewed. No firmware flash or new transmitted response was performed in this reconciliation; older dated G01/G04 states below remain historical as originally recorded.
