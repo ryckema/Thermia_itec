@@ -1,0 +1,11 @@
+# G03-01R — Offline UART source revalidation (2026-10-14)
+
+**COMPLETE / POSITIVE within offline source-review scope. Current B6 physical EOF remains OPEN; native TX HARD DENY.** This is a recheck of G03-01 already completed 2026-10-13, not a new on-device experiment.
+
+**Hypothesis:** the user-confirmed B6 RX-only UART callback is software-batched and cannot itself timestamp the physical last stopbit. **Baseline:** existing G03-01, G03-03..05 original Saleae D2 decodes, G04-04/06/07 UART audits, current B6 source. **Controlled change:** offline file/source recheck only; no ESPHome build, OTA, serial change, GPIO or bus action.
+
+**Source-observed:** B6 YAML 4,442 lines, source SHA256 `6139bd73b26967e4c7beaa02f2a370c889d89731c7c4eafbd1d227d81f4dfca9`; UART 9600 8E1, RX GPIO18, TX GPIO17, DE GPIO21, RX buffer 4096, `uart.debug` RX timeout 5ms, callback timestamp `micros()`; software native TX disabled. Exact flashed image and include hashes not independently verified. ESPHome 2026.9.0 ESP-IDF UART source previously inspected in G04-06/07: driver installed with event queue disabled; `UART_INTR_RXFIFO_TOUT` and `UART_DATA.timeout_flag` can indicate hardware timeout but callback/dequeue time is not electrical EOF. Version-matched driver instrumentation would require an additional separately approved project; **G04-07 remains DEFERRED/NOT RUN**, not compiled/flashed.
+
+**Historic local XTR electrical evidence:** Saleae D2 edge decode G03-03 1,047 CRC-good ADUs at 1MHz; G03-05 55+156 further CRC-good ADUs. This supports historical last-stopbit reconstruction, not current B6 callback correlation. At 9600 8E1 one 11-bit character = 1.145833ms; 3.5T=4.010417ms calculated; 5ms debugger batching is not measured physical EOF.
+
+**Positive:** one UART byte consumer, logical frame recognition vs electrical EOF distinction verified. **Negative/inconclusive:** no current B6 electrical timestamp; driver event dequeue not absolute stopbit; no hardware G04 reply-slot proof. **Abort:** extra UART reader, software callback promoted to electrical EOF, RX faults or TX/DE actuation. **Recovery:** offline-only, unchanged RX-only B6. Next G03-02R compare original Saleae and historical ESPHome log provenance; no new TX.
