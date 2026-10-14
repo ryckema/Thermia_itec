@@ -1,3 +1,13 @@
+# 2026-10-14 — G03-02R correlation audit COMPLETE/INCONCLUSIVE; G03 current physical EOF OPEN
+
+> Newest additive status after user-approved G02 conditional closure. [G03-01R source revalidation](G03_01R_OFFLINE_REVALIDATION_20261014.md) and [G03-02R Saleae/ESPHome correlation](G03_02R_SALEAE_ESPHOME_CORRELATION_20261014.md). Prior dated current-state blocks preserved as historical. No new physical action or native TX.
+
+**Last completed offline:** G03-01R COMPLETE/POSITIVE source scope; G03-02R COMPLETE/INCONCLUSIVE physical EOF→current B6 callback correlation, POSITIVE provenance audit. Original Saleae 2026-09-04 three sessions contain 55+156+1047=1258 CRC-good local XTR D2 ADUs; 22 available ESPHome logs inspected, none reliably simultaneous, byte matches with later logs recurrent/non-unique. No common synchronized clock anchor. Do not claim electrical callback latency or infer a safe G04 slot from host timestamps. Existing historical G03-03..05 wire edge decoding remains bounded positive. **G03 current B6 physical EOF OPEN**. G04 OPEN, G05 PARTIAL/HOST-ONLY, G06 OPEN. G01 manual intervention positive, autonomous epoch OPEN. **G02 remains COMPLETE/POSITIVE CONDITIONAL for unchanged installation only**, with invalidation triggers unchanged. **NATIVE TX HARD DENY**.
+
+**Next:** locate a truly same-session Sep 4 ESPHome log if already existing (historical only); otherwise separately plan ONE passive synchronized D2 + current B6 RX-only measurement if justified and user-approved. G04-07 UART driver patch remains DEFERRED/NOT RUN; no new firmware or YAML changes.
+
+---
+
 # 2026-10-14 — G02 conditional closure approved; G03 next; native TX HARD DENY
 
 > Latest additive canonical overlay. User explicitly accepts `G02 COMPLETE/POSITIVE (CONDITIONAL)` for the **unchanged, documented XTR M installation**, not for universal electrical exclusivity or current TX authorization. Full basis and experiment limitations: [G02-09..11B conditional closure](G02_09_TO_11B_CONDITIONAL_CLOSURE_20261014.md). Earlier dated G02 OPEN/NO-GO passages below are historical snapshots superseded for *scoped research acceptance only*; their negative and unknown observations remain valid.
