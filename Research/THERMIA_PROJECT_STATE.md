@@ -1,3 +1,17 @@
+# 2026-10-14 — G01 video-anchored controller restart reconciled; G02 next (NO NATIVE TX)
+
+> Newest additive state. Primary source: [G01-07R/08/09 video + RX evidence](G01_07R_08_09_CONTROLLER_RESTART_20261014.md). The user-provided original video and 4,660-line ESPHome log were reviewed. No firmware flash or new transmitted response was performed in this reconciliation; older dated G01/G04 states below remain historical as originally recorded.
+
+**Current experiment:** G01-09 **COMPLETE / POSITIVE — VIDEO / INTERVENTION_ANCHORED**, physical main-controller voltage **not measured**; G01-08 COMPLETE/POSITIVE **OFFLINE** candidate replay, independent automatic boot proof INCONCLUSIVE; G01-07R historical chronology six XTR candidates (five clean and EXP296 HOLD). **Last completed live experiment:** G01-09, performed by user with one filmed switching operation and uninterrupted RX-only log. User considers G01's manual-start research objective successful. Strict `EXTERNAL_BOOT_WITNESSED` independent controller-rail/validated boot-ID claim remains **OPEN**; future current-epoch TX may not inherit this video's proof automatically.
+
+**G01-09 local results:** video switch clicks, display dark and restarted; ESPHome XTR log gap 11,944 ms at 15:41:15.736; first valid `0x1E` return 15:41:15.749; `A80E=0000 A80F=0005` at 15:41:16.460; first FC23 counted by 15:41:17.021 and 24 cumulative FC23 by 15:42:55.315; no 32/32 configuration bootstrap and no native TX. ESP observer counters/API stayed continuous with no reported software TX, RX corruption or ESP reboot; separate contemporaneous ESP Uptime samples absent. Two reuploads are byte-identical, SHA-256 `a66541b2c8d91661863c6a315003ef26eb4ca3d8960e324479ff2a43cd8acb2e`. User associates video and log; video alone is not controller-rail measurement.
+
+**Installed baseline:** user-confirmed `R6-P74DI-B6` RX-only, exact flashed binary hash not independently verified. Production HA entities preserved. **No newly approved active TX test. G02 physical responder/work owner OPEN; G03 EOF OPEN; G04 reply slot OPEN; G05 FIFO/DE PARTIAL/HOST-ONLY; G06 DE reset fail-low OPEN. Native 0x0F TX HARD DENY.**
+
+**Next investigation:** G02 existing [owner research plan](G02_EXCLUSIVE_OWNER_PLAN_20261013.md), G02-01 and G02-02 first with source/provenance and current G01-09 evidence; prefer offline work. No repeat power cycling or fabricated ownership inference.
+
+---
+
 # 2026-10-14 — G04 evidence reconciled; B6 installed; G04-07 deferred
 
 > Latest additive canonical overlay. Full details: [G04-01..07 evidence](G04_RESPONSE_SLOT_G04_01_TO_G04_07_20261014.md). Preserve all history below; no new native TX, no OTA flash, no controller restart.
