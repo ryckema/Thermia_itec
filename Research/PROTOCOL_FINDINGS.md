@@ -1,3 +1,27 @@
+# 2026-10-14 — G02 conditional installation-scoped acceptance (newest classification)
+
+> [Source-scoped G02-09..11B decision report](G02_09_TO_11B_CONDITIONAL_CLOSURE_20261014.md); old G02_OPEN_NO_GO findings below remain true for strict universal electrical proof and old test time, not a reversal of past raw results. User explicitly approved a narrower `COMPLETE/POSITIVE (CONDITIONAL)` research criterion; no new TX/OTA/electric measurement.
+
+## PROVEN / locally confirmed (bounded XTR)
+- The user confirms the existing installation has exactly one known external Online/DCM RJ45 path `123 Ext.`, with no genuine Online/Connect/DCM module currently installed; `122` is connected to the display. Local print photos show matching marking and front-side component layout. **Proof of actual internal electrical net uniqueness is absent.**
+- Existing historical XTR native experiments demonstrated controller-led settings export, runtime responses and page-cache writes with controller FC16 read-back inside tested sessions; EXP355/386 and EXP420 documented; EXP425 predicted successor NEGATIVE, EXP419/423 INCONCLUSIVE unchanged.
+- G01-09 RX-only XTR after photographed power cycle showed 24 FC23 requests and no matching peer responses **in the bounded capture only**; software TX=0.
+
+## STRONGLY SUPPORTED / cross-model and firmware
+- ATEC schematic p7 labels Modbus RJ45 display `122` and external `123`; corroborates visible XTR connector markings/function but not exact XTR PCB copper.
+- Genuine Eco5/ATEC plus Connect CM930 source establish the native controller-master / `0x0F` slave work pattern; mailbox selectors describe requested work, not an explicit unique electrical lease. G02-09 cross-model replay reportedly classifies five work candidates, two answer-but-no-first-page-ACK windows, one unanswered window; does not prove local XTR electrical exclusivity.
+
+## HYPOTHESIS / installation-scoped engineering acceptance
+- In this documented **unchanged installation**, with one known external DCM port, no installed gateway, no observed competing native response in sampled window and historically working ESP responder, the user accepts `G02 COMPLETE/POSITIVE (CONDITIONAL)` as a scoped research gate. This is an **explicitly conditional assumption**, not a universal fact about the hardware. No source proves absence of hidden transceiver, splitter or future concurrent responder.
+
+## OPEN / UNKNOWN
+- Physical/electrical unique slave `0x0F` responder across all contexts UNVERIFIED; if a peer response, altered wiring/board or ambiguous epoch occurs, current G02 reverts to `UNKNOWN/HOLD`. G01 new autonomous physical epoch OPEN, G03 physical EOF OPEN, G04 exclusive reply slot OPEN, G05 physical drain/DE release PARTIAL/HOST-ONLY, G06 reset/brownout DE fail-low OPEN. **Native TX HARD DENY**.
+
+## DISPROVEN / SUPERSEDED
+- No ACK/FC23/page/mailbox record alone grants perpetual TX authority; EXP425 0662-ACK-to-0683-tail prediction remains NEGATIVE. Old `G02 OPEN` as an unconditional research blocker is superseded ONLY within this user's explicitly accepted installed-topology scope; electric proof OPEN and prior evidence unmodified.
+
+---
+
 # 2026-10-14 — G02 exclusive native owner: offline and RX-only findings (current overlay)
 
 > Source and limits: [G02-01..08 synthesis](G02_01_TO_08_OWNER_EVIDENCE_RECONCILIATION_20261014.md) and [G01-09 local video-start evidence](G01_07R_08_09_CONTROLLER_RESTART_20261014.md). Older notes preserve their original observations. No new native TX or writable firmware.
