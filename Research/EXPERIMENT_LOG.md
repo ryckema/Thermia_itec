@@ -1,3 +1,18 @@
+# 2026-10-15 — V41V5 GAP-08B, GAP-09, GAP-10 (newest first)
+
+> Full scoped detail: [GAP-08B–10 audit](V41V5_GAP08B_TO_10_AUDIT_20261015.md). Prior experiment records remain below unedited.
+
+## GAP-10 — COMPLETE / NEGATIVE — offline authority revocation
+**Hypothesis:** temporary mailbox/runtime disable followed by re-enable cannot restore previously cached write-authoritative pages without new provenance. **Baseline:** GAP-07 explicit fresh/retained/recovery invalidation, GAP-09 RX-only. **Controlled change:** none to deployed firmware; 23 offline host checks against GAP-08 portable C++. **Result:** toggling either flag false then true can reuse retained `write_base`; `write_ready` is blocked only while disabled. Additional synthetic `commit_fc16` contradictory-decision trust-boundary case; no real path or live exploit established. **Positive criterion:** stale authority persistently revoked and fresh qualified page needed — **NOT MET**. **Negative:** retoggle resurrects old authority — **MET**. **Abort:** any inadvertent native TX/widened policy; none performed. **Recovery:** keep GAP-08 RX-only live unchanged. **Next:** GAP-11 prepared offline defensive fix only; test fresh-qualified recovery and no bypass.
+
+## GAP-09 — COMPLETE / POSITIVE bounded live RX-only; lifecycle case COMPLETE / INCONCLUSIVE
+**Hypothesis:** user-flashed GAP-08 portable bridge equals legacy V5 RX on observed bus and stays TX disabled. **Baseline:** 15 Oct earlier V5 RX-only logs. **Controlled change:** user-installed GAP-08 image (OTA); no bus TX. **Result:** >15k compared frames, 0 byte/count/boundary differences and parser/resync/drop faults, 0 physical TX / UART writes, DE=0 and `HARD_DENY`. **Traffic:** 085F/5 all-zero and 04A6/13 repeated; no FC23/0708; owner/epoch unknown. **Positive:** parser equality/passive safety within sampled normal RX — MET. **Inconclusive:** no genuine controller lifecycle boundary; GAP-07 fix not exercised live. Full HA entity availability not independently verified. **Abort:** parser divergence, TX, DE high, missing HA functionality; rollback previous known-good RX-only. **Offline comparative finding:** fresh/retained/recovery cache revocation verified; historical S11 episodes and report-derived fixtures not one complete raw session.
+
+## GAP-08B — COMPLETE / POSITIVE user-confirmed ESPHome compile
+**Hypothesis:** GAP-08 packaged RX-only candidate integrates in ESPHome. **Baseline:** GAP-08 YAML + local GAP-07 C++ component. **Controlled change:** real ESPHome build (user-run), no active bus action. **Result:** user reported `GAP-08B compile OK`; no compiler transcript / exact image SHA reviewed. Subsequently user confirmed GAP-08 OTA installed. **Positive:** compile reported successful. **Negative:** no compiler error reported. **Abort/recovery:** preserve baseline UART owner, entities and hard TX DENY; revert previous RX-only if mismatch.
+
+---
+
 # 2026-10-15 — V41V5-GAP-06..08 offline results (additive; latest)
 
 > Full scoped report: [V41V5-GAP-06..08 offline](V41V5_GAP06_TO_08_OFFLINE_20261015.md). Previous GAP-06 proposal and prior experiment descriptions below remain historical snapshots, preserved verbatim. No new live XTR result, controller change, flash or physical TX.
