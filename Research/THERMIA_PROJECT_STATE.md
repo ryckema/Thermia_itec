@@ -1,3 +1,19 @@
+# 2026-10-15 — V41V5-GAP-06..08 offline integrated; GAP-08B PREPARED / NOT RUN
+
+> Newest additive status. [GAP-06..08 source-scoped report](V41V5_GAP06_TO_08_OFFLINE_20261015.md); [GAP-01..05 earlier report](V41V5_GAP01_TO_05_OFFLINE_20261015.md). Earlier GAP-06 proposed-status below is **historical and superseded**, not a still-open next experiment. All older project history is preserved.
+
+**Latest completed offline experiment:** **V41V5-GAP-08 COMPLETE/POSITIVE, limited to source packaging/basic YAML parse/host regression**, full ESPHome config/compile, OTA and on-device integration **PREPARED / NOT RUN**. Prepared baseline is the *packaged* V5-TX-04B FIX1 RX-only YAML with local portable core and GAP-07 write-base invalidation. Existing YAML source fields/known-good HA scope preserved in offline delta audit (111 sensors, 71 text sensors); actual installed firmware hash **not verified**; full ESPHome compiler not available in the executed GAP-08 session.
+
+**GAP-07 COMPLETE/POSITIVE host-only:** cached `write_base` revoked at `begin_retained()` and `begin_recovery()`; 530/530 assertions across six compiled host suites. **GAP-06:** report-derived 12 local-XTR event fixtures and host candidate requalification check COMPLETE/POSITIVE (bounded); original portable retained-session stale write-base property **COMPLETE/NEGATIVE**; patched-host candidate positive; full raw-XTR byte-parity **COMPLETE/INCONCLUSIVE** (original S11 raw logs unavailable here). A green 108/108 characterization of the original code does not negate its demonstrated stale-base vulnerability.
+
+**Native evidence:** historical local XTR S9–S11 approved handshake/bootstrap/runtime and individual full-page semantic writes/readback are context-bounded. GAP-01..08 host tests do **not** demonstrate current on-device native response/active read-write functionality. No new register/page mapping, live experiment result, new firmware image or real native TX is claimed.
+
+**Risks/safety:** user accepts G01–G06 uncertainty as research risk, not a claim of closure or general active TX permission; G02 conditional installation decision unchanged. G03 physical EOF OPEN, G04 exclusive reply slot OPEN, G05 electrical DE/FIFO PARTIAL/HOST-ONLY, G06 reset/brownout fail-low OPEN; new controller epoch OPEN. **Native TX HARD DENY**. Current V5 production configuration stays untouched. No GitHub production code changes.
+
+**Next:** **V41V5-GAP-08B PREPARED / NOT RUN**: verify exact installed baseline, run actual ESPHome `config`/`compile` using the local component candidate, review entity/ID preservation and UART single owner, retain hard TX disabled. Positive full build+source inventory clean; negative compiler/entity mismatch; inconclusive missing ESPHome/secrets/original firmware identity. Abort any TX/DE path expansion; recovery use existing RX-only image. No live flash/active response without separately scoped approval.
+
+---
+
 # 2026-10-15 — V41V5-GAP-01..05 offline migration progress; GAP-06 PROPOSED / NOT RUN
 
 > Newest additive status. Detailed source-scoped report: [V41V5 GAP-01..05 offline](V41V5_GAP01_TO_05_OFFLINE_20261015.md). All previous G01–G06 overlays and historical results below are retained; their electrical unknowns are NOT silently closed.
