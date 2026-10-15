@@ -1,3 +1,38 @@
+# 2026-10-15 — GAP-11..19 latest status reconciliation (additive)
+
+> Detailed hypotheses, baselines, changes, results, abort and recovery: [V41V5 GAP-11–19](V41V5_GAP11_TO_19_STATUS_RECONCILIATION_20261015.md). Original history below untouched.
+
+## GAP-19 — STOPPED BY USER / PARTIAL; no completed result
+Offline firmware/native state-source inquiry was initiated after GAP-18 deferral, then user requested STOP. No fresh live protocol test, accepted result, completed audit or firmware effect. Do not promote partial draft observations into PROVEN. Abort executed as requested. No next experiment is automatically running.
+
+## GAP-18 — DEFERRED / NOT RUN
+Passively synchronized Saleae and ESPHome measurement prepared as concept only. User reported GPIO18 physically unreachable and explicitly deferred measurement. No waveform/callback pair acquired, GPIO modified, OTA, native TX, or device wiring change. G03/G04 remain OPEN. Resume only upon new feasible, separately authorized design.
+
+## GAP-17 — COMPLETE / POSITIVE provenance, NEGATIVE naive frame-match sync, INCONCLUSIVE physical EOF
+Three original Saleae Sep04 acquisitions and 33 text/log sources screened (24 ESPHome-like); zero independently synchronized Saleae/ESPHome pairs. Historical 1,258 Saleae CRC-good frames are from G03-02R, **not re-decoded during GAP-17**. Digital D2-only CSV has no independent absolute clock anchor. 47/47 controls PASS. No hardware action. Do not infer physical EOF→callback latency or G04 slot.
+
+## GAP-16 — COMPLETE / POSITIVE bounded source audit, NEGATIVE timestamp-as-wire-slot, INCONCLUSIVE native readiness
+Existing seven captures 25,031/25,031 CRC-good, including four older local XTR files (2,451 frames) and three genuine cross-model captures; 35/35 offline tests. Apparent 13–14 ms FC16 request/ACK-shape logger gaps are **not electrical response deadlines**; 24 equal-millisecond structural pairs negate that extrapolation. Firmware confirms controller-polled Connect slave role but not current XTR epoch/physical sender. No bus action.
+
+## GAP-15 — COMPLETE / POSITIVE host single-event-loop lease and API guard
+Reproduced GAP-14 source API direct mock-delivery bypass in offline model; isolated four-file patch restricts production API and guards one deferred mock response lease. 188/188 focused, 175/175 GAP-14, 361/361 GAP-13, 79/79 GAP-12, 326/326 GAP-11, 541/541 historic tests. Does not prove true concurrency or physical native TX.
+
+## GAP-14 — COMPLETE / POSITIVE synchronous staged adoption
+Old staged-copy overwrite after revoke reproduced in host model; isolated five-file patch blocks stale adoption and rechecks response lifetime at mock callbacks. 175/175 focused plus earlier suites. Bytes already emitted in real hardware could not be recalled; physical TX untested.
+
+## GAP-13 — COMPLETE / POSITIVE same-core stale Decision provenance
+Old `Decision` reused after synthetic epoch previously 1, patched 0; isolated core/header correction. 361/361 focused plus prior suites. Copied stage/async scope remained open and was studied in GAP-14/15.
+
+## GAP-12 — COMPLETE / POSITIVE adapter-fault revocation; COMPLETE / NEGATIVE full chain at the time
+Old adapter did not revoke page authority on simulated transport fault; isolated adapter patch 79/79. GAP-11 326/326; historical 541/541 (obsolete expected behavior explicitly changed). Cross-epoch stale Decision remained a NEGATIVE finding, followed by GAP-13.
+
+## GAP-11 — COMPLETE / POSITIVE offline core revocation correction
+Against GAP-10 negative retoggle behavior, local core/header patch revokes `write_base` across authority-loss events while preserving diagnostic bytes, aborts in-flight transactions, verifies contradictory decisions. Targeted 326/326 and historical six suites 537/537 in this experiment (530/530 unmodified baseline). Offline only.
+
+**Safety / rollback for all GAP-11–19:** no new native TX, no production firmware flash, leave user-installed GAP-08 RX-only `HARD_DENY`; no new software deployment needed. Every result is scoped to its original source/test.
+
+---
+
 # 2026-10-15 — V41V5 GAP-08B, GAP-09, GAP-10 (newest first)
 
 > Full scoped detail: [GAP-08B–10 audit](V41V5_GAP08B_TO_10_AUDIT_20261015.md). Prior experiment records remain below unedited.
