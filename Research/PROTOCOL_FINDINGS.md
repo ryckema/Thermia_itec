@@ -1,3 +1,34 @@
+# 2026-10-15 — GAP-08B–GAP-10 newest evidence (native integration source and live RX-only)
+
+> [Scoped GAP-08B–10 report](V41V5_GAP08B_TO_10_AUDIT_20261015.md). Historical overlays below stay intact.
+
+## PROVEN / locally confirmed on XTR M
+- User-deployed GAP-08 RX-only candidate: live V5/portable observer agrees on >15k compared frames, byte/count/boundary differences=0, parser resync/drops=0; software native TX writes/physical attempts=0 and DE software state=0 throughout reviewed capture. This is **sampled passive software evidence**, not electrical DE proof under reset.
+- Repeated FC16 0x085F/5 all-zero and 0x04A6/13 seen in retained-style session; no observed fresh FC23 or 0x0708 in this capture; owner/epoch unknown. Missing required pages leaves H021 read-only aliases unavailable (NaN).
+
+## PROVEN / offline host code (not locally proven native write behavior)
+- GAP-07 fresh/retained/recovery functions revoke page write-base authority; GAP-10 23 checks show **negative**: toggle-off/toggle-on `set_mailbox` or `set_runtime_normal` can reuse earlier write-base in the same model context without new qualified page.
+- `commit_fc16` owner-label/authorized-flag inconsistency accepted in synthetic host input. No evidence normal `fc16_decision` creates that inconsistent input.
+
+## STRONGLY SUPPORTED
+- Authority lifecycle must be fail-closed and independent from diagnostic cached bytes; revoke on genuine provenance loss and prevent stale authority restoration via boolean toggles. Do not equate every temporary functional disable with a new controller epoch without evidence.
+- GAP-08B ESPHome build succeeded according to user confirmation; compiled image hash was not independently verified.
+
+## HYPOTHESIS
+- GAP-11 offline source correction can preserve RX-only parity while enforcing fresh page provenance after authorization loss.
+
+## OPEN / UNKNOWN
+- Active native emulation readiness; end-of-frame wire timing; exclusive owner reply slot; hardware DE electrical/reset behavior; complete original positive XTR raw-byte session replay; live fresh-to-retained/recovery transition; full HA production entity inventory.
+- GAP-10 host model defect has **not** been observed causing unsolicited TX on the deployed hard-denied ESP32.
+
+## DISPROVEN / SUPERSEDED
+- Hypothesis **toggle-off/toggle-on always revokes old write authorization** disproven by GAP-10 host tests. A successful test harness run is not a positive safety result.
+- Earlier GAP-08B PREPARED/NOT RUN and claim GAP-08 not flashed are historical, superseded by user's compile/OTA confirmations and GAP-09 live capture.
+
+**Next:** GAP-11 PREPARED / NOT RUN (offline revocation-policy regression/fix only). TX=HARD_DENY; no software response/writes authorized.
+
+---
+
 # 2026-10-15 — GAP-06..08 portable lifecycle and V5 RX-only integration evidence
 
 > [Source-scoped GAP-06..08 report](V41V5_GAP06_TO_08_OFFLINE_20261015.md). These are **offline host software findings**, not fresh on-bus findings. All earlier proof claims and negative experiment records remain below.
