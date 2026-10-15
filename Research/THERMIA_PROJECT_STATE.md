@@ -1,3 +1,21 @@
+# 2026-10-15 — V41V5-GAP-10 latest; GAP-11 PREPARED / NOT RUN
+
+> Newest additive canonical state. [GAP-08B–10 detailed audit](V41V5_GAP08B_TO_10_AUDIT_20261015.md). Earlier GAP-08B PREPARED overlay below is historical and superseded, not the current experiment. Preserve older entries intact.
+
+**Current experiment:** GAP-10 **COMPLETE / NEGATIVE (offline revocation-policy invariant)**; 23/23 host checks executed, including intentionally demonstrated stale authorization upon toggle restoration. **Last completed live test:** GAP-09 **COMPLETE / POSITIVE in bounded RX-only parity/TX-deny scope**, with lifecycle-transition verification **COMPLETE / INCONCLUSIVE** and complete HA-production inventory check still open. GAP-08B **COMPLETE / POSITIVE**, user-confirmed full ESPHome compile (build transcript/image SHA not independently inspected); user confirmed GAP-08 candidate flashed.
+
+**Locally observed XTR M:** live GAP-08 RX-only log >15k paired portable/V5 frames, zero frame/byte differences, resync, drops, physical TX or UART write attempts, DE=0; HARD_DENY. Repeated 085F/5 all-zero and 04A6/13, no fresh FC23/0708, current epoch/owner unknown. H021 alias NaN is expected without the required pages; fail closed.
+
+**Offline core findings:** GAP-07 fresh/retained/recovery paths revoke page `write_base`; GAP-10 proves that mailbox/runtime toggles only block readiness temporarily, and re-enabling can reuse cached authority without a newly sourced qualified page. Separate synthetic inconsistent-Decision `commit_fc16()` trust-boundary gap; not demonstrated from the normal frame path or on real bus. Fix is required **before considering** native active TX.
+
+**Protocol model:** native Thermia Online/DCM remains primary target; historical S11F/X/Y are separate bounded episodes, not a consolidated epoch. GAP-06 twelve historical fixtures are report-derived. Zero FC23 on present bus is not proof native handshake is impossible.
+
+**Next:** **GAP-11 PREPARED / NOT RUN** — offline-only revocation-policy patch proposal plus contradiction/retoggle regression; no production YAML changes, no flash, no native TX. Baseline current installed GAP-08 RX-only; controlled change host-copy policy only; positive fresh-page requalification required; negative stale authority on retoggle; abort any widened TX or production regression; recovery leave current RX-only firmware unchanged.
+
+**Safety:** native TX HARD DENY. Controller epoch/owner, G03 physical wire EOF, G04 reply slot, G05 electrical DE/FIFO and G06 reset/brownout fail-low remain OPEN or PARTIAL as previously documented. This update records test results, not new electrical permission.
+
+---
+
 # 2026-10-15 — V41V5-GAP-06..08 offline integrated; GAP-08B PREPARED / NOT RUN
 
 > Newest additive status. [GAP-06..08 source-scoped report](V41V5_GAP06_TO_08_OFFLINE_20261015.md); [GAP-01..05 earlier report](V41V5_GAP01_TO_05_OFFLINE_20261015.md). Earlier GAP-06 proposed-status below is **historical and superseded**, not a still-open next experiment. All older project history is preserved.
