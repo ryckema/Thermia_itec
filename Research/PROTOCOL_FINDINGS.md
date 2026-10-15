@@ -1,3 +1,38 @@
+# 2026-10-15 — GAP-11–19 bounded evidence update; GAP-19 stopped
+
+> Detailed [GAP-11–19 reconciliation](V41V5_GAP11_TO_19_STATUS_RECONCILIATION_20261015.md); all prior finding statements below retained as historical observations, including GAP-10's original negative.
+
+## PROVEN / locally confirmed on XTR M
+- Previous GAP-09 user-deployed GAP-08 RX-only sample remains the latest live software confirmation (bounded parser agreement, software TX attempts zero). GAP-11–19 add **no new XTR live native TX** or confirmed new controller-epoch.
+- Historical XTR S11 episodes remain separate bounded protocol experiments. GAP-16/17 later offline reanalysis does not merge their epochs.
+
+## PROVEN / isolated offline host source, not live bus
+- GAP-11 revocation fix blocks GAP-10 stale `write_base` retoggle in host model (326/326); GAP-12 adapter transport fault revocation (79/79). GAP-12 also found *negative* stale Decision case subsequently addressed by GAP-13 (361/361 same-core).
+- GAP-14 guarded staged snapshot adoption/lifetime (175/175 synchronous host), GAP-15 limited one-event-loop deferred lease plus production API guard (188/188 host). No candidate patch flashed; no physical write permission.
+- GAP-16: seven preexisting raw captures yield 25,031/25,031 CRC-good frames; 24 XTR candidate FC16 pairs have identical millisecond log timestamps. Thus such timestamps are not defensible as true physical wire response deadlines.
+- GAP-17: original Saleae September 4 metadata and historical ESPHome files provide **zero independently synchronized pairs** and zero shared clock anchors; matching repeated CRC-good bytes from different captures is not synchronization. The 1,258 reconstructed Saleae frames belong to earlier G03-02R, not a new GAP-17 decoding.
+
+## STRONGLY SUPPORTED
+- Cached diagnostic state must remain distinct from active response/write provenance; staged decision and queued response may require revocation before reuse.
+- Connect source shows controller-polled slave `0x0F` role and distinct handshake, page and semantic conditions. These are **firmware-derived** and cannot establish a current physical XTR responder or electrical free slot.
+
+## HYPOTHESIS
+- New synchronized passive wire/host instrumentation could in principle bound callback latency, but no safe accessible GPIO18 measurement path is currently available; GAP-18 has been deferred by user. No automatic experiment is authorized.
+
+## OPEN / UNKNOWN
+- G01 autonomous current controller epoch, G03 physical EOF, G04 exclusive answer slot, G05 physical UART/DE drain, G06 electrical reset/brownout fail-low and physical uniqueness beyond G02 installation-conditional acceptance.
+- Truly parallel/asynchronous task safety, complete positive raw XTR native session parity and any on-device integration of GAP-11–15 remain unverified.
+
+## DISPROVEN / SUPERSEDED
+- Original GAP-10 toggle-only authority safety was disproved; GAP-11 subsequently fixes it *offline*, not in deployed firmware.
+- Original GAP-12 delayed-Decision safety was disproved; GAP-13 host patch subsequently addresses it, but broader concurrency remains open.
+- Logger millisecond differences or identical framebytes prove a physical reply slot or shared clock: rejected by GAP-16/17.
+- Earlier 'GAP-11 PREPARED' canonical overlay superseded by confirmed offline results; historical logs still preserved.
+
+**Current:** GAP-18 DEFERRED / NOT RUN (GPIO18 inaccessible); GAP-19 STOPPED BY USER / PARTIAL, not an accepted new finding. **Native TX HARD DENY.** No next experiment scheduled or running.
+
+---
+
 # 2026-10-15 — GAP-08B–GAP-10 newest evidence (native integration source and live RX-only)
 
 > [Scoped GAP-08B–10 report](V41V5_GAP08B_TO_10_AUDIT_20261015.md). Historical overlays below stay intact.
