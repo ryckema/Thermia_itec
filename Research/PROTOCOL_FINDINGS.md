@@ -1,3 +1,37 @@
+# 2026-10-15 — GAP-06..08 portable lifecycle and V5 RX-only integration evidence
+
+> [Source-scoped GAP-06..08 report](V41V5_GAP06_TO_08_OFFLINE_20261015.md). These are **offline host software findings**, not fresh on-bus findings. All earlier proof claims and negative experiment records remain below.
+
+## PROVEN / locally confirmed on XTR (historical, not newly tested)
+- Earlier S11F/S11X/S11Y user logs, as documented in source reports, established **separate** bounded fresh/bootstrap and retained runtime follow-on episodes. They cannot be concatenated as one uninterrupted epoch, and their historical manually scoped ACKs do not authorize unattended future ACKs.
+- V5-TX-04B FIX1 RX-only callback instrumentation locally observed before GAP-06 remains the last confirmed installed-software behavior, with actual firmware hash unverified. GAP-08 firmware not yet flashed.
+
+## PROVEN / offline host code only
+- GAP-06 identifies a **negative** in original portable `Core::begin_retained()`: cached `Page.write_base` survives rejoin, and following simulated requalification can use stale page authority. This is host-code behavior, not a proven fault in the deployed RX-only V5.
+- GAP-07 candidate **revokes write-base authority** on both `begin_retained()` and `begin_recovery()`, retains diagnostic page bytes and passes **530/530** compiled host assertions (57 lifecycle, 108 GAP-06, 69 semantic, 46 revocation, 114 GAP-03, 136 GAP-04).
+- GAP-08 locally packaged ESPHome portable RX-only bridge and corrected core; custom-tag-tolerant YAML parse and exact change audit passed; configured 111 sensor and 71 text_sensor entries unchanged in inspected YAML; portable host C++ compiled and candidate core passed **530/530** assertions. **Full ESPHome config/PlatformIO compile NOT RUN**. A parser pass is not ESPHome compilation.
+- Twelve GAP-06 local XTR event fixtures are **report-derived** from earlier observed events, not reproduced raw-frame traces.
+
+## STRONGLY SUPPORTED
+- Cached diagnostic reads and current write-authoritative page data must be tracked separately across retained and recovery lifecycle boundaries; only a freshly sourced qualified page may restore authority. This is an offline invariant plus historical protocol context, not newly validated write behavior on hardware.
+
+## HYPOTHESIS
+- The packaged GAP-08 corrected component can be integrated into the installed single-UART RX-only V5 without HA entity regressions or native TX after a genuine ESPHome build and later separately approved passive device test. This has not been demonstrated in a compiled ESPHome image.
+
+## OPEN / UNKNOWN
+- ESPHome `config`/`compile`, actual flashed baseline hash, source/linker integration, live passive equivalence, raw XTR positive byte-to-byte replay, generalized `0708`/W0–W5 mailbox parity, `085F/0884` context ownership, active native response authorization.
+- Toggle-only `set_runtime_normal(false)` and `set_mailbox(false)` do not independently revoke `write_base` in scoped GAP-07 patch; additional policy discussion remains open.
+- G01 autonomous controller epoch, G03 physical wire EOF, G04 exclusive response slot, G05 DE electrical/FIFO drain, G06 DE reset/brownout fail-low remain unproven; accepted research risks are not proof of physical safety. **Native TX HARD DENY**.
+
+## DISPROVEN / SUPERSEDED
+- **Original core stale-page writebase safe after retained rejoin** is disproven by GAP-06 host test. A passing test that characterizes the old behavior cannot be cited as proof of safe cache invalidation.
+- **GAP-08 is already a fully compiled/flash-ready ESPHome image** is **not supported**; full compiler/PlatformIO test remains NOT RUN.
+- Earlier GAP-06 PROPOSED status in older dated overlays is superseded by this scoped completed host work, without rewriting historical snapshots.
+
+**Next:** GAP-08B PREPARED/NOT RUN, actual ESPHome config + compile against the prepared source and verified installed baseline. No GitHub production YAML changes or bus action authorized by these offline findings.
+
+---
+
 # 2026-10-15 — V41V5-GAP-01..05 protocol/software migration evidence
 
 > Detailed additive offline report: [V41V5 GAP-01..05](V41V5_GAP01_TO_05_OFFLINE_20261015.md). These results classify implementation architecture; they do **not** establish new on-wire XTR response behavior. Older proof classes and source observations remain below as dated history.
