@@ -1,3 +1,21 @@
+# 2026-10-15 — GAP-11..17 reconciled; GAP-18 DEFERRED; GAP-19 STOPPED
+
+> Newest additive project status; detailed per-experiment record: [GAP-11–19 reconciliation](V41V5_GAP11_TO_19_STATUS_RECONCILIATION_20261015.md). Earlier GAP-11 PREPARED / NOT RUN text below is historical/superseded. Prior observations and negative results are preserved unmodified.
+
+**Latest completed experiment:** **V41V5-GAP-17 COMPLETE / POSITIVE** for offline provenance audit and 47/47 controlled checks; **COMPLETE / NEGATIVE** for assuming repeated framebytes establish a clock link; **OVERALL COMPLETE / INCONCLUSIVE** for G03 physical EOF→ESPHome callback latency and G04 physical response slot. GAP-16 complete 25,031/25,031 CRC-good seven-capture source audit and 35/35 checks, but native TX readiness inconclusive.
+
+**Current:** no running experiment. **GAP-18 DEFERRED / NOT RUN** by user (GPIO18 physically inaccessible; no physical synchronization recording). **GAP-19 STOPPED BY USER / PARTIAL**, no final result accepted; do not revive or call complete based on working drafts. User requested this documentation update after stopping.
+
+**Offline software:** GAP-11 host revocation patch 326/326; GAP-12 adapter revocation 79/79 (full earlier stale-decision model was negative); GAP-13 Decision provenance 361/361; GAP-14 synchronous staged-snapshot 175/175; GAP-15 single-event-loop deferred lease/API guard 188/188; later regression matrix historical 541/541 with explicit updated obsolete expectations. These are **isolated host candidates**, not flashed into ESPHome; no new active native reply permission.
+
+**Running device:** user-confirmed **GAP-08 RX-only** installed; GAP-09 live passive parity observed, TX attempts 0, `HARD_DENY`. All GAP-11..19 work was offline/planning, with GAP-19 interrupted. Production YAML, live ESPHome core and HA entities untouched.
+
+**Protocol safety:** native Online/DCM still primary target; controller-driven slave `0x0F` model is firmware-derived and supported by distinct captured cases. XTR vs genuine cross-model captures remain separated. G01 independent current controller epoch OPEN; G02 installation owner CONDITIONAL; G03 physical wire EOF OPEN; G04 exclusive slot OPEN; G05 DE/FIFO electrical behavior PARTIAL/HOST-ONLY; G06 reset/brownout fail-low OPEN. No local genuine DCM. **NATIVE TX HARD DENY.**
+
+**Next:** no automatic experiment. Await user request; do not suggest probing inaccessible GPIO18 or require genuine DCM hardware. If later authorized, prefer existing offline evidence and a separate feasibility review.
+
+---
+
 # 2026-10-15 — V41V5-GAP-10 latest; GAP-11 PREPARED / NOT RUN
 
 > Newest additive canonical state. [GAP-08B–10 detailed audit](V41V5_GAP08B_TO_10_AUDIT_20261015.md). Earlier GAP-08B PREPARED overlay below is historical and superseded, not the current experiment. Preserve older entries intact.
