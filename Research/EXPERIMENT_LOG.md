@@ -1,3 +1,27 @@
+# 2026-10-16 — GAP-25E/F and GAP-26–32 result reconciliation (newest first)
+
+**GAP-32 — COMPLETE / POSITIVE (offline observability); INCONCLUSIVE (XTR handshake trigger).** Hypothesis: versioned Connect firmware yields passively recognizable session/publication witnesses. Baseline GAP-31 + user-tested GAP-25E. Change: firmware source AST/log observability audit only. Evidence: internal handshake accepted/onboarding/runtime messages and runtime-conditioned package-request logic; these application logs are absent from raw XTR bus captures. Positive: sourced classification of observability; negative: no new independent bus-visible ACCEPTED witness; abort: active TX/secret disclosure/unproven inference. No recovery required (offline). No YAML flashed.
+
+**GAP-31 — COMPLETE / POSITIVE (bounded provenance inventory); INCONCLUSIVE (direction, start, owner, acceptance).** Baseline GAP-30 seven CRC-validated raw captures. Change: headers/timestamps/earliest extended frames audited only. Key observation: Sep-25 09:05 capture shows `0870/count17` at 1.702s before `03E8/count13` at 68.304s, no FC23 within the recorded window. Positive: provenance limit established; negative: no directional/boot evidence; abort: unsupported attribution or active TX. No recovery required.
+
+**GAP-30 — COMPLETE / POSITIVE (offline frame census/order); INCONCLUSIVE (causality).** Baseline GAP-29 firmware handshake-state model. Change: parse seven historical capture logs, validate recognized native frames CRC and order. 4,809/4,809 recognized native `0x0F` records passed CRC; Sep-26 Eco5 captures have extended pages before any in-window FC23; Oct-03 pair of FC23-shaped records precedes historical `03E8/count13` and several extended FC16 pages. Positive: reproducible chronology; negative: disproves only claim that every in-window extension has earlier in-window FC23; abort: conflating captures/roles. No recovery.
+
+**GAP-29 — COMPLETE / POSITIVE (offline versioned state-source model); INCONCLUSIVE (live XTR acceptance).** Baseline GAP-28 extracted genuine 2.0.18/2.1.105 device_client sources. Change: compare relevant methods/branches. Firmware-defined NOT_ACCEPTED, RESPONSE_SENT and ACCEPTED plus conditional package requests; both versions support separate handshake acceptance, newer version adds package tracking. Positive source-specific model; negative live witness absent; abort unsolicited TX/security disclosure. No recovery.
+
+**GAP-28 — COMPLETE / POSITIVE (firmware extraction/source comparison); INCONCLUSIVE (trigger).** Baseline GAP-27 RAUC outer images. Change: offline extract SquashFS and embedded EXT4 `appfs` and compare real `device_client` source; no firmware flashed. 21 Python sources 2.0.18 vs 25 in 2.1.105; 16 common changed, five common identical, four added. Oct-03 458/458 recognized native CRCs valid; FC23-shaped pair at 27.400/27.429s precedes extended pages starting 29.262s. Positive extraction and bounded ordering; abort active TX. No recovery.
+
+**GAP-27 — COMPLETE / POSITIVE (RAUC outer inventory and chronology); INCONCLUSIVE (full source diff at this stage, since resolved by GAP-28).** Baseline GAP-26. Change: offline SquashFS top-level directory/read of seven historical captures. Observed firmware bundle structure and first extended page chronology. GAP-28 supersedes prior inability to inspect embedded sources, **not** the GAP-27 observation. Abort ungrounded roles/TX; no recovery.
+
+**GAP-26 — COMPLETE / POSITIVE (bounded source/capture differential); INCONCLUSIVE (missing session prerequisite).** Baseline locally user-observed GAP-25E/F restricted native pages. Change: offline 2018 client, original RAUC inventory and collaborator/historical capture comparison. Extra parameter page families present in historical traces, absent from recent XTR; no demonstrated cause or native authentication. Abort active changes; no recovery.
+
+**GAP-25F — COMPLETE / NEGATIVE (new page-type appearance in captured Eco→Comfort interval); INCONCLUSIVE (same-page payload change).** Baseline GAP-25E RX-only. Single controlled change: user set Water Mode Eco→Comfort on control panel. Result: native page types unchanged (`03E8/count14`, `085F/count5`), GAP25D candidates Unknown, parser error/drop counters and software native TX zero. No timestamped before/after payload fingerprint; may not infer semantic page identity, session failure or permanent inability. Restore Eco if originally intended; restoration not confirmed.
+
+**GAP-25E — COMPLETE / POSITIVE (bounded live RX/production/TX telemetry); INCONCLUSIVE (HA registry cleanup and missing candidate pages).** YAML `disabled_by_default` set for 76 GAP25D raw sensors while maintaining decoder and production; user live log showed parser/parity clean, TX software counters zero and production sensors valid. 30 previously visible GAP25D Unknown and 19 other disabled HA entities reported; their identities not reconciled. Software counters are not oscilloscope proof of electrical DE inactivity.
+
+**Shared criteria:** All GAP-26–32 are source-only, no YAML/plant/wiring changes. Compare raw > exact YAML > genuine firmware > cross-model. None authorizes sending FC23/ACK or other active native payload, and none proves firmware-derived semantics on XTR M. Original experiment history follows unchanged.
+
+---
+
 # 2026-10-16 — GAP-23E through GAP-24I offline/live handoff
 
 **Scope:** additive summary; earlier experiment records remain historical. Full account: [GAP23_GAP24_HANDOFF_20261016.md](GAP23_GAP24_HANDOFF_20261016.md).
