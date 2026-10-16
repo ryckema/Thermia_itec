@@ -1,3 +1,32 @@
+# 2026-10-16 — GAP-25E/F and GAP-26–32 evidence reconciliation
+
+## PROVEN / locally confirmed on XTR M (bounded)
+- User-deployed GAP-25E preserved working HA production data. In supplied live capture native `0x0F` used recurring FC16 `03E8/count14` and `085F/count5`; additional GAP25D register-source pages/native FC23 not observed. Software TX counters remained zero with HARD_DENY, parser resync/drop/geometry faults zero; this is **not physical TX timing or DE-level proof**.
+- GAP-25F user's Water Mode Eco→Comfort panel change did **not** produce additional native page *types* in observed interval. Not proof no word changed within an existing page; not proof no other setting or qualified state could cause extended pages.
+- Compressor current/frequency/outdoor fan speed Unknown while external unit is inactive is expected according to user confirmation; do not classify as protocol bug without active-unit contradictory evidence. HA registered 30 visible GAP25D Unknown plus 19 disabled entities of undetermined identity. These counts do not classify all 76 configured raw candidates.
+
+## PROVEN / directly observed in historical captures (proven in those recordings, not necessarily on current XTR session)
+- GAP-30 offline parser: 4,809/4,809 recognized native `0x0F` records across seven available captures have valid RTU CRCs. This is a bounded text-record reparse, not independent electrical capture validation.
+- Oct-03 historical capture: FC23 request/response-shaped records around 27.400/27.429s precede FC16 `03E8/count13` and `03FC/11`, `0410/21`, `042E/15`, `0442/13`. Direction/owner/epoch and ACCEPTED state are NOT known. Historical `03E8/count13` differs from recent XTR `03E8/count14`.
+- Extended pages also occur without FC23 **within the same capture window**: Sep-25 09:05 `0870/17` at 1.702s and `03E8/13` at 68.304s, and Eco5 Sep-26 `0820/18` at 1.744s before first in-window FC23 at 184.661s. Earlier out-of-window FC23 cannot be excluded. Eco5 data remains cross-model; capture provenance is not assumed local XTR without specific evidence.
+
+## STRONGLY SUPPORTED (source-bound, no semantic promotion)
+- GAP-28 verified actual original Connect 2.0.18 and 2.1.105 RAUC extraction, 21 versus 25 device_client Python sources; source differences include `cm/client.py` and `cm/modbus_server15.py`. This supersedes GAP-27's temporary *inability to extract* appfs, not its historical observations.
+- GAP-29/32 original firmware source provides separate NOT_ACCEPTED, RESPONSE_SENT and ACCEPTED handshake states and request logic dependent on higher-level runtime state. Software 'Handshake accepted!' and onboarding messages are internal **Connect application logs**, not available on the XTR Modbus bus.
+- GAP-31 provenance audit shows supplied captures do not independently prove start-of-session, native sender/direction, accepted handshake or exclusive response slot. FC23 response and FC16 ACK geometry are not semantic acceptance evidence.
+
+## HYPOTHESIS
+- Extended Online/DCM parameter publication may depend on a qualified Connect/controller session and runtime-conditioned requests absent from current limited XTR observations. Alternative controller/application causes remain possible. Neither necessity nor sufficiency of FC23 has been locally proven.
+
+## OPEN / UNKNOWN
+- Controller epoch/start, real native source/owner, response slot/wire EOF, genuine XTR handshake ACCEPTED evidence, exact request-to-extra-page causality, hardware TX/DE safety, unseen native pages, GAP25D candidate mapping validity without source pages, identity of the 19 disabled HA entities. No speculative write/register/CRC or live native response authorized.
+
+## DISPROVEN / SUPERSEDED (scope-limited)
+- **Superseded interpretation:** 'an FC23 must occur earlier within each recording for extra pages to appear' is contradicted by GAP-30/31 captures; this does **not disprove** an earlier FC23 outside recording.
+- **Superseded investigation limitation:** GAP-27 could not open embedded appfs; GAP-28 successfully extracted/version-compared real sources. Preserve earlier GAP-27 historical record without retroactively rewriting it.
+
+---
+
 # 2026-10-16 — GAP-23E through GAP-24I offline/live handoff
 
 **Scope:** additive summary; earlier experiment records remain historical. Full account: [GAP23_GAP24_HANDOFF_20261016.md](GAP23_GAP24_HANDOFF_20261016.md).
