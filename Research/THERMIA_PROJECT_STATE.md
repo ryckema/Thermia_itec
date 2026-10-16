@@ -1,3 +1,19 @@
+# 2026-10-16 — GAP-25E/F and GAP-26–32 reconciliation (newest evidence)
+
+**Current deployed/observed baseline:** User-reported GAP-25E RX-only ESPHome/HA integration, preserving working production sensors; native 0x0F TX HARD_DENY and software TX attempts 0 in the supplied logs. Native XTR M traffic remained FC16 `03E8/count14` and `085F/count5`; no local native FC23 or extended candidate pages in the reported captures. Compressor current/frequency and outdoor-fan speed being Unknown while the outdoor unit is off is **expected behaviour per user confirmation**. The 30 visible GAP25D raw candidates are Unknown; HA also lists 19 disabled entities of **unverified identity**, not assumed to be GAP25D. YAML `disabled_by_default` does not retroactively disable HA-registered entities.
+
+**Most recent intervention:** GAP-25F Eco → Comfort water mode change by the user; corresponding capture showed no new native page family and no RX parser errors or software native TX. **COMPLETE / NEGATIVE** narrowly for appearance of new native page types during that capture; **COMPLETE / INCONCLUSIVE** for byte-level change inside existing `03E8` page (no timestamped pre/post payload comparison). Do not extrapolate to all controller states. Eco restoration was recommended, **not confirmed**.
+
+**Last completed experiment:** GAP-32 — **COMPLETE / POSITIVE (offline firmware observability audit); INCONCLUSIVE (actual XTR session acceptance/trigger)**. GAP-26–32 were offline-only and did not change the installed YAML, wiring, HA or native TX policy. Full local reports: `GAP26_OFFLINE_REPORT.md`, `GAP27_OFFLINE_REPORT.md`, `GAP28_RESULT.md` through `GAP32_RESULT.md` (analysis artifacts, not necessarily present in this repository). Do not mark these as deployed/live tests.
+
+**Protocol model and evidence:** Original Connect 2.0.18/2.1.105 RAUC appfs contents were extracted and compared; 2.1.105 firmware has distinct NOT_ACCEPTED → RESPONSE_SENT → ACCEPTED state logic and conditionally requests further information/operation packages. Firmware-derived; **not locally proven bus semantics**. Seven historical captures contain 4,809 CRC-valid recognized native `0x0F` records; extended FC16 pages occur both in recordings with FC23 and in recordings without FC23 (possibly started mid-session). October 3 historical FC23 request/response-shaped frames precede `03E8/count13` and extended configuration pages, but direction/owner/epoch/acceptance not proven. Do not equate historical `03E8/count13` with locally observed XTR `03E8/count14`. Capture provenance must remain qualified, including Eco5 cross-model evidence.
+
+**Strongest hypothesis:** Expanded Online/DCM pages may depend on qualified session state and firmware-initiated package requests; exact XTR prerequisite unknown. **Unknowns:** sender/direction, controller epoch, true first handshake, firmware ACCEPTED witness, physical EOF/response slot, page trigger, and active TX safety. No native write or handshake is authorized or warranted by these offline findings.
+
+**Recommended next step:** Refrain from replaying the same partial capture chronology or adding 76 more HA sensors. Seek genuinely independent existing firmware/capture provenance or a bounded new passive witness with a discriminator; otherwise document the evidence ceiling. Preserve production, RX-only and HARD_DENY. Reconcile canonical files again after material new evidence.
+
+---
+
 # 2026-10-16 — GAP-23E through GAP-24I offline/live handoff
 
 **Scope:** additive summary; earlier experiment records remain historical. Full account: [GAP23_GAP24_HANDOFF_20261016.md](GAP23_GAP24_HANDOFF_20261016.md).
