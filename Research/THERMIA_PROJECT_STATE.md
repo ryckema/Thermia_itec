@@ -1,3 +1,34 @@
+# 2026-10-16 — GAP-23E through GAP-24I offline/live handoff
+
+**Scope:** additive summary; earlier experiment records remain historical. Full account: [GAP23_GAP24_HANDOFF_20261016.md](GAP23_GAP24_HANDOFF_20261016.md).
+
+- **Current user-confirmed device:** GAP-23E RX-only, HA production preserved, native `0x0F` TX HARD_DENY. Live observed `03E8/count14` = 69 and `085F/count5` = 34 in sample; HA Heating Curve=36; no software UART writes/TX, but no authenticated native session/owner/epoch.
+- **GAP-23F/G/H:** offline contextual/fingerprint/source audits. Eco5 byte-identical page repetition is **cross-model only**; locally observed XTR repeats have no full byte-fingerprint trace. GAP-23H **COMPLETE/NEGATIVE for obtaining verifiable local frame pairs**, not negative protocol evidence.
+- **GAP-24A/B/C:** COMPLETE/POSITIVE in bounded offline fail-closed candidate classification, evidence adapter and RX projection; live V4.1 session parity remains INCONCLUSIVE.
+- **GAP-24D:** COMPLETE/POSITIVE limited negative host regression; **INCONCLUSIVE** for exact EXP355/386 positive raw frame replay (source completeness/provenance not established).
+- **GAP-24F:** COMPLETE/POSITIVE ten-stage offline parity map and passive projection; full active native parity INCONCLUSIVE.
+- **GAP-24G/H/I:** COMPLETE/POSITIVE offline lifecycle observational guard, synthetic 32-page shape ledger and nine-source-gap inventory. `67,613/67,613` synthetic C++ assertions pass; shapes never imply semantic acceptance or TX permit. The fixture pages are artificial, not bus evidence.
+- **G01–G06 research-risk decisions:** G01 accepted bounded intervention-anchored restart risk; G02 **COMPLETE/POSITIVE CONDITIONAL** only on unchanged installed topology; G03 EOF unknown/accepted research risk; G04 exclusive slot unknown/accepted research risk; G05 hardware DE/FIFO PARTIAL/HOST-ONLY, residual research risk accepted; G06 reset/brownout DE-low unproved/accepted research risk. Acceptance is distinct from technical proof and from permission to send.
+- **Unchanged history:** EXP388 RUNNING/PARTIAL; EXP425 NEGATIVE; GAP-18 DEFERRED/NOT RUN; GAP-19 STOPPED/PARTIAL. Do not merge their epochs.
+- **Next:** bounded actual portable Core lifecycle-method source equivalence versus V4.1 branch decisions (not another generic observer); offline only, no live TX, no new DCM hardware assumption. No ESPHome compile or deployed GAP-24 firmware claimed.
+
+---
+
+## Current reconciled state
+
+- **Current user-confirmed device:** GAP-23E RX-only, HA production preserved, native `0x0F` TX HARD_DENY. Live observed `03E8/count14` = 69 and `085F/count5` = 34 in sample; HA Heating Curve=36; no software UART writes/TX, but no authenticated native session/owner/epoch.
+- **GAP-23F/G/H:** offline contextual/fingerprint/source audits. Eco5 byte-identical page repetition is **cross-model only**; locally observed XTR repeats have no full byte-fingerprint trace. GAP-23H **COMPLETE/NEGATIVE for obtaining verifiable local frame pairs**, not negative protocol evidence.
+- **GAP-24A/B/C:** COMPLETE/POSITIVE in bounded offline fail-closed candidate classification, evidence adapter and RX projection; live V4.1 session parity remains INCONCLUSIVE.
+- **GAP-24D:** COMPLETE/POSITIVE limited negative host regression; **INCONCLUSIVE** for exact EXP355/386 positive raw frame replay (source completeness/provenance not established).
+- **GAP-24F:** COMPLETE/POSITIVE ten-stage offline parity map and passive projection; full active native parity INCONCLUSIVE.
+- **GAP-24G/H/I:** COMPLETE/POSITIVE offline lifecycle observational guard, synthetic 32-page shape ledger and nine-source-gap inventory. `67,613/67,613` synthetic C++ assertions pass; shapes never imply semantic acceptance or TX permit. The fixture pages are artificial, not bus evidence.
+- **G01–G06 research-risk decisions:** G01 accepted bounded intervention-anchored restart risk; G02 **COMPLETE/POSITIVE CONDITIONAL** only on unchanged installed topology; G03 EOF unknown/accepted research risk; G04 exclusive slot unknown/accepted research risk; G05 hardware DE/FIFO PARTIAL/HOST-ONLY, residual research risk accepted; G06 reset/brownout DE-low unproved/accepted research risk. Acceptance is distinct from technical proof and from permission to send.
+- **Unchanged history:** EXP388 RUNNING/PARTIAL; EXP425 NEGATIVE; GAP-18 DEFERRED/NOT RUN; GAP-19 STOPPED/PARTIAL. Do not merge their epochs.
+- **Next:** bounded actual portable Core lifecycle-method source equivalence versus V4.1 branch decisions (not another generic observer); offline only, no live TX, no new DCM hardware assumption. No ESPHome compile or deployed GAP-24 firmware claimed.
+
+
+---
+
 # 2026-10-15 — GAP-11..17 reconciled; GAP-18 DEFERRED; GAP-19 STOPPED
 
 > Newest additive project status; detailed per-experiment record: [GAP-11–19 reconciliation](V41V5_GAP11_TO_19_STATUS_RECONCILIATION_20261015.md). Earlier GAP-11 PREPARED / NOT RUN text below is historical/superseded. Prior observations and negative results are preserved unmodified.
