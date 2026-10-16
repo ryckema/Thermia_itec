@@ -1,3 +1,25 @@
+# 2026-10-16 — GAP-46C evidence update (XTR M)
+
+## PROVEN / locally confirmed (narrow test scope)
+- On user-installed GAP-46C, the HA manual arm generated the expected NO-TX arm event, the 15-second window autonomously expired, and the snapshot reported `exact=0 eligible=0 refused=0 reservedState=0 TX=HARD_DENY`. These prove the *unqualified-path control flow*, not live FC23 challenge handling.
+- GAP-46B manual revoke was observed **after** the arm window had expired; it proves button/logging and lock behavior, **not** interruption of a pending live transaction.
+- The supplied GAP-46B/C samples retained useful production HA telemetry; parser resyncs/drops and instrumented UART TX counters remained zero, with native V5 `HARD_DENY`. Hardware DE/physical line state was not independently measured.
+
+## STRONGLY SUPPORTED
+- Repetitive native `0x0F` FC16 `03E8/count14` and `085F/count5` in the normal retained-work context do not independently establish a fresh owner/epoch or a writable DCM session.
+- Historical V4.1 single-shot guarded FC23 handling is relevant architecture evidence but cannot be dropped into the V5 periodic FC16 stream without fresh challenge and slot proof.
+
+## HYPOTHESIS
+- A verified fresh exact `0x0F FC23 071C/0730` challenge could allow reuse of the historical V4.1 responder subject to validated cold guard, timing, sender/owner, single-use latch, and complete recovery. Not tested live in GAP-46B/C.
+
+## OPEN / UNKNOWN
+- Native V5 qualified event and exact FC23-response window, bus sender/owner and epoch, physical wire EOF, hardware DE behavior, active Online/DCM session acceptance, write/readback semantics and rejoin recovery. No 0x0F FC23 occurred in the GAP-46B/C observations.
+
+## DISPROVEN / SUPERSEDED
+- Treating a positive NO-TX arm/expiry/snapshot or FC16 address/count ACK as proof of native authentication, semantic acceptance, or successful active write is unsupported; any such interpretation is superseded by the present evidence classification.
+
+---
+
 # 2026-10-16 — GAP-25E/F and GAP-26–32 evidence reconciliation
 
 ## PROVEN / locally confirmed on XTR M (bounded)
