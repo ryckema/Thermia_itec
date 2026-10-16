@@ -1,3 +1,23 @@
+# 2026-10-16 — GAP-46C live reconciliation (current project status)
+
+**Current deployed/observed baseline:** User-installed GAP-46C exact-frame shadow ESPHome candidate on XTR M, built after live GAP-46B. Native V5 TX remains **HARD_DENY / NO TX**; production Home Assistant telemetry continued in the supplied log. Software counters show no UART writes, no TX attempts, no DE activation; physical DE line not independently measured. This section supersedes older “current” labels below, without changing their historical observations.
+
+**Last completed experiment:** **GAP-46C — COMPLETE / POSITIVE** for manual arm, automatic 15 s timeout and NO-TX snapshot in an ordinary unqualified session. **COMPLETE / INCONCLUSIVE** for qualified FC23 challenge recognition and active native response (no qualifying native challenge occurred). User log: `Pasted text(20261016-184950).txt`, ~20:48–20:49: arm 20:49:07.926, expiry 20:49:24.887, snapshot 20:49:37.733; snapshot `exact=0 eligible=0 refused=0 reservedState=0 TX=HARD_DENY`. No native FC23 for 0x0F. GAP-46B preceding live test confirmed manual revoke after expiry and the fail-closed RX-only transaction boundary; it did **not** exercise revocation of a live reserved transaction. GAP-45B/45C confirmed arm and timeout under unqualified traffic.
+
+**Protocol model:** XTR M on present RX-only run repeatedly exposes native `0x0F` FC16 `03E8/count14` and `085F/count5`, not an accepted Online/DCM startup. Historical V4.1 contains a guarded single-shot FC23 `071C/0730` response followed by ordered configuration/runtime exchanges (historically positive under its exact test conditions). This must not be equated with a locally qualified V5 session or generic permission to transmit.
+
+**Locally proven (scope-limited):** V5 parser/CRC and production sensor continuity in supplied GAP-46B/C captures; stable RX/no resync or drops in the evaluated samples; arm, timeout, revoke (after expiry), NO-TX snapshot. No physical DE verification. Firmware-derived acceptance transitions remain distinct from proof of actual XTR bus acceptance.
+
+**Strong hypotheses:** Frame-bound V4.1 challenge logic may be reusable after a verified fresh cold session, verified exact matching frame and safe response slot. Offline model and documentary replay do not prove slot timing or semantic acceptance.
+
+**Important unknowns:** Fresh 0x0F FC23 challenge within an armed window; controller epoch/owner; wire-end and response-slot ownership; qualified event-route success; native V5 TX and subsequent readback; active recovery/rejoin. Existing `STAGE_D_LEDGER_FAULT` in retained traffic is not a newly demonstrated parser failure.
+
+**Next experiment:** **GAP-46D — PREPARED / NOT RUN (proposal only)**: offline timing/event-chain comparison of existing genuine captures and V4.1 code, no physical TX. Baseline GAP-46C no-TX positive; controlled change is offline replay/correlation only. Positive criterion: uniquely linked exact challenge and bounded response-slot evidence in existing raw capture; negative: missing/ambiguous direction/epoch/timing; abort: unverifiable provenance or need for unsolicited live TX. Recovery none (offline). Do not require a genuine DCM or controller restart. Do not enable active TX without a separately described authorized test and rollback to known-good GAP-36 RX-only.
+
+**GitHub confidentiality:** No private 0x0F response bytes, mailbox payload/tooling, keys, or recovered security methods in this update.
+
+---
+
 # 2026-10-16 — GAP-25E/F and GAP-26–32 reconciliation (newest evidence)
 
 **Current deployed/observed baseline:** User-reported GAP-25E RX-only ESPHome/HA integration, preserving working production sensors; native 0x0F TX HARD_DENY and software TX attempts 0 in the supplied logs. Native XTR M traffic remained FC16 `03E8/count14` and `085F/count5`; no local native FC23 or extended candidate pages in the reported captures. Compressor current/frequency and outdoor-fan speed being Unknown while the outdoor unit is off is **expected behaviour per user confirmation**. The 30 visible GAP25D raw candidates are Unknown; HA also lists 19 disabled entities of **unverified identity**, not assumed to be GAP25D. YAML `disabled_by_default` does not retroactively disable HA-registered entities.
