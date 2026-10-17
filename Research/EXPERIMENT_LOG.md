@@ -1,3 +1,8 @@
+# 2026-10-17 — V5DCM18 continued: six additional ZIP portable C++ regression checks
+
+**RUNNING / PARTIAL** original V5DCM18. Baseline previous 11/11 C++ regression on user ZIP Core; controlled change only six more standalone host assertions (epoch-stale, cross-Core ticket, frame mutation, qualified runtime, authority revoke, recovery). Actual g++ -std=c++17 compile and local run: **17/17 PASS**, 0 fail; no bus, no original Core changes. ZIP differs from Github HEAD; full original-Python-Core genuine-corpus replay still OPEN. Abort TX/prod mutation; rollback N/A. [Report](V5DCM/V5DCM18_EXTENDED_CPP_17_PASS_20261017.md).
+
+---
 # 2026-10-17 — V5DCM18 ZIP portable C++ regression and source divergence
 
 **RUNNING / PARTIAL.** Baseline original-roadmap 25,031 historical passive frames and 49/49 structural checks, V5DCM2 FIX1 RX-only. Controlled offline variable: compile and execute 11 negative/positive native C++ Core assertions using user-supplied V5DCM2 ZIP source. **RESULT 11/11 PASS**. Tests cover denied/out-of-order FC16, first owned page, repeated commit, revoked ticket, 32-page ordered bootstrap and reset. **Blocking discrepancy:** ZIP Core has provenance/ticket APIs absent in current firmware repo HEAD; tests do NOT validate repo HEAD or full corpus integrated reference replay. No ESPHome compile, flash, bus TX. Recovery no changes. [Report](V5DCM/V5DCM18_CPP_ZIP_SOURCE_DIVERGENCE_20261017.md).
