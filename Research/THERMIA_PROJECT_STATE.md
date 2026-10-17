@@ -1,3 +1,17 @@
+# 2026-10-17 — V5DCM11 offline firmware readiness audit (latest)
+
+**Deployed live baseline:** user-tested V5DCM2 FIX1, RX-only with stable production HA telemetry; physical TX HARD_DENY. No firmware built/flashed from V5DCM3–11.
+
+**Last completed:** V5DCM11 — COMPLETE / POSITIVE for direct RAUC-proven firmware source AST examination and 10/10 synthetic fail-closed guard tests; COMPLETE / INCONCLUSIVE for native XTR acceptance and vendor-runtime parity. Verified RAUC 2.1.105 embedded device_client 0.2.8 adds `CMClientParameterUpdateState` INITIAL / WAIT_FOR_ALL_DATA_PACKAGE / ALL_DATA_PACKAGE_RECEIVED, seeding from needed subscription package bits after version-aware config load, clearing on register package receipt, and delaying parameter-map publication until ALL received. RAUC 2.0.18 embedded app 0.1.45 has no equivalent specific class/gate in compared code. Both have separate FC23 reply vs FC16-driven software handshake state. This is firmware-derived, NOT XTR bus handshake or DCM icon proof. A zero-package wait is not auto-complete in original newer class.
+
+**Strongest interpretation:** handshake status, application runtime, data-package readiness, cloud publication and display Online must be separate evidence axes. Current XTR owner/epoch, actual response slot and native accepted state remain unknown.
+
+**Next:** V5DCM12 PREPARED / NOT RUN: offline source-table package-bit mapping and historical capture replay with fail-closed UNKNOWN on missing mapping; baseline V5DCM8–11 and live FIX1, controlled change offline only. Positive source-derived package identity without false acceptance; negative incomplete mapping or counters; abort unpublished secrets or physical TX; recovery none, FIX1 remains.
+
+[Detailed V5DCM11](V5DCM/V5DCM11_CM930_READINESS_OFFLINE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM10 RAUC provenance verified (current)
 
 **Current live baseline:** V5DCM2 FIX1, native 0x0F TX=HARD_DENY; production Home Assistant data continued in last user-supplied run. No new ESPHome firmware compiled or flashed by V5DCM3–10.
