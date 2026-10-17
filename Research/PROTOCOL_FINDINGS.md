@@ -1,3 +1,26 @@
+# 2026-10-17 — V5DCM9 recovered firmware application version delta
+
+## PROVEN / offline source comparison only
+- appfs_2018.zip contains device_client 0.1.45 / 21 Python files; device_client.zip contains 0.2.8 / 25 Python files. Of 21 shared Python files, 16 changed and 5 did not; 4 new modules, none removed. Reproducible static test assertions passed.
+- This audit has NOT independently demonstrated exact one-to-one provenance of those Python trees to RAUC 2.0.18 versus 2.1.105. Source file version and RAUC bundle version are different naming layers.
+
+## STRONGLY SUPPORTED / firmware-derived, not XTR wire-proven
+- The newer CM930 application uses separated parameter-update readiness bookkeeping and conditional data-package requirements; CM930 constants have moved to cm/cm_client_type.py, and subscription publication is service-scoped.
+- These software readiness criteria are separate from the observed Modbus FC23 frame, configuration sequence, local display icon and cloud-connected status.
+
+## HYPOTHESIS
+- A strict session model should include application package-readiness gates, but observed XTR bus data cannot infer these without independent witnesses.
+
+## OPEN / UNKNOWN
+- Exact RAUC release-to-app-package provenance, changed vs stable native response calculation, local XTR accepted state, DCM icon and Online trigger.
+
+## DISPROVEN / SUPERSEDED
+- Equating 0.1.45 and 0.2.8 package numbers directly with firmware RAUC 2.0.18 and 2.1.105 without extracted bundle chain of custody is unjustified.
+
+[Report](V5DCM/V5DCM9_FIRMWARE_VERSION_AUDIT_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM8 conservative offline witness classification
 
 ## PROVEN / offline bounded scope
