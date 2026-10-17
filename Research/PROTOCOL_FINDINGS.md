@@ -1,3 +1,29 @@
+# 2026-10-17 — V5DCM4–7 offline genuine/collaborator capture evidence
+
+## PROVEN / observed within supplied text capture records
+- Seven source files contain 25,031 / 25,031 valid CRC records. Text-record validation, NOT independent bus-electric verification.
+- Oct-03 native 0x0F exact FC23 request at 27.400s and reply-shaped record at 27.429s (29ms). 32 sequential reference-page starts from 03E8/count13 to 06F4/count19 at 29.262–61.461s (32.199s). Sender, response slot and authenticated status NOT proven.
+- Sep-25 09:05 starts show 31 reference pages ending 06F1/count3; no 06F4 in that bounded file. Eco5 profile contains 03E8/count14, 0410/count22 versus count13/count21 in older historical recordings, source-/profile-scoped only.
+- Eco5 Sep-26: 99 exact challenge requests, 2 FC23 response-shaped records paired within 200ms; Eco5 Sep-28: 64 challenges / 4 response-shaped pairs. Challenge cadence medians ~4.2335s / 4.241s; long gaps occur.
+- Sep-24 capture contains 11 mailbox 0708/count6 request-shaped frames with no exact FC23 within the capture; Sep-25 09:05 first mailbox at 0.987s before 03E8 start at 68.304s and no in-window exact FC23. These do not rule out events before captures.
+
+## STRONGLY SUPPORTED / bounded inference
+- A standalone 0708 poll, FC16 ACK, repeated 03E8 page or 32-reference-start cursor is not evidence of accepted DCM/Online or permission to TX.
+- V5DCM3 permissive bootstrap accumulator can mark completion across long intermittent bursts in Eco5 text records, while the stricter uninterrupted-run check finds zero complete runs there. Neither detection rule alone proves the actual vendor session rule.
+
+## HYPOTHESIS
+- Config bursts around qualified challenge-response may serve as historical session markers but fresh XTR owner, epoch and slot qualification must be independent.
+
+## OPEN / UNKNOWN
+- Sender identity/direction and wire EOF, XTR live FC23 challenge, semantic handshake acceptance, DCM icon and cloud Online. The genuine hardware/module is not available for new experiments.
+
+## DISPROVEN / SUPERSEDED
+- Using a cumulative config cursor as *proof* of a unique new epoch/accepted session is unsupported. Earlier loose completion heuristic must remain observational only.
+
+[Full experiment and source limitations](V5DCM/V5DCM4_TO_7_OFFLINE_REPLAY_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM3 offline CM930 state distinctions
 
 ## PROVEN / offline implementation only
