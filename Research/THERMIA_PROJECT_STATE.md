@@ -1,3 +1,19 @@
+# 2026-10-17 — V5DCM rebuild: current experiment V5DCM2 PREPARED / NOT RUN
+
+**Current installed/reported:** V5DCM1 passive CM930 observer (user explicitly confirmed it was flashed); RUNNING / PARTIAL. RX-only XTR monitoring, preserved production HA data, zero reported parser faults and software TX. The new internal observer has no individually visible diagnostics, so its state transitions are not independently demonstrated. Logs: Pasted text(20261017-004017).txt, Pasted text(20261017-004733).txt, Pasted text(20261017-004803).txt. No fresh native 0x0F FC23 or 0708 in these windows.
+
+**Last locally tested:** V5DCM1 partial positive for preserved RX-only functionality; no DCM acceptance evidence. **Current prepared:** V5DCM2 RX-only challenge correlation and 30-second [V5DCM2] diagnostics, NOT FLASHED/NOT RUN according to current evidence. Its private-provider interface does NOT contain the actual firmware-derived cryptographic responder.
+
+**Protocol model:** Native Connect CM930 as Modbus slave 0x0F. FC23 approval response is challenge-dependent according to recovered Thermia Connect 2.0.18/2.1.105 firmware; software states NOT_ACCEPTED -> RESPONSE_SENT -> ACCEPTED are distinct from controller recognition, config completeness, runtime/mailbox, cloud connectivity, and display indications. Historical V4.1 fixed response/replay and ordered configuration ACKs only partly match firmware implementation. Known local passive FC16 03E8/14 and 085F/5 do not prove fresh session ownership.
+
+**Highest-priority goal:** firmware-faithful V5 DCM session, DCM icon then online status *as separately observed outcomes*. Do not claim icon/online mapping proved. Preserve GAP-51E RX-only baseline and rollback. TX=HARD_DENY until separately approved and bounded. Controller epoch, bus slot, wire EOF and physical DE remain unproven.
+
+**Next action:** install and collect compact [V5DCM2] and S8-health diagnostics; classify result before advancing. Subsequent implementation must include real dynamic handshake computation in a private environment, tested against genuine captures, not just an interface.
+
+**GitHub policy:** user authorized updating GitHub with each experiment from 2026-10-17. Keep Research canonical files reconciled, preserve historical sections, and exclude confidential 0x0F responder/security/key and mailbox command tooling. Detail: [V5DCM handover](V5DCM/V5DCM1_V5DCM2_HANDOVER_20261017.md).
+
+---
+
 # 2026-10-16 — GAP-46C live reconciliation (current project status)
 
 **Current deployed/observed baseline:** User-installed GAP-46C exact-frame shadow ESPHome candidate on XTR M, built after live GAP-46B. Native V5 TX remains **HARD_DENY / NO TX**; production Home Assistant telemetry continued in the supplied log. Software counters show no UART writes, no TX attempts, no DE activation; physical DE line not independently measured. This section supersedes older “current” labels below, without changing their historical observations.
