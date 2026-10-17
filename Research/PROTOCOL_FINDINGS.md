@@ -1,3 +1,27 @@
+# 2026-10-17 — V5DCM11 RAUC-version-scoped source findings
+
+## PROVEN / firmware source only
+- Direct V5DCM10-proven Connect 2.1.105 app `device_client 0.2.8` has `CMClientParameterUpdateState` with INITIAL / WAIT_FOR_ALL_DATA_PACKAGE / ALL_DATA_PACKAGE_RECEIVED; seeding via `_get_all_data_package_to_request()`, clearing on `reset_register_read_request`, and gating `on_publish_cm_params_map_event`. Compared Connect 2.0.18 app `device_client 0.1.45` has no equivalent explicit class/publication gate.
+- Both checked code versions retain different code paths for preparing FC23 reply versus software ACCEPTED triggered by FC16. This is *firmware-derived*, not proof of display state or XTR bus semantics.
+- Synthetic fail-closed observer and source AST tests 10/10 PASS; they are not an actual Thermia firmware execution or XTR live session.
+
+## STRONGLY SUPPORTED
+- CM930 handshake state, vendor application runtime, requested parameter-package completion, published device data, controller DCM icon and cloud Online are distinct evidence axes.
+- Newer software's empty expected package mask begins in WAIT, not automatically complete at setup; avoid naïve empty-set-complete inference.
+
+## HYPOTHESIS
+- Version-aware package requests and observed replies may help reconstruct startup if the original per-profile mapping is proven against capture records.
+
+## OPEN / UNKNOWN
+- Actual XTR FC23 approval, owner/epoch/slot, native display DCM/Online triggers, unique package source identity per observed FC16, profile version and physical TX conditions.
+
+## DISPROVEN / SUPERSEDED
+- Treating 32 collected config starts or FC23 time correlation as application-ready or Online is unsupported; V5DCM11 confirms an independent firmware-level publication gate in 2.1.105.
+
+[Detailed test](V5DCM/V5DCM11_CM930_READINESS_OFFLINE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM10 actual RAUC-to-device_client evidence
 
 ## PROVEN / original firmware content provenance (offline)
