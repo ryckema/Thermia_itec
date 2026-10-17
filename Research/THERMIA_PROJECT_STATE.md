@@ -1,3 +1,17 @@
+# 2026-10-17 — V5DCM12 offline request-package mapping (latest)
+
+**Live production baseline:** user-tested V5DCM2 FIX1, RX-only; no hardware modifications or ESPHome flash during V5DCM3–12.
+
+**Last completed:** V5DCM12 COMPLETE / POSITIVE for offline 14/14 source-map and historical event replay assertions; COMPLETE / INCONCLUSIVE for firmware-recognized package receipt/accepted XTR DCM/Online. Connect 2.1.105 original Python source selects request words 0x070A, 0x070B, 0x070C via profile-configured flags JSON; the existing firmware repo's derived flags map describes 16+16+11 address/bit candidate ranges. Seven existing historical/collaborator files (3,063 normalized native event rows) match 10–43 unique bits each (Oct-03 43/43, Eco5 Sep-26 43/43, Eco5 Sep-28 42/43). These are request-SHAPED observations and cannot be treated as application callbacks, owner/epoch confirmation, approval or Online. Original flags JSON/profile selection not independently reverified in this experiment.
+
+**Current model:** handshake, source/epoch, received selected packages, publication-readiness, display and cloud connection are independent. Highest unknown: selected XTR profile and ability to associate actual original firmware receive events to same-session captures.
+
+**Next:** V5DCM13 PREPARED / NOT RUN, offline direct original RAUC appfs flags JSON profile provenance and comparison to repository map. Positive exact JSON/range match and justified profile selection; negative missing/mismatch; abort protected material leak or hardware TX; recovery none, retain RX-only FIX1.
+
+[Evidence](V5DCM/V5DCM12_REQUEST_PACKAGE_MAP_OFFLINE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM11 offline firmware readiness audit (latest)
 
 **Deployed live baseline:** user-tested V5DCM2 FIX1, RX-only with stable production HA telemetry; physical TX HARD_DENY. No firmware built/flashed from V5DCM3–11.
