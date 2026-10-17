@@ -1,3 +1,22 @@
+# 2026-10-17 — V5DCM20 partial offline contract evidence
+
+## PROVEN / isolated test scope
+Standalone non-transmitting C++17 observation/authorization/commit test compiled and passed 24/24 synthetic assertions. No bus or vendor-runtime proof.
+
+## STRONGLY SUPPORTED
+Separating read-only classification from authorized state mutation avoids denied-frame acceptance promotion in the isolated model.
+
+## HYPOTHESIS
+The same discipline would harden the original portable Core if integrated with qualified source/epoch and physical ownership evidence.
+
+## OPEN / UNKNOWN
+Original portable Core implementation unchanged because modification blocked; integrated C++ regression, physical response slot, XTR native approval and Online status unknown.
+
+## DISPROVEN / SUPERSEDED
+An isolated green test is not a completed Core refactor or TX authorization. [Partial report](V5DCM/V5DCM20_ISOLATED_CPP_PARTIAL_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM19 fail-closed reference contract
 
 ## PROVEN / isolated locally executed offline model
