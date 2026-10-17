@@ -1,3 +1,9 @@
+# 2026-10-17 — V5DCM18 ROADMAP RUNNING / PARTIAL; original Core CI verification pending
+
+**Current:** V5DCM18, original-roadmap end-to-end offline replay. Capture-only structural replay 25,031 CRC valid, 164 challenge shapes, 7 pairs, 1 strict 32-page run, 49/49 limited observational checks remains valid. Added direct-original-Core offline error-injection script and GitHub Actions integration to Thermia_Connect_Firmware (source committed). GitHub workflow run logs/results NOT verified; **do not claim stateful tests passed or full V5DCM18 complete**. Original CM930 acceptance can occur before emulator owner decision, so distinguish internal H2 state from TX authorization. Next retrieve CI results, reconcile acceptance/owner gate, finish stateful replay. **Production V5DCM2 FIX1 RX-only/TX HARD_DENY unchanged.** [Source test progress](V5DCM/V5DCM18_STATEFUL_CORE_CI_PREPARED_20261017.md).
+
+---
+
 # 2026-10-17 — ROADMAP RECONCILIATION: V5DCM18 RUNNING / PARTIAL (latest)
 
 **Roadmap authoritative:** V5DCM18 requires end-to-end offline replay and fault scenarios, NOT only source/API audit. Previous V5DCM18 source audit is retained separately. **Current:** capture-only replay completed, 25,031 CRC-valid historical frames, 164 FC23 request shapes, 7 paired reply shapes, 1 full strict 32-page sequence; 49/49 limited structural fixtures passed. Original CM930/Core stateful error-injection validation is NOT RUN; full V5DCM18 success criterion NOT MET. **Next:** run existing original reference-Core tests and adverse transitions, then V5DCM19 RX-only YAML integration and V5DCM20 passive XTR validation per roadmap. **Production unchanged:** V5DCM2 FIX1 RX-only, native TX HARD_DENY. [Roadmap partial report](V5DCM/V5DCM18_ROADMAP_REPLAY_PARTIAL_20261017.md).
