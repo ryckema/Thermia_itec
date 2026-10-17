@@ -1,3 +1,27 @@
+# 2026-10-17 — V5DCM13–15 original flags / selected packages / fail-closed offline model
+
+## PROVEN / firmware-original local evidence
+- Directly inspected original Connect 2.0.18 `conf/930/modbus-flags.json`, from the V5DCM10 source-verified appfs_2018.zip: request flags 1802/0x070A=16, 1803/0x070B=16, 1804/0x070C=11 and all 43 ranges exactly match repository-derived V5DCM12 ranges. Original JSON SHA256 bb0b335eaf4e3a98e5d71d1cd1551e0772fedcfcd3f7d17f3c78e04c21844b9e.
+- In separately verified Connect 2.1.105 application Python code, `_get_all_data_package_to_request` depends on active parser `significant_registers()` and runtime JSON `request=True` bit mapping; receipt bookkeeping separate from observed frame shapes.
+- Standalone fail-closed offline observer passes 18/18 source/logic fixture checks. Tests are OUR model, not original vendor runtime/ XTR bus acceptance.
+
+## STRONGLY SUPPORTED
+- Defined request flag set (43 range candidates) differs from the required active profile/subscription subset, which is UNKNOWN for the local XTR.
+- A simple FC23 time association or FC16 config page does not prove a vendor app receive callback, native acceptance, physical responder slot, display icon or Online.
+
+## HYPOTHESIS
+- Accurate profile-dependent selected mask may be reconstructed offline with original config and firmware runtime selection evidence, but no arbitrary controller-version guess.
+
+## OPEN / UNKNOWN
+- New RAUC Connect 2.1.105 original `modbus-flags.json` not separately extracted this run: cross-version exact config identity unproven. Actual XTR selected mask, sender, controller epoch, true handshake approval, display and Online unknown.
+
+## DISPROVEN / SUPERSEDED
+- V5DCM12 repository-derived map need not remain *only* derived for RAUC 2.0.18: V5DCM13 original JSON confirms it. This does not settle 2.1.105.
+
+[13](V5DCM/V5DCM13_ORIGINAL_FLAGS_AUDIT_20261017.md) · [14](V5DCM/V5DCM14_REQUIRED_PACKAGE_SELECTION_AUDIT_20261017.md) · [15](V5DCM/V5DCM15_FAIL_CLOSED_SESSION_MODEL_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM12 request-bit mapping vs historical bus shapes
 
 ## PROVEN / firmware-original source
