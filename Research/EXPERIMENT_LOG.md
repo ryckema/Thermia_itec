@@ -1,3 +1,7 @@
+# V5DCM20 PREPARED / NOT RUN (2026-10-18), roadmap experiment distinct from earlier isolated host C++ 24/24. Hypothesis: current FIX1 stable under 10-minute passive observation, no parser regression or TX. Baseline V5DCM19 live 1566/1566 B11C, 1564/1564 B11D, zero differences, 11 stable earlier resync and 1 historical integrity fault, physical TX zero. Controlled change observation duration ONLY. Positive zero new differences/drops/TX and HA telemetry stays live. Negative integrity growth or production regression. Abort unexpected TX or critical regression. Recovery retain known-good existing FIX1. Result NOT YET RECEIVED. Report: V5DCM/V5DCM20_LIVE_RX_ONLY_PREPARED_20261018.md
+
+---
+
 # 2026-10-18 V5DCM19 FIX1 RESULT COMPLETE / POSITIVE scoped RX-only. Hypothesis: integrate V5DCM1/2 joined passive diagnostics with no production regression. Baseline RX-only deployed; controlled change FIX1 merges new 30s interval into existing interval key, no TX. User confirmed flashed, 01:19:09–01:22:18 live log. Six NATIVE_OBSERVE/SERVICE_OBSERVE/PROVENANCE groups printed. B11C parity 1566/1566, B11D 1564/1564 and zero delta, HA values healthy, 266 denied candidates and zero physical attempts; historical resync 11 and integrity 1 no observed increment. Positive criteria met; native acceptance not tested. Abort for unauthorized TX or production fault not triggered; recovery none. G01–G06 accepted risks preserved.
 
 [Result](V5DCM/V5DCM19_FIX1_LIVE_RESULT_20261018.md).
