@@ -1,3 +1,26 @@
+# 2026-10-17 — V5DCM15A original 2.1.105 flags verified
+
+## PROVEN / firmware-source original (offline)
+- Directly extracted from RAUC 2.1.105 original appfs ext4: `/etc/device-client.d/930/modbus-flags.json`. Byte-identical to V5DCM13 original 2.0.18 `modbus-flags.json`: 3333 bytes, SHA256 bb0b335eaf4e3a98e5d71d1cd1551e0772fedcfcd3f7d17f3c78e04c21844b9e. Request ranges 0x070A=16, 0x070B=16, 0x070C=11; 43 source-original ranges confirmed across both RAUC versions.
+- CM930 profile data differ: 33 JSON files in old appfs vs 35 new; among 25 identical relative paths 8 byte-identical, 17 changed; old 2.3.0–2.4.1 dir extends to 2.3.0–2.4.3 in new. Source selects versioned profile from observed CM firmware SemVer, not simply RAUC package version.
+
+## STRONGLY SUPPORTED
+- 43 defined range bits are not by themselves 43 required application receive callbacks. Profile and parser selection remain independent.
+- Historic XTR/other-model frame geometry cannot be mapped to a specific firmware configuration solely from capture timing.
+
+## HYPOTHESIS
+- Proven matching flags map and profile-aware config may improve offline V5DCM16 correlation without changing bus protocol.
+
+## OPEN / UNKNOWN
+- Which CM firmware version/profile is actually running on local XTR; native FC23 owner, response slot, accepted status, DCM display/icon and cloud Online.
+
+## DISPROVEN / SUPERSEDED
+- The earlier open question whether 2.1.105 original JSON has different basic 43-bit flag ranges is resolved: exact same bytes in the two original extracted files. Profile content itself is NOT identical.
+
+[Detailed V5DCM15A](V5DCM/V5DCM15A_RAUC_21105_CONFIG_AUDIT_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM13–15 original flags / selected packages / fail-closed offline model
 
 ## PROVEN / firmware-original local evidence
