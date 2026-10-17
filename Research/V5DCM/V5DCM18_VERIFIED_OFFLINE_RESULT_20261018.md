@@ -1,0 +1,19 @@
+# V5DCM18 — direct offline verification, 2026-10-18
+
+**Roadmap status: RUNNING / PARTIAL** for complete original end-to-end firmware reference-Core parity criterion. **COMPLETE / POSITIVE** only for bounded true offline ZIP-Core C++ regressions and strict historic capture replay. No revalidation of user-accepted G01–G06.
+
+**Hypothesis and baseline:** Existing V5DCM1/2 RX-only CM930 challenge/session observers, user-supplied V5DCM2 ZIP portable Core, seven genuine/collaborator historic bus logs, original CM930 firmware-derived lifecycle gates, and **Write Beta V4.1** EXP386/387 local positive evidence plus EXP388 partial allow offline test of valid/faulted session paths without new source code or TX. Production V5DCM2 FIX1 RX-only, TX HARD_DENY.
+
+**Controlled action:** actually reran strict capture audit over all seven locally supplied historical logs and recompiled/executed original user-ZIP C++ Core tests with `g++ -std=c++17 -Wall -Wextra -pedantic`. No firmware or YAML change, no bus TX.
+
+**Actual results:** **17/17 C++ Core stateful checks PASS** (negative/out-of-order page, unauthorized cache, one-use decision, revocation, cross-Core provenance, altered payload, epoch reset, 32/32 ordered bootstrap, runtime readiness withdrawal/recovery). **7/7** historical captures replayed through strict profile/page/continuity observer: Oct-03 **32/32 complete (1)**; Eco5 Sep-26 **28/32 (0 complete)** and Sep-28 **24/32 (0 complete)**; other four short recordings no strict reply-anchored completes. Removing 03FC or removing traffic during Oct03 bootstrap results 0 complete. CRC corruption rejected, repeated challenge doesn't produce a false full session. Initial naive counter giving seven complete sessions had been disproven, not reused.
+
+**Write Beta V4.1 parity evidence:** [README](../../Write%20(Beta)/README.md) documents EXP386 positive native controller-restart recovery, EXP387 positive delayed mailbox re-arm and EXP388 partial repeated controller-restart recovery. Preserve cold-start, retained and hot-rejoin as distinct branches; do not demand 32 pages universally. V4.1 local XTR outcomes are historical user-confirmed evidence, not newly replayed bus captures.
+
+**Observed facts:** actual tests above. **Strong conclusion:** observed FC23 challenge/frame matching, internal handshake state, owner-ack permission, complete bootstrap, mailbox, native controller acceptance and full Connect Online are different gates. **Open/unknown:** current public firmware repo Python reference-Core's **full original seven-fixture suite was NOT locally executed**; test files were inspected on GitHub but their bytes could not be obtained for the local runner. Current GitHub C++ Core differs from ticket/provenance-enabled user ZIP. The 17-case ZIP result is not proof of GitHub HEAD parity. Physical owner/slot/Online icon/cloud likewise unknown.
+
+**Decision:** bounded tests COMPLETE / POSITIVE. Full original roadmap V5DCM18 stays RUNNING / PARTIAL — cannot claim COMPLETE / POSITIVE while original reference-Core end-to-end corpus and V4.1 state parity remain untested. The remaining concrete task is executing the already-existing `tools/test_xtr_dcm_reference_core.py --fixture-root <seven-fixture-directory>` and `tools/test_v5dcm18_roadmap_faults.py` on the original Python source, reviewing known inaccurate *complete-session* assumptions against V4.1. Do not silently alter assertions to manufacture a PASS.
+
+**Positive:** named replay/ZIP checks met; **negative:** naive session metric disproven; **abort:** any new native TX or unrelated production edit; **recovery:** none required. Only offline actions performed.
+
+Local user package: `V5DCM18_VERIFIED_RESULT_20261018.zip` has human-readable report and raw local test outputs.
