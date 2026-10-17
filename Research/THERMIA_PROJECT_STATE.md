@@ -1,3 +1,15 @@
+# 2026-10-17 V5DCM15A — RAUC 2.1.105 original config complete
+
+**V5DCM15A:** COMPLETE / POSITIVE (16/16 offline extraction and equality checks), INCONCLUSIVE for actual XTR profile and DCM acceptance. Extracted original RAUC 2.1.105 appfs `/etc/device-client.d/930/modbus-flags.json`: 3333 bytes and SHA256 bb0b335eaf4e3a98e5d71d1cd1551e0772fedcfcd3f7d17f3c78e04c21844b9e, exact byte match with original Connect 2.0.18 flags JSON. Request ranges 0x070A:16; 0x070B:16; 0x070C:11. The V5DCM13 2.1.105 original-JSON gap is closed. CM930 config profiles differ: 33 old and 35 new JSON; 25 shared paths, 17 changed, 8 unchanged; 2.3.0–2.4.1 extended to 2.3.0–2.4.3. Original app selects version-specific profile using observed CM firmware version; local XTR selected profile unknown. Do not equate 43 available ranges with 43 required subscriptions or accepted Online.
+
+**Live:** V5DCM2 FIX1 RX-only/HARD_DENY unchanged, no new flash or TX.
+
+**Next:** V5DCM16 PREPARED / NOT RUN, historical FC23/session replay only, conservatively preserve sender/epoch/profile UNKNOWN; no active TX.
+
+[Report](V5DCM/V5DCM15A_RAUC_21105_CONFIG_AUDIT_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM13–15 consecutive offline audit (latest)
 
 **Production:** user-tested V5DCM2 FIX1 RX-only/HARD_DENY; no new ESPHome firmware, TX or controller actions.
