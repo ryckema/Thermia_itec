@@ -1,3 +1,9 @@
+# 2026-10-17 — V5DCM3 offline state-model result
+
+**V5DCM3 — COMPLETE / POSITIVE for synthetic offline host test; COMPLETE / INCONCLUSIVE for genuine capture and local acceptance.** Baseline user-tested V5DCM2 FIX1. Hypothesis: configuration reference pages, mailbox directions, runtime candidates and handshake events can be tracked independently without asserting DCM acceptance. Controlled change: standalone C++17 offline observer, NO new ESPHome YAML or TX. Referenced original recovered Connect firmware in cm/modbus_server15.py and cm/client.py. Host fixtures: five scenarios PASS, g++ -std=c++17 -Wall -Wextra -Werror. Relevant slave 0x0F; known FC16 03E8/14 and 085F/5, FC23 handshake shape (not present live), FC03 0708 (not present live), runtime reference pages (not live validated). No real-capture replay. Positive = deterministic fixture counts, accepted/icon/online flags remain false. Negative = count mismatch or conflated milestones. Abort any physical TX or private security disclosure; recovery no live change, retain V5DCM2 FIX1. Next V5DCM4 offline real-capture replay. [Details](V5DCM/V5DCM3_OFFLINE_SESSION_AUDIT_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM2 FIX1 live log and duplicate-interval correction
 
 **V5DCM2 FIX1 — COMPLETE / POSITIVE (diagnostic integration + RX-only monitoring); COMPLETE / INCONCLUSIVE (native FC23 handshake).** Hypothesis: passive CM930 observer output can be integrated into the user's V5 ESPHome build while retaining CRC-good RX, all production HA readings and TX=HARD_DENY. Baseline V5DCM1 installed; first V5DCM2 YAML failed YAML parsing due to duplicate top-level `interval:` key, so that version was not valid for testing. Controlled FIX1 change: merge V5DCM2 30s log under the existing `interval:` list; no new bus parser or TX code. Relevant 0x0F FC23 071C/0730 (none observed), FC16 03E8/count14 and 085F/count5 (observed), mailbox 0708 (none).
