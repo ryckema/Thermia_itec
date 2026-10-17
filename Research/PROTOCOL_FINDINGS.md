@@ -1,3 +1,27 @@
+# 2026-10-17 — V5DCM12 request-bit mapping vs historical bus shapes
+
+## PROVEN / firmware-original source
+- In Connect 2.1.105 device_client, request-word registers are decimal 1802, 1803, 1804 (0x070A, 0x070B, 0x070C). Register range-to-bit mapping depends on selected runtime flags JSON. Actual parameter update readiness advances on application registers-received event, not merely any request-shaped RTU frame.
+
+## STRONGLY SUPPORTED / existing repository-derived mapping
+- Firmware-research cm930_modbus_flags_map.csv links these words to 16+16+11 register address spans. The original per-profile flags JSON was NOT independently compared this experiment. Seven historical/cooperator recordings contain address starts matching 10–43 distinct candidate bits, with Oct-03 43, Eco5 Sep-26 43, Eco5 Sep-28 42.
+
+## OBSERVED / offline bounded
+- Previously decoded 3,063 native event rows classified; 14/14 offline source/map assertions pass. No real firmware event callbacks, controller acceptance, or physical direction proved.
+
+## HYPOTHESIS
+- Exact-profile flags JSON and subscription selection may identify the legitimate subset required before parameter map publication, but no generic 43-of-43 acceptance requirement is proven.
+
+## OPEN / UNKNOWN
+- Exact original JSON profile used on XTR M; selected parser subset; real package receive callback, source and epoch, native DCM approval and icon/cloud Online.
+
+## DISPROVEN / SUPERSEDED
+- Counting FC16 request-shaped pages as proof of ALL_DATA_PACKAGE_RECEIVED is not justified; those are distinct evidence layers.
+
+[Report](V5DCM/V5DCM12_REQUEST_PACKAGE_MAP_OFFLINE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM11 RAUC-version-scoped source findings
 
 ## PROVEN / firmware source only
