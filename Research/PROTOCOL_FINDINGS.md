@@ -1,3 +1,26 @@
+# 2026-10-17 — V5DCM16 historical session timing and uncertain provenance
+
+## PROVEN / historically observed bounded text frames
+- Seven recorded logs yield 25,031 / 25,031 CRC-valid ADUs; 164 exact native 0x0F FC23 request-shaped frames and 7 reply-shaped matches within 200ms. 157 requests have no such matched response *within the file window*, not negative proof.
+- Oct-03 challenge 27.400s, reply-shaped record 27.429s (+29ms), first config reference page 29.262s (+1.833s after shaped reply); 32 consecutive reference starts through 61.461s (32.199s). Model strict 32-page sequence is a reference-observer condition, not independently proven vendor requirement.
+- Eco5 Sep26 99 challenge shapes, 2 paired reply shapes (61,63ms); Sep28 64 and 4 (46,30,32,47ms). No uninterrupted full strict reference-chain in those two files; profile/interleaving caveats apply. Sep25 09:05 longest 31 reference starts; no capture of the 32nd in-window.
+
+## STRONGLY SUPPORTED
+- Correlated shape and config burst alone do not demonstrate native acceptance, physical sender, response slot, controller epoch, DCM icon or cloud Online. Keep all UNKNOWN; native TX authority remains false.
+
+## HYPOTHESIS
+- Oct-03 pair and ensuing 32-start burst could be from a coherent native bootstrap if independent sender/session boundary evidence is obtained. Firmware Connect 2.0.18/2.1.105 common 43-bit flags map does not establish actual XTR selected profile.
+
+## OPEN / UNKNOWN
+- Actual native XTR owner, CM profile, epoch, handshake semantic success, line EOF and response slot; controller DCM recognition and Online still unproven.
+
+## DISPROVEN / SUPERSEDED
+- A cumulative config cursor, mere 200ms timing pair or strict observer 32-run must not be automatically promoted to DCM acceptance.
+
+[Full V5DCM16 evidence](V5DCM/V5DCM16_HISTORICAL_SESSION_REPLAY_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM15A original 2.1.105 flags verified
 
 ## PROVEN / firmware-source original (offline)
