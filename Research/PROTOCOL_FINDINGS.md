@@ -1,3 +1,13 @@
+# 2026-10-17 — V5DCM18 original Core source and CI caveat
+
+**PROVEN / source observation (not local XTR):** in `Thermia_Connect_Firmware/tools/xtr_dcm_reference_core.py`, Core.fc16 can promote internal handshake to ACCEPTED on RESPONSE_SENT plus qualifying FC16 shape before later owner denial. Original CM930 source-derived acceptance predicate is broader than an emulator ACK owner, so this behavior is not alone a protocol error.
+
+**STRONGLY SUPPORTED:** internal firmware handshake acceptance must be tracked separately from physical TX authorization, owner qualification, semantic write readiness, and full Online state.
+
+**OPEN / UNKNOWN:** direct original reference Core GitHub CI regression outcomes are NOT YET VERIFIED, despite addition of its adverse-case script and CI integration. Original roadmap V5DCM18 remains RUNNING / PARTIAL. [Details](V5DCM/V5DCM18_STATEFUL_CORE_CI_PREPARED_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM18 original-roadmap replay evidence
 
 **PROVEN / locally confirmed from recorded captures:** historical text logs contain 25,031 CRC-correct records, 164 exact challenge shapes, 7 candidate time-paired reply shapes; Oct-03 one strict 32-page reference run. This alone cannot assign sender or native acceptance.
