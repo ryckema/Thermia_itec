@@ -1,3 +1,17 @@
+# 2026-10-17 — V5DCM10 RAUC provenance verified (current)
+
+**Current live baseline:** V5DCM2 FIX1, native 0x0F TX=HARD_DENY; production Home Assistant data continued in last user-supplied run. No new ESPHome firmware compiled or flashed by V5DCM3–10.
+
+**Last completed offline experiment:** V5DCM10 — COMPLETE / POSITIVE for direct RAUC content provenance and source identity. Original `Thermia_Connect-2.0.18-s1.raucb` contains manifest version 2.0.18 and appfs `device_client 0.1.45`, 21/21 extracted Python modules byte-identical to `appfs_2018.zip`. Original `Thermia_Connect-2.1.105-s1.raucb` contains manifest version 2.1.105 and appfs `device_client 0.2.8`, 25/25 modules identical to `device_client.zip`. Both RAUC bundles directly read as SquashFS, manifest/appfs/rootfs extracted; 4/4 SHA256 and image-size checks match embedded manifests. V5DCM9's unverified source-to-RAUC mapping is now **RESOLVED**. Cryptographic RAUC signature CA chain has NOT been validated.
+
+**Protocol/evidence scope:** version-scoped CM930 application source differences (21 shared modules; 16 changed; 4 added) may guide session and parameter-readiness modeling but are NOT proof of XTR native acceptance, DCM icon, cloud Online, physical owner or response slot. Never infer changed native cryptographic handshake output solely from file diffs.
+
+**Next experiment:** V5DCM11 — PREPARED / NOT RUN: offline version-scoped CM930 application state/packet-readiness witness mapping from authenticated provenance chain; baseline V5DCM9/10; controlled change offline AST/code-evidence mapping only. Positive: source-backed differences and reproducible fixture criteria; negative: unsupported state/display inferences; abort private source publication or physical TX; recovery no hardware changes, retain FIX1.
+
+**GitHub:** user authorized updates per experiment, excluding working private 0x0F authentication/security logic and command-mailbox tooling. Full sanitized details: [V5DCM10](V5DCM/V5DCM10_RAUC_PROVENANCE_VERIFIED_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM9 offline firmware-source comparison (latest)
 
 **Current live baseline:** user-flashed V5DCM2 FIX1 RX-only, HA production preserved, native TX HARD_DENY; no later firmware flashed.
