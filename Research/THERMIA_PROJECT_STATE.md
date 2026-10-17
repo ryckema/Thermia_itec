@@ -1,3 +1,8 @@
+# 2026-10-17 — V5DCM18 offline CPP 7-capture replay completed (bounded); roadmap PARTIAL
+
+**Deployed unchanged:** V5DCM2 FIX1 RX-only TX HARD_DENY. **G01–G06 accepted residual risks: DO NOT REOPEN absent genuinely new evidence.** Executed C++17 parser/owner-decision traversal on user-supplied ZIP Core and all seven captures: 25,031 frames, 2,500 slave-0x0F FC16 requests, 1,365 ACK shapes, 171 slave-0x0F FC23 records (164 challenge requests + 7 response shapes from separate earlier classifier). Owner decision probe without commit: 216 hypothetical authorized candidates, 2,284 denied; not physical TX authorization. ZIP core does not decode FC23—existing V5DCM2 observer handles it. **Status V5DCM18 RUNNING/PARTIAL:** original Python reference Core end-to-end fixture tests + integrated stateful fault replay remain unverified. No new bus TX or production changes. [Evidence](V5DCM/V5DCM18_CPP_CORPUS_BRIDGE_20261017.md).
+
+---
 # 2026-10-17 — V5DCM18 ZIP C++ extended suite 17/17 verified; ROADMAP PARTIAL
 
 Original roadmap V5DCM18 remains **RUNNING / PARTIAL**. Actual host C++17 compile/run of supplied V5DCM2 ZIP Core: 17/17 stateful assertions pass (previous 11 plus epoch, cross-Core origin, mutated-frame, readiness/revoke/recovery tests). Original Python reference-Core corpus+fault execution and Github HEAD parity still unverified. ZIP Core provenance ticket APIs differ from canonical Thermia_Connect_Firmware/main. No ESPHome changes, no native TX, current V5DCM2 FIX1 RX-only/HARD_DENY preserved. [Report](V5DCM/V5DCM18_EXTENDED_CPP_17_PASS_20261017.md).
