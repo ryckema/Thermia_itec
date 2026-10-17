@@ -1,3 +1,9 @@
+# 2026-10-18 — V5DCM19 YAML structural issue
+
+PROVEN / offline YAML: prior V5DCM19 package had duplicate top-level `interval:` mapping keys, possible scheduled-task loss. FIX1 strict mapping parse confirms one combined interval list and 16 entries. This is a configuration defect, not a native protocol finding. V5DCM19 still PREPARED / NOT RUN, physical acceptance unknown. [Report](V5DCM/V5DCM19_FIX1_DUPLICATE_INTERVAL_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM19 preparation boundary
 
 PROVEN / offline inspection only: existing V5DCM2 YAML already joins V5DCM1/2 observers to the primary CRC-valid frame callback. New candidate changes logging only; it does NOT implement a new native session engine or provide physical acceptance. OPEN: parity against deployed FIX1, full ESPHome compile, live XTR results. V5DCM19 PREPARED / NOT RUN. [Report](V5DCM/V5DCM19_PREPARED_RX_DIAGNOSTIC_20261018.md).
