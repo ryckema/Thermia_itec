@@ -1,3 +1,8 @@
+# 2026-10-17 — V5DCM18 17-case local C++ host regression
+
+**PROVEN / executed offline against user-supplied ZIP implementation:** 17/17 checks pass with g++ C++17, including rejection of stale/foreign/modified decisions and readiness revocation/recovery. **OPEN / UNKNOWN:** these results cannot validate current firmware-repo HEAD (different Core API), nor original Python reference Core full corpus/fault replay, physical native acceptance, response slot, icon or cloud. V5DCM18 original roadmap remains PARTIAL. [Report](V5DCM/V5DCM18_EXTENDED_CPP_17_PASS_20261017.md).
+
+---
 # 2026-10-17 — V5DCM18 C++ ZIP original-source validation boundary
 
 **PROVEN / executed offline against user ZIP:** 11/11 C++17 stateful tests of included portable source pass, including denying stale decisions and refusing write-authoritative promotion of an unowned page. **PROVEN / source evidence:** user ZIP portable Core contains model-only provenance/tickets absent from current GitHub firmware portable Core; these are different versions. **OPEN / UNKNOWN:** repo HEAD native C++ parity, Python reference Core CI outcomes, full integrated fault+capture replay, and real native acceptance. **HYPOTHESIS:** the user ZIP has safer staged commit than the published reference. Roadmap V5DCM18 remains PARTIAL. [Evidence](V5DCM/V5DCM18_CPP_ZIP_SOURCE_DIVERGENCE_20261017.md).
