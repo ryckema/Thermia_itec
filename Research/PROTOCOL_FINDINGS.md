@@ -1,3 +1,7 @@
+# V5DCM20 2026-10-18 is PREPARED / NOT RUN roadmap live RX-only duration test; prior V5DCM20 host 24/24 synthetic checks are not proof of live XTR behavior. V5DCM19 deployed diagnostics provide ~189s positive parser/HA/TX baseline; new 10-min observation pending. No new protocol claims or native DCM acceptance. Accepted G01–G06 unchanged. Report: V5DCM/V5DCM20_LIVE_RX_ONLY_PREPARED_20261018.md
+
+---
+
 # 2026-10-18 V5DCM19 local observations PROVEN: actual flashed FIX1 prints three joined diagnostic lines on 30-second cadence (six cycles), B11C original portable parser and V5 match 1566/1566, B11D raw and V5 match 1564/1564, zero parser byte/count differences and physical TX attempts, live HA heat-pump telemetry preserved. Historical 11 resyncs and one integrity fault, with clean subsequent intervals. PROVEN narrow RX-only integration; NOT proof of native DCM handshake, mailbox, owner, icon or Online. Strict cfg=1/32 is ordered session spine, not count of pages published. G01–G06 accepted risks remain closed.
 
 [Result](V5DCM/V5DCM19_FIX1_LIVE_RESULT_20261018.md).
