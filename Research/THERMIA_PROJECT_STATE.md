@@ -1,3 +1,8 @@
+# 2026-10-17 — V5DCM18 ZIP C++ extended suite 17/17 verified; ROADMAP PARTIAL
+
+Original roadmap V5DCM18 remains **RUNNING / PARTIAL**. Actual host C++17 compile/run of supplied V5DCM2 ZIP Core: 17/17 stateful assertions pass (previous 11 plus epoch, cross-Core origin, mutated-frame, readiness/revoke/recovery tests). Original Python reference-Core corpus+fault execution and Github HEAD parity still unverified. ZIP Core provenance ticket APIs differ from canonical Thermia_Connect_Firmware/main. No ESPHome changes, no native TX, current V5DCM2 FIX1 RX-only/HARD_DENY preserved. [Report](V5DCM/V5DCM18_EXTENDED_CPP_17_PASS_20261017.md).
+
+---
 # 2026-10-17 — V5DCM18 CURRENT: RUNNING / PARTIAL (11/11 ZIP C++ stateful tests)
 
 Original-roadmap V5DCM18: locally compiled user-supplied V5DCM2 ZIP portable C++ Core, 11/11 stateful checks passed (denial, one-shot ticket, revocation, full bootstrap, reset). But ZIP Core includes stamped tickets/provenance and **DIFFERS** from `Thermia_Connect_Firmware/main` portable Core; GitHub CI Python Core outcome and integrated corpus/stateful replay not independently verified. Therefore **NOT COMPLETE**. Existing 25,031-frame passive replay remains separate. Next reconcile source versions and run actual original Core fault tests before roadmap V5DCM19; current production V5DCM2 FIX1 RX-only HARD_DENY unchanged. [Evidence](V5DCM/V5DCM18_CPP_ZIP_SOURCE_DIVERGENCE_20261017.md).
