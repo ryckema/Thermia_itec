@@ -1,3 +1,24 @@
+# 2026-10-17 — V5DCM3 offline CM930 state distinctions
+
+## PROVEN / offline implementation only
+- Standalone C++17 C++ host model compiled cleanly and passed five *synthetic* fixture scenarios. This proves bookkeeping behavior for fixtures only, not XTR bus acceptance or native DCM response.
+
+## STRONGLY SUPPORTED / firmware-derived
+- Original Connect CM930 code separates native FC23 response preparation, FC16-based application handshake states, device/operation request dispatch, and parameter data-package readiness. Cloud reporting and device state are not a single bus flag.
+
+## HYPOTHESIS
+- Historical ordered 32 reference page starts may describe a bootstrap witness in certain profiles, not a required sequence on every XTR session.
+
+## OPEN / UNKNOWN
+- Genuine capture replay against V5DCM3; on-bus local XTR handshake/owner/epoch, mailbox runtime, DCM icon/Online. No active TX or firmware YAML change.
+
+## DISPROVEN / SUPERSEDED
+- Receiving repeated 03E8/14 and 085F/5 alone cannot establish a complete 32-page bootstrap or accepted Online session.
+
+[Detailed offline experiment](V5DCM/V5DCM3_OFFLINE_SESSION_AUDIT_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM2 FIX1 live diagnostics
 
 ## PROVEN / locally confirmed (narrow RX-only scope)
