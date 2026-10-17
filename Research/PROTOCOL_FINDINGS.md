@@ -1,3 +1,9 @@
+# 2026-10-17 — V5DCM18 firmware-faithful test assertion
+
+**PROVEN / original firmware-source semantics:** qualifying later FC16 can set internal handshake ACCEPTED separately from the ESP emulator's owner/ACK decision. A denied owner alone does not disprove firmware handshake acceptance. **STRONGLY SUPPORTED:** require independent owner/TX and full readiness gates. **OPEN:** corrected original-Core CI results have not been independently verified; V5DCM18 original-roadmap status remains RUNNING / PARTIAL. [Source](V5DCM/V5DCM18_ROADMAP_CI_ASSERTION_FIX_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM18 original Core source and CI caveat
 
 **PROVEN / source observation (not local XTR):** in `Thermia_Connect_Firmware/tools/xtr_dcm_reference_core.py`, Core.fc16 can promote internal handshake to ACCEPTED on RESPONSE_SENT plus qualifying FC16 shape before later owner denial. Original CM930 source-derived acceptance predicate is broader than an emulator ACK owner, so this behavior is not alone a protocol error.
