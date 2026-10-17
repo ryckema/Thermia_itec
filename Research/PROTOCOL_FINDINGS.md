@@ -1,3 +1,8 @@
+# 2026-10-18 — V5DCM18 integrated existing observers, session-boundary correction
+
+**PROVEN / executed offline:** existing user ZIP CM930 V5DCM1/V5DCM2 C++ observers and portable parser traversed seven historical logs, 25,031 CRC-good records, 164 FC23 challenge shapes and 7 response shapes. **PROVEN / analysis:** naïve concatenated FC16 page counting gives 7 false full series; stricter replay gives one Oct-03 32/32 and Eco5 maximum runs 28/32, 24/32. **STRONGLY SUPPORTED:** separate existing FC23 observer from FC16 owner logic; a reply-shaped record is not physical TX provenance. **OPEN / UNKNOWN:** full original Python reference-Core stateful corpus fault replay not yet executed; physical native owner/slot and DCM icon/cloud unknown. G01–G06 accepted risks remain accepted. [Report](V5DCM/V5DCM18_INTEGRATED_OBSERVER_REPLAY_20261018.md).
+
+---
 # 2026-10-17 — V5DCM18 actual ZIP-Core all-capture coverage
 
 **PROVEN / executed offline:** user-ZIP portable C++ Core parses FC03/FC16, not FC23 in `Kind`. Seven text bus captures traversed with g++ executable: 25,031 frames, 2,500 0x0F FC16 requests, 1,365 FC16 ACKs, 171 0x0F FC23 function-byte records. **STRONGLY SUPPORTED:** preserve existing passive V5DCM2 FC23 observer and keep it distinct from FC16 owner decision. **OPEN:** original Python reference-Core integrated stateful corpus replay and physical native session; 216 authorized *model-decision* candidates are NOT proof of physical owner/TX. G01–G06 accepted risks remain closed unless genuinely new evidence. [Report](V5DCM/V5DCM18_CPP_CORPUS_BRIDGE_20261017.md).
