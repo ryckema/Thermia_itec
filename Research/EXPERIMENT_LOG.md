@@ -1,3 +1,8 @@
+# 2026-10-17 — V5DCM18 offline C++ 7-capture coverage continuation
+
+**RUNNING / PARTIAL.** Hypothesis: ZIP-Core direct C++ decoder/decision traversal can identify missing pipeline coverage without revalidating G01–G06. Baseline 17/17 ZIP-Core stateful host tests and historical passive 25,031-frame replay. Controlled change only standalone noncommitting C++17 traversal over 7 original text logs. Actual compile and execution exit 0: 25,031 frames, FC16 requests 2,500, ACKs 1,365, FC23 raw 171 (independently 164 req/7 response), uncommitted FC16 decision candidates 216 yes/2,284 no. ZIP-Core Kind intentionally lacks FC23; existing V5DCM2 observer covers. Positive for bounded audit; full stateful end-to-end still open; no production changes/TX; recovery N/A. [Report](V5DCM/V5DCM18_CPP_CORPUS_BRIDGE_20261017.md).
+
+---
 # 2026-10-17 — V5DCM18 continued: six additional ZIP portable C++ regression checks
 
 **RUNNING / PARTIAL** original V5DCM18. Baseline previous 11/11 C++ regression on user ZIP Core; controlled change only six more standalone host assertions (epoch-stale, cross-Core ticket, frame mutation, qualified runtime, authority revoke, recovery). Actual g++ -std=c++17 compile and local run: **17/17 PASS**, 0 fail; no bus, no original Core changes. ZIP differs from Github HEAD; full original-Python-Core genuine-corpus replay still OPEN. Abort TX/prod mutation; rollback N/A. [Report](V5DCM/V5DCM18_EXTENDED_CPP_17_PASS_20261017.md).
