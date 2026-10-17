@@ -1,3 +1,9 @@
+# 2026-10-17 — V5DCM18 CURRENT: RUNNING / PARTIAL (11/11 ZIP C++ stateful tests)
+
+Original-roadmap V5DCM18: locally compiled user-supplied V5DCM2 ZIP portable C++ Core, 11/11 stateful checks passed (denial, one-shot ticket, revocation, full bootstrap, reset). But ZIP Core includes stamped tickets/provenance and **DIFFERS** from `Thermia_Connect_Firmware/main` portable Core; GitHub CI Python Core outcome and integrated corpus/stateful replay not independently verified. Therefore **NOT COMPLETE**. Existing 25,031-frame passive replay remains separate. Next reconcile source versions and run actual original Core fault tests before roadmap V5DCM19; current production V5DCM2 FIX1 RX-only HARD_DENY unchanged. [Evidence](V5DCM/V5DCM18_CPP_ZIP_SOURCE_DIVERGENCE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM18 RUNNING / PARTIAL — corrected original firmware test assertions
 
 Original-roadmap V5DCM18 stateful original-reference-Core replay remains open. Direct CM930-derived handshake may internally accept a qualifying FC16 before emulator owner qualification. The prior test incorrectly treated this as failure. Test assertion now checks internal acceptance WITHOUT corresponding unauthorized owner/TX; script also exits nonzero on failed checks. Source committed to firmware repo `tools/test_v5dcm18_roadmap_faults.py` (`1cec88606379d9aedb505017fcb49b8ba63fb13f`). CI/corpus execution results NOT VERIFIED. No live TX, YAML, or change to V5DCM2 FIX1 RX-only/HARD_DENY. [Report](V5DCM/V5DCM18_ROADMAP_CI_ASSERTION_FIX_20261017.md).
