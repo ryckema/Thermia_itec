@@ -1,3 +1,9 @@
+# 2026-10-17 — V5DCM18 test expectation correction
+
+**RUNNING / PARTIAL**: Corrected original-Core adverse-test assertion to distinguish original CM930 internal FC16 acceptance from emulator TX owner. Added failure exit code for genuine failed assertions in the existing GitHub CI workflow. This is a test-only change, not a model fix or replay result. Baseline earlier V5DCM18 limited capture replay and pending original-Core CI verification. Positive only when original Core/corpus tests actually run and results reviewed. No new physical TX or production modification; rollback revert test code. [Details](V5DCM/V5DCM18_ROADMAP_CI_ASSERTION_FIX_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM18 original reference Core adverse replay instrumentation
 
 **RUNNING / PARTIAL**: Based on V5DCM16/17 and limited 49/49 structural V5DCM18 observation checks, added offline [test_v5dcm18_roadmap_faults.py](https://github.com/ryckema/Thermia_Connect_Firmware/blob/main/tools/test_v5dcm18_roadmap_faults.py) to reference firmware repository and wired it into existing GitHub workflow. Only controlled variable new test source and CI call, no original Core logic or HA production changed. Scenarios denied first page, expected bootstrap vs missing page, repeated acknowledgement state, fresh reset, and full 32-page run. Original source unambiguously allows internal Accepted from a subsequently denied FC16; whether this violates external owner/TX invariant must be separately tested. **Outcome:** CI execution/result not retrieved; success/negative not yet certified. Abort no bus TX/private credentials; recovery remove CI test. [Report](V5DCM/V5DCM18_STATEFUL_CORE_CI_PREPARED_20261017.md).
