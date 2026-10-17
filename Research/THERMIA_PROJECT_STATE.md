@@ -1,3 +1,9 @@
+# 2026-10-18 V5DCM19 FIX1 live RX-only integration COMPLETE / POSITIVE. User confirmed flashed and supplied 4643-line ~189s ESPHome log. Six sets of joined V5DCM19 diagnostics; raw versus portable parser parity B11D 1564/1564 and B11C 1566/1566, zero differences, no new observed errors; historical 11 resyncs and 1 integrity incident stable. HA readings healthy (Heating Curve 36). Executor 266/266 candidates denied with zero physical TX. No FC23 native challenge or DCM mailbox; owner/epoch/icon/acceptance unknown. Next experiment V5DCM20 passive; original V5DCM18 Python replay remains separately partial. G01–G06 accepted residual risks unchanged.
+
+[Result](V5DCM/V5DCM19_FIX1_LIVE_RESULT_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM19 FIX1 prepared: duplicate interval fixed
 
 V5DCM19 remains PREPARED / NOT RUN. Original candidate contained two top-level interval keys, invalidating its claimed 8/8 syntax validation. New FIX1 moves diagnostic into existing production interval list; strict duplicate-key parse PASS, 16 total periodic entries including new diagnostic. No ESPHome compile/flash or live result; deployed FIX1 parity still unverified. G01–G06 accepted risks not reopened. [Report](V5DCM/V5DCM19_FIX1_DUPLICATE_INTERVAL_20261018.md).
