@@ -1,0 +1,15 @@
+# V5DCM20 — locally observed RX-only endurance result (2026-10-18)
+
+**Status: COMPLETE / POSITIVE, strictly for the original-roadmap V5DCM20 passive stability test.** No native Online/DCM acceptance has been demonstrated.
+
+**Hypothesis/baseline:** The flashed V5DCM19 FIX1 retains HA production telemetry and V5/B11C/B11D receive agreement under at least ten further minutes of uninterrupted passive operation. Baseline: V5DCM19 local ~189 s PASS, B11C 1566/1566 and B11D 1564/1564 at sampled checkpoints, resync=11, RX fault=1, drops=0, TX=0.
+
+**Controlled change:** duration only; user sent full `thermia-exp86-20261018-013151.log` as local result. The device already had V5DCM19 FIX1 flashed. **No new YAML, boot, TX, controller manipulation or writes.** Log spans 01:31:52–01:50:25, **18 m 33 s**, 27,239 lines; ESP uptime sample advances 785→1865 s, confirming no restart within the sample.
+
+**Observed:** 37 groups each of `[V5DCM19] NATIVE_OBSERVE`, `SERVICE_OBSERVE`, `PROVENANCE`, recurrent ~30 s. V5 parser `frames` 6590→16050, `pages` 1076→2622, `known` equally increasing, `badGeom=0 unknown=0 resync=11 drops=0 TX=0` throughout. B11C `V5=portable=15885` at final 01:50:05 checkpoint, `countDiff=0 byteDiff=0 boundaryFaults=0 resync=0 drops=0`; B11D `rawFrames=portableFrames=comparedV5=15880` at final 01:50:04 checkpoint, `countDiff=0 byteDiff=0 incomplete=0 ambiguous=0 overflow=0 nativeFault=0/0/0 ioTx=0`. Different sampled timestamps, so B11C and B11D absolute counts need not match each other exactly. Parser resync 11→11, RX integrity 1→1, RX drops 0→0. Native executor candidates=denied 1088→2619, physical_attempts=0 at final sampled 01:50:22. Live HA temperature/heating readings continued; some compressor-related sensors `nan` around physical compressor stop — not in itself evidence of bus parser regression.
+
+**Native diagnostic:** initial `fc16Seen=1088`, last 01:50:03 `fc16Seen=2592`; `challenge=0`, `responseShape=0`, `mailboxPoll=0`, `runtimePages=0`, `H_shadow=0`, `cfg=1/32`, and epoch/owner/physicalSlot/nativeAccepted/icon UNPROVEN. 085F/5 repeated service implies only retained-work CANDIDATE, not a confirmed native session. `cfg=1/32` is strict shadow ordering, not evidence only one FC16 page was received.
+
+**Result and criteria:** POSITIVE for sustained B11C/B11D parity, no growing parser/resync/drop/integrity faults, regular joined logs, existing HA readings and physical native TX strictly zero. Negative/abort criteria (unexpected native TX, worsening RX health or loss of production) were not seen. **Recovery:** none needed; keep live FIX1. G01–G06 accepted residual risks unchanged. **Known open questions:** full original Python CM930 Core replay of V5DCM18 remains separate; physical DCM acceptance, owner, slot, online icon and cloud are not proven.
+
+**Next roadmap:** V5DCM21 TX-readiness audit (offline/read-only by default, no new live TX/ACK/handshake without a separately authorized experiment). Do not retest same passive parser unnecessarily.
