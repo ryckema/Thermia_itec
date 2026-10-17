@@ -1,3 +1,7 @@
+# V5DCM20 PREPARED / NOT RUN (2026-10-18): original roadmap live passive XTR validation, no new YAML/flash or TX. Deployed V5DCM19 FIX1 positive 189s baseline. Controlled change 10-minute continued passive duration checking B11C/B11D count and byte parity, resync/integrity/drop trends, HA sensors and physical TX attempts zero. Earlier V5DCM20 host-only synthetic 24/24 separate and not live completion. Accepted G01–G06 unchanged. Report: V5DCM/V5DCM20_LIVE_RX_ONLY_PREPARED_20261018.md
+
+---
+
 # 2026-10-18 V5DCM19 FIX1 live RX-only integration COMPLETE / POSITIVE. User confirmed flashed and supplied 4643-line ~189s ESPHome log. Six sets of joined V5DCM19 diagnostics; raw versus portable parser parity B11D 1564/1564 and B11C 1566/1566, zero differences, no new observed errors; historical 11 resyncs and 1 integrity incident stable. HA readings healthy (Heating Curve 36). Executor 266/266 candidates denied with zero physical TX. No FC23 native challenge or DCM mailbox; owner/epoch/icon/acceptance unknown. Next experiment V5DCM20 passive; original V5DCM18 Python replay remains separately partial. G01–G06 accepted residual risks unchanged.
 
 [Result](V5DCM/V5DCM19_FIX1_LIVE_RESULT_20261018.md).
