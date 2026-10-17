@@ -1,0 +1,15 @@
+# V5DCM18 — integrated ZIP observers and strict historical replay (2026-10-18)
+
+**Status:** RUNNING / PARTIAL original roadmap. **G01–G06 previously accepted residual risks are not reopened.** No production YAML, ESPHome, live TX or heat-pump changes.
+
+**Hypothesis/baseline:** GAP51 and V5DCM4–8 already contain the FC23 parser, CM930 V5DCM1/V5DCM2 observer and history; test these exact components jointly against seven archived genuine/collaborator captures rather than reimplementing a native handshake. Baseline: supplied V5DCM2 RX-only ZIP, prior V5DCM18 17/17 host-core tests, V5DCM16 corpus evidence.
+
+**Controlled change:** compiled C++17 user ZIP v5dcm1/v5dcm2 observation modules with portable C++ frame decoder and read seven source logs; additionally executed independent Python bounded CRC/profile/page-order observer for false-positive control. No commit of native authorization/TX state and no firmware source edits.
+
+**Actually executed results:** 25,031/25,031 CRC-valid capture frames. 164 canonical FC23 request geometries and 7 reply-shaped events. C++ bare page counter gave **7 false complete sequences**, correctly rejected as a valid metric. Corrected strict reply-anchored order/profile/count + continuity: 2026-10-03 **1 complete 32/32**; Eco5 Sep26 **max 28/32**, Sep28 **max 24/32**, no completes. Other four partial captures no response-anchored complete sequences. Missing 03FC Oct03 => 0 complete; interruption midbootstrap 45–65 s => max16/32, 0 complete; CRC corruption causes one fewer valid frame; duplicate challenge not incorrectly creating new full sessions. Cutting Oct03 file to half *does not* interrupt bootstrap because full sequence already occurred; correctly retained as 1 complete. Shadow acceptance remains non-authoritative.
+
+**Observed facts:** actual C++ compilation and 7 capture traversals succeeded; strict Python replay corrected naive false positives; synthetic faults verified limited observer assertions. **Strong conclusions:** existing V5DCM1/V5DCM2 observer sufficient for offline challenge correlation; no need redundant FC23 recognition in portable Core. **Hypotheses:** full stateful Core should keep acceptance separate from ownership. **Unknowns:** GitHub original Python reference Core corpus suite was NOT executed locally in this round; all-session state/ACK semantics cannot be inferred from an observer alone; ZIP portable Core differs from current firmware repo HEAD; no local native accept/owner slot/icon/cloud proof.
+
+**Positive criterion limited observer replay met**; **full original-roadmap V5DCM18 end-to-end source-state parity remains not met**; status PARTIAL. Negative: detected and corrected 7 naive false positives. Abort no live TX, secret publishing or production mutations. Recovery none needed. Next review existing original reference Core full-corpus stateful tests and reconcile code version; do not reopen G01–G06.
+
+**Local reproducibility:** supplied ZIP components + `integrated.cpp`, `strict.py`, `integrated_results.txt`, `strict_results.json`, and report in user-visible `V5DCM18_INTEGRATED_PARTIAL_20261018.zip`.
