@@ -1,3 +1,15 @@
+# 2026-10-17 — V5DCM3 offline completed (current)
+
+**Current live baseline:** V5DCM2 FIX1 RX-only, live-positive diagnostic and preserved HA telemetry; native FC23 and mailbox not observed; TX=HARD_DENY.
+
+**Last completed:** V5DCM3 COMPLETE / POSITIVE for 5/5 synthetic offline C++ host fixtures; COMPLETE / INCONCLUSIVE for genuine-capture replay and local XTR handshake/Online. No YAML flashed/changed. Separate handshake, reference config order, mailbox direction and runtime witnesses. Source: original Connect firmware, firmware-derived semantics NOT locally confirmed.
+
+**Next:** V5DCM4 PREPARED / NOT RUN: replay existing genuine captures offline against model, no TX. Abort on contradictory provenance, unsafe inference or any hardware operation. Recovery: preserve tested V5DCM2 FIX1.
+
+Details: [V5DCM3](V5DCM/V5DCM3_OFFLINE_SESSION_AUDIT_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM rebuild: current experiment V5DCM2 PREPARED / NOT RUN
 
 **Current installed/reported:** V5DCM1 passive CM930 observer (user explicitly confirmed it was flashed); RUNNING / PARTIAL. RX-only XTR monitoring, preserved production HA data, zero reported parser faults and software TX. The new internal observer has no individually visible diagnostics, so its state transitions are not independently demonstrated. Logs: Pasted text(20261017-004017).txt, Pasted text(20261017-004733).txt, Pasted text(20261017-004803).txt. No fresh native 0x0F FC23 or 0708 in these windows.
