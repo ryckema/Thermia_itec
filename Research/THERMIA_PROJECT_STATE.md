@@ -1,3 +1,9 @@
+# 2026-10-17 — V5DCM18 RUNNING / PARTIAL — corrected original firmware test assertions
+
+Original-roadmap V5DCM18 stateful original-reference-Core replay remains open. Direct CM930-derived handshake may internally accept a qualifying FC16 before emulator owner qualification. The prior test incorrectly treated this as failure. Test assertion now checks internal acceptance WITHOUT corresponding unauthorized owner/TX; script also exits nonzero on failed checks. Source committed to firmware repo `tools/test_v5dcm18_roadmap_faults.py` (`1cec88606379d9aedb505017fcb49b8ba63fb13f`). CI/corpus execution results NOT VERIFIED. No live TX, YAML, or change to V5DCM2 FIX1 RX-only/HARD_DENY. [Report](V5DCM/V5DCM18_ROADMAP_CI_ASSERTION_FIX_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM18 ROADMAP RUNNING / PARTIAL; original Core CI verification pending
 
 **Current:** V5DCM18, original-roadmap end-to-end offline replay. Capture-only structural replay 25,031 CRC valid, 164 challenge shapes, 7 pairs, 1 strict 32-page run, 49/49 limited observational checks remains valid. Added direct-original-Core offline error-injection script and GitHub Actions integration to Thermia_Connect_Firmware (source committed). GitHub workflow run logs/results NOT verified; **do not claim stateful tests passed or full V5DCM18 complete**. Original CM930 acceptance can occur before emulator owner decision, so distinguish internal H2 state from TX authorization. Next retrieve CI results, reconcile acceptance/owner gate, finish stateful replay. **Production V5DCM2 FIX1 RX-only/TX HARD_DENY unchanged.** [Source test progress](V5DCM/V5DCM18_STATEFUL_CORE_CI_PREPARED_20261017.md).
