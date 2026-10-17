@@ -1,3 +1,24 @@
+# 2026-10-17 — V5DCM17 lifecycle-gate reconciliation
+
+## PROVEN / firmware-source scope
+Original CM930 evidence tables separate FC23 reply, later qualified acceptance, bootstrap, service/mailbox availability, version-selected profile, subscribed package receipt, application operation and safe-write ownership. Nine applicable static source checks passed; this is not a real XTR firmware execution.
+
+## STRONGLY SUPPORTED
+Oct-03 historical FC23 pair-shaped timing followed by 32 configuration starts fits a plausible native ordering, not independent source/epoch or acceptance proof. Earlier GAP51–53 already covered parser/shadow/function comparison, so another generic observer would duplicate work.
+
+## HYPOTHESIS
+A focused offline CM930↔V4.1↔V5 Core transition/API audit can identify an actionable implementation gap.
+
+## OPEN / UNKNOWN
+Current XTR profile, physical EOF/owner/slot, accepted session, actual package-receipt callbacks, local service availability, icon and cloud Online. Historical 03E8/count13 and local XTR 03E8/count14 are not proven interchangeable.
+
+## DISPROVEN / SUPERSEDED
+FC23 reply-shaped record, FC16 config start or 32-page geometry alone do not justify ACCEPTED/OPERATION/TX authority. Universal 43-of-43 package readiness unsupported.
+
+[Full V5DCM17 report](V5DCM/V5DCM17_LIFECYCLE_GATES_OFFLINE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM16 historical session timing and uncertain provenance
 
 ## PROVEN / historically observed bounded text frames
