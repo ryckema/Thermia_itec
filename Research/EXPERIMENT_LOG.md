@@ -1,3 +1,9 @@
+# 2026-10-17 — V5DCM20 isolated C++ contract, partial
+
+**V5DCM20 — RUNNING / PARTIAL.** Hypothesis: observation and authorization must be separate from handshake commit. Baseline V5DCM18 source/API audit and V5DCM19 15/15 Python tests; live V5DCM2 FIX1 RX-only. Controlled change standalone non-transmitting C++17 test only. Result 24/24 assertions PASS under g++ strict warnings: denied source/epoch/session and invalid shape do not promote isolated handshake; positive is synthetic injected authorization only. Actual portable Core change BLOCKED / NOT APPLIED; no integrated tests or physical session proof. Positive standalone criterion met, integrated criterion unmet, negative none; abort on restricted source write triggered; recovery no modification to original Core or live system. [Details](V5DCM/V5DCM20_ISOLATED_CPP_PARTIAL_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM19 offline contract tests
 
 **V5DCM19 COMPLETE / POSITIVE (15/15 synthetic offline Python tests), INCONCLUSIVE for actual C++/XTR parity.** Baseline V5DCM18 and RX-only FIX1. One controlled change: isolated test-only observe/authorize/commit Python contract; no native TX or ESPHome changes. Denied frames do not promote acceptance in this model, with separately guarded mailbox and readiness. Positive tests passed; negative promotion not observed; abort on any physical TX or unsafe claim; recovery discard offline fixtures. V5DCM20 PREPARED / NOT RUN: offline C++ source-level refactor/tests. [Report](V5DCM/V5DCM19_OBSERVE_AUTHORIZE_COMMIT_OFFLINE_20261017.md).
