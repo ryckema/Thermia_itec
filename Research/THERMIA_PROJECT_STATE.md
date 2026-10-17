@@ -1,3 +1,17 @@
+# 2026-10-17 — V5DCM8 offline provenance model completed
+
+**Live baseline unchanged:** V5DCM2 FIX1, RX-only with functioning HA production entities, software TX HARD_DENY.
+
+**Last completed:** V5DCM8 COMPLETE / POSITIVE for offline passive replay of seven historical/collaborator CRC-validated text capture files, 164 native FC23 exact challenge shapes, 7 time-correlated reply shapes <=200ms, one strict 32-reference-page run. A fail-closed model never upgrades those observations to owner, epoch, native acceptance, DCM icon, cloud Online or TX permission. COMPLETE / INCONCLUSIVE for actual XTR-native session/Online. No new YAML compiled or flashed.
+
+**Protocol position:** V5DCM4–8 confirm the need to separate frame shape, time correlation, provenance, software acceptance, controller display and cloud status. Existing CM930 firmware semantics remain firmware-derived, not observed locally as XTR acceptance.
+
+**Next:** V5DCM9 PREPARED / NOT RUN, offline firmware-version comparison of original Connect 2.0.18 and 2.1.105 session lifecycle and application state. Positive verifiable version differences; negative equivalent code/no new evidence; abort confidential security publication or any live TX; recovery leave FIX1 unchanged.
+
+[V5DCM8 evidence](V5DCM/V5DCM8_PROVENANCE_OFFLINE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM4–7 offline genuine/collaborator capture audit (latest)
 
 **Current live deployment:** user-tested V5DCM2 FIX1, RX-only; parser healthy, TX=HARD_DENY, no observed local native 0x0F FC23 during last live sample. No additional firmware flashed.
