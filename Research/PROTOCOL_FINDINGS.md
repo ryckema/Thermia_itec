@@ -1,3 +1,25 @@
+# 2026-10-17 — V5DCM8 conservative offline witness classification
+
+## PROVEN / offline bounded scope
+- Independent no-I/O offline observer replayed all seven historical/collaborator text captures; 164 challenge-shaped native FC23 requests, 7 temporally paired response shapes within 200ms, and one strictly ordered 32-page historical reference run. No source identity/owner proved by this.
+- The model retains all acceptance, icon, cloud Online and TX authorization flags false despite observed mailbox, challenge and pages. This validates conservative software behavior, not actual controller rejection.
+
+## STRONGLY SUPPORTED
+- Evidence needs explicit tiers: observed shape, time correlation, independently qualified sender/epoch/slot, vendor acceptance, controller display and cloud state. These tiers are not interchangeable.
+
+## HYPOTHESIS
+- Richer frame direction and wire timing evidence from already captured data might qualify more of the historical session sequence, but live XTR recognition remains unproven.
+
+## OPEN / UNKNOWN
+- Physical TX slot and DE, native accepted state, DCM icon, Online status on XTR M, and device-role certainty in text captures.
+
+## DISPROVEN / SUPERSEDED
+- The V5DCM3 cumulative config-complete label, if treated as proof of one new accepted epoch, is not safe; V5DCM8 keeps such counters observational.
+
+[Report](V5DCM/V5DCM8_PROVENANCE_OFFLINE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM4–7 offline genuine/collaborator capture evidence
 
 ## PROVEN / observed within supplied text capture records
