@@ -1,3 +1,9 @@
+# 2026-10-18 V5DCM19 FIX1 RESULT COMPLETE / POSITIVE scoped RX-only. Hypothesis: integrate V5DCM1/2 joined passive diagnostics with no production regression. Baseline RX-only deployed; controlled change FIX1 merges new 30s interval into existing interval key, no TX. User confirmed flashed, 01:19:09–01:22:18 live log. Six NATIVE_OBSERVE/SERVICE_OBSERVE/PROVENANCE groups printed. B11C parity 1566/1566, B11D 1564/1564 and zero delta, HA values healthy, 266 denied candidates and zero physical attempts; historical resync 11 and integrity 1 no observed increment. Positive criteria met; native acceptance not tested. Abort for unauthorized TX or production fault not triggered; recovery none. G01–G06 accepted risks preserved.
+
+[Result](V5DCM/V5DCM19_FIX1_LIVE_RESULT_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM19 FIX1 duplicate interval repair
 
 PREPARED / NOT RUN. User detected YAML issue. Actual original V5DCM19 contained two top-level `interval:` keys. Controlled correction: merge new diagnostics into existing interval list, no other source changes. Strict duplicate-map YAML parse PASS, 16 scheduled entries and one V5DCM19 diagnostic; no ESPHome compile or live installation. Previous claimed 8/8 checks insufficient. Abort unexpected missing intervals/TX; rollback deployed V5DCM2 FIX1. [Report](V5DCM/V5DCM19_FIX1_DUPLICATE_INTERVAL_20261018.md).
