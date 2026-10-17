@@ -1,3 +1,9 @@
+# 2026-10-18 — V5DCM19 FIX1 prepared: duplicate interval fixed
+
+V5DCM19 remains PREPARED / NOT RUN. Original candidate contained two top-level interval keys, invalidating its claimed 8/8 syntax validation. New FIX1 moves diagnostic into existing production interval list; strict duplicate-key parse PASS, 16 total periodic entries including new diagnostic. No ESPHome compile/flash or live result; deployed FIX1 parity still unverified. G01–G06 accepted risks not reopened. [Report](V5DCM/V5DCM19_FIX1_DUPLICATE_INTERVAL_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM19 PREPARED / NOT RUN (latest)
 
 RX-only diagnostic candidate generated from archived V5DCM2 ZIP, not yet verified byte-equal to deployed FIX1. Logging-only change; three [V5DCM19] lines. 8/8 syntax/source checks; no ESPHome compile, flash or live test. TX HARD_DENY. V5DCM18 original full reference-Core replay remains PARTIAL. G01–G06 accepted risks unchanged. [Report](V5DCM/V5DCM19_PREPARED_RX_DIAGNOSTIC_20261018.md).
