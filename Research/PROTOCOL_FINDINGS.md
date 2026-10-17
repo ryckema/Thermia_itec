@@ -1,3 +1,9 @@
+# 2026-10-18 V5DCM19 local observations PROVEN: actual flashed FIX1 prints three joined diagnostic lines on 30-second cadence (six cycles), B11C original portable parser and V5 match 1566/1566, B11D raw and V5 match 1564/1564, zero parser byte/count differences and physical TX attempts, live HA heat-pump telemetry preserved. Historical 11 resyncs and one integrity fault, with clean subsequent intervals. PROVEN narrow RX-only integration; NOT proof of native DCM handshake, mailbox, owner, icon or Online. Strict cfg=1/32 is ordered session spine, not count of pages published. G01–G06 accepted risks remain closed.
+
+[Result](V5DCM/V5DCM19_FIX1_LIVE_RESULT_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM19 YAML structural issue
 
 PROVEN / offline YAML: prior V5DCM19 package had duplicate top-level `interval:` mapping keys, possible scheduled-task loss. FIX1 strict mapping parse confirms one combined interval list and 16 entries. This is a configuration defect, not a native protocol finding. V5DCM19 still PREPARED / NOT RUN, physical acceptance unknown. [Report](V5DCM/V5DCM19_FIX1_DUPLICATE_INTERVAL_20261018.md).
