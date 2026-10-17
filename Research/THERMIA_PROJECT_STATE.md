@@ -1,3 +1,9 @@
+# 2026-10-18 — V5DCM19 PREPARED / NOT RUN (latest)
+
+RX-only diagnostic candidate generated from archived V5DCM2 ZIP, not yet verified byte-equal to deployed FIX1. Logging-only change; three [V5DCM19] lines. 8/8 syntax/source checks; no ESPHome compile, flash or live test. TX HARD_DENY. V5DCM18 original full reference-Core replay remains PARTIAL. G01–G06 accepted risks unchanged. [Report](V5DCM/V5DCM19_PREPARED_RX_DIAGNOSTIC_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM18 functional V4.1→V5 gap handoff COMPLETE (scoped), roadmap experiment PARTIAL
 
 **Current V5DCM18 RUNNING / PARTIAL** until original Python CM930 reference-Core fixture test / full stateful replay is actually executed; **functional gap inventory and V5DCM19 handoff COMPLETE / POSITIVE** from direct sources (prior chat Markdown, Write Beta V4.1 YAML/README, firmware evidence matrices and current V5 components). Priority gaps: existing V5 observer lacks proven *joined* session pipeline; separate firmware handshake state from owner/TX authorization; fixed guarded R1 V4.1 differs from original computed challenge response; cold-start 32 pages must not be imposed on retained/hot rejoin; mailbox, profile-dependent package completeness and runtime are separate. Historical V4.1 EXP386/387 positive, EXP388 partial. Existing 17/17 ZIP Core and seven-capture replay keep their narrower scopes. G01–G06 accepted residual risks NOT reopened. User production V5DCM2 FIX1 RX-only TX HARD_DENY unchanged. [Functional handoff](V5DCM/V5DCM18_FUNCTIONAL_GAP_HANDOFF_20261018.md).
