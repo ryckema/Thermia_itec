@@ -1,3 +1,8 @@
+# 2026-10-17 — V5DCM18 actual ZIP-Core all-capture coverage
+
+**PROVEN / executed offline:** user-ZIP portable C++ Core parses FC03/FC16, not FC23 in `Kind`. Seven text bus captures traversed with g++ executable: 25,031 frames, 2,500 0x0F FC16 requests, 1,365 FC16 ACKs, 171 0x0F FC23 function-byte records. **STRONGLY SUPPORTED:** preserve existing passive V5DCM2 FC23 observer and keep it distinct from FC16 owner decision. **OPEN:** original Python reference-Core integrated stateful corpus replay and physical native session; 216 authorized *model-decision* candidates are NOT proof of physical owner/TX. G01–G06 accepted risks remain closed unless genuinely new evidence. [Report](V5DCM/V5DCM18_CPP_CORPUS_BRIDGE_20261017.md).
+
+---
 # 2026-10-17 — V5DCM18 17-case local C++ host regression
 
 **PROVEN / executed offline against user-supplied ZIP implementation:** 17/17 checks pass with g++ C++17, including rejection of stale/foreign/modified decisions and readiness revocation/recovery. **OPEN / UNKNOWN:** these results cannot validate current firmware-repo HEAD (different Core API), nor original Python reference Core full corpus/fault replay, physical native acceptance, response slot, icon or cloud. V5DCM18 original roadmap remains PARTIAL. [Report](V5DCM/V5DCM18_EXTENDED_CPP_17_PASS_20261017.md).
