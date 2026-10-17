@@ -1,3 +1,9 @@
+# 2026-10-17 — V5DCM18 C++ ZIP original-source validation boundary
+
+**PROVEN / executed offline against user ZIP:** 11/11 C++17 stateful tests of included portable source pass, including denying stale decisions and refusing write-authoritative promotion of an unowned page. **PROVEN / source evidence:** user ZIP portable Core contains model-only provenance/tickets absent from current GitHub firmware portable Core; these are different versions. **OPEN / UNKNOWN:** repo HEAD native C++ parity, Python reference Core CI outcomes, full integrated fault+capture replay, and real native acceptance. **HYPOTHESIS:** the user ZIP has safer staged commit than the published reference. Roadmap V5DCM18 remains PARTIAL. [Evidence](V5DCM/V5DCM18_CPP_ZIP_SOURCE_DIVERGENCE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM18 firmware-faithful test assertion
 
 **PROVEN / original firmware-source semantics:** qualifying later FC16 can set internal handshake ACCEPTED separately from the ESP emulator's owner/ACK decision. A denied owner alone does not disprove firmware handshake acceptance. **STRONGLY SUPPORTED:** require independent owner/TX and full readiness gates. **OPEN:** corrected original-Core CI results have not been independently verified; V5DCM18 original-roadmap status remains RUNNING / PARTIAL. [Source](V5DCM/V5DCM18_ROADMAP_CI_ASSERTION_FIX_20261017.md).
