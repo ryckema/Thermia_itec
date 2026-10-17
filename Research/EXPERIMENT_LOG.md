@@ -1,3 +1,9 @@
+# 2026-10-17 — V5DCM8 offline provenance observer
+
+**V5DCM8 — COMPLETE / POSITIVE (offline replay gates); COMPLETE / INCONCLUSIVE (real XTR Online/acceptance).** Baseline V5DCM4–7 real-record audit and live V5DCM2 FIX1 RX-only. Hypothesis: separate observed challenge, response shape, 200ms time correlation, config page ordering and mailbox from independently proven epoch, owner, native acceptance, display and Online; avoid session false positives. Controlled change standalone no-I/O Python observer + replay script (no ESPHome YAML changes). 7/7 historical/collaborator files PASS: 164 exact native challenge request shapes, 7 time-correlated reply shapes, one strict 32-page configuration run; zero upgraded owner/epoch/acceptance/icon/cloud/TX flags. Positive all counter and fail-closed tests passed; negative false escalation/mismatch not observed; abort any live TX or private secret disclosure; recovery retain production FIX1 untouched. No ESPHome compilation or live test performed. Next V5DCM9 firmware version audit PREPARED/NOT RUN. [Details](V5DCM/V5DCM8_PROVENANCE_OFFLINE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM4–V5DCM7 offline completed (newest first)
 
 **V5DCM7 — COMPLETE / POSITIVE (offline falsification); INCONCLUSIVE (true session rules).** Hypothesis: mailbox 0708 and cumulative config cursor can create false positives for accepted session. Baseline V5DCM3 and stricter V5DCM6. Change offline counterexamples only. Sep-24 capture has 11 mailbox request shapes / 0 in-window exact FC23; Sep-25 09:05 mailbox first at 0.987s vs 03E8 at 68.304s / 0 in-window exact FC23. Earlier/out-of-window handshake cannot be excluded. Eco5 cumulative 32-page cursor can span non-contiguous bursts. Positive examples found; negative none within test; abort any unsupported owner/accepted inference; recovery none, live RX-only unchanged.
