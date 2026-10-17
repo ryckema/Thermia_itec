@@ -1,3 +1,15 @@
+# 2026-10-17 — V5DCM2 FIX1 live log and duplicate-interval correction
+
+**V5DCM2 FIX1 — COMPLETE / POSITIVE (diagnostic integration + RX-only monitoring); COMPLETE / INCONCLUSIVE (native FC23 handshake).** Hypothesis: passive CM930 observer output can be integrated into the user's V5 ESPHome build while retaining CRC-good RX, all production HA readings and TX=HARD_DENY. Baseline V5DCM1 installed; first V5DCM2 YAML failed YAML parsing due to duplicate top-level `interval:` key, so that version was not valid for testing. Controlled FIX1 change: merge V5DCM2 30s log under the existing `interval:` list; no new bus parser or TX code. Relevant 0x0F FC23 071C/0730 (none observed), FC16 03E8/count14 and 085F/count5 (observed), mailbox 0708 (none).
+
+**Live evidence:** user log `Pasted text(20261017-010702).txt` shows [V5DCM2] diagnostics at 03:05:44, 03:06:14 and 03:06:44, consistent H=0, challenge=0, responseShape=0, acceptedShadow=0, cfg=1/32 complete=0 mailbox=0 runtime=0, provider=ABSENT, TX=HARD_DENY. At 03:06:45 [S8] HEALTH valid=781, fc16=127, cfg words=14, operation words=5, 085F=42, FC23=0, deltaResync=0, deltaDrops=0, DE=0. B11D raw=portable=V5 779 with 0 byte/count differences or RX faults. Live compressor 23 Hz, fan 390–400 rpm; HA data functional. UART-write and physical-TX *software counters* 0. Separate retained R6-P30EC D=4 first=STAGE_D_LEDGER_FAULT still appears without matching physical RX error; keep it unresolved, not cleared.
+
+**Positive criteria achieved:** recognition of [V5DCM2] log, intact production data, clean RX, zero software TX. **Inconclusive criteria:** zero qualifying native FC23 so genuine request/response correlation and handshake transitions unexercised; display/cloud still unproven. **Abort:** any unplanned TX/DE, parser failures, sensor regression; none observed in this sample. **Recovery:** tested V5DCM1 or V5DCM2 FIX1; no rollback reported. Do not promote to active native DCM success. First original YAML duplicate-key error is a negative *build artifact defect*, corrected in FIX1 and not evidence about protocol.
+
+**Next: V5DCM3 — PREPARED / NOT RUN** (offline-only firmware state-model work; no private working responder or physical TX).
+
+---
+
 # 2026-10-17 — V5DCM series (newest first)
 
 **V5DCM2 — PREPARED / NOT RUN.** Hypothesis: an FC23 geometry-aware observer and explicit session diagnostics can run on the V5 validated frame stream without changing RX/TX behavior. Baseline V5DCM1 installed; controlled change challenge shape/correlation and 30-second [V5DCM2] logging, private response-provider interface without actual transform. Target slave 0x0F FC23 write 071C/8, read 0730/8; ongoing 03E8/14 and 085F/5 are capture-only. Positive: diagnostic visible, progressive good frames, zero RX faults and TX. Negative: missing diagnostic or production regression. Inconclusive: no spontaneous challenge. Abort: unexpected TX, bus or HA degradation. Recovery: V5DCM1 or GAP-51E. No live result supplied for V5DCM2. No ESPHome compile claimed.
