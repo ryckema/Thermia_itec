@@ -1,3 +1,13 @@
+# 2026-10-17 — V5DCM18 original-roadmap replay evidence
+
+**PROVEN / locally confirmed from recorded captures:** historical text logs contain 25,031 CRC-correct records, 164 exact challenge shapes, 7 candidate time-paired reply shapes; Oct-03 one strict 32-page reference run. This alone cannot assign sender or native acceptance.
+
+**STRONGLY SUPPORTED:** a bounded capture-only observer can keep acceptance and TX permission unasserted even on missing pages, duplicated challenges, truncated streams and CRC-invalid ACK-shaped observations (49/49 limited synthetic checks).
+
+**OPEN / UNKNOWN:** the original reference Core's acceptance/authorization transitions under these scenarios were NOT EXECUTED in this replay. Firmware-faithful end-to-end state acceptance and slot ownership remain unknown. Original roadmap V5DCM18 is PARTIAL, not complete. [Report](V5DCM/V5DCM18_ROADMAP_REPLAY_PARTIAL_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM20 partial offline contract evidence
 
 ## PROVEN / isolated test scope
