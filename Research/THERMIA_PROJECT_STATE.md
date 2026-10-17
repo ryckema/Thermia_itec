@@ -1,3 +1,17 @@
+# 2026-10-17 — V5DCM13–15 consecutive offline audit (latest)
+
+**Production:** user-tested V5DCM2 FIX1 RX-only/HARD_DENY; no new ESPHome firmware, TX or controller actions.
+
+**Latest:** V5DCM13 COMPLETE/POSITIVE strictly for original 2.0.18 flags JSON: 43/43 request spans exactly match derived V5DCM12 map (0x070A=16, 070B=16, 070C=11). 2.1.105 original appfs config remains RUNNING/PARTIAL/INCONCLUSIVE (not extracted here). V5DCM14 COMPLETE/POSITIVE for firmware-source subscription-based package selection path; INCONCLUSIVE actual XTR selected mask. V5DCM15 COMPLETE/POSITIVE for 18/18 offline synthetic assertions of fail-closed witness bookkeeping; INCONCLUSIVE vendor-runtime parity, native XTR acceptance, Online and display. Verified RAUC 2.1.105 Python source used; selected profile unresolved. Live TX remains HARD_DENY.
+
+**Strongest conclusion:** 43 bits describe available flag ranges, not a universal required data set. An observed FC16 frame is not the firmware receive callback; an FC23-shaped event is not vendor acceptance. Required bitset, received bitset, session owner/epoch, controller icon and cloud status must be treated independently.
+
+**Next:** V5DCM16 PREPARED/NOT RUN: offline historical session timing/provenance replay with explicit UNKNOWN sender/wire EOF. In parallel unresolved narrow V5DCM13 follow-up: independently read new RAUC 2.1.105 original config JSON; do not assume unchanged flags map. Positive genuine evidence-backed classification, negative failed parity, abort overclaim/secrets/TX; recovery none, retain FIX1.
+
+[Reports: V5DCM13](V5DCM/V5DCM13_ORIGINAL_FLAGS_AUDIT_20261017.md) · [14](V5DCM/V5DCM14_REQUIRED_PACKAGE_SELECTION_AUDIT_20261017.md) · [15](V5DCM/V5DCM15_FAIL_CLOSED_SESSION_MODEL_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM12 offline request-package mapping (latest)
 
 **Live production baseline:** user-tested V5DCM2 FIX1, RX-only; no hardware modifications or ESPHome flash during V5DCM3–12.
