@@ -1,3 +1,17 @@
+# 2026-10-17 — V5DCM4–7 offline genuine/collaborator capture audit (latest)
+
+**Current live deployment:** user-tested V5DCM2 FIX1, RX-only; parser healthy, TX=HARD_DENY, no observed local native 0x0F FC23 during last live sample. No additional firmware flashed.
+
+**Latest completed offline experiments:** V5DCM4 real-record replay (25,031/25,031 text-record CRC correct, 7/7 normalized V5DCM3 counter parity), V5DCM5 historical FC23 timing (Oct-03 29ms request/reply-shaped pair; Eco5 99+64 requests and 2+4 response-shaped matches; no sender or slot proven), V5DCM6 strict 32-reference-run comparison (Oct-03 32 ordered, Sep-25 09:05 31 captured, Eco5 profile count differences), V5DCM7 false-positive guards (0708 mailbox request seen without FC23 in the same capture window; permissive aggregate 32-page cursor can overclaim one epoch). All COMPLETE/POSITIVE for narrow offline evidence, INCONCLUSIVE for live XTR authentication/Online. No active writes, YAML changes, or compile.
+
+**Protocol model:** Separate frame-shape and timing observations, correlated candidate, single-epoch source-qualified session, vendor acceptance, DCM icon and cloud Online state. A text capture containing a reply shape does not establish sender or physical slot; a mailbox poll or completed reference cursor does not establish acceptance. Firmware-derived semantics remain marked as such.
+
+**Next:** V5DCM8 PREPARED / NOT RUN: build and test a provenance-aware offline model with explicit UNKNOWN flags. Baseline V5DCM4–7 and live FIX1; controlled change offline-only model. Positive no false acceptance and matching observation counts; negative mismatch/overclaim; abort on secret disclosure or physical TX; recovery discard offline model and retain V5DCM2 FIX1.
+
+[Detailed evidence](V5DCM/V5DCM4_TO_7_OFFLINE_REPLAY_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM3 offline completed (current)
 
 **Current live baseline:** V5DCM2 FIX1 RX-only, live-positive diagnostic and preserved HA telemetry; native FC23 and mailbox not observed; TX=HARD_DENY.
