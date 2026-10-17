@@ -1,3 +1,9 @@
+# 2026-10-17 — V5DCM18 ZIP portable C++ regression and source divergence
+
+**RUNNING / PARTIAL.** Baseline original-roadmap 25,031 historical passive frames and 49/49 structural checks, V5DCM2 FIX1 RX-only. Controlled offline variable: compile and execute 11 negative/positive native C++ Core assertions using user-supplied V5DCM2 ZIP source. **RESULT 11/11 PASS**. Tests cover denied/out-of-order FC16, first owned page, repeated commit, revoked ticket, 32-page ordered bootstrap and reset. **Blocking discrepancy:** ZIP Core has provenance/ticket APIs absent in current firmware repo HEAD; tests do NOT validate repo HEAD or full corpus integrated reference replay. No ESPHome compile, flash, bus TX. Recovery no changes. [Report](V5DCM/V5DCM18_CPP_ZIP_SOURCE_DIVERGENCE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM18 test expectation correction
 
 **RUNNING / PARTIAL**: Corrected original-Core adverse-test assertion to distinguish original CM930 internal FC16 acceptance from emulator TX owner. Added failure exit code for genuine failed assertions in the existing GitHub CI workflow. This is a test-only change, not a model fix or replay result. Baseline earlier V5DCM18 limited capture replay and pending original-Core CI verification. Positive only when original Core/corpus tests actually run and results reviewed. No new physical TX or production modification; rollback revert test code. [Details](V5DCM/V5DCM18_ROADMAP_CI_ASSERTION_FIX_20261017.md).
