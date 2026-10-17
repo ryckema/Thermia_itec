@@ -1,3 +1,27 @@
+# 2026-10-17 — V5DCM2 FIX1 live diagnostics
+
+## PROVEN / locally confirmed (narrow RX-only scope)
+- User log `Pasted text(20261017-010702).txt` contains identifiable [V5DCM2] diagnostics three times about 30 s apart. The CM930 observer's reporting route exists and runs in the live ESPHome build; H=0, challenge=0, acceptedShadow=0, cfg=1/32, complete=0, mailbox=0, runtime=0.
+- At [S8] HEALTH 03:06:45, 781 valid frames, native FC16=127, native FC23=0, resync/drops 0, TX/DE software counters 0. B11D portable/raw/V5 frame counts agree (779) and errors/differences 0. HA production telemetry continued; compressor operating (23 Hz).
+- Prior V5DCM2 YAML had duplicate top-level `interval:` and required FIX1 before running. That was a configuration defect, not a protocol discovery.
+
+## STRONGLY SUPPORTED
+- Passive FIX1 changes did not visibly degrade existing production monitoring in this bounded live interval. Reported software TX was zero; no independent physical DE measurement was provided.
+- Firmware-derived CM930 challenge-response states must remain separate from local controller acceptance, icon, and Online status.
+
+## HYPOTHESIS
+- Exact native 0x0F FC23 could be correlated with v5dcm2 diagnostics in a capture that actually contains that event; not exercised in this run.
+
+## OPEN / UNKNOWN
+- Dynamic responder remains absent (`provider=ABSENT`); native FC23 challenges 0, mailbox 0, owner and epoch UNKNOWN, display UNPROVEN.
+- Existing R6-P30EC STAGE_D_LEDGER_FAULT D=4 repeated despite clean RX counters; semantic meaning unresolved.
+
+## DISPROVEN / SUPERSEDED
+- The claim that V5DCM2 had no visible diagnostics is superseded by FIX1 runtime [V5DCM2] output.
+- This RX-only success is not proof of active native DCM handshake, acceptance or display connection.
+
+---
+
 # 2026-10-17 — V5DCM1/2 evidence classification
 
 ## PROVEN / locally confirmed (bounded)
