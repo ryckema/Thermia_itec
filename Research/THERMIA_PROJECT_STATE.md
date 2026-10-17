@@ -1,3 +1,11 @@
+# 2026-10-17 — V5DCM17 completed offline lifecycle-gate reconciliation (latest)
+
+**Deployed baseline:** V5DCM2 FIX1 RX-only; native TX=HARD_DENY; production HA unchanged. **Last completed:** V5DCM17 COMPLETE / POSITIVE for bounded firmware source/readiness reconciliation (9/9 applicable static checks), COMPLETE / INCONCLUSIVE for real local XTR approval, sender/epoch/profile, exclusive response slot, display icon and cloud Online. Previous GAP51–53 frame observer and V4.1/V5 comparison do not resolve independent acceptance or physical ownership. Oct-03 candidate FC23 shape + 32 reference starts is compatible with native firmware *ordering*, not proof of semantic acceptance. The 43 flag ranges are not a universal required set. **Next:** V5DCM18 PREPARED / NOT RUN, offline source/API transition-parity audit between genuine CM930 firmware, V5 Core, and historical V4.1; no new observer, YAML, hardware or TX. Positive verified missing implementation interface, negative no actionable parity gap, abort unsourced slot/epoch or protected code exposure, recovery unchanged FIX1.
+
+[Detailed V5DCM17 result](V5DCM/V5DCM17_LIFECYCLE_GATES_OFFLINE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM16 completed offline historical session replay (latest)
 
 **Deployed live baseline:** V5DCM2 FIX1, RX-only, working HA production; native TX=HARD_DENY. No new ESPHome YAML/build/flash or live test in V5DCM16.
