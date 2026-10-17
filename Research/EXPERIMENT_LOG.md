@@ -1,3 +1,9 @@
+# 2026-10-18 — V5DCM19 FIX1 duplicate interval repair
+
+PREPARED / NOT RUN. User detected YAML issue. Actual original V5DCM19 contained two top-level `interval:` keys. Controlled correction: merge new diagnostics into existing interval list, no other source changes. Strict duplicate-map YAML parse PASS, 16 scheduled entries and one V5DCM19 diagnostic; no ESPHome compile or live installation. Previous claimed 8/8 checks insufficient. Abort unexpected missing intervals/TX; rollback deployed V5DCM2 FIX1. [Report](V5DCM/V5DCM19_FIX1_DUPLICATE_INTERVAL_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM19 RX-only integration candidate
 
 PREPARED / NOT RUN. Hypothesis: join existing V5DCM1/2 observer diagnostics without rebuilding parser. Baseline archived prepared ZIP; production FIX1 byte-parity unknown. Controlled change header and logging interval only. 8/8 limited offline syntax/source checks PASS, no ESPHome compile/live test. Positive live criteria unchanged HA production entities, [V5DCM19] logs and no TX. Abort unexpected TX or sensor regression; rollback true deployed FIX1. G01–G06 not reopened. [Report](V5DCM/V5DCM19_PREPARED_RX_DIAGNOSTIC_20261018.md).
