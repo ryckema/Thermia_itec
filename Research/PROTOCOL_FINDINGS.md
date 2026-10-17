@@ -1,3 +1,29 @@
+# 2026-10-17 — V5DCM1/2 evidence classification
+
+## PROVEN / locally confirmed (bounded)
+- User confirmed installing V5DCM1. Supplied logs show unchanged production V5 telemetry and CRC-good native RX with zero reported parser resync/drop/geometry faults, software TX calls/attempts zero. Native 0x0F FC23 challenges and mailbox 0708 polls were not seen in these observed intervals.
+- This does not validate the passive CM930 module's internal state transition because its outputs were not independently exposed.
+
+## STRONGLY SUPPORTED (firmware-derived, not local handshake proof)
+- Recovered original Thermia Connect 2.0.18/2.1.105 CM930 separates NOT_ACCEPTED, RESPONSE_SENT and ACCEPTED and computes challenge-dependent native FC23 responses. Historical V4.1 staged fixed response/replay resembles the native path but is not fully equivalent.
+- Session handshake, bootstrap, application parameter completeness, runtime/mailbox, cloud status, DCM icon and display 'online' are distinct observables until evidence links them.
+
+## HYPOTHESIS
+- V5DCM2 challenge-shape diagnostics will be visible on live ESPHome and follow CRC-good frames without production changes. NOT TESTED.
+- Firmware-faithful handshake might establish the controller's DCM recognition on this XTR M, but this remains unverified.
+
+## OPEN / UNKNOWN
+- New local native 0x0F FC23 challenge, response slot/wire EOF, sender ownership, actual response acceptance, independent DE measurements, DCM icon/online trigger.
+- V5DCM2 includes no functional private cryptographic transform and has not run.
+
+## DISPROVEN / SUPERSEDED
+- Calling V5DCM2 a completed dynamic handshake responder is incorrect; its interface is only preparatory.
+- Absence of a V5DCM1 dedicated log does not alone prove the observer was not flashed; user separately confirmed installation.
+
+More: [V5DCM handover](V5DCM/V5DCM1_V5DCM2_HANDOVER_20261017.md).
+
+---
+
 # 2026-10-16 — GAP-46C evidence update (XTR M)
 
 ## PROVEN / locally confirmed (narrow test scope)
