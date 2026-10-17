@@ -1,3 +1,9 @@
+# 2026-10-17 — V5DCM18 original roadmap replay follow-up
+
+**RUNNING / PARTIAL**; earlier same-number source/API audit preserved, does not fulfil original V5DCM18 criteria. Hypothesis: bounded historical replay with missing page, duplicate challenge, truncated session and unexpected invalid ACK detects illegitimate inferred acceptance. Baseline V5DCM16/17, original reference Core tests (inspected but NOT executed), deployed V5DCM2 FIX1 RX-only. Controlled modification passive analysis only. 25,031/25,031 CRC good, 164 challenge shapes, 7 bounded pairs, 1 full strict 32-page Oct-03; 49/49 conservative structural checks PASS. These checks deliberately deny native acceptance, do NOT test stateful original Core. Full positive condition NOT MET. No TX, abort not triggered, rollback N/A. [Details](V5DCM/V5DCM18_ROADMAP_REPLAY_PARTIAL_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM20 isolated C++ contract, partial
 
 **V5DCM20 — RUNNING / PARTIAL.** Hypothesis: observation and authorization must be separate from handshake commit. Baseline V5DCM18 source/API audit and V5DCM19 15/15 Python tests; live V5DCM2 FIX1 RX-only. Controlled change standalone non-transmitting C++17 test only. Result 24/24 assertions PASS under g++ strict warnings: denied source/epoch/session and invalid shape do not promote isolated handshake; positive is synthetic injected authorization only. Actual portable Core change BLOCKED / NOT APPLIED; no integrated tests or physical session proof. Positive standalone criterion met, integrated criterion unmet, negative none; abort on restricted source write triggered; recovery no modification to original Core or live system. [Details](V5DCM/V5DCM20_ISOLATED_CPP_PARTIAL_20261017.md).
