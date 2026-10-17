@@ -1,3 +1,9 @@
+# 2026-10-18 — V5DCM19 preparation boundary
+
+PROVEN / offline inspection only: existing V5DCM2 YAML already joins V5DCM1/2 observers to the primary CRC-valid frame callback. New candidate changes logging only; it does NOT implement a new native session engine or provide physical acceptance. OPEN: parity against deployed FIX1, full ESPHome compile, live XTR results. V5DCM19 PREPARED / NOT RUN. [Report](V5DCM/V5DCM19_PREPARED_RX_DIAGNOSTIC_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM18 direct V4.1→CM930→V5 functional mapping
 
 **PROVEN / local XTR historical:** Write V4.1 EXP386 native cold-start controller recovery, EXP387 delayed mailbox semantic rearm; EXP388 two recoveries partial, remaining branches not live-proven. **FIRMWARE-DERIVED:** original CM930 dynamically computes FC23 approval response; the accepted-handshake flag is a different state from external TX authorization; profile-dependent necessary packages and full application readiness are distinct from 32 startup pages. **STRONGLY SUPPORTED:** existing V5 StreamParser + V5DCM2 observer should be reused; join its events to the Core state while preserving retained/hot-rejoin paths. **OPEN / UNKNOWN:** no tested general native dynamic responder in the deployed V5 RX-only build, actual icon trigger/cloud state, original Python reference-Core corpus tests not executed. G01–G06 accepted decisions remain closed absent new evidence. V5DCM18 original roadmap still PARTIAL. [Functional handoff](V5DCM/V5DCM18_FUNCTIONAL_GAP_HANDOFF_20261018.md).
