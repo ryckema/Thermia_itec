@@ -1,3 +1,9 @@
+# 2026-10-17 — V5DCM18 original reference Core adverse replay instrumentation
+
+**RUNNING / PARTIAL**: Based on V5DCM16/17 and limited 49/49 structural V5DCM18 observation checks, added offline [test_v5dcm18_roadmap_faults.py](https://github.com/ryckema/Thermia_Connect_Firmware/blob/main/tools/test_v5dcm18_roadmap_faults.py) to reference firmware repository and wired it into existing GitHub workflow. Only controlled variable new test source and CI call, no original Core logic or HA production changed. Scenarios denied first page, expected bootstrap vs missing page, repeated acknowledgement state, fresh reset, and full 32-page run. Original source unambiguously allows internal Accepted from a subsequently denied FC16; whether this violates external owner/TX invariant must be separately tested. **Outcome:** CI execution/result not retrieved; success/negative not yet certified. Abort no bus TX/private credentials; recovery remove CI test. [Report](V5DCM/V5DCM18_STATEFUL_CORE_CI_PREPARED_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM18 original roadmap replay follow-up
 
 **RUNNING / PARTIAL**; earlier same-number source/API audit preserved, does not fulfil original V5DCM18 criteria. Hypothesis: bounded historical replay with missing page, duplicate challenge, truncated session and unexpected invalid ACK detects illegitimate inferred acceptance. Baseline V5DCM16/17, original reference Core tests (inspected but NOT executed), deployed V5DCM2 FIX1 RX-only. Controlled modification passive analysis only. 25,031/25,031 CRC good, 164 challenge shapes, 7 bounded pairs, 1 full strict 32-page Oct-03; 49/49 conservative structural checks PASS. These checks deliberately deny native acceptance, do NOT test stateful original Core. Full positive condition NOT MET. No TX, abort not triggered, rollback N/A. [Details](V5DCM/V5DCM18_ROADMAP_REPLAY_PARTIAL_20261017.md).
