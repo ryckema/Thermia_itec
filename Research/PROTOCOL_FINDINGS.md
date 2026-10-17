@@ -1,3 +1,24 @@
+# 2026-10-17 — V5DCM18 portable Core/API parity
+
+## PROVEN / inspected source behavior
+Public portable Core::fc16_decision() may mutate ResponseSent→Accepted before it returns a possibly unauthorized FC16 decision; set_mailbox() and qualify_handshake() do not take independent current-session provenance tokens; core.write_ready depends on externally-qualified conditions, not complete Connect application or physical ownership. Adapter EOF is a supplied Boolean, not measured physical EOF; platform validates host response class/CRC, not electrical TX authority. These are source observations, NOT local running XTR defect proofs.
+
+## STRONGLY SUPPORTED
+Original CM930 lifecycle gates and current portable Core differ in exposure of profile/package/epoch/authorization as explicit API state. A two-phase observe/authorize/commit contract is safer than promoting a session during request classification.
+
+## HYPOTHESIS
+A dedicated offline transition contract with denied-event invariance checks can close the code-level ambiguity without bus activity.
+
+## OPEN / UNKNOWN
+Actual deployed FIX1 implementation equivalence to public portable Core, local XTR accepted session, firmware profile selection, source/epoch/slot/electrical ownership, DCM icon, cloud Online.
+
+## DISPROVEN / SUPERSEDED
+A frame match or mutable classification decision alone cannot be treated as authorization to respond or an authoritative accepted-state witness.
+
+[Full V5DCM18 report](V5DCM/V5DCM18_SOURCE_API_PARITY_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM17 lifecycle-gate reconciliation
 
 ## PROVEN / firmware-source scope
