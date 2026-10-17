@@ -1,3 +1,9 @@
+# 2026-10-18 — V5DCM19 RX-only integration candidate
+
+PREPARED / NOT RUN. Hypothesis: join existing V5DCM1/2 observer diagnostics without rebuilding parser. Baseline archived prepared ZIP; production FIX1 byte-parity unknown. Controlled change header and logging interval only. 8/8 limited offline syntax/source checks PASS, no ESPHome compile/live test. Positive live criteria unchanged HA production entities, [V5DCM19] logs and no TX. Abort unexpected TX or sensor regression; rollback true deployed FIX1. G01–G06 not reopened. [Report](V5DCM/V5DCM19_PREPARED_RX_DIAGNOSTIC_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM18 function-first correction and V4.1 handoff
 
 **RUNNING / PARTIAL overall; COMPLETE / POSITIVE scoped gap-inventory step.** Hypothesis: original CM930 firmware semantics plus locally validated Write V4.1 outcomes and existing V5 modules yield a concrete V5DCM19 implementation contract, avoiding redundant tests. Baseline V5DCM16–18 offline capture work, historical Write V4.1 EXP386/387 positive EXP388 partial, V5DCM1/2 and Python portable Core; G01–G06 accepted. Controlled change **source-only** direct matrix of challenge/parser, R1 response, handshake statuses, cold/retained bootstrap, 0708 service, runtime, profile completeness and icon/Online evidence. Positive: explicit KEEP/JOIN/MISSING/DEFER worklist created. **Unknown:** original Python seven-fixture suite NOT EXECUTED; full end-to-end V5DCM18 replay still open. No new bus activity, flash or experimental YAML. [Full mapping](V5DCM/V5DCM18_FUNCTIONAL_GAP_HANDOFF_20261018.md).
