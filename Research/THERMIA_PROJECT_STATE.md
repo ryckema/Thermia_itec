@@ -1,3 +1,15 @@
+# 2026-10-17 — V5DCM9 offline firmware-source comparison (latest)
+
+**Current live baseline:** user-flashed V5DCM2 FIX1 RX-only, HA production preserved, native TX HARD_DENY; no later firmware flashed.
+
+**Last completed:** V5DCM9 COMPLETE / POSITIVE (static comparison of original recovered device_client source snapshots 0.1.45 and 0.2.8, 21 vs 25 Python files, 16 changed shared modules, 4 new modules; AST checks PASS). COMPLETE / INCONCLUSIVE for independent one-to-one mapping of source archives to RAUC 2.0.18 vs 2.1.105, which has NOT been verified here; never conflate Python package and RAUC release numbers. CM930 packet-readiness, conditional request selection and service-level publication differ; these are firmware-derived and NOT XTR local bus/display proof. Native FC23 cryptographic/response changes not established.
+
+**Next:** V5DCM10 PREPARED / NOT RUN — offline establish verifiable RAUC image→application package provenance, and separate wire-observable state differences. Baseline V5DCM9; no hardware TX. Positive verified chain of custody/hashes, negative missing/ambiguous extraction, abort private disclosure or production changes, recovery no action as offline.
+
+[Detailed report](V5DCM/V5DCM9_FIRMWARE_VERSION_AUDIT_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM8 offline provenance model completed
 
 **Live baseline unchanged:** V5DCM2 FIX1, RX-only with functioning HA production entities, software TX HARD_DENY.
