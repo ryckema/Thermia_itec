@@ -1,3 +1,27 @@
+# 2026-10-17 — V5DCM10 actual RAUC-to-device_client evidence
+
+## PROVEN / original firmware content provenance (offline)
+- Original RAUC 2.0.18 manifest and embedded appfs SHA256 match independently extracted images; actual appfs ext4 `device_client/_version.py` reports **0.1.45**; 21/21 Python modules match previous extracted `appfs_2018.zip` exactly.
+- Original RAUC 2.1.105 manifest and embedded appfs SHA256 match; actual appfs ext4 `device_client/_version.py` reports **0.2.8**; 25/25 Python modules match previous `device_client.zip`. Both rootfs image SHA256/size checks match; 4/4 manifest-image matches.
+- This **resolves** the V5DCM9 specific uncertainty regarding assignment of recovered Python source trees to RAUC firmware releases. No independent cryptographic RAUC signature-chain validation performed.
+
+## STRONGLY SUPPORTED / firmware-derived, not XTR bus-proven
+- 2.0.18 vs 2.1.105 source code has 21 shared Python modules, 16 modified and four new; CM930 parameter readiness and service-driven data requests/publishing are distinct application functions from bus handshake acceptance.
+- Nothing in these static diffs independently proves changed FC23 handshake answer bytes, local DCM recognition, controller icon or cloud Online.
+
+## HYPOTHESIS
+- Version-specific source state-machine tests can improve DCM simulation while preserving explicit UNKNOWN owner/epoch and fail-closed TX.
+
+## OPEN / UNKNOWN
+- XTR-native acceptance transition, live FC23 response/slot ownership, DCM icon and online signal semantics, cloud registration, physical line state; RAUC signature chain not tested.
+
+## DISPROVEN / SUPERSEDED
+- V5DCM9's temporary "RAUC provenance NOT VERIFIED" label is superseded for the two examined RAUC files by direct manifest+ext4+46-source identity evidence (without rewriting the earlier record).
+
+[Full provenance and hashes](V5DCM/V5DCM10_RAUC_PROVENANCE_VERIFIED_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM9 recovered firmware application version delta
 
 ## PROVEN / offline source comparison only
