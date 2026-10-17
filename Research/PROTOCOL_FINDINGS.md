@@ -1,3 +1,24 @@
+# 2026-10-17 — V5DCM19 fail-closed reference contract
+
+## PROVEN / isolated locally executed offline model
+15/15 Python `unittest` checks passed (exit 0). The model makes FC16 observation pure, requires independently supplied source+epoch+qualified current-session booleans before a separate commit can set Handshake.ACCEPTED, and refuses mailbox advancement without authority. Full Connect readiness includes semantic profile and package completion, distinct from native handshake. Physical TX is disabled by default.
+
+## STRONGLY SUPPORTED
+The explicit observe/authorize/commit split addresses the V5DCM18 identified classification-time state mutation *in a separate reference model only*. It does not modify or validate the original portable C++ Core or prove physical exclusivity.
+
+## HYPOTHESIS
+An isolated C++ refactor with audited call sites and equivalent negative tests can establish source/API parity while remaining strictly non-transmitting.
+
+## OPEN / UNKNOWN
+Real XTR sender, epoch, EOF, exclusivity, accepted native session, profile/receipt, Online/cloud; C++ parity and production integration were not executed in V5DCM19.
+
+## DISPROVEN / SUPERSEDED
+Do not equate synthetic Authority(True,True,True), successful Python tests, FC16 frame shape or software TX-disabled default with local XTR authentication/physical safety or a production C++ fix.
+
+[Full V5DCM19 report](V5DCM/V5DCM19_OBSERVE_AUTHORIZE_COMMIT_OFFLINE_20261017.md).
+
+---
+
 # 2026-10-17 — V5DCM18 portable Core/API parity
 
 ## PROVEN / inspected source behavior
