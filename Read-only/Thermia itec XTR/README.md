@@ -1,6 +1,6 @@
 # Thermia iTec XTR M — RX-only monitoring (v31 FIX4)
 
-**Status: PREPARED / NOT RUN.** This is the current expanded **experimental read-only** ESPHome configuration, not a verified replacement for the already-flashed V5DCM19 FIX1 or the publicly tested v29 baseline.
+**Status: RUNNING / PARTIAL (user-confirmed first FIX4 live observation, 2026-10-18).** User confirms FIX4 is flashed: `Thermia ESP Reset Reason = Reboot request from esphome.ota`, ESP uptime 151 s, `Native Settings Pages Seen = 03E8:Y` with all other 12 families N, and `Cooling Settings Page Source = 0442 NOT received since ESP boot`. The heating curve and direct outdoor-unit sensors report plausible running/idle values while 34 native dependent settings are Unknown. This validates the on-device presence of the diagnostic, **not** that all passive data or native service pages are available, nor electrical TX inactivity. The previous V5DCM19 FIX1 remains the better independently evidenced long-soak fallback.
 
 This directory deliberately contains **exactly two files**:
 - [`thermia_itec_xtr_m_read_only.yaml`](thermia_itec_xtr_m_read_only.yaml) — the single consolidated v31 candidate, 258 named ESPHome/HA entities.
@@ -40,9 +40,9 @@ FIX4 adds **one** compact, default-enabled source-diagnostic entity: `Native Set
 | `0864` | DHW Top-up Active, defrost-source statuses and Outdoor Stop Active |
 | `0870` | Defrost Count, Previous Defrost Interval, Time Since Last Defrost |
 
-In the October 18 Home Assistant PDF, **33 visible values** show `Unknown` while several direct outdoor measurements are populated; the names are clipped in the printout. This is not proof that every Unknown is caused by missing native pages. `Unknown` can also be an unrecognized enum, filtered out-of-range/sentinel raw value, a missing direct source, or a newly restarted ESP which has not observed its next controller settings page.
+In the earlier October 18 Home Assistant PDF, **33 visible values** show `Unknown`; the newer full-name list establishes **34 distinct Unknown entities** while direct outdoor measurements are populated. This is not proof that every Unknown is caused by missing native pages. `Unknown` can also be an unrecognized enum, filtered out-of-range/sentinel raw value, a missing direct source, or a newly restarted ESP which has not observed its next controller settings page.
 
-**Status PREPARED / NOT RUN:** Source checks only; no full ESPHome parse/compile/flash or on-device FIX4 results. This status sensor cannot retroactively explain a PDF created before FIX4 was deployed. The on-device V5-known-good release is not touched.
+**Live result RUNNING / PARTIAL:** User explicitly confirms FIX4 flash and supplies its 151 s HA observation. Only `03E8` is Y; all other 12 monitored native pages are N, meaning no matching CRC-validated full-page decoder branch has been seen **in this ESP boot window**. N does not prove the controller never transmits the page, nor that a differently shaped frame would not exist. No independent ESPHome build logs, raw bus frame audit, or electrical TX measurements were reviewed; do not mark COMPLETE yet. The earlier PDF predated FIX4.
 
 ## Koeling: missing-page diagnostics (FIX3)
 
@@ -54,9 +54,9 @@ FIX3 adds exactly **seven** HA entities, without changing any existing names:
 
 If the page source says **NOT received**, the solution is **not** to fabricate values or to assume cooling is disabled; it needs a passive full-frame capture and analysis of why the controller did not publish the page. RX-only firmware intentionally cannot request native settings on demand. When the page source says **received** but a setting stays Unknown, inspect the register word/range filter in the decoder using a short CRC-valid capture. The initial full cooling-page source status does not require any external DCM.
 
-**This version is PREPARED / NOT RUN.** No full ESPHome compilation, flash, on-device validation or HA registry reconciliation was performed. The existing known-good V5 baseline remains unchanged.
+**FIX3 source-only audit status was PREPARED / NOT RUN when written.** Subsequently the user explicitly flashed FIX4 and reported `0442 NOT received since ESP boot` with 151 s uptime. The cooling raw-word labels remain unproven and the known-good V5 historical reference is unchanged.
 
-## Optional hardware: conditional states (v31 FIX3)
+## Optional hardware: conditional states (v31 FIX4)
 
 The passive native capability page `0x0F FC16 0532/count18` contains firmware-derived bits:
 
@@ -98,7 +98,7 @@ Repeat the same pattern for `Distribution Circuit 1 Installed`, `Distribution Ci
 
 ## What is included / excluded
 
-- **250 source-defined entities:** 181 numeric sensors, 60 binary sensors and 9 text sensors. They are NOT 250 different on-device-proven native registers.
+- **258 source-defined entities:** 187 numeric sensors, 60 binary sensors and 11 text sensors. They are NOT 258 different on-device-proven native registers.
 - Regular heating, hot water, cooling, compressor and outdoor-unit data; added native runtime registers; defrost counters and passive bus diagnostics.
 - Optional pool/circuit/buffer measurements and features, fail-closed as above; raw register diagnostics disabled by default.
 - **Excluded:** calendar/schedules, alarms and fault entity publishing, speculative model-inapplicable interpretations, live parameter writes, service test controls, DCM handshake/response emulation.
@@ -107,8 +107,8 @@ Repeat the same pattern for `Distribution Circuit 1 Installed`, `Distribution Ci
 ## Validation / installation order
 
 1. Keep working V5DCM19 FIX1 or validated v29 production firmware available as rollback.
-2. Inspect the YAML and run `esphome config` / compile **locally**, with local secrets and the actual ESPHome version. Neither a complete YAML parse nor an ESPHome compile was performed for this candidate.
-3. **User-initiated passive test only**, no TX: monitor CRC-valid receive, 0532 capability page age, RS485 DE remaining low, outdoor controller/room/outdoor-unit bus health, and entity state transitions on known optional ON/OFF/UNKNOWN. Only call an experiment COMPLETE when actual user results are supplied.
+2. The user has flashed FIX4, showing a working device and ESPHome OTA reboot; no independent YAML parse/compiler output or reproducible build signature was audited here. Run `esphome config` / compile **locally** only if diagnosing a concrete issue, using local secrets. Do not infer full compilation test coverage from the OTA alone.
+3. **Current FIX4 passive test is RUNNING / PARTIAL** on the basis of the user's first 151 s HA snapshot. Next check the same diagnostic after a longer uninterrupted interval (no OTA restart) and, only if available, narrow CRC-valid native RX evidence. No device TX request is necessary for diagnosis; electrical DE/TX has not been independently measured. Mark the overall test COMPLETE only after reviewing the final user results and relevant abort criteria.
 4. If bus health or baseline measurements regress, recover the previously tested version.
 
 ## Provenance and archives
