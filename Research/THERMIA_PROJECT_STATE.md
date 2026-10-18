@@ -1,3 +1,7 @@
+# 2026-10-18 — V5DCM33 B11D short-residual audit COMPLETE / POSITIVE **OFFLINE SOURCE ONLY**. Exact uploaded V5DCM32 YAML has immediate sticky `RAW_INCOMPLETE_AT_IDLE` fault on <5 byte RAW residual after 25ms quiet; existing 250ms bounded defer only applies later to >=5-byte candidate fragments with V5 pending. This asymmetry is a plausible source-level contributor to 22:02:30 BadIntegrity, NOT a proven cause of actual bytes. User-confirmed controller power cycle and V5DCM32 COMPLETE / NEGATIVE fresh rejoin stay unchanged. No live changes, build, flash, TX or fault-clear. NEXT V5DCM33-FIX-A PREPARED / NOT RUN: minimal fail-closed host-tested short fragment deferral first, followed by separately justified post-gap integrity qualification; no new restart yet. [Report](V5DCM/V5DCM33_B11D_SHORT_RESIDUAL_OFFLINE_20261018.md).
+
+---
+
 # 2026-10-18 USER FOLLOW-UP — Physical manual Thermia controller power cycle **CONFIRMED BY USER** for the V5DCM32 armed live test. Preserve original measured chronology: 22:02:23 arm, 22:02:30 B11D first RAW_INCOMPLETE_AT_IDLE, 22:02:43 callback gap 12923ms, 22:02:45 first logged FC23, then BadIntegrity denied rejoin, localGen=0; ledger revoked to 0/0. User confirmation establishes manual intervention provenance, but exact switching instants and independent physical epoch/owner remain unknown. NEXT V5DCM33 offline examine whether interrupted serial frame causes sticky observer and how to require clean post-gap RX before qualified rejoin. Do not restart again before offline review.
 
 ---
