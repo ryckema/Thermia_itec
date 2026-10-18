@@ -1,9 +1,9 @@
-# Thermia iTec XTR M — RX-only monitoring (v31 FIX3)
+# Thermia iTec XTR M — RX-only monitoring (v31 FIX4)
 
 **Status: PREPARED / NOT RUN.** This is the current expanded **experimental read-only** ESPHome configuration, not a verified replacement for the already-flashed V5DCM19 FIX1 or the publicly tested v29 baseline.
 
 This directory deliberately contains **exactly two files**:
-- [`thermia_itec_xtr_m_read_only.yaml`](thermia_itec_xtr_m_read_only.yaml) — the single consolidated v31 candidate, 257 named ESPHome/HA entities.
+- [`thermia_itec_xtr_m_read_only.yaml`](thermia_itec_xtr_m_read_only.yaml) — the single consolidated v31 candidate, 258 named ESPHome/HA entities.
 - This `README.md` — usage, scope, safety and limitations.
 
 ## Model and safety
@@ -13,6 +13,36 @@ Target Thermia iTec XTR M (legacy Danfoss DHP-AQ), Waveshare ESP32-S3-RS485-CAN 
 Existing production YAML, entities, bus CRC/frame bookkeeping and fixed v29 temperature/status interpretation were retained as far as the source-only audit permits. Core native 0x0F pages are passively decoded from *controller-originated* traffic; their presence and exact cadence on this individual device are not guaranteed by firmware extraction.
 
 ESPHome secrets must be supplied locally: `wifi_ssid`, `wifi_password`, `thermia_api_encryption_key`, `thermia_ota_password`, `thermia_fallback_password`. **Never commit actual secrets.**
+
+## Other Unknowns: native page coverage (FIX4)
+
+FIX4 adds **one** compact, default-enabled source-diagnostic entity: `Native Settings Pages Seen`. It reports which of thirteen relevant full controller-originated `0x0F FC16` pages were **received since the current ESP boot**. Example before any pages arrive:
+
+```text
+03E8:N 03FC:N 0410:N 042E:N 0442:N 0532:N 0546:N 07D0:N 080C:N 0820:N 0848:N 0864:N 0870:N
+```
+
+`Y` = full page reached the existing valid decoder geometry; `N` = not seen **since this ESP boot**. N is *not proof of a decoding bug*, and Y is *not proof that every field's scaling/semantics are correct*. The flags do not report page age, do not trigger polling and do not retain previous boots.
+
+| Page | Representative HA values requiring that native page |
+|---|---|
+| `03E8` | Heating curve, heating min/max, room-setpoint mirror |
+| `03FC` | Additional heating circuit 1 settings (when installed) |
+| `0410` | DHW start and max production time, anti-legionella service values |
+| `042E` | Hot Water Enabled/Mode, Startup HT, Heating Time |
+| `0442` | Cooling Enabled, cooling targets and room hysteresis |
+| `0532` | Installed flags: Pool, Distribution Circuit 1/2, Buffer Tank |
+| `0546` | Controller Operation Mode |
+| `07D0` | Hydraulics, auxiliary output states and tank runtime |
+| `080C` | Native room / cooling / pool / circuit 2 raw temperatures |
+| `0820` | Native outdoor status bits and Defrost Active |
+| `0848` | Supply Temperature Wanted, Weighted DHW Temperature |
+| `0864` | DHW Top-up Active, defrost-source statuses and Outdoor Stop Active |
+| `0870` | Defrost Count, Previous Defrost Interval, Time Since Last Defrost |
+
+In the October 18 Home Assistant PDF, **33 visible values** show `Unknown` while several direct outdoor measurements are populated; the names are clipped in the printout. This is not proof that every Unknown is caused by missing native pages. `Unknown` can also be an unrecognized enum, filtered out-of-range/sentinel raw value, a missing direct source, or a newly restarted ESP which has not observed its next controller settings page.
+
+**Status PREPARED / NOT RUN:** Source checks only; no full ESPHome parse/compile/flash or on-device FIX4 results. This status sensor cannot retroactively explain a PDF created before FIX4 was deployed. The on-device V5-known-good release is not touched.
 
 ## Koeling: missing-page diagnostics (FIX3)
 
