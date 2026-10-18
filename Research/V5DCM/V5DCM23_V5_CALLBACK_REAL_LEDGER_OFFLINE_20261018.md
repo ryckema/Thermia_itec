@@ -1,3 +1,9 @@
+# CI VERIFICATION UPDATE — 2026-10-18
+
+GitHub Actions [39140420159](https://github.com/ryckema/Thermia_Connect_Firmware/actions/runs/39140420159) completed **SUCCESS** on source commit `755cfd28929bb82a6a3caf0b28265f85278b58b8`, including strict V5DCM23 real-ledger V5 callback compile/execution and existing Core/portable parity/output-hard-deny regressions. The scoped OFFLINE SOURCE+TEST substep is now **COMPLETE / POSITIVE**. Actual private ESPHome integration, source provenance and deployment remain **PREPARED / NOT RUN**; no new device operation occurred.
+
+---
+
 # V5DCM23 — actual portable package ledger at V5 completed-frame boundary
 
 **Date:** 2026-10-18
