@@ -1,3 +1,7 @@
+# 2026-10-18 — **PROVEN / offline historical capture-byte audit (NOT live local XTR)**: `thermia_capture_20261003_165355.log` 2,687/2,687 original CRC-valid frames, 162 slave 0x0F valid FC16 requests, all 33 required starts but only **31 distinct exact local-XTR start/count**. `03E8/13` and `0410/21` are valid reference shapes yet NOT local `03E8/14` and `0410/22`; 126 exact shape frame occurrences. Two `0x0F FC23` frames before the first FC16 revoke current passive profile evidence; no independent reselection => **0 qualified packages / no C2** in fail-closed model. **STRONGLY SUPPORTED:** preserve reference-vs-XTR geometry and reception-vs-session acceptance separation. **OPEN:** full C++ replay execution, actual XTR frame receipts, controller epoch/ownership, native Connect operation. No physical TX. [Report](V5DCM/V5DCM22_RAW_CAPTURE_REPLAY_RESULT_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM22 OPEN / geometry provenance: attached historical 20261003 capture shows 33/33 significant starts but only 31/33 have the exact local XTR expected FC16 counts, notably 03E8/13 versus local 14 and 0410/21 versus local 22. Thus source-profile range match alone is not physical XTR C2 package receipt. No new device run.
 
 ---
