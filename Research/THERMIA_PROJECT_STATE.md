@@ -1,3 +1,7 @@
+# 2026-10-18 — V5DCM22 RUNNING / PARTIAL update: historical 20261003 raw capture has 162 CRC-valid 0x0F FC16 requests, all 33 source-selected starts; only 31 match exact local XTR physical start/count. 03E8 count13 (XTR 14) and 0410 count21 (XTR 22) mismatch. Never count reference geometry as local C2. Strict synthetic 33-package test added to CI, actual CI success not verified. No deployed TX.
+
+---
+
 # 2026-10-18 — V5DCM22 RUNNING / PARTIAL: source-only 33-group W2/W3/W4 ExpectedPackage mapping and full synthetic receive-only frame replay checks committed to Thermia_Connect_Firmware. Source-selector bit and XTR counts checked; no real capture replay or successful fresh CI confirmed yet. Firmware production v31 FIX4 unchanged, TX off. Next verify CI and analyze actual passive XTR capture.
 
 [Implementation update](V5DCM/V5DCM22_PACKAGE_INTEGRATION_PARTIAL_20261018.md)
