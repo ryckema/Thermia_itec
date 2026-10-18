@@ -1,3 +1,7 @@
+# 2026-10-18 — V5DCM23 FIX2 PROVEN LOCALLY for scoped RX-only observer: live portable PassivePackageLedger reports 1/33 significant native FC16 shape (03E8/14) matching independent interim V5DCM22 observer W3 bit0, 28→140 occurrences, 0 wrong geometry, B11C/B11D source parser equality and software zero TX/DE low. STRONGLY SUPPORTED no parser regression in sampled 2m25s. OPEN native C2/Online/controller epoch/owner, longer runtime and physical TX electrical proof. Separate R6-P30EC D=4 STAGE_D_LEDGER_FAULT INTEGRITY_HOLD_NO_TX remains observed, not explained by clean live CRC/parity; do not conflate or silently clear. Report Research/V5DCM/V5DCM23_FIX2_LIVE_RESULT_PARTIAL_20261018.md.
+
+---
+
 # 2026-10-18 — SOFTWARE BUILD FINDING (not protocol): V5DCM23 private ESPHome main compilation failed because root xtr_v5dcm21_packages.hpp and readiness header were not declared in esphome.includes, despite being present in ZIP. Two-entry private FIX1 restores source copying; strict C++ host test / historical capture replay PASS; complete ESPHome build and device runtime remain OPEN. Not evidence of FC16 or controller semantics. No native TX, mailbox or firmware implementation changes. Report Research/V5DCM/V5DCM23_FIX1_ESPHome_INCLUDE_REPAIR_20261018.md.
 
 ---
