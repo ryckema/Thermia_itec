@@ -1,3 +1,21 @@
+# 2026-10-18 UPDATE — extracted original 2.1.105 appfs available and audited
+
+**Status remains RUNNING / PARTIAL**: original source count and dependency count verified directly; object-level equivalence to derived CSV still not independently performed.
+
+## Direct original artifact evidence
+User added `/mnt/data/2.1.105 extracted_appfs.zip` (SHA256 `42d365c89a7a0cc76138c57c1bf50cfd95c33c3ffcf7aef26f39c01b7c81f49e`) and `2.1.105 extracted_rootfs.zip` (SHA256 `dc8a4ca05f3e60f61939fb9ab72e1dd6af52378b9f89bd7ea71625e9f2f25447`). ZIP inspection located exact `extracted_appfs/etc/device-client.d/930/2.3.0-2.4.3/{sensors.json,configurations.json,info-2.4.2.json}`.
+
+Direct JSON parse:
+- `sensors.json` 99 objects, 23122 bytes, SHA256 `6a5941387f14cb8d5419a715b8983a1d3c044c7d1ffd6c82513103413ba78c0d`;
+- `configurations.json` 471 objects, 158727 bytes, SHA256 `d5194627e1678a1b10239b988c6ba195e62b39dbc37f4fe927d3bae907060b2c`;
+- `info-2.4.2.json` exists, 2087 bytes, SHA256 `25f24756667f575a0d7cdda0f3a766b306cb19feed30886a9cd8d02087e0e114`.
+- zero duplicate `name` fields within each sensor and configuration list.
+- Direct application of previously documented firmware literal-brace numeric-token rule on `formula`, `conditions`, `min`, `max`, `default` (never `set_register_formulas`) yields **541 unique numeric register dependencies**. These match the prior derived-index aggregate exactly.
+- 99+471=570 matching the repository normalized aggregate.
+
+**Confidence improvement:** four aggregate results reproduced directly from the original uncompressed source JSON. **Still OPEN:** comparing each original name, description, condition, formula and min/max/default against each normalized CSV record; direct 33 selector-group output from original source in this environment (the existing 33 is derived-index analysis). Do not substitute aggregate agreement for row equality. No live test / YAML / TX modifications.
+
+---
 # V5DCM21-PACKAGES-03 — original 2.1.105 RAUC provenance gate (step B, partial)
 Date: 2026-10-18
 
