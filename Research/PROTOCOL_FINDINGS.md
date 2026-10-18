@@ -1,3 +1,7 @@
+# 2026-10-18 — **OBSERVED FACT / HA metadata (not native protocol)**: v31 FIX4 and V5DCM22-RX33 prepared YAML both omit `state_class` from Heating Minimum despite °C unit and temperature device_class. A further 39 numeric physical-unit sensor definitions similarly lack it. STRONGLY SUPPORTED reason for user's HA long-term statistics warning; actual deployed firmware and restored HA attributes remain OPEN until user checks. V5DCM22 FIX1 candidate adds 40 `measurement` classifications only, static byte-diff PASS; **PREPARED / NOT RUN**. No inference about 0x0F native bus, physical TX or Online readiness. Historical HA statistics must not be deleted to repair metadata. [Details](V5DCM/V5DCM22_RX33_STATCLASS_FIX1_PREPARED_20261018.md).
+
+---
+
 # 2026-10-18 — **V5DCM22-RX33-01 OPEN / UNKNOWN actual XTR 33-page passive receipt.** Reproducible source-only observation candidate prepared from user-flashed FIX4 (not deployed), exact profile selection 15 W2 + 10 W3 + 8 W4 physical FC16 shapes, unique 33 start/count; strict counts distinguish local `03E8/14` and `0410/22` from historical `03E8/13` and `0410/21`. Source review proves fail-closed *intended matching design* and baseline retention, not runtime presence of all 33, valid physical controller origin, session C2/Online, electrical DE/TX or ESPHome compilation. Four RX-only HA diagnostics + no TX path in separate YAML; status PREPARED / NOT RUN. [Evidence and criteria](V5DCM/V5DCM22_RX33_01_PREPARED_20261018.md).
 
 ---
