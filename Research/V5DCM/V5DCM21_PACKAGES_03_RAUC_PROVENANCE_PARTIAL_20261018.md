@@ -1,3 +1,19 @@
+# 2026-10-18 Step B original-JSON independent package computation
+
+**Status: RUNNING / PARTIAL** — original-source selected-package equality POSITIVE, complete row-level normalized CSV comparison still OPEN.
+
+Original 2.1.105 extracted appfs CM930 2.3.0–2.4.3 `sensors.json` and `configurations.json` were parsed directly, 99 and 471 original entries (570 total). Source token scan for numeric references in formula, conditions, min/max and default (not write formulas) independently reproduced 541 unique register numbers. Rebuilt W2/W3/W4 range-map independently from published `data/cm930_modbus_flags_map.csv` source ranges; every original dependency mapped exactly once: **0 unmapped; 0 ambiguous**.
+
+Original-source group starts:
+- W2 (15): `0546 055A 057B 059C 05BD 05DE 05FF 0620 0641 0662 0683 06A4 06C5 06EA 06F4`.
+- W3 (10): `03E8 03FC 0410 042E 0442 0456 046A 04A6 04BA 0532`.
+- W4 (8): `07D0 07E4 07F8 080C 0820 0848 0864 0870`.
+
+All 33 starts **exactly equal** previous derived CSV-based PACKAGES-02 outputs. Thus the **package-set provenance is now independently original-JSON verified**, while *complete individual object/field equality with normalized CSV* remains OPEN because connector fetch for `data/cm930_semantic_objects.csv` provided empty content and no container network access. The local standalone verification script and JSON results are conversation artifacts, not yet committed to GitHub; original JSON hashes in previous section.
+
+**This does NOT prove any native XTR 0x0F package was received, firmware application C2/OPERATION, TX authorization, or Online integration.** No YAML or device changed, no physical TX.
+
+---
 # 2026-10-18 UPDATE — extracted original 2.1.105 appfs available and audited
 
 **Status remains RUNNING / PARTIAL**: original source count and dependency count verified directly; object-level equivalence to derived CSV still not independently performed.
