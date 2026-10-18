@@ -1,3 +1,9 @@
+# CURRENT VERIFIED HANDOFF — 2026-10-18 V5DCM27
+
+Latest user-flashed device is **V5DCM23 FIX2 RX-only, RUNNING / PARTIAL** (first ~2m25 log, actual portable ledger 1/33, clean B11C/B11D and TX HARD_DENY). Previous V5DCM20 18m33 RX-only positive is a different device build. Latest OFFLINE step **V5DCM27-SOURCE-REJOIN-01 COMPLETE / POSITIVE**: strict original-private-C++ host tests confirm native 0x0F FC23 revokes V5DCM23 package ledger and the only reselect call is on ESP boot. Further FC16 alone cannot restore the package ledger, but this has NOT happened in the current short live FIX2 log (no observed FC23). Internal CM930 handshake shadow is NOT physical owner or TX authorization. Next **V5DCM27-REJOIN-BRIDGE-01 PREPARED / NOT RUN**: source-only externally qualified profile/epoch reselect, preserve all 180 current private HA entities, TX hard deny, no extra UART, no automatic FC23 rearm. Report: [V5DCM27 source and regression](V5DCM/V5DCM27_NATIVE_REJOIN_SOURCE_AUDIT_20261018.md). Prior V5DCM26 passive 15-20min live observation also PREPARED / NOT RUN. Verify exact flashed bytes before any code change. This block supersedes older dated snapshots below only for current state.
+
+---
+
 # START HERE — Thermia iTec XTR M
 > Compact, evidence-bound entry point for a NEW ChatGPT session. Updated 2026-10-18. This is a navigation and handoff document, NOT a replacement for the canonical evidence. Verify the latest dated canonical entries before acting.
 
