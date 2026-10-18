@@ -1,3 +1,7 @@
+# 2026-10-18 — v31 HA source audit (NOT new protocol finding): v31-alpha01 declares 300 named YAML entities (192 numerical, 92 binary, 16 text), only 92 default-enabled; 178 HA disabled, 30 internal. Faults excluded partially: `Active Mapped Faults` text_sensor is still enabled; requires fix before release. No effect on native DCM proof or 524 XTR firmware schema coverage. [Entity inventory](../Read-only/Thermia%20itec%20XTR/V31_ENTITY_INVENTORY_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM21 **PROVEN / offline actual GitHub HEAD CI**, NOT local XTR bus proof: dedicated strict C++17 Core+observer compile and execution passed 22/22 test checks, with RX-only output hard-deny source invariant, Actions 39114268008 firmware HEAD `1ca3cf60`. **STRONGLY SUPPORTED:** application/profile/package/semantic receipt axes should be independent of internal acceptance and owner; cold 32/32 must not become retained/recovery universal gate. **OPEN / UNKNOWN:** external evidence provider, bus physical owner and slot, fresh retained session evidence despite unincremented Core controller epoch, native challenge acceptance, Connect runtime and cloud Online. **DISPROVEN as inference:** single Accepted/ACK/CRC-valid frame proves safe TX. No new source evidence of real XTR semantics; no YAML/live TX. [Report](V5DCM/V5DCM21_HEAD_REGRESSION_RESULT_20261018.md).
 
 ---
