@@ -1,3 +1,7 @@
+# 2026-10-18 — READ-V31 full coverage source inventory audit, PREPARED / NOT RUN. Direct review of `Thermia_Connect_Firmware/parameters/ALL_PARAMETERS_ACCESS_MATRIX.csv` shows 564 firmware register rows, 524 with XTR 2.4.2 profile=YES (468 firmware write-capable, 56 runtime read-only) and 40 other-profile-only; these are schema entries, NOT 524 local XTR bus-proven readings. v31 is to inventory ALL 524, not only 46 INFO / 24 SERVICE name matches; the 494 UNCONFIRMED entries need classification, not exclusion. Every observed XTR register should be decoded or exposed RAW as read-only diagnostic unless calendar/alarm excluded, with option guards, freshness and no fabricated semantic values. No new YAML/flash/TX. [Coverage contract](../Read-only/Thermia%20itec%20XTR/V31_ALL_PARAMETERS_COVERAGE_CONTRACT_20261018.md).
+
+---
+
 # 2026-10-18 — Manual-to-HA taxonomy, **NOT a new local protocol proof**. User-provided AWIXT01CG0210 photos support INFO/SERVICE menu grouping, optional SHUNTGROEP 1/2 (additional heating circuits), optional pool/buffer and XTR model exclusions. Manual parameter names and ranges are semantic anchors, not Modbus mappings. All menu-to-native register/scaling links still graded against local XTR frames and firmware. Documentation: [Manual hierarchy](../Read-only/Thermia%20itec%20XTR/V31_MANUAL_MENU_STRUCTURE_20261018.md). No TX/YAML/live changes.
 
 ---
