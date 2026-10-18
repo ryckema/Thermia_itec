@@ -1,3 +1,14 @@
+# V5DCM22 continuation — source-derived 33-package mapping and replay fixtures
+
+Date: 2026-10-18. **RUNNING / PARTIAL**. Source changes committed, no executed new CI/build confirmed and no on-device run.
+
+From original Connect 2.1.105 CM930 2.3.0–2.4.3 source-derived 33 selected groups, W2=15/W3=10/W4=8, selector bit positions checked against `data/cm930_modbus_flags_map.csv` and physical counts from `data/xtr_portable_profile_xtr_2_4_2.json`. Added `portable/xtr_v5dcm22_profile_242.hpp` as **receive-only** 33-element `ExpectedPackage` mapping. No firmware response commands, mailbox writes or credential/security logic.
+
+Enhanced `portable/test_xtr_v5dcm22_package_integration.cpp` to construct CRC-valid synthetic FC16 frames for all 33 source-derived geometries: before last package C2 remains false, after last C2 can become observed true but owner, TX and native Online remain false; bus-return invalidates it. The fixture is NOT a real XTR capture replay and does not prove real bus delivery. Added profile header to required GitHub workflow path filters. Current GitHub workflow status was **not verified PASS** (connector only returned no PR-associated run for earlier commit; that is not evidence of failure).
+
+Next: confirm strict HEAD build and execution, replay available original local bus captures without assuming 33 pages appear under RX-only conditions, and only after evidence-driven lifecycle review consider adding a deployment RX diagnostic to the known-good YAML. Abort on any physical TX or code that treats package C2 as accepted session. Existing user-flashed v31 FIX4 unchanged.
+
+---
 # V5DCM22 — Native Package Integration (offline)
 Date: 2026-10-18
 Status: **RUNNING / PARTIAL** (source committed; CI execution not independently verified; no live experiment).
