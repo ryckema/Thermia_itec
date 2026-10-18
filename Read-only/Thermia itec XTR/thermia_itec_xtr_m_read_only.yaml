@@ -1,4 +1,6 @@
-# Thermia iTec XTR M — v31 Full Monitoring FIX2 (CONDITIONAL OPTIONS) — PREPARED / NOT RUN
+# Thermia iTec XTR M — v31 Full Monitoring FIX3 (COOLING RX AUDIT) — PREPARED / NOT RUN
+# Cooling 0442/count13 page-seen source witness and six raw-only missing words (7 additional HA entities).
+# No new bus requests, TX, semantic scale claims, or automatic page-cache fabrication.
 # 250 named HA entities; pool, two shunts and buffer require fresh 0532 capability ON.
 # Named values and binary states fail closed when absent/invalid/stale; raw register diagnostics retained.
 # Six-hour validity is a provisional policy, not measured native 0532 recurrence.
@@ -434,6 +436,12 @@ globals:
 
   # READ-PROD-01B capability state. These values are learned passively from
   # controller-originated 0x0F FC16 0532/count18 pages only.
+  # RX-only cooling source witness. Never assume a page was seen just because firmware has a map.
+  - id: thermia_cooling_page_0442_seen
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
   - id: thermia_capabilities_seen
     type: bool
     restore_value: no
@@ -1833,6 +1841,17 @@ uart:
                     publish_float_if_changed(id(thermia_cooling_room_hyst_low_setting), float(hyst_low) / 10.0f, 0.05f);
                   if (hyst_high >= 0 && hyst_high <= 200)
                     publish_float_if_changed(id(thermia_cooling_room_hyst_high_setting), float(hyst_high) / 10.0f, 0.05f);
+
+                  // Six page words not yet covered by interpreted v31 settings.
+                  // Preserve SIGNED RAW values only; EXP382 evidence is not proof
+                  // of their exact XTR formula, sign, unit or model applicability.
+                  publish_float_if_changed(id(thermia_cooling_hysteresis_raw_0444), float(reg_s(0x0444)), 0.5f);
+                  publish_float_if_changed(id(thermia_cooling_configuration_raw_0446), float(reg_s(0x0446)), 0.5f);
+                  publish_float_if_changed(id(thermia_cooling_start_threshold_raw_0447), float(reg_s(0x0447)), 0.5f);
+                  publish_float_if_changed(id(thermia_cooling_stop_threshold_raw_0448), float(reg_s(0x0448)), 0.5f);
+                  publish_float_if_changed(id(thermia_cooling_max_start_temp_raw_044a), float(reg_s(0x044A)), 0.5f);
+                  publish_float_if_changed(id(thermia_cooling_min_stop_temp_raw_044b), float(reg_s(0x044B)), 0.5f);
+                  id(thermia_cooling_page_0442_seen) = true;
                 }
 
                 // =============================================================
@@ -4220,6 +4239,56 @@ sensor:
     update_interval: never
 
 
+  # READ-V31-COOL-01: native 0442 word positions retained as RAW diagnostics.
+  # 0444/0446/0448/044A/044B have EXP382 candidate meaning; 0447 remains hypothesis.
+  - platform: template
+    id: thermia_cooling_hysteresis_raw_0444
+    name: "Cooling Hysteresis Raw 0444"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_cooling_configuration_raw_0446
+    name: "Cooling Configuration Raw 0446"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_cooling_start_threshold_raw_0447
+    name: "Cooling Start Threshold Raw 0447"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_cooling_stop_threshold_raw_0448
+    name: "Cooling Stop Threshold Raw 0448"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_cooling_max_start_temp_raw_044a
+    name: "Cooling Maximum Start Temperature Raw 044A"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_cooling_min_stop_temp_raw_044b
+    name: "Cooling Minimum Stop Temperature Raw 044B"
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    update_interval: never
+
   # ===========================================================================
   # READ-PROD-01B — PASSIVE CAPABILITY / HYDRAULIC RUNTIME
   # ===========================================================================
@@ -5277,6 +5346,13 @@ binary_sensor:
 
 
 text_sensor:
+  # Observability only, no transport requests. Shows whether 0442/count13 was seen.
+  - platform: template
+    id: thermia_cooling_page_source
+    name: "Cooling Settings Page Source"
+    entity_category: diagnostic
+    update_interval: never
+
 
   # ===========================================================================
   # CAPABILITY SUMMARY / 0539 COLLISION — READ-PROD-01G
@@ -5332,6 +5408,15 @@ interval:
   - interval: 5s
     then:
       - lambda: |-
+          // A registered cooling setting can remain Unknown until a full
+          // controller-originated 0442/count13 page is actually received.
+          const char *cooling_page_state = id(thermia_cooling_page_0442_seen)
+            ? "0442 received since ESP boot"
+            : "0442 NOT received since ESP boot";
+          if (!id(thermia_cooling_page_source)->has_state() ||
+              id(thermia_cooling_page_source)->state != cooling_page_state) {
+            id(thermia_cooling_page_source)->publish_state(cooling_page_state);
+          }
           const uint32_t last = id(thermia_last_valid_frame_ms);
           if (last == 0 || (millis() - last) > 10000UL) {
             if (!id(thermia_bus_healthy)->has_state() || id(thermia_bus_healthy)->state) {
