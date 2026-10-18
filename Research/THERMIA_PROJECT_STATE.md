@@ -1,3 +1,7 @@
+# 2026-10-18 USER FOLLOW-UP — Physical manual Thermia controller power cycle **CONFIRMED BY USER** for the V5DCM32 armed live test. Preserve original measured chronology: 22:02:23 arm, 22:02:30 B11D first RAW_INCOMPLETE_AT_IDLE, 22:02:43 callback gap 12923ms, 22:02:45 first logged FC23, then BadIntegrity denied rejoin, localGen=0; ledger revoked to 0/0. User confirmation establishes manual intervention provenance, but exact switching instants and independent physical epoch/owner remain unknown. NEXT V5DCM33 offline examine whether interrupted serial frame causes sticky observer and how to require clean post-gap RX before qualified rejoin. Do not restart again before offline review.
+
+---
+
 # V5DCM32 live armed attempt COMPLETE / NEGATIVE: 22:02:23 arm, 22:02:30 B11D RAW_INCOMPLETE_AT_IDLE fault, 22:02:43 R6 P24 12923ms gap, 22:02:45 onward 14 observed FC23, 22:02:49 V5DCM32 step=2 Denied verdict=5 BadIntegrity, localGen=0, V5DCM23 correctly revoked to 0/0. Software TX HARD_DENY and DE=0. Physical restart not directly proven. Original log SHA256 94c3121d56ff70c2bef30e621f82eac97fb80f7b1d7ab2d4e006f1fef6842c11. Next V5DCM33 integrity recovery OFFLINE PREPARED / NOT RUN; no further live re-arm until reviewed. Full provenance: V5DCM/V5DCM32_LIVE_REJOIN_INTEGRITY_DENIAL_20261018.md.
 
 ---
