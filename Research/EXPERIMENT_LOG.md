@@ -1,3 +1,9 @@
+# 2026-10-18 V5DCM20 RESULT COMPLETE / POSITIVE for original roadmap live passive duration, NOT original host-only 24/24 partial. Hypothesis stable parser/HA RX with no TX across 10+min. Baseline flashed V5DCM19 FIX1, prior 189-second positive and 11/1 initial resync/fault. Only controlled variable longer observation, no controller restart/write/YAML. User provided thermia-exp86-20261018-013151.log 01:31:52-01:50:25 (18m33s). 37 triplet diagnostic cycles, B11C 6677->15885 parity countDiff=byteDiff=0, B11D 6670->15880 parity zero faults, V5 frames 6590->16050, resync 11->11, RX integrity 1->1, drops 0, 2619/2619 TX candidates denied physical_attempts=0. Fan OFF->ON, compressor ON mid-run, selected NaNs observed; semantic cause unknown. Positive criteria met; negative/abort physical TX, parser divergence, production telemetry stop absent; no recovery. No new genuine DCM session acceptance claimed. G01-G06 not reopened.
+
+[Full result](V5DCM/V5DCM20_LIVE_RX_ONLY_RESULT_20261018.md).
+
+---
+
 # V5DCM20 PREPARED / NOT RUN (2026-10-18), roadmap experiment distinct from earlier isolated host C++ 24/24. Hypothesis: current FIX1 stable under 10-minute passive observation, no parser regression or TX. Baseline V5DCM19 live 1566/1566 B11C, 1564/1564 B11D, zero differences, 11 stable earlier resync and 1 historical integrity fault, physical TX zero. Controlled change observation duration ONLY. Positive zero new differences/drops/TX and HA telemetry stays live. Negative integrity growth or production regression. Abort unexpected TX or critical regression. Recovery retain known-good existing FIX1. Result NOT YET RECEIVED. Report: V5DCM/V5DCM20_LIVE_RX_ONLY_PREPARED_20261018.md
 
 ---
