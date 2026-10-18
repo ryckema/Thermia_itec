@@ -68,3 +68,10 @@ Later separate V5 native-TX activation must be user-initiated and bounded, with 
 ## Safe private test artifact
 
 Two offline C++ test sources were produced in the private conversation artifacts: `v5dcm27_shadow_regression.cpp` and `v5dcm27_ledger_boundary_regression.cpp`. The second accepts an optional existing raw capture filepath at execution time. Neither includes protected native response calculations, mailbox implementations, credentials or live bus writes. The original private headers and full YAML remain user-owned and **not published**.
+
+
+---
+
+## Additional V5DCM27 private prototype result (offline-only)
+
+**V5DCM27-REJOIN-BRIDGE-OFFLINE-01 COMPLETE / POSITIVE (host source only)**: user-private `V5DCM27_REJOIN_SEAM_OFFLINE_ONLY_NOT_FOR_FLASH.zip` SHA256 `f7aca0e40cb15b8d306e89ee0ab414917d1e0f1d4431f069759d1b017c69197f`. Exactly one former private header changed, plus README; all original 55 ZIP members preserved and source YAML byte-identical SHA256 `04f562e2ccf5374ca890c5f107ee38e1fa108251dc80926cc3ba12c85004ed13`. The method for externally selected profile/generation is **not called** by deployed YAML. g++17 source test PASS for boundary revocation, rejection absent source declaration and fixture-only profile reselection; no real controller generation/ownership evidence, no controller acceptance, no ESPHome build, flash or output. The prototype permitted reuse of a nonzero numeric epoch label across *distinct* boundaries, which was diagnosed and addressed in the next **V5DCM28 source-only experiment**. See [V5DCM28](V5DCM28_EPOCH_GUARD_AND_LIFECYCLE_PROVENANCE_OFFLINE_20261018.md). Do **not** flash either prototype; current user device FIX2 remains unchanged.
