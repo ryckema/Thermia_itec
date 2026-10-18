@@ -1,3 +1,9 @@
+# UPDATE 2026-10-18 — C++ exact-HEAD build verified independently
+
+GitHub Actions run [39130592175](https://github.com/ryckema/Thermia_Connect_Firmware/actions/runs/39130592175) on commit `9c14bb3976985051d6a053664c828f0e59cb1525` confirms **SUCCESS** of actual portable C++ byte-replay compilation and synthetic C++/Python real-ledger fixture, as well as Core/RX integration. Local original capture raw-byte parity separately PASS in standalone host C++ vs Python (16/16 fields plus exact lists; see [REPLAY-02](V5DCM22_CPP_PYTHON_PARITY_OFFLINE_20261018.md)). These two verification scopes are complementary, not equivalent to an actual GitHub-core run on the private original capture. No physical TX.
+
+---
+
 # V5DCM22-REPLAY-01 — byte-for-byte offline capture replay, 2026-10-18
 
 **Experiment status: COMPLETE / POSITIVE (offline raw-frame verifier, no live execution).**
