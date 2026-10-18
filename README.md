@@ -11,7 +11,7 @@ The repository has two deliberately separated runtime builds:
 
 The underlying bus is **Modbus RTU-like, 9600 baud, 8E1 with Modbus CRC**.
 
-> **Current write status — Write Beta v4.0:** native page-owned semantic writes are locally confirmed on `03E8/count14`, `042E/count15`, `0442/count13` and `0546/count20`. EXP381B is the current COMPLETE / POSITIVE runtime baseline. v4.0 also contains seven clearly named **TEST** controls from EXP382/EXP383; those mappings are STRONGLY SUPPORTED but not yet locally proven.
+> **Published Write (Beta) status — v4.0:** native page-owned semantic writes have been locally demonstrated on `03E8/count14`, `042E/count15`, `0442/count13` and `0546/count20`. Seven clearly labeled **TEST** controls are not yet locally proven. This TX-capable public build is separate from the currently deployed **RX-only / TX HARD_DENY** V5 research baseline.
 
 ## Continue research across ChatGPT chats
 
@@ -174,27 +174,44 @@ The reverse-engineering history is maintained separately from the runtime builds
 
 Evidence is separated into locally confirmed XTR M behavior, genuine Online/DCM capture evidence, firmware-derived evidence, cross-model evidence and hypotheses.
 
-## Current experiment status
+## Current project status
 
-- **EXP380 — COMPLETE / POSITIVE:** Operation Mode `0553` native write path locally confirmed.
-- **EXP381B — COMPLETE / POSITIVE:** production/UI consolidation ran successfully and is the current proven runtime baseline.
-- **EXP382 — COMPLETE / POSITIVE, offline:** narrowed remaining controlled-page gaps without bus TX.
-- **EXP383 — PREPARED / NOT RUN:** seven STRONGLY SUPPORTED mappings are exposed as TEST controls in Write Beta v4.0 for one-at-a-time validation.
+_Snapshot: 18 October 2026. This is a project-level overview, not a per-experiment status log. For the current evidence and verified baseline, consult [Research/THERMIA_PROJECT_STATE.md](Research/THERMIA_PROJECT_STATE.md), [Research/EXPERIMENT_LOG.md](Research/EXPERIMENT_LOG.md), and [Research/PROTOCOL_FINDINGS.md](Research/PROTOCOL_FINDINGS.md)._
+
+| Workstream | Current status | What is verified / still missing |
+|---|---|---|
+| **Read-only monitoring** | **Working locally** | Existing XTR RX-only monitoring is usable. The expanded v31 full-monitoring YAML is a **PREPARED / NOT RUN** source candidate, not a compiled, flashed or locally validated release. |
+| **Native settings control — Write (Beta)** | **Locally demonstrated, limited scope** | Controller-owned page writes have been confirmed on heating (`03E8/14`), hot water/service (`042E/15`), cooling (`0442/13`), and operation (`0546/20`) pages. Candidate **TEST** settings and general recovery are not universally proven. |
+| **Native Online / Connect / DCM integration** | **In progress; application acceptance unproven** | A deployed RX-only V5 diagnostic build was observed for **18 min 33 sec** with parser parity and **zero physical TX attempts reported by software**. This is passive reliability evidence, **not** proof of an accepted DCM session, exclusive response ownership, an Online icon or cloud connectivity. |
+| **Firmware and protocol research** | **Offline evidence and tests advancing** | Actual Connect firmware, genuine historical/collaborator captures, and source-backed host tests inform the lifecycle model. Full original-reference replay, exact deployed V5 source identity, and current controller epoch/owner/slot remain unresolved. Firmware behaviour is not automatically XTR bus proof. |
+| **Home Assistant coverage** | **Expansion in preparation** | The v31 source candidate has **250 named entities** after cleanup. The **524 XTR-profile firmware schema entries** are an inventory to classify, **not** 524 locally verified bus mappings. Optional-feature availability, freshness, compilation and live HA presentation still need validation. |
+
+**Safety and deployment boundary:** the currently deployed V5 research path remains **RX-only / TX HARD_DENY**. Published Write (Beta) is a separate, guarded TX-capable build and must not be confused with that V5 deployment. No new native transmission is authorized by offline test success; any future live TX must have independently checked ownership, a bounded response slot, abort conditions and a recovery plan.
 
 ## Roadmap
 
-After EXP383 candidate validation, the planned development path is:
+**Primary objective:** reproduce the native **Thermia/Danfoss Online / Connect / DCM** integration on the iTec XTR M with ESP32/ESPHome and Home Assistant. Preserve proven monitoring and existing safe control while moving from passive protocol evidence to a controller-recognized, recoverable implementation. Progress is evidence-gated rather than tied to a fixed date or experiment number.
 
-1. **Calendar functionality** — decode and expose the native Thermia scheduling/calendar features in Home Assistant.
-2. **Complete the missing entity set** — add useful read-only and control entities that are already supported by the protocol evidence but are not yet exposed cleanly.
-3. **Fault and alarm monitoring** — decode active faults, warnings and, where available, alarm history as read-only Home Assistant entities.
-4. **Complete the native settings map** — finish mapping the remaining settings pages, registers, value types, ranges and enums.
-5. **Build a generic DCM/Online emulator** — replace page-specific experimental logic with a reusable emulator for the native Thermia/Danfoss Online/DCM communication model.
-6. **Solve the native challenge-response mechanism** — reconstruct the real session authentication/handshake instead of relying on locally proven replay behavior.
-7. **Defrost and complete operating-state model** — map defrost behavior, compressor sequencing and the full operating-state/state-machine model.
-8. **Cross-model compatibility** — validate and document support across additional Thermia/Danfoss heat-pump models, with an explicit compatibility matrix instead of assuming that behavior transfers between models.
+### Critical path — native Online / Connect / DCM
 
-The long-term goal is a robust local Home Assistant integration that follows the native Thermia/Danfoss communication model, with model-specific differences and evidence levels documented explicitly.
+1. **Re-establish the exact deployed baseline and provenance.** Obtain a byte-verifiable copy/hash of the currently flashed V5 RX-only YAML/component set; confirm the single existing UART/CRC frame callback and preserve the known-good image and rollback. Do not substitute a newer draft or the simplified public research bridge for the flashed baseline.
+2. **Complete the passive native session/lifecycle model.** Correlate genuine XTR bus evidence, historical DCM/collaborator captures and Connect firmware. Separate cold startup, retained session, reconnection and controller restart. Establish independent evidence for current controller epoch, physical response owner and legal response slot; a CRC-valid frame, page sequence, ACK or internal firmware acceptance is insufficient by itself.
+3. **Close the Connect protocol and application gaps offline first.** Reconcile the original firmware-derived reference Core, native request/response lifecycle, parameter/profile/package readiness and existing V5 observer. Build repeatable private source tests without publishing sensitive security, `0x0F` responder or `0x0708` mailbox implementations. Keep RX-only TX denial while evidence gates remain open.
+4. **Integrate a guarded, generic native emulator.** Only after source and ownership gates are satisfied, prepare a separate bounded, user-initiated live test in known controller response slots. Require measured controller-side acceptance and explicit abort/recovery evidence before enabling any broader behavior. Verify native settings readback and semantic application independently of transport ACKs. Do not assume Online icon or cloud readiness follows automatically.
+5. **Consolidate proven control into the native implementation.** Reuse the locally confirmed controller-owned page mechanism; qualify each additional register and Home Assistant control separately, with fresh-page matching, one intended change, controller republish confirmation, and reversible recovery. Keep unverified **TEST** controls quarantined.
+
+### Parallel track — monitoring and Home Assistant
+
+6. **Finish the XTR read-only monitoring release.** Audit and classify all **524 firmware-profile entries** against actual XTR evidence; expose only appropriately sourced values or clearly labeled RAW diagnostics. Resolve v31 optional pool/shunt/buffer availability and stale-value behavior, check entity/ID coverage and existing diagnostics, then separately validate ESPHome config, compilation, passive flash and Home Assistant behavior. Firmware schema support alone does not prove live registers.
+7. **Improve everyday features after their native sources are proven.** Complete fault/warning monitoring, operating-state and defrost interpretation, heating/cooling and DHW presentation, optional circuits and settings. Add calendar/scheduling only after its native semantics and safe control path are independently established.
+
+### Release and compatibility
+
+8. **Make the work reproducible and model-specific.** Maintain a versioned known-good baseline, capture/firmware provenance, regression fixtures, safety/rollback instructions, compatibility matrix and clear installation paths. Validate ATEC, iTec Eco and other Danfoss/Thermia variants as **cross-model evidence**, never automatic XTR proof.
+
+**Release gates:** source reviewed → offline tests passed → ESPHome config/compile passed → user-confirmed flash and RX/bus health → controller-confirmed native semantics. Each gate is recorded separately; passing one never implies the next. The [research handoff](Research/START_HERE.md) points to the latest work, and the [canonical state](Research/THERMIA_PROJECT_STATE.md) determines what is ready next.
+
+**Definition of success:** stable Home Assistant monitoring plus a locally verified native Connect/DCM-compatible controller session with narrowly authorized, semantically confirmed settings changes and safe reconnect/rollback behavior. Cloud Online connectivity, universal model compatibility and unmapped features remain separate goals, not assumed outcomes.
 
 ## ESPHome secrets
 
@@ -210,11 +227,9 @@ thermia_fallback_password: "..."
 
 Do not commit real credentials to this repository.
 
-## Project status
+## Deployment caution
 
-Read-only monitoring remains the conservative choice and is strictly passive.
-
-Write support now follows a locally proven native Online/DCM-style page mechanism across multiple setting pages. The active build remains intentionally isolated under **Write (Beta)** because it transmits on the heat-pump bus, controller-session recovery is model/context-specific, the native challenge-response transform is not yet reconstructed, and v4.0 includes clearly marked TEST mappings awaiting local validation.
+For normal monitoring, use the established **Read-only** configuration. **Write (Beta)** is a separate TX-capable implementation with proven but bounded controller-owned setting paths; candidate TEST controls are not general release-ready features. The V5 native Connect/DCM research deployment is presently **RX-only / TX HARD_DENY**, not a finished Online emulator. Always follow the [current research state](Research/THERMIA_PROJECT_STATE.md) before changing a running installation.
 
 ## Disclaimer and license
 
