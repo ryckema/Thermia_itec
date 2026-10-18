@@ -1,3 +1,9 @@
+# 2026-10-18 — V5DCM22 HYPOTHESIS / offline implementation only: one prevalidated receive-event join can track Connect 2.1.105 significant-package C2 independently from native handshake, owner, mailbox and OPERATION. New code does not prove real 33-group XTR receipt and cannot authorize TX. Confirmed source files committed; full compile/CI not yet observed.
+
+[Implementation note](V5DCM/V5DCM22_PACKAGE_INTEGRATION_PARTIAL_20261018.md)
+
+---
+
 # 2026-10-18 — PROVEN / original 2.1.105 firmware-derived source audit (not bus): 2.3.0–2.4.3 original sensor/config JSON numeric dependencies 541 -> exactly 33 significant W2/W3/W4 groups (15,10,8), matching previously normalized-derived 33 starts individually; no mapping gaps/overlaps. OPEN: original object-by-object equality with normalized CSV, observed native XTR receipt of all 33, native Connect C2/Online acceptance. No TX performed.
 
 ---
