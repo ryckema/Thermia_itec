@@ -1,9 +1,9 @@
-# Thermia iTec XTR M — RX-only monitoring (v31 FIX2)
+# Thermia iTec XTR M — RX-only monitoring (v31 FIX3)
 
 **Status: PREPARED / NOT RUN.** This is the current expanded **experimental read-only** ESPHome configuration, not a verified replacement for the already-flashed V5DCM19 FIX1 or the publicly tested v29 baseline.
 
 This directory deliberately contains **exactly two files**:
-- [`thermia_itec_xtr_m_read_only.yaml`](thermia_itec_xtr_m_read_only.yaml) — the single consolidated v31 candidate, 250 named ESPHome/HA entities.
+- [`thermia_itec_xtr_m_read_only.yaml`](thermia_itec_xtr_m_read_only.yaml) — the single consolidated v31 candidate, 257 named ESPHome/HA entities.
 - This `README.md` — usage, scope, safety and limitations.
 
 ## Model and safety
@@ -14,7 +14,19 @@ Existing production YAML, entities, bus CRC/frame bookkeeping and fixed v29 temp
 
 ESPHome secrets must be supplied locally: `wifi_ssid`, `wifi_password`, `thermia_api_encryption_key`, `thermia_ota_password`, `thermia_fallback_password`. **Never commit actual secrets.**
 
-## Optional hardware: conditional states (v31 FIX2)
+## Koeling: missing-page diagnostics (FIX3)
+
+The cooling settings are read from a **complete controller-originated 0x0F FC16 0442/count13** page, which is *not* guaranteed to be broadcast again after an ESP restart when no genuine Online/DCM module is present. For example, `Cooling Enabled` might be `Unknown` even while `Cooling Active` reports correctly `Off` during heating: these describe configuration and real-time operation from **different physical data sources**.
+
+FIX3 adds exactly **seven** HA entities, without changing any existing names:
+- `Cooling Settings Page Source` (diagnostic, enabled): `0442 NOT received since ESP boot` until a full native page is captured, then `0442 received since ESP boot`. This witness records *receipt only*, not value correctness or page freshness.
+- Six **RAW signed word** diagnostic sensors, **disabled by default**: `Cooling Hysteresis Raw 0444`, `Cooling Configuration Raw 0446`, `Cooling Start Threshold Raw 0447`, `Cooling Stop Threshold Raw 0448`, `Cooling Maximum Start Temperature Raw 044A` and `Cooling Minimum Stop Temperature Raw 044B`. They publish only when that same full page arrives; no invented scale, engineering unit, profile interpretation or polling. Earlier XTR EXP382 supports all named meanings other than 0447, which remains *hypothesis only*.
+
+If the page source says **NOT received**, the solution is **not** to fabricate values or to assume cooling is disabled; it needs a passive full-frame capture and analysis of why the controller did not publish the page. RX-only firmware intentionally cannot request native settings on demand. When the page source says **received** but a setting stays Unknown, inspect the register word/range filter in the decoder using a short CRC-valid capture. The initial full cooling-page source status does not require any external DCM.
+
+**This version is PREPARED / NOT RUN.** No full ESPHome compilation, flash, on-device validation or HA registry reconciliation was performed. The existing known-good V5 baseline remains unchanged.
+
+## Optional hardware: conditional states (v31 FIX3)
 
 The passive native capability page `0x0F FC16 0532/count18` contains firmware-derived bits:
 
