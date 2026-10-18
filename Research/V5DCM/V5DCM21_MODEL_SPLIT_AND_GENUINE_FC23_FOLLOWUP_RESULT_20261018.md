@@ -2,8 +2,8 @@
 Date: 2026-10-18
 
 ## Status
-- **V5DCM21-MODEL-SPLIT:** COMPLETE / POSITIVE **offline source/model regression only**.
-- **V5DCM21-FC23-FOLLOWUP:** COMPLETE / POSITIVE **bounded capture chronology/geometry and synthetic-CI audit only**.
+- **V5DCM21-MODEL-SPLIT:** RUNNING / PARTIAL; **offline source/model regression PASS** (no user-confirmed live experiment).
+- **V5DCM21-FC23-FOLLOWUP:** RUNNING / PARTIAL; **bounded raw-capture chronology and synthetic-CI audit PASS** (no user-confirmed live experiment).
 - **V5DCM21 native Connect/Online integration overall:** **RUNNING / PARTIAL**.
 - This work does **not** establish live XTR acceptance, physical TX authorization, controller epoch, exclusive response slot, application OPERATION, profile/package readiness, cloud onboarding or an Online icon.
 
@@ -55,7 +55,7 @@ No full ESPHome compile, firmware flash, controller reset, bus TX, real delivery
 - **OPEN / UNKNOWN:** electrical source/physical owner and exclusive reply slot, provable current controller epoch, native response delivery of a private firmware-dependent transform, XTR profile selection and all required app packages, genuine semantic readback, display Online/cloud onboarding, full stateful seven-corpus original Python Core test, and exact flashed V5DCM19 FIX1 source identity.
 
 ## Positive/negative/inconclusive, abort/recovery, next action
-- **Positive criteria for these offline substeps MET:** original reference divergences retained and regression-pinned; accurate CRC/length/time metadata on three existing captures; CI all required stages success; no private contents published.
+- **Offline positive validation criteria met, but experiment status remains RUNNING / PARTIAL pending a user-confirmed live result:** original reference divergences retained and regression-pinned; accurate CRC/length/time metadata on three existing captures; CI all required stages success; no private contents published.
 - **Negative:** no failure in scoped tests. **Inconclusive for XTR native acceptance:** no DCM hardware, delivery proof or active TX experiment.
 - **Abort criteria:** any attempt to publish private native response transform, promote raw frame shape to owner/TX authority, issue unsolicited writes or mutate deployed YAML. None occurred; **rollback** if needed is to revert isolated tool/test/workflow commits; known-good user-flashed RX-only firmware unchanged.
 - **NEXT:** separately design an **offline evidence-provenance/delivery transition contract** coupling firmware-like `RESPONSE_SENT` only to a proven successful response delivery witness, never to a passive shape. Require independent session/epoch/physical owner and separately observe profile/package readiness. Keep historical Python reference intact; no public private 0x0F responder. Do not claim V5DCM18 full seven-corpus suite COMPLETE.
