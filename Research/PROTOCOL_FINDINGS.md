@@ -1,3 +1,9 @@
+# 2026-10-18 — STRONGLY SUPPORTED source-index aggregate fidelity: genuine extracted Connect 2.1.105 CM930 2.3.0–2.4.3 JSON directly confirms 99 sensors, 471 configs and 541 unique read-side numeric dependencies. OPEN / UNKNOWN exact normalized row equality and independently remapped original-source 33 W2/W3/W4 groups; source evidence not local XTR native C2 or Online.
+
+[Detailed original-JSON audit](V5DCM/V5DCM21_PACKAGES_03_RAUC_PROVENANCE_PARTIAL_20261018.md)
+
+---
+
 # 2026-10-18 — V5DCM21-PACKAGES-03 OPEN / UNKNOWN original profile equality: 2.1.105 RAUC SHA256 1da6d55dd50dee9335c03f13df35370c3ad7c1a9ebb06a0e9c2b32b92769868c is valid SquashFS container but not unpacked here; device_client ZIP parser source only, 2018 appfs 2.3.0–2.4.1. Existing 33 significant candidate groups remain supported by normalized-source audit, not exact raw RAUC equality or local XTR runtime.
 
 [Audit details](V5DCM/V5DCM21_PACKAGES_03_RAUC_PROVENANCE_PARTIAL_20261018.md)
