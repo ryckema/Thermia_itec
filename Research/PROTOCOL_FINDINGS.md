@@ -1,3 +1,7 @@
+# 2026-10-18 — Manual-to-HA taxonomy, **NOT a new local protocol proof**. User-provided AWIXT01CG0210 photos support INFO/SERVICE menu grouping, optional SHUNTGROEP 1/2 (additional heating circuits), optional pool/buffer and XTR model exclusions. Manual parameter names and ranges are semantic anchors, not Modbus mappings. All menu-to-native register/scaling links still graded against local XTR frames and firmware. Documentation: [Manual hierarchy](../Read-only/Thermia%20itec%20XTR/V31_MANUAL_MENU_STRUCTURE_20261018.md). No TX/YAML/live changes.
+
+---
+
 # 2026-10-18 V5DCM21 source finding: current public portable Core allows internal ResponseSent→Accepted promotion inside fc16_decision before external owner qualification; bridge hard-denies live TX; readiness profile/package evidence not embedded in Core write_ready. Offline pure evaluator smoke compiled and ran against locally manually reconstructed declarations, not a verified GitHub checkout. New passive observer source references const Core only, never grants TX. **PROVEN source-level** these API distinctions and committed observer file; **OPEN** full HEAD compilation/integration, real evidence source/epoch/slot, retained/hot path and semantic Online. No additional bus finding, no production code change. [Report](V5DCM/V5DCM21_OFFLINE_COMPILE_AND_OBSERVER_PARTIAL_20261018.md).
 
 ---
