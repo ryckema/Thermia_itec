@@ -1,0 +1,30 @@
+# START HERE — Thermia iTec XTR M
+> Compact, evidence-bound entry point for a NEW ChatGPT session. Updated 2026-10-18. This is a navigation and handoff document, NOT a replacement for the canonical evidence. Verify the latest dated canonical entries before acting.
+
+## First five minutes
+1. Read **this file** and [CONTINUITY_WORKFLOW.md](CONTINUITY_WORKFLOW.md).
+2. Read the **TOP/current sections** of [THERMIA_PROJECT_STATE.md](THERMIA_PROJECT_STATE.md), [EXPERIMENT_LOG.md](EXPERIMENT_LOG.md), and [PROTOCOL_FINDINGS.md](PROTOCOL_FINDINGS.md). These large files contain historical entries: do NOT treat every older 'LATEST' heading as current.
+3. For the active experiment, read the linked experiment-specific PREPARED/RESULT report and the exact code/YAML provenance.
+4. Inspect relevant [Thermia Connect firmware research](https://github.com/ryckema/Thermia_Connect_Firmware) and actual firmware files when firmware claims matter.
+5. Check for newer commits/experiments than this handoff. If found, update this file; never override newer evidence with this snapshot.
+
+## Verified handoff snapshot — 2026-10-18
+- **Most recent locally confirmed live test:** **V5DCM20 COMPLETE / POSITIVE** for passive RX-only stability. User-provided log covered **18 min 33 sec**; B11C/B11D raw-vs-portable parity with zero observed count/byte differences, drops 0, **2,619 TX candidates denied and physical TX attempts 0**. Some HA values briefly NaN through natural fan/compressor transitions: semantics unresolved.
+- **Deployed baseline in the latest result:** V5DCM19 FIX1, RX-only, TX HARD_DENY. Do NOT infer it has since changed without current source/log verification.
+- **Next planned step:** **V5DCM21 PREPARED / NOT RUN** — *offline* TX-readiness/source/evidence audit from V4.1 plus original CM930 reference. Not approval to transmit.
+- **Independent unresolved task:** V5DCM18 original Python reference-Core full fixture/stateful replay remains **RUNNING / PARTIAL**; separately bounded ZIP C++ tests/replays passed but do not close it.
+- **Accepted constraints:** G01–G06 residual risks remain accepted/closed pending genuinely new evidence. Physical owner, response slot, native challenge acceptance, Online icon/cloud readiness remain unproven locally. User permits carefully scoped TX research, but **authorization is not evidence of safe electrical or protocol readiness**.
+- **Firmware distinction:** user ZIP portable Core and firmware-repo HEAD have differed; never transfer test validity between them without checking provenance.
+- **Important evidence:** [V5DCM20 live result](V5DCM/V5DCM20_LIVE_RX_ONLY_RESULT_20261018.md), [V5DCM19 FIX1 live result](V5DCM/V5DCM19_FIX1_LIVE_RESULT_20261018.md), [V5DCM18 functional gap handoff](V5DCM/V5DCM18_FUNCTIONAL_GAP_HANDOFF_20261018.md).
+
+## Do next
+1. Check whether V5DCM21 has subsequently been prepared/performed.
+2. Review V4.1, original firmware reference, current deployed code and outstanding G01–G06 gates **offline only**.
+3. Keep TX physically denied until scoped live-test prerequisites are independently satisfied.
+4. After any material result, update canonical files, then refresh this handoff in the **same documentation change**. Verify commit and report SHA.
+
+## What NOT to do
+- Do not ask for a DCM module, disconnect room sensor or silently repeat rejected tests.
+- Do not confuse synthetic/offline acceptance with native local confirmation.
+- Do not mark PREPARED as COMPLETE; do not invent compilation, flashing or TX.
+- Do not expose confidential response algorithms/private 0x0F or 0x0708 material.
