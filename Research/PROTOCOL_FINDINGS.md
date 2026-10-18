@@ -1,3 +1,7 @@
+# 2026-10-18 — v31 RX-only HA source packaging, **NO NEW BUS FINDING**. Existing firmware-derived capability candidates 0x0533 pool, 0x0534 shunt group 1, 0x0535 shunt group 2, 0x0536 buffer tank are reused from v30-alpha12; installation and mapping freshness still need local verification. New v31 alpha01 modifies HA registration/exposure only (no TX or native interpretation changes); HA disabled_by_default is registration-time only, NOT automatic conditional enabling. No evidence claim beyond offline static source review. [Scope](../Read-only/Thermia%20itec%20XTR/V31_FULL_MONITORING_SCOPE.md).
+
+---
+
 # 2026-10-18 V5DCM21 RUNNING / PARTIAL: source-level, not protocol discovery. **PROVEN / inspected GitHub source:** current Core::fc16_decision can set firmware handshake Accepted before physical owner qualification; Core write_ready omits explicit profile/package readiness; existing bridge kLiveTxEnabled=false. **Implemented offline-only model (not yet executed):** pure evaluate(State, IndependentEvidence) separately reports internal acceptance, 5 physical owner criteria, cold 32/32 evidence, app package/profile, service, semantic confirmation; never enables TX. New firmware files at commit `8dc5918d63967dc53f500fb637f92d7cda1902b2`. **OPEN:** compile/test outputs, adapter integration, real retained/recovery completion, native physical authority and Online. Do not promote model to local bus proof; production untouched.
 
 ---
