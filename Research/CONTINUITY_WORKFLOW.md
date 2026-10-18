@@ -23,7 +23,7 @@ Make research reproducible when ChatGPT chat history is missing. **START_HERE.md
 
 **Saving:** update the canonical project state, append linked PREPARED/RESULT history without deleting earlier evidence, reconcile findings, refresh START_HERE; verify GitHub writes/commits. When writes fail, explicitly say nothing was saved.
 
-**Safety:** TX/emulation research is authorized in principle; actual potentially disruptive live actions must belong to a clearly scoped user-initiated test with fail-closed timing, abort and rollback. Current RX-only/TX HARD_DENY status stays until a new proven deployment says otherwise.
+**Standing authorization update (2026-10-18):** user explicitly allows **general autonomous native TX** for the Online/Connect/DCM research and controlled deployment. Do not repeatedly seek broad TX consent for every owned response/handshake stage in an already user-initiated, scoped and armed live experiment. G01–G06 residual research risks were previously accepted; keep technical evidence levels intact rather than reopening them by default. User permission is distinct from protocol entitlement and implementation readiness: retain fail-closed CRC/session/owner/slot checks, bounded timing/retries, explicit abort/rollback, no uncontrolled scans or speculative/unowned writes. This decision did not flash anything or perform physical TX. The last **observed** on-device RX-only/TX HARD_DENY baseline stays as such until a verified new deployment. [Decision](NATIVE_AUTONOMOUS_TX_AUTHORIZATION_20261018.md).
 
 ## Reduce growth without losing history
 Current canonical markdown files exceed 500 KB individually and accumulate dated status headers. A later *separate audited migration* should:
