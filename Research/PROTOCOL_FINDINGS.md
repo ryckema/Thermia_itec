@@ -1,3 +1,7 @@
+# 2026-10-18 — SOFTWARE BUILD FINDING (not protocol): V5DCM23 private ESPHome main compilation failed because root xtr_v5dcm21_packages.hpp and readiness header were not declared in esphome.includes, despite being present in ZIP. Two-entry private FIX1 restores source copying; strict C++ host test / historical capture replay PASS; complete ESPHome build and device runtime remain OPEN. Not evidence of FC16 or controller semantics. No native TX, mailbox or firmware implementation changes. Report Research/V5DCM/V5DCM23_FIX1_ESPHome_INCLUDE_REPAIR_20261018.md.
+
+---
+
 # 2026-10-18 — PROVEN offline source-and-host test only: public portable PassivePackageLedger semantics adapted to a private V5DCM19 completed frame callback, strict g++17 compile/tests PASS. Historical source-byte capture 2687 CRC-good, 162 native FC16 and 2 native FC23; ledger refuses to qualify stale session data after FC23 and never confers native C2/owner/Online or TX. All production HA nodes in prior private source preserved, but no full-monitoring 263-name parity. OPEN / UNKNOWN full ESPHome build, exact flashed source/partition after OTA rollback warning, live native package delivery or semantic Connect session. No new on-device TX and private files not published. [Report](V5DCM/V5DCM23_OFFLINE_INTEGRATION_STATUS_20261018.md).
 
 ---
