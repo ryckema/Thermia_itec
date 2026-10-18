@@ -1,3 +1,10 @@
+## Follow-up provenance correction (2026-10-18)
+
+The user subsequently explicitly confirmed **YES, the Thermia controller was manually powered off and back on** around the V5DCM32 live-test interruption. This supersedes this report's earlier *'physical restart not confirmed'* uncertainty at the level of **user testimony**, while exact power transition times, electrical measurements, epoch identity and owner continue **UNKNOWN**. The observed 22:02:30 B11D partial-frame latch, 22:02:43 callback gap, 22:02:45 native FC23 and later `BadIntegrity` denied rejoin remain unchanged. Reset-associated partial framing is a hypothesis needing source/host review, not permission to suppress fault. Live rejoin outcome remains **COMPLETE / NEGATIVE**. Next V5DCM33 offline, no repeat hardware action proposed.
+
+
+---
+
 # V5DCM32-LIVE-OBS-01 — armed real session transition; integrity-gated RX rejoin denied
 
 **2026-10-18 — status COMPLETE / NEGATIVE for this specific armed live rejoin attempt** (not proof native integration impossible). Retain V5DCM32 overall firmware-soak follow-up as RUNNING / PARTIAL only if tracked separately. Source-only V5DCM32-RX-REJOIN-INTEGRATION-01 remains COMPLETE / POSITIVE offline. Do not conflate source and live results.
