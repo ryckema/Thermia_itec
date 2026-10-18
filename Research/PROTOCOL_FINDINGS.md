@@ -1,3 +1,7 @@
+# 2026-10-18 V5DCM21 — **PROVEN / executed offline source CI**: portable complete-frame adapter and passive DCM observer join compile on actual firmware HEAD; 43 synthetic joined-frame tests plus 22 readiness tests pass (Actions 39115058751, `1c045872`). **STRONGLY SUPPORTED architecture:** one CRC/boundary-validated RX path, strict cold ordered reference independent of app readiness; CRC-valid FC23 does not itself establish acceptance; historical 32/32 is not a retained/recovery rule. **OPEN / UNKNOWN:** actual deployed FIX1 callback integration, independent sender/epoch/owner/slot proof, real Connect state, Online icon, native dynamic response. **DISPROVEN as inference:** mere full observed cold-page sequence, valid FC16 frame or ACK establishes TX permission. This is not a new XTR capture or semantic proof. No physical TX, production YAML or new private implementation. [Report](V5DCM/V5DCM21_PASSIVE_RX_JOIN_CI_RESULT_20261018.md).
+
+---
+
 # 2026-10-18 — v31 HA source audit (NOT new protocol finding): v31-alpha01 declares 300 named YAML entities (192 numerical, 92 binary, 16 text), only 92 default-enabled; 178 HA disabled, 30 internal. Faults excluded partially: `Active Mapped Faults` text_sensor is still enabled; requires fix before release. No effect on native DCM proof or 524 XTR firmware schema coverage. [Entity inventory](../Read-only/Thermia%20itec%20XTR/V31_ENTITY_INVENTORY_20261018.md).
 
 ---
