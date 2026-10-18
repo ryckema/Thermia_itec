@@ -1,3 +1,7 @@
+# 2026-10-18 — READ-V31 manual taxonomy documented, PREPARED / NOT RUN: additional user-supplied AWIXT01CG0210 commissioning manual photos confirm INFO (§7) and SERVICE (§8) grouping. New documentation-only [Manual hierarchy](../Read-only/Thermia%20itec%20XTR/V31_MANUAL_MENU_STRUCTURE_20261018.md); no YAML, native protocol, flash or live state changes. v31-alpha01 is still a candidate lacking complete per-parameter native-source/HA coverage audit; optional shunt groups 1/2 represent 2nd/3rd heating circuits, pool/buffer optional. Exclude calendar, alarms, actuator/test/reset controls. Earlier verified V5DCM20 and V5DCM21 states unchanged.
+
+---
+
 # 2026-10-18 V5DCM21 RUNNING / PARTIAL — offline compiler smoke PASS on locally recreated current Core declarations and evaluator/test assertions; NOT a verified GitHub HEAD checkout (network clone unavailable), NOT observer compile or live XTR proof. New firmware passive observer source `portable/xtr_v5dcm21_observer.hpp` commit `947200841159e0caced6d5930aa4f6386778554a`; returns read-only gate snapshot from const Core and externally independently qualified evidence, with TX-disabled bridge assertion. No Core, production YAML, native TX or firmware challenge adapter changes. V5DCM20 deployed RX-only good; G01–G06 accepted unchanged; V5DCM18 original full replay PARTIAL. Next actual HEAD compiler/regression and source-to-observer integration, retained/rejoin evidence gates. [Report](V5DCM/V5DCM21_OFFLINE_COMPILE_AND_OBSERVER_PARTIAL_20261018.md).
 
 ---
