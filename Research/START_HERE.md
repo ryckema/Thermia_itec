@@ -1,3 +1,7 @@
+# 2026-10-18 HANDOFF UPDATE: User YES: MANUAL THERMIA CONTROLLER POWER CYCLE CONFIRMED for V5DCM32-LIVE-OBS-01. Previously noted 'unconfirmed restart' in older entries is superseded by the user's follow-up, not retroactively established as independent hardware measurement. Arm 22:02:23, B11D incomplete 22:02:30, 12923ms gap 22:02:43, FC23 22:02:45, BadIntegrity verdict5 Denied, 0/0 ledger, localGen0, TX HARD_DENY. Status COMPLETE / NEGATIVE rejoin. V5DCM33-INTEGRITY-RECOVERY-OFFLINE-01 PREPARED / NOT RUN. Next OFFLINE study exact incomplete-frame latch; no repeated physical restart until reviewed.
+
+---
+
 # LATEST 2026-10-18 V5DCM32 LIVE ARMED ATTEMPT COMPLETE / NEGATIVE FOR REJOIN. Real user log 22:00:23–22:03:44 SHA256 94c3121d56ff70c2bef30e621f82eac97fb80f7b1d7ab2d4e006f1fef6842c11. Arm at 22:02:23, B11D FIRST_FAULT incomplete 22:02:30, R6-P24 12923ms gap 22:02:43, 14 FC23 afterward, Bridge step=2 verdict=5 BadIntegrity (confirmed exact policy enum) and localGen=0; V5DCM23 1/33→0/0 fail-closed. Software TX HARD_DENY/DE LOW. No native Online or epoch ownership proved; user physical restart not separately confirmed. NEXT V5DCM33-INTEGRITY-RECOVERY-OFFLINE-01 PREPARED / NOT RUN; read exact B11D parser before any repeat live restart. Full provenance: V5DCM/V5DCM32_LIVE_REJOIN_INTEGRITY_DENIAL_20261018.md.
 
 ---
