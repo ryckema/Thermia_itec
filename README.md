@@ -13,6 +13,10 @@ The underlying bus is **Modbus RTU-like, 9600 baud, 8E1 with Modbus CRC**.
 
 > **Current write status — Write Beta v4.0:** native page-owned semantic writes are locally confirmed on `03E8/count14`, `042E/count15`, `0442/count13` and `0546/count20`. EXP381B is the current COMPLETE / POSITIVE runtime baseline. v4.0 also contains seven clearly named **TEST** controls from EXP382/EXP383; those mappings are STRONGLY SUPPORTED but not yet locally proven.
 
+## Continue research across ChatGPT chats
+
+Start with **[Research/START_HERE.md](Research/START_HERE.md)** for the short, date-stamped research handoff, then **[Research/CONTINUITY_WORKFLOW.md](Research/CONTINUITY_WORKFLOW.md)** for the documentation/update workflow. Always verify against the newest canonical experiment evidence; the handoff is not a replacement for source logs.
+
 ## Choose a build
 
 ### Read-only — recommended for monitoring
