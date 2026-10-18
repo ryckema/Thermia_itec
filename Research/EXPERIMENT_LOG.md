@@ -1,3 +1,7 @@
+# 2026-10-18 — **V5DCM22-REPLAY-01 COMPLETE / POSITIVE (offline byte-for-byte fail-closed test)**. Hypothesis that all 33 source-selected package starts appear but local XTR 33/33 C2 is unproven because two physical count mismatches; baseline V5DCM22 source-selected 33-group ledger. Controlled change replay raw historical 20261003 log in exact timestamp order, no reconstructed payloads, verify CRC, FC16 counts, FC23 boundaries. RESULT **2687/2687 CRC valid, 162 0x0F FC16, 33/33 selected starts, 31/33 local shape matches, 126 matched occurrences, 2 wrong-count selected frames**, native 0x0F FC23 at 27.400/27.429 before FC16; existing integration revokes profile and therefore **0 qualified receipts without externally justified reselection**. Offline CRC mutation rejected. C++ actual join runner committed but build/run **unverified**; existing production unmodified, zero physical TX. Recovery not needed. [Detailed report](V5DCM/V5DCM22_RAW_CAPTURE_REPLAY_RESULT_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM22 offline capture provenance check RUNNING / PARTIAL: historical thermia_capture_20261003_165355.log 162 valid FC16, all 33 candidate starts, two local-geometry mismatches (03E8/13 vs14, 0410/21 vs22) therefore maximum 31/33 exact geometry in that historical source. Not a new on-device experiment; C2 not proven, no TX.
 
 ---
