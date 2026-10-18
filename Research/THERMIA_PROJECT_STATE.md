@@ -1,3 +1,7 @@
+# 2026-10-18 — V5DCM21-PACKAGES-03 RUNNING / PARTIAL. ORIGINAL 2.1.105 appfs 2.3.0–2.4.3 JSON independently yields 570 objects, 541 numeric dependencies and EXACT same 33 W2/W3/W4 selected starts (15/10/8) as prior normalized index; 0 unmapped/ambiguous. Full field-by-field derived CSV equality OPEN (large GitHub CSV not retrievable in this runtime), but original-source package selection now POSITIVE offline. Current v31 FIX4 RX-only, no live native C2 or TX. Next: portable source-audit reproducibility and passive package-receipt chronology.
+
+---
+
 # 2026-10-18 — Original extracted 2.1.105 appfs profile 2.3.0–2.4.3 now directly available. Direct JSON count 99 sensors + 471 configs (570) and numeric formula/condition/min/max/default dependency union 541; both match normalized index aggregate. Original sensors/config/info-2.4.2 SHA256 documented in PACKAGES-03. Still not verified: object-by-object normalized CSV equality, and original JSON => W2/W3/W4 33-group mapping. V5DCM21-PACKAGES-03 RUNNING / PARTIAL, no live TX/YAML.
 
 [Detailed original-JSON audit](V5DCM/V5DCM21_PACKAGES_03_RAUC_PROVENANCE_PARTIAL_20261018.md)
