@@ -1,4 +1,6 @@
-# Thermia iTec XTR M — v31 Full Monitoring FIX3 (COOLING RX AUDIT) — PREPARED / NOT RUN
+# Thermia iTec XTR M — v31 Full Monitoring FIX4 (ALL NATIVE PAGE SOURCE AUDIT) — PREPARED / NOT RUN
+# 13 native controller-page receipt bits provide one compact Unknown-source diagnostic.
+# All existing 257 HA entity names retained; no TX, no active native polling, no synthetic values.
 # Cooling 0442/count13 page-seen source witness and six raw-only missing words (7 additional HA entities).
 # No new bus requests, TX, semantic scale claims, or automatic page-cache fabrication.
 # 250 named HA entities; pool, two shunts and buffer require fresh 0532 capability ON.
@@ -441,6 +443,13 @@ globals:
     type: bool
     restore_value: no
     initial_value: 'false'
+
+  # 13 full controller-native 0x0F FC16 page families observed since ESP boot.
+  # Each bit is set only in the already-validated corresponding receive branch.
+  - id: thermia_native_page_seen_mask
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
 
   - id: thermia_capabilities_seen
     type: bool
@@ -1403,6 +1412,7 @@ uart:
                   start == 0x03E8 &&
                   count >= 13
                 ) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 0);  // RX source 0x03E8
 
                   // -----------------------------------------------------------
                   // Mapper: slave 0x0F FC10 block 0x03E8..0x03F5
@@ -1491,6 +1501,8 @@ uart:
                 // =============================================================
 
                 if (slave == 0x0F && start == 0x03FC && count >= 11) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 1);  // RX source 0x03FC
+
                   const int16_t circuit1_curve = reg_s(0x03FC);
                   const int16_t circuit1_min = reg_s(0x03FD);
                   const int16_t circuit1_max = reg_s(0x03FE);
@@ -1617,6 +1629,8 @@ uart:
                 // =============================================================
 
                 if (slave == 0x0F && start == 0x0410 && count >= 21) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 2);  // RX source 0x0410
+
                   // -----------------------------------------------------------
                   // Batch E: complete semantic accounting of 0410..0424.
                   //
@@ -1799,6 +1813,8 @@ uart:
                 // =============================================================
 
                 if (slave == 0x0F && start == 0x042E && count >= 15) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 3);  // RX source 0x042E
+
                   const int16_t enabled = reg_s(0x042E);
                   const int16_t mode = reg_s(0x042F);
                   const int16_t startup_ht = reg_s(0x0433);
@@ -1819,6 +1835,8 @@ uart:
                 }
 
                 if (slave == 0x0F && start == 0x0442 && count >= 13) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 4);  // RX source 0x0442
+
                   const int16_t enabled = reg_s(0x0442);
                   const int16_t desired_temp = reg_s(0x0443);
                   const int16_t active_above = reg_s(0x0445);
@@ -1858,6 +1876,8 @@ uart:
                 // Native alarm frames still pass through the generic CRC-valid RX parser.
 
                 if (slave == 0x0F && start == 0x0546 && count >= 20) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 6);  // RX source 0x0546
+
                   const int16_t mode = reg_s(0x0553);
                   if (mode == 0) publish_text_if_changed(id(thermia_operation_mode_setting), "Uit");
                   else if (mode == 1) publish_text_if_changed(id(thermia_operation_mode_setting), "Auto");
@@ -1911,6 +1931,8 @@ uart:
                 // =============================================================
 
                 if (slave == 0x0F && start == 0x0820 && count >= 18) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 9);  // RX source 0x0820
+
                   const int16_t r0820 = reg_s(0x0820);
                   const int16_t r0821 = reg_s(0x0821);
                   const int16_t r0822 = reg_s(0x0822);
@@ -1985,6 +2007,8 @@ uart:
                 // 0864/count4 family: 0865 = operation status/reasons,
                 // 0866 = queued demands. Local XTR runtime uses this geometry.
                 if (slave == 0x0F && start == 0x0864 && count >= 3) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 11);  // RX source 0x0864
+
                   const uint16_t status = uint16_t(reg_s(0x0865));
                   const uint16_t queued = uint16_t(reg_s(0x0866));
 
@@ -2040,6 +2064,8 @@ uart:
                 // register ownership; human labels for 087C/087D remain alpha
                 // until a local natural defrost gives direct temporal proof.
                 if (slave == 0x0F && start == 0x0870 && count >= 14) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 12);  // RX source 0x0870
+
                   const int16_t defrost_count = reg_s(0x087B);
                   const int16_t previous_interval = reg_s(0x087C);
                   const int16_t since_last = reg_s(0x087D);
@@ -2069,6 +2095,8 @@ uart:
                 // 0539 is kept RAW because its product-name interpretation is
                 // still being reconciled against the local observed value.
                 if (slave == 0x0F && start == 0x0532 && count >= 18) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 5);  // RX source 0x0532
+
                   const int16_t page_0532_raw = reg_s(0x0532);
                   const int16_t pool_cfg = reg_s(0x0533);
                   const int16_t circuit1_cfg = reg_s(0x0534);
@@ -2192,6 +2220,8 @@ uart:
                 // =============================================================
 
                 if (slave == 0x0F && start == 0x07D0 && count >= 19) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 7);  // RX source 0x07D0
+
                   const int16_t supply_raw = reg_s(0x07D0);
                   const int16_t cross_profile_07d1_raw = reg_s(0x07D1);
                   const int16_t return_raw = reg_s(0x07D2);
@@ -2364,6 +2394,8 @@ uart:
                 // =============================================================
 
                 if (slave == 0x0F && start == 0x080C && count >= 18) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 8);  // RX source 0x080C
+
                   const int16_t room_raw = reg_s(0x080C);
                   const int16_t pool_raw = reg_s(0x080D);
                   const int16_t cooling_raw = reg_s(0x080E);
@@ -2459,6 +2491,8 @@ uart:
                 // =============================================================
 
                 if (slave == 0x0F && start == 0x0848 && count >= 23) {
+                  id(thermia_native_page_seen_mask) |= (1UL << 10);  // RX source 0x0848
+
                   const int16_t heat_demand_raw = reg_s(0x0848);
                   const int16_t supply_wanted = reg_s(0x0849);
                   const int16_t system_supply_wanted = reg_s(0x084A);
@@ -5353,6 +5387,13 @@ text_sensor:
     entity_category: diagnostic
     update_interval: never
 
+  # One compact passive coverage witness for other HA Unknown sources.
+  - platform: template
+    id: thermia_native_pages_seen_summary
+    name: "Native Settings Pages Seen"
+    entity_category: diagnostic
+    update_interval: never
+
 
   # ===========================================================================
   # CAPABILITY SUMMARY / 0539 COLLISION — READ-PROD-01G
@@ -5416,6 +5457,29 @@ interval:
           if (!id(thermia_cooling_page_source)->has_state() ||
               id(thermia_cooling_page_source)->state != cooling_page_state) {
             id(thermia_cooling_page_source)->publish_state(cooling_page_state);
+          }
+          // All 13 sources counted only when a valid full FC16 page is decoded.
+          // Y = page observed since ESP boot; N = not observed (not an error).
+          const uint32_t native_seen = id(thermia_native_page_seen_mask);
+          char native_summary[190];
+          snprintf(native_summary, sizeof(native_summary),
+                   "03E8:%c 03FC:%c 0410:%c 042E:%c 0442:%c 0532:%c 0546:%c 07D0:%c 080C:%c 0820:%c 0848:%c 0864:%c 0870:%c",
+                   (native_seen & (1UL << 0)) ? 'Y' : 'N',
+                   (native_seen & (1UL << 1)) ? 'Y' : 'N',
+                   (native_seen & (1UL << 2)) ? 'Y' : 'N',
+                   (native_seen & (1UL << 3)) ? 'Y' : 'N',
+                   (native_seen & (1UL << 4)) ? 'Y' : 'N',
+                   (native_seen & (1UL << 5)) ? 'Y' : 'N',
+                   (native_seen & (1UL << 6)) ? 'Y' : 'N',
+                   (native_seen & (1UL << 7)) ? 'Y' : 'N',
+                   (native_seen & (1UL << 8)) ? 'Y' : 'N',
+                   (native_seen & (1UL << 9)) ? 'Y' : 'N',
+                   (native_seen & (1UL << 10)) ? 'Y' : 'N',
+                   (native_seen & (1UL << 11)) ? 'Y' : 'N',
+                   (native_seen & (1UL << 12)) ? 'Y' : 'N');
+          if (!id(thermia_native_pages_seen_summary)->has_state() ||
+              id(thermia_native_pages_seen_summary)->state != native_summary) {
+            id(thermia_native_pages_seen_summary)->publish_state(native_summary);
           }
           const uint32_t last = id(thermia_last_valid_frame_ms);
           if (last == 0 || (millis() - last) > 10000UL) {
