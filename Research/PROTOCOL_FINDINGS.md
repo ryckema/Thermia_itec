@@ -1,3 +1,7 @@
+# 2026-10-18 V5DCM32 PROVEN locally + USER ATTESTATION: user explicitly confirms manually powering Thermia controller off and back on in this armed test. 12923ms callback gap and post-intervention FC23 are observed locally, but no independent power transition timestamp or physical controller epoch/owner proof. B11D RAW_INCOMPLETE_AT_IDLE before gap and subsequent BadIntegrity denial remain proven; frame interruption during reset is PLAUSIBLE HYPOTHESIS, not established cause. This does not justify clearing RX fault unconditionally.
+
+---
+
 # V5DCM32 PROVEN locally 2026-10-18: after user Configuration arm, B11D RAW_INCOMPLETE_AT_IDLE fault appeared, then 12923ms callback gap and first native FC23, eventually 14 local FC23 counts. Portable RX33 ledger revoked from 1/33 to 0/0 and V5DCM32 refused rejoin (step=2 Denied, verdict=5 BadIntegrity, localGeneration=0). Software HARD_DENY and DE low persist. Do not call this a successful fresh session, real controller epoch, ownership or Online acceptance. Completed CRC frame parity was good but raw incomplete fault latched. Whether incomplete was normal physical interruption vs parser artifact remains UNKNOWN. Full provenance: V5DCM/V5DCM32_LIVE_REJOIN_INTEGRITY_DENIAL_20261018.md.
 
 ---
