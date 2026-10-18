@@ -1,3 +1,7 @@
+# 2026-10-18 — PROVEN / original 2.1.105 firmware-derived source audit (not bus): 2.3.0–2.4.3 original sensor/config JSON numeric dependencies 541 -> exactly 33 significant W2/W3/W4 groups (15,10,8), matching previously normalized-derived 33 starts individually; no mapping gaps/overlaps. OPEN: original object-by-object equality with normalized CSV, observed native XTR receipt of all 33, native Connect C2/Online acceptance. No TX performed.
+
+---
+
 # 2026-10-18 — STRONGLY SUPPORTED source-index aggregate fidelity: genuine extracted Connect 2.1.105 CM930 2.3.0–2.4.3 JSON directly confirms 99 sensors, 471 configs and 541 unique read-side numeric dependencies. OPEN / UNKNOWN exact normalized row equality and independently remapped original-source 33 W2/W3/W4 groups; source evidence not local XTR native C2 or Online.
 
 [Detailed original-JSON audit](V5DCM/V5DCM21_PACKAGES_03_RAUC_PROVENANCE_PARTIAL_20261018.md)
