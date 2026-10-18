@@ -1,3 +1,7 @@
+# 2026-10-18 — READ-V31-ENTITY-AUDIT — SOURCE INVENTORY ONLY; v31 live build remains PREPARED / NOT RUN. Exact v31 YAML entity enumeration: 300 named, 92 enabled, 178 disabled by default, 30 internal; exposed text sensor `Active Mapped Faults` conflicts with exclusion requirement and is documented but not yet changed. No compile/flash, no TX, no new native-register proof. [Inventory](../Read-only/Thermia%20itec%20XTR/V31_ENTITY_INVENTORY_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM21 source-backed CI regression substep **COMPLETE / POSITIVE**, V5DCM21 integration overall **RUNNING / PARTIAL**. Hypothesis: explicit source/session epoch/path provenance prevents offline gate from promoting denied/stale Core states. Baseline V5DCM19 FIX1 RX-only / V5DCM20 18m33s positive. Controlled change only V5DCM21 readiness evaluator, host test, required CI workflow on actual firmware HEAD `1ca3cf60`, not ESPHome production. Evidence GitHub run 39114268008: g++ -std=c++17 -O0 -Wall -Wextra -Werror -pedantic compile PASS, program outputs 22 assertions PASS, source TX hard-deny PASS. Positive verified for host source; controller epoch revocation and cold/retained/recovery checks pass as synthetic/offline fixtures; physical native DCM acceptance, evidence source and real runtime join INCONCLUSIVE. No physical TX or live action, no abort/recovery. Keep V5DCM18 original replay partial and G01–G06 accepted. [Report](V5DCM/V5DCM21_HEAD_REGRESSION_RESULT_20261018.md).
 
 ---
