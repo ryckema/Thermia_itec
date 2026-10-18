@@ -1,0 +1,36 @@
+# V5DCM32-LIVE-OBS-01 — user-installed RX-only first live snapshot
+
+**Status: RUNNING / PARTIAL** as of 2026-10-18. The user explicitly confirmed "**het staat er op**" (V5DCM32 flashed) and supplied their live ESPHome log. The fresh rejoin itself has **NOT been initiated or demonstrated**; no session transition test was performed in this evidence. This result is distinct from **V5DCM32-RX-REJOIN-INTEGRATION-01 COMPLETE / POSITIVE (offline C++ host/source)**.
+
+## Exact evidence and provenance
+
+- User-uploaded ESPHome API log `Pasted text(20261018-193804).txt`, SHA256 **`2d4bf22ca79bd9047de749efb07241886a5064a86ad1ee5082e7e9e7b99c786a`**, 1,514 lines, 111,147 bytes.
+- Log frames timestamped **21:36:53.998 to 21:37:57.072** on 2026-10-18, approximately **63.074 seconds**. No evidence of an uninterrupted 15–20 minute run in this upload.
+- Successfully connected ESPHome API at local host; **this ESPHome API handshake is not a Thermia DCM-native handshake**.
+- `[V5DCM32]` lines occur at 21:37:18.330 and 21:37:48.323: **`RX_ONLY step=0 scope=0 localGen=0 verdict=0 epoch=UNKNOWN owner=UNKNOWN C2=UNPROVEN TX=HARD_DENY`**. This directly confirms that the V5DCM32 diagnostic source is running. The file's command-line `Loaded validated config cache for waveshare-thermia_GAP51D_CLEAN_RX_ONLY_PREPARED_NOT_FLASHED.yaml, skipping validation` refers to the user's ESPHome log invocation/cache label, not unambiguous flashed-firmware source identity. The precise flashed binary/hash and actual OTA partition have **NOT** been independently authenticated. Do not infer full current config validation/compilation from that cache message.
+- No `FRESH_RX_REJOIN_ARMED` or `MANUAL_REVOKE` lines. `scope=0` and `step=0`: **no Configuration fresh arm, no bounded intervention context**, and therefore no real requalification under V5DCM32.
+- `[V5DCM22]` at 21:37:18 and 21:37:48: **`sinceBoot=1/33 sessionCandidate=1/33`**; `exact=30 → 58`, `wrongGeom=0`, `fc23=0`, `integrity=0`, `revoked=0`. Only W3 bit0 `03E8/count14` appears among the 33 strict requested groups. This is *not* evidence that 33 requested/accepted native groups were successfully synchronized.
+- `[V5DCM23]` at 21:37:18 and 21:37:48: **`profile=1 received=1/33 completeShapes=0`**, same pending masks `W2=BFFF, W3=867E, W4=035F`, C2/Online/owner/epoch unproven, TX HARD_DENY.
+- `[B11C-PORTABLE]` at 21:37:48: **`V5=522 portable=522 countDiff=0 byteDiff=0 boundaryFaults=0 resync=0 drops=0 ioTxAttempts=0 DE=0`**; `[B11D-RX]` at 21:37:49: **`rawFrames=533 portableFrames=533 comparedV5=533 countDiff=0 byteDiff=0 noise=0 incomplete=0 ambiguous=0 overflow=0 nativeFault=0/0/0 ioTx=0 DE=0`**. Per-snapshot counts should not be miscompared at different timestamps.
+- `[S8] HEALTH` at 21:37:47: **`valid=519 fc16=85 cfg=14 operation=5 FC23=0 deltaResync=0 deltaDrops=0 owner=UNKNOWN TX=0/0/0 DE=0`**. Later software TX counters at 21:37:49: `V5 TX-02 Native Executor (HARD DENY) = candidates=88 denied=88 physical_attempts=0`. `V5 S3 UART Write Calls=0`, `V5 S2 Physical TX Attempts=0` in the sensor snapshots. These are *software counters*, not independent oscilloscope confirmation of electrical silence.
+- R6 legacy observer `[R6-P30EC]` at 21:37:16 and 21:37:46 **unchanged** `D=4 first=STAGE_D_LEDGER_FAULT reason=INTEGRITY_HOLD_NO_TX req23=0 P=1/32 A=0/32 gaps=0 resets=0`; **no original `[R6-P30D] HANDOFF_ABORT reason=...` was present**, so first Stage D trigger is still unknown. This older sticky hold does not imply a new CRC fault of B11C/B11D/V5DCM23.
+- Practical HA readback visible and plausible: supply temperature about 29°C, room 21.4°C, DHW 51°C, compressor frequency 23Hz, operation Heating. **Source-level entity parity and full HA registry were not re-audited from this log**; successful readings do not prove all historical HA statistics survived.
+- There is no ESP reset/OTA rollback symptom in this 63-second excerpt, but no full soak/lifetime claim can be made.
+
+## Outcome against prepared acceptance criteria
+
+**Limited live POSITIVE observation:** new V5DCM32 log emitted by running ESP, existing sensors update, RX frame parity stable, CRC/parser/drop counters do not increase, TX HARD_DENY/DE LOW according to software. **Actual hypothesis-dependent rejoin: NOT RUN / INCONCLUSIVE within ongoing RUNNING/PARTIAL live experiment** because no arm, no after-arm callback gap/return, no cold status, no native FC23. Do not change live test to COMPLETE.
+
+**No negative current-session finding:** `1/33` remains expected in passive retained running traffic; absence of native FC23 during this excerpt is not proof FC23 no longer exists. No independent Online/C2 or owner/physical epoch claimed.
+
+## Next live sequence — user-initiated and explicitly scoped, no native TX
+
+1. Preserve the original verified RX-only **FIX2** backup/rollback path, and confirm normal HA telemetry. V5DCM32 is currently running; don't initiate an unrelated active TX.
+2. For **V5DCM32-LIVE-OBS-01 fresh-rejoin test only**, use the `Configuration` button `V5DCM32 Arm Fresh RX Rejoin (NO TX)` **immediately before** an intentionally chosen controlled manual controller restart. The source has a **30-second, 8,192 completed-frame observation budget** and requires *after-arm* callback-gap/return, cold controller state and canonical `0x0F FC23` in the same event. If the physical restart and native request cannot finish within this bounded window, mark INCONCLUSIVE and do not relax timers/conditions opportunistically.
+3. Observe exactly minimal relevant logs: `[V5DCM32]`, `[V5DCM23]`, `[V5DCM22]`, `[R6-P24]`, `[B11C-PORTABLE]`, `[B11D-RX]`, `[S8] HEALTH`, `[R6-P30EC]`, `V5 TX-02 Native Executor`; include the lines around the `FRESH_RX_REJOIN_ARMED`/denied event and last 30-second report. No raw private command mailbox bytes need be uploaded.
+4. **Positive live rejoin** only if arm accepted, correct new scoped natural controller transition and current FC23, portable collector reselected and subsequent genuine strict FC16 group delivered with retained HA health and no TX. **Negative** if unqualified FC23 reselects ledger, TX/DE changes, frame parser or HA breaks. **Inconclusive** if no current FC23/cold event appears before scope expiry. **Abort:** any physical TX attempt/DE high, unexpected heat pump behavior, broken HA telemetry, CRC/drop/parser increase; use `V5DCM32 Revoke RX Rejoin (NO TX)`, stop testing and restore baseline as needed. No retries or writes.
+5. Do not ask for an unnecessary new G01–G06 proof program: their residual research uncertainties are **accepted risks**. No controller restart has been ordered or executed by the assistant.
+
+**Alternative non-disruptive observation:** continue unchanged running firmware while collecting longer logs, but this cannot demonstrate fresh rejoin without a scoped event. Running the two new controls is optional; do not infer the user has pressed either.
+
+**Current canonical handoff:** V5DCM32 is user-flashed and live **RUNNING / PARTIAL**, not still PREPARED / NOT RUN. Old FIX2 source is the preserved fallback and previous verified baseline; it is **not** the presently reported running bridge anymore. Keep the offline V5DCM32 source task COMPLETE / POSITIVE separately.
