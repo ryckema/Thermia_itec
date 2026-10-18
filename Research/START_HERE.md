@@ -1,3 +1,9 @@
+# CURRENT HANDOFF — 2026-10-18 V5DCM29
+
+**Latest:** V5DCM29 source-only physical-epoch versus local session generation contract COMPLETE / POSITIVE on three strict C++ host tests. Original historic FC23 drives real unchanged V5DCM28 ledger to revoked; there is NO genuine current physical witness/owner/slot/Online proof and no production wiring. Private ZIP is nonflashable. **Deployed user device remains V5DCM23 FIX2 RX-only, RUNNING / PARTIAL (1/33 short first log), TX HARD_DENY.** V5DCM26 15–20-minute passive observation still PREPARED / NOT RUN; **V5DCM30 INDEPENDENT WITNESS AUDIT PREPARED / NOT RUN** is next offline action. V5DCM28 numeric `proven_controller_epoch` MUST NOT be used as both physical epoch and monotonically increasing local generation; source contract separates them. No new firmware, ESPHome compilation, flashing or TX. [Result](V5DCM/V5DCM29_SESSION_PROVENANCE_CONTRACT_OFFLINE_20261018.md). Canonical project state above older summaries remains authoritative.
+
+---
+
 # CURRENT HANDOFF — V5DCM28 2026-10-18
 
 Live user-flashed **V5DCM23 FIX2: RUNNING / PARTIAL RX-only**, first short log 1/33 strict page groups and clean RX, no FC23 captured, native TX HARD_DENY. Latest **V5DCM28-EPOCH-GUARD-01 COMPLETE / POSITIVE for OFFLINE host tests only**: one inert V5DCM27 source reselect guard now refuses repeated/older controller generation *labels*, cross-tested with the real historical 20261003 FC23 and gap24a/b Fresh/Retained/Recovery metadata. No current independent actual owner/physical epoch/slot proof; proof flag in host test synthetic only; 1/33 unresolved. New ZIP is **NOT FLASHABLE**, no ESPHome/HA changes. V5DCM29 trustworthy independent-session contract PREPARED / NOT RUN; V5DCM26 15–20-minute same-FIX2 passive run also PREPARED / NOT RUN. [Source/host result](V5DCM/V5DCM28_EPOCH_GUARD_AND_LIFECYCLE_PROVENANCE_OFFLINE_20261018.md). Verify newest canonical file headings below, not older snapshots.
