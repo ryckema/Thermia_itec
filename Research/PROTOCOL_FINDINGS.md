@@ -1,3 +1,9 @@
+# 2026-10-18 V5DCM20 PROVEN locally on XTR M: user-provided 18m33s RX-only live capture, 37 recurring diagnostics, V5 and portable/B11C/B11D byte-and-count parity preserved through normal fan/compressor transitions, stable 11 historical resync and 1 integrity fault, zero new drops, 2619 native candidates hard-denied, zero actual physical TX. Strongly supported: current integration RX reliability over tested interval. OPEN: NaN values in selected HA sensors during compressor idle/transition are not proven correct semantics; no native 0x0F FC23 approval, 0708 mailbox, epoch/owner/slot/DCM acceptance or Online icon observed. V5DCM20 complete bounded; cannot infer native emulation success. G01-G06 accepted residual risks unchanged.
+
+[Full result](V5DCM/V5DCM20_LIVE_RX_ONLY_RESULT_20261018.md).
+
+---
+
 # V5DCM20 2026-10-18 is PREPARED / NOT RUN roadmap live RX-only duration test; prior V5DCM20 host 24/24 synthetic checks are not proof of live XTR behavior. V5DCM19 deployed diagnostics provide ~189s positive parser/HA/TX baseline; new 10-min observation pending. No new protocol claims or native DCM acceptance. Accepted G01–G06 unchanged. Report: V5DCM/V5DCM20_LIVE_RX_ONLY_PREPARED_20261018.md
 
 ---
