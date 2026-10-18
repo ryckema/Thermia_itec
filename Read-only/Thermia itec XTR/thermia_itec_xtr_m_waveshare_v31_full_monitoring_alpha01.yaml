@@ -1,4 +1,7 @@
-# Thermia iTec XTR M — v31 Full Monitoring alpha01 — PREPARED / NOT RUN
+# Thermia iTec XTR M — v31 Full Monitoring alpha02 R1–R11 CLEANUP — PREPARED / NOT RUN
+# 50 approved redundant/alarm/ESP metadata entities removed; 250 HA entities retained.
+# R7/R8 propagated outdoor temperatures + B3C6 are default-disabled, not deleted.
+# Native register values, conditional options, generic CRC parser and RX-only operation unchanged.
 # Based on public RX-only v30-alpha12 decoder (Thermia_Connect_Firmware/parameters).
 # Calendar fully excluded from HA: no calendar entities, raw calendar diagnostics or schedule decoding.
 # Existing non-calendar parser caches remain intact; no calendar frames transmitted or requested.
@@ -1825,110 +1828,7 @@ uart:
                 }
 
                 // =============================================================
-                // READ-PROD-01C — NATIVE ALARM WORDS, PASSIVE RX ONLY
-                //
-                // 085F/0860/0861 are CM930 alarm bitfields in Connect 2.1.105.
-                // Only bits without a conflicting semantic in the unified
-                // 2.3.0-2.4.3 map are decoded here. Colliding/uncertain bits
-                // remain visible through the raw words.
-                // =============================================================
-                if (slave == 0x0F && start == 0x085F && count >= 3) {
-                  const uint16_t alarm1 = uint16_t(reg_s(0x085F));
-                  const uint16_t alarm2 = uint16_t(reg_s(0x0860));
-                  const uint16_t alarm3 = uint16_t(reg_s(0x0861));
-
-                  publish_float_if_changed(id(thermia_alarm_word_085f), float(alarm1), 0.5f);
-                  publish_float_if_changed(id(thermia_alarm_word_0860), float(alarm2), 0.5f);
-                  publish_float_if_changed(id(thermia_alarm_word_0861), float(alarm3), 0.5f);
-
-                  // 085F: selected non-colliding firmware semantics.
-                  publish_bool_if_changed(id(thermia_fault_compressor_motor_protection), (alarm1 & (1u << 0)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_fan_motor_protection),        (alarm1 & (1u << 1)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_aux_heater),                  (alarm1 & (1u << 2)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_heat_pressure),               (alarm1 & (1u << 3)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_low_pressure),                (alarm1 & (1u << 4)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_pressure_transducer),         (alarm1 & (1u << 5)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_high_pressure),               (alarm1 & (1u << 6)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_flow_switch),                 (alarm1 & (1u << 7)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_max_temp_card),               (alarm1 & (1u << 8)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_system_pump),                 (alarm1 & (1u << 11)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_outdoor_sensor),              (alarm1 & (1u << 13)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_supply_line_sensor),          (alarm1 & (1u << 15)) != 0);
-
-                  // 0860: keep only bits with a stable meaning in the current
-                  // firmware map; profile-colliding bits remain raw-only.
-                  publish_bool_if_changed(id(thermia_fault_system_supply_sensor),        (alarm2 & (1u << 0)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_return_line_sensor),          (alarm2 & (1u << 1)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_buffer_tank_sensor),          (alarm2 & (1u << 3)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_hot_water_sensor),            (alarm2 & (1u << 5)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_hot_water_top_sensor),        (alarm2 & (1u << 6)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_condenser_out_sensor),        (alarm2 & (1u << 10)) != 0);
-
-                  // 0861: sensor / communication faults with stable semantics.
-                  publish_bool_if_changed(id(thermia_fault_suction_temp_sensor),         (alarm3 & (1u << 0)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_room_sensor),                 (alarm3 & (1u << 1)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_distribution_circuit_1_sensor),(alarm3 & (1u << 3)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_distribution_circuit_2_sensor),(alarm3 & (1u << 4)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_pool_sensor),                 (alarm3 & (1u << 5)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_cooling_sensor),              (alarm3 & (1u << 6)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_indoor_hub_communication),    (alarm3 & (1u << 8)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_expansion_card_communication),(alarm3 & (1u << 10)) != 0);
-                  publish_bool_if_changed(id(thermia_fault_internet_gateway_communication),(alarm3 & (1u << 11)) != 0);
-
-                  // Compact user-facing diagnostic summary. Unknown/colliding
-                  // set bits are reported without guessing their meaning.
-                  std::string faults;
-                  auto add_fault = [&](const char *label) {
-                    if (faults.size() > 210) return;
-                    if (!faults.empty()) faults += "; ";
-                    faults += label;
-                  };
-
-                  if (alarm1 & (1u << 0)) add_fault("Compressor motor protection");
-                  if (alarm1 & (1u << 1)) add_fault("Fan motor protection");
-                  if (alarm1 & (1u << 2)) add_fault("Aux heater");
-                  if (alarm1 & (1u << 3)) add_fault("Heat pressure");
-                  if (alarm1 & (1u << 4)) add_fault("Low pressure");
-                  if (alarm1 & (1u << 5)) add_fault("Pressure transducer");
-                  if (alarm1 & (1u << 6)) add_fault("High pressure");
-                  if (alarm1 & (1u << 7)) add_fault("Flow switch");
-                  if (alarm1 & (1u << 8)) add_fault("Max temp card");
-                  if (alarm1 & (1u << 11)) add_fault("System pump");
-                  if (alarm1 & (1u << 13)) add_fault("Outdoor sensor");
-                  if (alarm1 & (1u << 15)) add_fault("Supply sensor");
-                  if (alarm2 & (1u << 0)) add_fault("System supply sensor");
-                  if (alarm2 & (1u << 1)) add_fault("Return sensor");
-                  if (alarm2 & (1u << 3)) add_fault("Buffer sensor");
-                  if (alarm2 & (1u << 5)) add_fault("DHW sensor");
-                  if (alarm2 & (1u << 6)) add_fault("DHW top sensor");
-                  if (alarm2 & (1u << 10)) add_fault("Condenser out sensor");
-                  if (alarm3 & (1u << 0)) add_fault("Suction temp sensor");
-                  if (alarm3 & (1u << 1)) add_fault("Room sensor");
-                  if (alarm3 & (1u << 3)) add_fault("Circuit 1 sensor");
-                  if (alarm3 & (1u << 4)) add_fault("Circuit 2 sensor");
-                  if (alarm3 & (1u << 5)) add_fault("Pool sensor");
-                  if (alarm3 & (1u << 6)) add_fault("Cooling sensor");
-                  if (alarm3 & (1u << 8)) add_fault("Indoor hub communication");
-                  if (alarm3 & (1u << 10)) add_fault("Expansion card communication");
-                  if (alarm3 & (1u << 11)) add_fault("Internet gateway communication");
-
-                  const uint16_t mapped1 = uint16_t(
-                    (1u<<0)|(1u<<1)|(1u<<2)|(1u<<3)|(1u<<4)|(1u<<5)|
-                    (1u<<6)|(1u<<7)|(1u<<8)|(1u<<11)|(1u<<13)|(1u<<15));
-                  const uint16_t mapped2 = uint16_t(
-                    (1u<<0)|(1u<<1)|(1u<<3)|(1u<<5)|(1u<<6)|(1u<<10));
-                  const uint16_t mapped3 = uint16_t(
-                    (1u<<0)|(1u<<1)|(1u<<3)|(1u<<4)|(1u<<5)|(1u<<6)|
-                    (1u<<8)|(1u<<10)|(1u<<11));
-                  if ((alarm1 & uint16_t(~mapped1)) ||
-                      (alarm2 & uint16_t(~mapped2)) ||
-                      (alarm3 & uint16_t(~mapped3))) {
-                    add_fault("Unmapped/ambiguous alarm bit(s)");
-                  }
-
-                  if (faults.empty()) faults = "No mapped faults";
-                  publish_text_if_changed(id(thermia_active_mapped_faults), faults.c_str());
-                }
+                // Native alarm frames still pass through the generic CRC-valid RX parser.
 
                 if (slave == 0x0F && start == 0x0546 && count >= 20) {
                   const int16_t mode = reg_s(0x0553);
@@ -2052,24 +1952,7 @@ uart:
                   publish_bool_if_changed(id(thermia_native_odu_comp_down),
                                           (op & (1u << 10)) != 0);
 
-                  // READ-PROD-01L: compare native 082E status with the
-                  // established direct 0x1E physical-state entities.
-                  const bool native_compressor = (status & (1u << 0)) != 0;
-                  const bool native_fan = (status & (1u << 2)) != 0;
-
-                  if (id(thermia_compressor_running)->has_state()) {
-                    publish_bool_if_changed(
-                      id(thermia_compare_compressor_status_match),
-                      native_compressor == id(thermia_compressor_running)->state
-                    );
-                  }
-
-                  if (id(thermia_outdoor_fan_running)->has_state()) {
-                    publish_bool_if_changed(
-                      id(thermia_compare_fan_status_match),
-                      native_fan == id(thermia_outdoor_fan_running)->state
-                    );
-                  }
+                  // Native compressor and fan states remain in their own entities.
                 }
 
                 // 0864/count4 family: 0865 = operation status/reasons,
@@ -2119,45 +2002,7 @@ uart:
                   publish_bool_if_changed(id(thermia_concrete_drying_demand_queued),
                                           (queued & (1u << 6)) != 0);
 
-                  // READ-PROD-01L: compare firmware-derived native operation
-                  // bits with the existing v29 derived production states.
-                  // Short mismatches around transitions are expected and are
-                  // evidence to measure, not grounds for automatic migration.
-                  const bool native_heating = (status & (1u << 0)) != 0;
-                  const bool native_dhw = (status & (1u << 1)) != 0;
-                  const bool native_cooling = (status & (1u << 7)) != 0;
-
-                  if (id(thermia_heating_active)->has_state()) {
-                    publish_bool_if_changed(
-                      id(thermia_compare_heating_active_match),
-                      native_heating == id(thermia_heating_active)->state
-                    );
-                  }
-                  if (id(thermia_dhw_active)->has_state()) {
-                    publish_bool_if_changed(
-                      id(thermia_compare_dhw_active_match),
-                      native_dhw == id(thermia_dhw_active)->state
-                    );
-                  }
-                  if (id(thermia_cooling_active)->has_state()) {
-                    publish_bool_if_changed(
-                      id(thermia_compare_cooling_active_match),
-                      native_cooling == id(thermia_cooling_active)->state
-                    );
-                  }
-
-                  char compare_summary[160];
-                  snprintf(
-                    compare_summary,
-                    sizeof(compare_summary),
-                    "Native0865 H=%u DHW=%u C=%u; v29 H=%u DHW=%u C=%u",
-                    unsigned(native_heating), unsigned(native_dhw), unsigned(native_cooling),
-                    unsigned(id(thermia_heating_active)->has_state() ? id(thermia_heating_active)->state : 0),
-                    unsigned(id(thermia_dhw_active)->has_state() ? id(thermia_dhw_active)->state : 0),
-                    unsigned(id(thermia_cooling_active)->has_state() ? id(thermia_cooling_active)->state : 0)
-                  );
-                  publish_text_if_changed(id(thermia_native_vs_v29_mode_summary),
-                                          compare_summary);
+                  // Native heating/DHW/cooling status remains published independently.
                 }
 
                 // 0870/count17 family. Firmware names are authoritative for
@@ -2276,30 +2121,8 @@ uart:
                     publish_bool_if_changed(id(thermia_energy_performance_enabled_capability),
                                             energy_performance_cfg == 1);
 
-                  // 0539 semantic conflict:
-                  // - compact CM930 profile DB: flow_sensor_enabled
-                  // - separate recovered info-layer evidence: configured product
-                  // Local XTR raw value is 1, so neither interpretation is
-                  // promoted here. Keep this text diagnostic explicit.
-                  char semantic_0539[96];
-                  snprintf(semantic_0539, sizeof(semantic_0539),
-                           "Unresolved semantic collision; raw=%d",
-                           int(reg_0539_raw));
-                  publish_text_if_changed(id(thermia_0539_interpretation),
-                                          semantic_0539);
+                  // The ambiguous 0539 raw value and installed capability flags remain preserved.
 
-                  // Compact summary of only the high-confidence capability bits.
-                  char capability_summary[160];
-                  snprintf(
-                    capability_summary,
-                    sizeof(capability_summary),
-                    "Pool=%d, Circuit1=%d, Circuit2=%d, Buffer=%d, EQ=%d, Zoning=%d, EP=%d",
-                    int(pool_cfg), int(circuit1_cfg), int(circuit2_cfg),
-                    int(buffer_cfg), int(eq_cfg), int(zoning_cfg),
-                    int(energy_performance_cfg)
-                  );
-                  publish_text_if_changed(id(thermia_capability_summary),
-                                          capability_summary);
                 }
 
                 // =============================================================
@@ -2395,47 +2218,7 @@ uart:
                     id(thermia_native_outdoor_temperature_07da)->publish_state(NAN);
                   }
 
-                  // READ-PROD-01L: signed native-minus-v29 comparison deltas.
-                  // These are validation diagnostics only; no source is promoted.
-                  if (valid_whole_temp(supply_raw) &&
-                      id(thermia_supply_temperature)->has_state() &&
-                      !isnan(id(thermia_supply_temperature)->state)) {
-                    publish_float_if_changed(
-                      id(thermia_compare_supply_delta),
-                      float(supply_raw) - id(thermia_supply_temperature)->state,
-                      0.05f
-                    );
-                  }
-
-                  if (valid_whole_temp(dhw_top_raw) &&
-                      id(thermia_dhw_upper_temperature)->has_state() &&
-                      !isnan(id(thermia_dhw_upper_temperature)->state)) {
-                    publish_float_if_changed(
-                      id(thermia_compare_dhw_top_delta),
-                      float(dhw_top_raw) - id(thermia_dhw_upper_temperature)->state,
-                      0.05f
-                    );
-                  }
-
-                  if (valid_whole_temp(dhw_raw) &&
-                      id(thermia_dhw_temperature)->has_state() &&
-                      !isnan(id(thermia_dhw_temperature)->state)) {
-                    publish_float_if_changed(
-                      id(thermia_compare_dhw_delta),
-                      float(dhw_raw) - id(thermia_dhw_temperature)->state,
-                      0.05f
-                    );
-                  }
-
-                  if (valid_whole_temp(outdoor_raw) &&
-                      id(thermia_outdoor_temperature)->has_state() &&
-                      !isnan(id(thermia_outdoor_temperature)->state)) {
-                    publish_float_if_changed(
-                      id(thermia_compare_outdoor_delta),
-                      float(outdoor_raw) - id(thermia_outdoor_temperature)->state,
-                      0.05f
-                    );
-                  }
+                  // Keep distinct native measurements; no redundant comparison entities.
 
                   // Locally relevant native-only hydraulic temperatures.
                   if (valid_whole_temp(return_raw)) {
@@ -2562,16 +2345,7 @@ uart:
                       0.05f
                     );
 
-                    // READ-PROD-01L: validation against the existing room
-                    // temperature production source (0x0A path).
-                    if (id(thermia_room_temperature)->has_state() &&
-                        !isnan(id(thermia_room_temperature)->state)) {
-                      publish_float_if_changed(
-                        id(thermia_compare_room_delta),
-                        native_room - id(thermia_room_temperature)->state,
-                        0.05f
-                      );
-                    }
+                    // The native room value remains published without the v29 delta.
                   } else {
                     id(thermia_native_room_temperature_080c)->publish_state(NAN);
                   }
@@ -3450,18 +3224,6 @@ sensor:
     free:
       name: "Thermia ESP Heap Free"
       entity_category: diagnostic
-    min_free:
-      name: "Thermia ESP Heap Min Free"
-      entity_category: diagnostic
-      disabled_by_default: true
-    fragmentation:
-      name: "Thermia ESP Heap Fragmentation"
-      entity_category: diagnostic
-      disabled_by_default: true
-    loop_time:
-      name: "Thermia ESP Loop Time"
-      entity_category: diagnostic
-      disabled_by_default: true
 
 
   # ===========================================================================
@@ -3529,6 +3291,7 @@ sensor:
   - platform: template
     id: thermia_room_bus_outdoor_temperature
     name: "Room Bus Propagated Outdoor Temperature"
+    disabled_by_default: true
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
@@ -3539,6 +3302,7 @@ sensor:
   - platform: template
     id: thermia_dcm_outdoor_temperature
     name: "Accessory Slot Propagated Outdoor Temperature"
+    disabled_by_default: true
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
@@ -5109,93 +4873,6 @@ sensor:
     disabled_by_default: true
     update_interval: never
 
-  - platform: template
-    id: thermia_alarm_word_085f
-    name: "Alarm Word Raw 085F"
-    internal: true
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    disabled_by_default: true
-    update_interval: never
-
-  - platform: template
-    id: thermia_alarm_word_0860
-    name: "Alarm Word Raw 0860"
-    internal: true
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    disabled_by_default: true
-    update_interval: never
-
-  - platform: template
-    id: thermia_alarm_word_0861
-    name: "Alarm Word Raw 0861"
-    internal: true
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    disabled_by_default: true
-    update_interval: never
-
-
-  # ===========================================================================
-  # READ-PROD-01L — NATIVE vs v29 VALIDATION DELTAS
-  # Signed delta = native CM930 value - existing v29 production value.
-  # Diagnostics only; these do not drive any production entity.
-  # ===========================================================================
-
-  - platform: template
-    id: thermia_compare_room_delta
-    name: "Compare Room Native-v29 Delta"
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    entity_category: diagnostic
-    disabled_by_default: true
-    update_interval: never
-
-  - platform: template
-    id: thermia_compare_supply_delta
-    name: "Compare Supply Native-v29 Delta"
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    entity_category: diagnostic
-    disabled_by_default: true
-    update_interval: never
-
-  - platform: template
-    id: thermia_compare_dhw_top_delta
-    name: "Compare DHW Top Native-v29 Delta"
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    entity_category: diagnostic
-    disabled_by_default: true
-    update_interval: never
-
-  - platform: template
-    id: thermia_compare_dhw_delta
-    name: "Compare DHW Native-v29 Delta"
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    entity_category: diagnostic
-    disabled_by_default: true
-    update_interval: never
-
-  - platform: template
-    id: thermia_compare_outdoor_delta
-    name: "Compare Outdoor Native-v29 Delta"
-    unit_of_measurement: "°C"
-    accuracy_decimals: 1
-    entity_category: diagnostic
-    disabled_by_default: true
-    update_interval: never
-
-
-  # ===========================================================================
-  # RAW MODBUS REGISTERS
-  # All are diagnostic and disabled by default.
-  # Source: 1=FC04 read, 2=FC10 Thermia write, 3=FC17 write part,
-  #         4=FC17 read response.
-  # ===========================================================================
-
 binary_sensor:
 
   # ===========================================================================
@@ -5247,37 +4924,6 @@ binary_sensor:
   # ON = sources agree at the most recent native-page sample.
   # Short OFF periods around transitions can be normal.
   # ===========================================================================
-
-  - platform: template
-    id: thermia_compare_compressor_status_match
-    name: "Compare Native-v29 Compressor Status Match"
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_compare_fan_status_match
-    name: "Compare Native-v29 Fan Status Match"
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_compare_heating_active_match
-    name: "Compare Native-v29 Heating Active Match"
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_compare_dhw_active_match
-    name: "Compare Native-v29 DHW Active Match"
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_compare_cooling_active_match
-    name: "Compare Native-v29 Cooling Active Match"
-    entity_category: diagnostic
-    disabled_by_default: true
-
 
   - platform: template
     id: thermia_dhw_enabled_setting
@@ -5516,222 +5162,6 @@ binary_sensor:
   # ===========================================================================
 
   - platform: template
-    id: thermia_fault_compressor_motor_protection
-    name: "Compressor Motor Protection Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_fan_motor_protection
-    name: "Fan Motor Protection Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_aux_heater
-    name: "Auxiliary Heater Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_heat_pressure
-    name: "Heat Pressure Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_low_pressure
-    name: "Low Pressure Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_pressure_transducer
-    name: "Pressure Transducer Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_high_pressure
-    name: "High Pressure Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_flow_switch
-    name: "Flow Switch Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_max_temp_card
-    name: "Max Temperature Card Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_system_pump
-    name: "System Pump Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_outdoor_sensor
-    name: "Outdoor Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_supply_line_sensor
-    name: "Supply Line Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_system_supply_sensor
-    name: "System Supply Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_return_line_sensor
-    name: "Return Line Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_buffer_tank_sensor
-    name: "Buffer Tank Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_hot_water_sensor
-    name: "Hot Water Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_hot_water_top_sensor
-    name: "Hot Water Top Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_condenser_out_sensor
-    name: "Condenser Outlet Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_suction_temp_sensor
-    name: "Suction Temperature Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_room_sensor
-    name: "Room Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_distribution_circuit_1_sensor
-    name: "Distribution Circuit 1 Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_distribution_circuit_2_sensor
-    name: "Distribution Circuit 2 Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_pool_sensor
-    name: "Pool Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_cooling_sensor
-    name: "Cooling Sensor Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_indoor_hub_communication
-    name: "Indoor Hub Communication Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_expansion_card_communication
-    name: "Expansion Card Communication Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
-    id: thermia_fault_internet_gateway_communication
-    name: "Internet Gateway Communication Fault"
-    internal: true
-    device_class: problem
-    entity_category: diagnostic
-    disabled_by_default: true
-
-  - platform: template
     id: thermia_bus_healthy
     name: "Bus Healthy"
     device_class: connectivity
@@ -5789,6 +5219,7 @@ binary_sensor:
   - platform: template
     id: thermia_room_boost_request
     name: "Room Sensor Control Flag B3C6"
+    disabled_by_default: true
     entity_category: diagnostic
 
   - platform: template
@@ -5834,52 +5265,15 @@ text_sensor:
   # CAPABILITY SUMMARY / 0539 COLLISION — READ-PROD-01G
   # ===========================================================================
 
-  - platform: template
-    id: thermia_capability_summary
-    name: "Installed Capability Summary"
-    entity_category: diagnostic
-    update_interval: never
-
-  - platform: template
-    id: thermia_0539_interpretation
-    name: "Register 0539 Interpretation"
-    entity_category: diagnostic
-    disabled_by_default: true
-    update_interval: never
-
-
   - platform: debug
     reset_reason:
       name: "Thermia ESP Reset Reason"
       entity_category: diagnostic
-    device:
-      name: "Thermia ESP Device Info"
-      entity_category: diagnostic
-      disabled_by_default: true
 
   - platform: wifi_info
     ip_address:
       name: "Thermia IP Address"
       entity_category: diagnostic
-    bssid:
-      name: "Thermia WiFi BSSID"
-      entity_category: diagnostic
-    power_save_mode:
-      name: "Thermia WiFi Power Save Mode"
-      entity_category: diagnostic
-      disabled_by_default: true
-
-  - platform: template
-    id: thermia_active_mapped_faults
-    name: "Active Mapped Faults"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_native_vs_v29_mode_summary
-    name: "Native vs v29 Mode Comparison"
-    entity_category: diagnostic
-    disabled_by_default: true
-    update_interval: never
 
   - platform: template
     id: thermia_dhw_mode_setting
