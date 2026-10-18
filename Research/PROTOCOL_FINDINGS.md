@@ -1,3 +1,7 @@
+# V5DCM33 2026-10-18 — **PROVEN SOURCE/HOST INSPECTION ONLY:** B11D observer has asymmetrical short-fragment policy: 1–4 RAW residual bytes after 25ms idle immediately latch `RAW_INCOMPLETE_AT_IDLE`; >=5-byte recognized unfinished candidate with V5 pending can defer up to 250ms. Sticky fault bypasses later RAW processing, while V5DCM31 intentionally revokes RX-rejoin scope on unhealthy integrity. **HYPOTHESIS** interrupted frame from user-confirmed controller power cycle contributed to observed live BadIntegrity; exact cause **OPEN / UNKNOWN** absent matching raw metadata replay. No implicit fault reset, live C2/session claim, or native TX. [Detailed report](V5DCM/V5DCM33_B11D_SHORT_RESIDUAL_OFFLINE_20261018.md).
+
+---
+
 # 2026-10-18 V5DCM32 PROVEN locally + USER ATTESTATION: user explicitly confirms manually powering Thermia controller off and back on in this armed test. 12923ms callback gap and post-intervention FC23 are observed locally, but no independent power transition timestamp or physical controller epoch/owner proof. B11D RAW_INCOMPLETE_AT_IDLE before gap and subsequent BadIntegrity denial remain proven; frame interruption during reset is PLAUSIBLE HYPOTHESIS, not established cause. This does not justify clearing RX fault unconditionally.
 
 ---
