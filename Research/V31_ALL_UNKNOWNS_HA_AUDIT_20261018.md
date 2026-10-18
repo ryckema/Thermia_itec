@@ -1,3 +1,26 @@
+## Live update — 2026-10-18 — FIX4 first verified user-initiated execution, RUNNING / PARTIAL
+
+**User explicitly confirms the submitted second full Home Assistant device snapshot is from v31 FIX4 flashed to the ESP32.** This *supersedes* previous uncertainty about whether FIX4 was deployed; the user's HA display contains BOTH new FIX4/FIX3 diagnostic entities.
+
+**Actual reported evidence:**
+- `Thermia ESP Reset Reason = Reboot request from esphome.ota`; `Thermia ESP Uptime = 151 s`. This is a short fresh ESP boot window, not the controller's elapsed time or an independently audited binary signature.
+- `Native Settings Pages Seen = 03E8:Y 03FC:N 0410:N 042E:N 0442:N 0532:N 0546:N 07D0:N 080C:N 0820:N 0848:N 0864:N 0870:N` — **one of 13** expected complete native-page geometries has been observed by v31's CRC-validated receive decoder, `03E8`; all other 12 remain unobserved **in this 151-second session**. In particular the 10 page families feeding the exact 34 current `Unknown` are all `N`.
+- `Cooling Settings Page Source = 0442 NOT received since ESP boot`; matches the 0442:N diagnostic independently implemented in FIX3.
+- Main heating settings from `03E8` are populated (Heating Curve 36 °C, min/max 20/40 °C, corrections 0, Heating Stop 20, Room Factor 2.0, Room Setpoint 22, Reduced Temperature 20). Direct `0x1E` telemetry remains live, now at idle: compressor 0 Hz / 0 A, fan 0 rpm, `Outdoor Unit State=Idle`, outdoor ambient ~13 °C, DHW 51 °C, supply 28 °C, target 30 °C, HA `Bus Healthy=Connected`.
+- HA counts `+153 disabled entities` in this new registry snapshot, not the same concept as `disabled_by_default` inside the YAML; HA registry state persists and may differ from source defaults.
+
+**What is now actually established:** The new passive FIX4 page-presence sensor is deployed and produces internally consistent states. `03E8` matches the live-populated main heating settings. The ***source-receipt explanation*** of all 34 reported Unknowns is **directly supported for the first 151 seconds**: none of their ten required controller 0x0F decoder branches have fired. There is no evidence in this snapshot of those ten pages having been decoded after ESP boot.
+
+**Important limitation:** `N` means **no matching complete CRC-validated page was recognized by these exact start/count receive branches**, NOT proof the controller never broadcasts them. Differing source framing, page geometry, unsupported function/direction, or later periodic publication could alter outcome. No raw frame log, packet-source counter by slave or independent electrical TX/DE measurement was supplied. Code's RX-only no-tx_pin is source verified, **not** physical TX instrument verified. A successful user OTA flash does not substitute for reproducible ESPHome compile/config audit.
+
+**Status:** `READ-V31-UNKNOWN-01` overall **RUNNING / PARTIAL** — short live observation positive for passive diagnostic presence and `03E8` receipt, but not for full native parameter availability, long-run stability or 524 XTR profile coverage. `READ-V31-COOL-01` similarly **RUNNING / PARTIAL** after the first user-reported FIX4 observation; cooling source 0442 has NOT arrived within 151s. No new protocol interpretation or physical write is proven.
+
+**Smallest safe continuation:** keep current read-only FIX4 running uninterrupted for another 15–30 minutes (no OTA reboot/HP restart or other controlled changes). Report only **`Native Settings Pages Seen`**, **`Cooling Settings Page Source`** and **`Thermia ESP Uptime`**; re-evaluate before any new source change. If the ten page families remain N, consult historical genuine/collaborator full-page traces and firmware's native page/Online session gate for alternative *passive* data sources, rather than asking user to buy a DCM, speculatively TX, or invent setting values. Stop and recover the historical verified V5 RX baseline if the observed direct 0x1E signals or bus health regress.
+
+**Reconciliation note:** Prior top sections in this file called source-based FIX4 status PREPARED / NOT RUN; these remain historic and are superseded by the user-confirmed 151s live execution documented here. YAML content unchanged after the flash, read-only. User-facing README updated to distinguish user-confirmed live run from unverified independent compiler/electrical checks.
+
+---
+
 ## UPDATE 2026-10-18 — exact 34 Unknown states identified from a full user-typed HA snapshot
 
 The user subsequently supplied **all full entity labels** (not truncated) and current state. This supersedes the earlier PDF's 33 *visually printed* Unknown tally: the new submitted full list contains **34 distinct Unknown states** (15 ordinary and 19 diagnostic). These are direct **user-supplied HA observations**; it is still not proof of which YAML blob is flashed.
