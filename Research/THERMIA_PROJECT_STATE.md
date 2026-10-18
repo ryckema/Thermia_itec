@@ -1,3 +1,7 @@
+# 2026-10-18 — V5DCM22-REPLAY-01 **COMPLETE / POSITIVE (offline byte-exact raw capture discriminator)**; V5DCM22 integration remains **RUNNING / PARTIAL**. Historical `thermia_capture_20261003_165355.log` SHA256 `14918065297264473e2357822a8694d184e7821b8c2a3b1cb316039678a708a1`: 2,687/2,687 valid CRC; 162 exact-length slave 0x0F FC16 requests; 33 selected starts, **31/33** local-XTR start/count shapes, mismatches `03E8/13` vs XTR14 and `0410/21` vs XTR22. Two valid 0x0F FC23 events at 27.400,27.429 **before** first FC16 at 29.262 force fail-closed provenance revocation; without explicit independently validated reselect: **0 qualified receipts**, no C2. Source-only C++ byte-replay harness, Python verifier and synthetic CI added to Thermia_Connect_Firmware; GitHub C++ execution **not yet verified**. User ESP32 v31 FIX4 RX-only unchanged; no physical TX. Next verify exact-HEAD C++ build, offline original capture run and qualify actual local XTR capture provenance. [Report](V5DCM/V5DCM22_RAW_CAPTURE_REPLAY_RESULT_20261018.md).
+
+---
+
 # 2026-10-18 — V5DCM22 RUNNING / PARTIAL update: historical 20261003 raw capture has 162 CRC-valid 0x0F FC16 requests, all 33 source-selected starts; only 31 match exact local XTR physical start/count. 03E8 count13 (XTR 14) and 0410 count21 (XTR 22) mismatch. Never count reference geometry as local C2. Strict synthetic 33-package test added to CI, actual CI success not verified. No deployed TX.
 
 ---
