@@ -1,3 +1,7 @@
+# 2026-10-18 V5DCM21 source finding: current public portable Core allows internal ResponseSent→Accepted promotion inside fc16_decision before external owner qualification; bridge hard-denies live TX; readiness profile/package evidence not embedded in Core write_ready. Offline pure evaluator smoke compiled and ran against locally manually reconstructed declarations, not a verified GitHub checkout. New passive observer source references const Core only, never grants TX. **PROVEN source-level** these API distinctions and committed observer file; **OPEN** full HEAD compilation/integration, real evidence source/epoch/slot, retained/hot path and semantic Online. No additional bus finding, no production code change. [Report](V5DCM/V5DCM21_OFFLINE_COMPILE_AND_OBSERVER_PARTIAL_20261018.md).
+
+---
+
 # 2026-10-18 — v31 RX-only HA source packaging, **NO NEW BUS FINDING**. Existing firmware-derived capability candidates 0x0533 pool, 0x0534 shunt group 1, 0x0535 shunt group 2, 0x0536 buffer tank are reused from v30-alpha12; installation and mapping freshness still need local verification. New v31 alpha01 modifies HA registration/exposure only (no TX or native interpretation changes); HA disabled_by_default is registration-time only, NOT automatic conditional enabling. No evidence claim beyond offline static source review. [Scope](../Read-only/Thermia%20itec%20XTR/V31_FULL_MONITORING_SCOPE.md).
 
 ---
