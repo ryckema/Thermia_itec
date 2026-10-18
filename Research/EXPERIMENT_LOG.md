@@ -1,3 +1,9 @@
+# 2026-10-18 — V5DCM21-PACKAGES-03 RUNNING / PARTIAL original appfs update: exact 2.1.105 2.3.0–2.4.3 sensors/config JSON parsed (99+471 objects), recomputed numeric receive dependencies=541, matching derived counts. No duplicate names; source SHA hashes and provenance in report. Full row-by-row normalized CSV equality untested. No on-device experiment or TX.
+
+[Detailed original-JSON audit](V5DCM/V5DCM21_PACKAGES_03_RAUC_PROVENANCE_PARTIAL_20261018.md)
+
+---
+
 # 2026-10-18 — V5DCM21-PACKAGES-03 RUNNING / PARTIAL: hypothesis source index exactly matches original 2.1.105 2.3.0–2.4.3 JSON. Inspected original RAUC/container and two source ZIPs; no suitable RAUC SquashFS extractor available. Positive: exact row/token comparison; negative: reproducible mismatch; currently INCONCLUSIVE. No physical TX, YAML or on-device execution. Abort if any unauthorized TX or protected code publication; none.
 
 [Audit details](V5DCM/V5DCM21_PACKAGES_03_RAUC_PROVENANCE_PARTIAL_20261018.md)
