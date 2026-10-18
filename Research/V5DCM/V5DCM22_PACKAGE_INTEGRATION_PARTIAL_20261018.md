@@ -1,3 +1,11 @@
+# UPDATE 2026-10-18 — V5DCM22 actual-HEAD CI verified SUCCESS
+
+[GitHub Actions 39130592175](https://github.com/ryckema/Thermia_Connect_Firmware/actions/runs/39130592175), source commit `9c14bb3976985051d6a053664c828f0e59cb1525`, completed with success and all relevant compile/regression steps PASS: exact current portable Core, RX package join, fail-closed lifecycle regressions, C++ capture replay build and C++/Python safe synthetic replay. Existing output-hard-deny and embedded/portable parity also PASS. The current v31 FIX4 remains unchanged.
+
+This supersedes older statements below that said GitHub CI execution had not yet been verified. However CI does NOT include or replay user private raw historical capture; that file was independently replayed locally by two standalone implementations. Actual native XTR C2/Online readiness remains OPEN. Overall V5DCM22 RUNNING / PARTIAL.
+
+---
+
 # Offline raw-capture cross-check (2026-10-18)
 Inspected attached `thermia_capture_20261003_165355.log` with a CRC16 Modbus gate and FC16 exact request-length check. **162 CRC-valid 0x0F FC16 requests**, containing **all 33 selected package starts**, but **NOT all matching the local XTR physical geometry**: the captured `03E8/count13` differs from local `03E8/count14`; `0410/count21` differs from `0410/count22`. Thus **31 of 33 selected starts match the XTR expected start/count shapes** in this particular external/reference-style capture. Non-selected `0492/count9` and `051E/count9` also differ from local-profile counts 11 and 10. No local XTR C2 or session delivery conclusion is justified. These frames are historical source captures, not a newly executed XTR/ESP experiment. Replaying all these frames into the strict package ledger MUST leave C2 false without locally correct shapes for the two mismatches.
 
