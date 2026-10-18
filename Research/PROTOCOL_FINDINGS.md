@@ -1,3 +1,9 @@
+# 2026-10-18 — STRONGLY SUPPORTED FIRMWARE PROFILE / IMPLEMENTATION: V5DCM22 receive-only ExpectedPackage descriptor has 33 groups from original 2.1.105 source, independently joined to W2/W3/W4 selector bits and XTR physical geometry. Fixture requires 33/33 for descriptive C2 while explicitly not claiming native ACK, ownership, TX or Online. New regression test code committed but CI execution not verified. Local physical receipt remains OPEN.
+
+[Implementation update](V5DCM/V5DCM22_PACKAGE_INTEGRATION_PARTIAL_20261018.md)
+
+---
+
 # 2026-10-18 — V5DCM22 HYPOTHESIS / offline implementation only: one prevalidated receive-event join can track Connect 2.1.105 significant-package C2 independently from native handshake, owner, mailbox and OPERATION. New code does not prove real 33-group XTR receipt and cannot authorize TX. Confirmed source files committed; full compile/CI not yet observed.
 
 [Implementation note](V5DCM/V5DCM22_PACKAGE_INTEGRATION_PARTIAL_20261018.md)
