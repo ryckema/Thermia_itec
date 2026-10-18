@@ -1,3 +1,18 @@
+# UPDATE 2026-10-18 — GitHub Actions actual portable build VERIFIED SUCCESS
+
+GitHub Actions [run 39130592175](https://github.com/ryckema/Thermia_Connect_Firmware/actions/runs/39130592175), commit `9c14bb3976985051d6a053664c828f0e59cb1525`, completed **SUCCESS**. The exact-HEAD job steps individually succeeded for:
+- `Compile V5DCM22 passive package join with exact Core`
+- `Run V5DCM22 source and epoch safety checks`
+- `Compile exact-HEAD byte-preserving passive capture replay`
+- `Replay safe synthetic fixtures through Python verifier and C++ actual ledger`
+- All pre-existing portable/Core/ESPHome RX-adapter regressions, source audits, embedded Core parity and hard-denied TX checks.
+
+This **resolves the previous uncertainty about actual portable C++ compilation and safe synthetic CI execution**. It does **NOT** mean the exact-HEAD C++ harness has replayed the private original `thermia_capture_20261003_165355.log` on GitHub. The original capture was replayed locally with two independent host implementations (Python and standalone C++), with exact 16/16 counter agreement plus both geometry lists, as detailed below. No physical TX/flash was performed.
+
+**V5DCM22 offline source + CI integration subchecks: COMPLETE / POSITIVE; overall project V5DCM22 RUNNING / PARTIAL until native on-device evidence.**
+
+---
+
 # V5DCM22-REPLAY-02 — independent C++17 vs Python byte-exact parity
 
 Date: 2026-10-18
