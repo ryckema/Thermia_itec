@@ -1,3 +1,8 @@
+# Offline raw-capture cross-check (2026-10-18)
+Inspected attached `thermia_capture_20261003_165355.log` with a CRC16 Modbus gate and FC16 exact request-length check. **162 CRC-valid 0x0F FC16 requests**, containing **all 33 selected package starts**, but **NOT all matching the local XTR physical geometry**: the captured `03E8/count13` differs from local `03E8/count14`; `0410/count21` differs from `0410/count22`. Thus **31 of 33 selected starts match the XTR expected start/count shapes** in this particular external/reference-style capture. Non-selected `0492/count9` and `051E/count9` also differ from local-profile counts 11 and 10. No local XTR C2 or session delivery conclusion is justified. These frames are historical source captures, not a newly executed XTR/ESP experiment. Replaying all these frames into the strict package ledger MUST leave C2 false without locally correct shapes for the two mismatches.
+
+This refines the next test: add a true byte-for-byte existing-capture regression fixture, explicitly distinguish reference captures versus locally proven XTR geometry; never broaden accepted counts to match reference traffic.
+---
 # V5DCM22 continuation — source-derived 33-package mapping and replay fixtures
 
 Date: 2026-10-18. **RUNNING / PARTIAL**. Source changes committed, no executed new CI/build confirmed and no on-device run.
