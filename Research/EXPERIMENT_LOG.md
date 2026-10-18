@@ -1,3 +1,7 @@
+# 2026-10-18 V5DCM21 RX-path integration CI substep — COMPLETE / POSITIVE; overall V5DCM21 RUNNING / PARTIAL. Hypothesis single existing CRC/boundary-validated RX frame stream can feed native session diagnostics without second parser, unearned session claim or TX. Baseline verified flashed V5DCM19 FIX1 RX-only and V5DCM20 18m33s stable; previous 22/22 readiness gate. Single controlled change family source-only `xtr_v5dcm21_rx_join.hpp`+test+mandatory workflow; no production YAML or device change. Targets passive slave 0x0F FC16 page geometry/ordered 32-page cold reference, generic FC23 presence, bus-return/integrity invalidation; **no TX payload**. Actual GitHub Actions 39115058751 commit `1c045872`: actual C++17 compile PASS, 22 readiness checks PASS, 43 RX-join checks PASS, static hard-deny PASS. Real physical provenance/session/UI/runtime and wired FIX1 callback remain INCONCLUSIVE. No abort trigger, no rollback needed. V5DCM18 original replay and G01–G06 unchanged. [Full evidence](V5DCM/V5DCM21_PASSIVE_RX_JOIN_CI_RESULT_20261018.md).
+
+---
+
 # 2026-10-18 — READ-V31-ENTITY-AUDIT — SOURCE INVENTORY ONLY; v31 live build remains PREPARED / NOT RUN. Exact v31 YAML entity enumeration: 300 named, 92 enabled, 178 disabled by default, 30 internal; exposed text sensor `Active Mapped Faults` conflicts with exclusion requirement and is documented but not yet changed. No compile/flash, no TX, no new native-register proof. [Inventory](../Read-only/Thermia%20itec%20XTR/V31_ENTITY_INVENTORY_20261018.md).
 
 ---
