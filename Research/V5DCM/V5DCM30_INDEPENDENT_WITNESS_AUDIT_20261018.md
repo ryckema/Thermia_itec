@@ -1,5 +1,8 @@
 # V5DCM30-INDEPENDENT-WITNESS-AUDIT-01 — previous restart and ownership evidence versus CURRENT V5 rejoin
 
+> **USER RECONFIRMATION / AUTHORIZATION SCOPE — 2026-10-18 (after this offline audit):** The user explicitly reconfirms **G01–G06 are accepted engineering/research risks** for the documented XTR installation. This audit's `COMPLETE / INCONCLUSIVE` result is confined to **whether an independently verified CURRENT physical-epoch witness was found**. It is **NOT** a NO-GO decision for further native Connect/DCM development, a new demand to finish G01–G06, or a reversal of G01-09, G02 conditional acceptance, V4.1 EXP386/387 or existing general TX authorization. Retain technical `OPEN/PARTIAL` evidence labels. The correct next implementation path is a **separate explicitly named, user-accepted-risk experimental policy** built around the proven V4.1 bounded native session/recovery protocol; do not fabricate a V5DCM29 `IndependentProof` or promote old video into a present verified epoch. A later physical TX must be a scoped, user-initiated and armed test with exact private target/payload/source, known response slot, bounded retries, abort and rollback; existing FIX2 remains RX-only / HARD_DENY until then. **No new experiment was run by this policy correction.**
+
+
 **Experiment status: COMPLETE / INCONCLUSIVE for the hypothesis that the AVAILABLE evidence provides a sufficiently independent CURRENT controller epoch/continuity witness.** The **offline documentary/source audit itself is complete**, with an important bounded historical POSITIVE. Date: 2026-10-18. This experiment does not supersede prior EXP386/387/388 or G01/G02 result statuses.
 
 ## Scope and test contract
