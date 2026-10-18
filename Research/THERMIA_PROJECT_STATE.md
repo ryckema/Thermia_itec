@@ -1,3 +1,7 @@
+# 2026-10-18 — READ-V31 full coverage source inventory audit, PREPARED / NOT RUN. Direct review of `Thermia_Connect_Firmware/parameters/ALL_PARAMETERS_ACCESS_MATRIX.csv` shows 564 firmware register rows, 524 with XTR 2.4.2 profile=YES (468 firmware write-capable, 56 runtime read-only) and 40 other-profile-only; these are schema entries, NOT 524 local XTR bus-proven readings. v31 is to inventory ALL 524, not only 46 INFO / 24 SERVICE name matches; the 494 UNCONFIRMED entries need classification, not exclusion. Every observed XTR register should be decoded or exposed RAW as read-only diagnostic unless calendar/alarm excluded, with option guards, freshness and no fabricated semantic values. No new YAML/flash/TX. [Coverage contract](../Read-only/Thermia%20itec%20XTR/V31_ALL_PARAMETERS_COVERAGE_CONTRACT_20261018.md).
+
+---
+
 # 2026-10-18 — READ-V31 manual taxonomy documented, PREPARED / NOT RUN: additional user-supplied AWIXT01CG0210 commissioning manual photos confirm INFO (§7) and SERVICE (§8) grouping. New documentation-only [Manual hierarchy](../Read-only/Thermia%20itec%20XTR/V31_MANUAL_MENU_STRUCTURE_20261018.md); no YAML, native protocol, flash or live state changes. v31-alpha01 is still a candidate lacking complete per-parameter native-source/HA coverage audit; optional shunt groups 1/2 represent 2nd/3rd heating circuits, pool/buffer optional. Exclude calendar, alarms, actuator/test/reset controls. Earlier verified V5DCM20 and V5DCM21 states unchanged.
 
 ---
