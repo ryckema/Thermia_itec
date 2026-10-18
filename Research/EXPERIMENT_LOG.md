@@ -1,3 +1,7 @@
+# 2026-10-18 — V5DCM22 offline capture provenance check RUNNING / PARTIAL: historical thermia_capture_20261003_165355.log 162 valid FC16, all 33 candidate starts, two local-geometry mismatches (03E8/13 vs14, 0410/21 vs22) therefore maximum 31/33 exact geometry in that historical source. Not a new on-device experiment; C2 not proven, no TX.
+
+---
+
 # 2026-10-18 — V5DCM22 RUNNING / PARTIAL extension: one source-only controlled change adds 33 profile starts/bits/counts from original 2.1.105 semantic selection + repo selector and physical XTR profile; synthetic CRC-valid full group replay test and workflow path inclusion. Criteria full replay C2 only at 33/33 and revoke on bus return; test not independently executed, no new live data. No TX or deployed YAML.
 
 [Implementation update](V5DCM/V5DCM22_PACKAGE_INTEGRATION_PARTIAL_20261018.md)
