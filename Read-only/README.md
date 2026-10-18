@@ -5,7 +5,7 @@ The legacy Thermia iTec research includes a single consolidated **experimental**
 ## iTec XTR M
 
 Use the [XTR read-only directory](Thermia%20itec%20XTR/README.md), containing exactly:
-- `Thermia itec XTR/thermia_itec_xtr_m_read_only.yaml` — **v31 FIX2, PREPARED / NOT RUN**; 250 named entities, optional pool/circuit/buffer fail-closed gating; uncompiled/unflashed in this project.
+- `Thermia itec XTR/thermia_itec_xtr_m_read_only.yaml` — **v31 FIX3, PREPARED / NOT RUN**; 257 named entities, optional pool/circuit/buffer fail-closed gating plus cooling source/RAW diagnostics; uncompiled/unflashed in this project.
 - `Thermia itec XTR/README.md` — installation, conditional HA card example, status and safety.
 
 **Important:** v31 is NOT yet the verified on-device production baseline. The previously recommended v29 public/research YAML and v26–v28 history are preserved in [the original XTR folder archive](../Research/Archive/Read-only_XTR_before_FIX2). The separate V5DCM19 FIX1 RX-only experiment is maintained independently, with results under [Research](../Research/THERMIA_PROJECT_STATE.md).
