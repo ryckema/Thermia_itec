@@ -1,3 +1,7 @@
+# 2026-10-18 — V5DCM22 OPEN / geometry provenance: attached historical 20261003 capture shows 33/33 significant starts but only 31/33 have the exact local XTR expected FC16 counts, notably 03E8/13 versus local 14 and 0410/21 versus local 22. Thus source-profile range match alone is not physical XTR C2 package receipt. No new device run.
+
+---
+
 # 2026-10-18 — STRONGLY SUPPORTED FIRMWARE PROFILE / IMPLEMENTATION: V5DCM22 receive-only ExpectedPackage descriptor has 33 groups from original 2.1.105 source, independently joined to W2/W3/W4 selector bits and XTR physical geometry. Fixture requires 33/33 for descriptive C2 while explicitly not claiming native ACK, ownership, TX or Online. New regression test code committed but CI execution not verified. Local physical receipt remains OPEN.
 
 [Implementation update](V5DCM/V5DCM22_PACKAGE_INTEGRATION_PARTIAL_20261018.md)
