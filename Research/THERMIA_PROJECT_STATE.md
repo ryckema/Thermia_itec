@@ -1,3 +1,9 @@
+# 2026-10-18 latest: V5DCM20 COMPLETE / POSITIVE for live passive RX-only duration 18m33s, superseding the earlier PREPARED row below. V5DCM19 FIX1 retained; 37 V5DCM19 diagnostic cycles, parser V5 6590->16050, B11C V5=portable 15885, B11D raw=portable=V5 15880 with zero byte/count divergence. Resync 11->11, integrity 1->1, drops 0, TX candidates 2619 denied 2619 physically sent 0. Natural fan stop/start and compressor ON occurred; selected HA values NaN during part of transition (semantic question). No native challenge/acceptance, owner, slot or Online icon proof. Next V5DCM21 offline TX-readiness audit based on V4.1 + original CM930 reference; G01-G06 accepted risks stay closed; no active TX without explicit separate test. Full V5DCM18 original reference Python replay still separately open.
+
+[Full result](V5DCM/V5DCM20_LIVE_RX_ONLY_RESULT_20261018.md).
+
+---
+
 # V5DCM20 PREPARED / NOT RUN (2026-10-18): original roadmap live passive XTR validation, no new YAML/flash or TX. Deployed V5DCM19 FIX1 positive 189s baseline. Controlled change 10-minute continued passive duration checking B11C/B11D count and byte parity, resync/integrity/drop trends, HA sensors and physical TX attempts zero. Earlier V5DCM20 host-only synthetic 24/24 separate and not live completion. Accepted G01–G06 unchanged. Report: V5DCM/V5DCM20_LIVE_RX_ONLY_PREPARED_20261018.md
 
 ---
