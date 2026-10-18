@@ -1,3 +1,7 @@
+# 2026-10-18 V5DCM32-LIVE-OBS-01 follow-up: user explicitly answered YES to having switched the Thermia controller off and on around the observed 22:02:30–22:02:43 interval. Mark manual controller power cycle USER-CONFIRMED; clock-edge times and independent epoch still unmeasured. 22:02:30 B11D incomplete fault, 22:02:43 12923ms callback gap, 22:02:45 FC23 burst, step=2 verdict=5 BadIntegrity, local generation 0, 0/0 revoked; no rejoin. Live result COMPLETE / NEGATIVE unchanged, no TX detected in software. V5DCM33 source-only analysis next.
+
+---
+
 # V5DCM32-LIVE-OBS-01 COMPLETE / NEGATIVE for controlled fresh rejoin on current live XTR. Arm 22:02:23, B11D incomplete frame fault 22:02:30, R6 P24 12923ms gap 22:02:43, first FC23 22:02:45, 14 FC23 by 22:03:40. V5DCM32 Denied verdict=5 BadIntegrity at 22:02:49, localGen=0. Correct FC23-ledger invalidation 1/33 to 0/0, no reselect. Completed CRC frame parity otherwise good, but B11D fault latched. Software TX denied, DE=0. Physical controller reboot timing UNKNOWN. No automatic retest; offline B11D integrity analysis next. Full provenance: V5DCM/V5DCM32_LIVE_REJOIN_INTEGRITY_DENIAL_20261018.md.
 
 ---
