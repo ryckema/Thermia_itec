@@ -1,3 +1,9 @@
+# 2026-10-18 — V5DCM22 RUNNING / PARTIAL extension: one source-only controlled change adds 33 profile starts/bits/counts from original 2.1.105 semantic selection + repo selector and physical XTR profile; synthetic CRC-valid full group replay test and workflow path inclusion. Criteria full replay C2 only at 33/33 and revoke on bus return; test not independently executed, no new live data. No TX or deployed YAML.
+
+[Implementation update](V5DCM/V5DCM22_PACKAGE_INTEGRATION_PARTIAL_20261018.md)
+
+---
+
 # 2026-10-18 — V5DCM22 RUNNING / PARTIAL source-only: baseline v31 FIX4 RX-only and V5DCM21 package ledger. Controlled change new integration header + 13 synthetic test checks + GitHub CI compile step. Expected result: source-qualified package accounting and lifecycle revocation without TX. Actual execution of tests pending confirmation; no device test. Fail-closed and rollback via unchanged production.
 
 [Implementation note](V5DCM/V5DCM22_PACKAGE_INTEGRATION_PARTIAL_20261018.md)
