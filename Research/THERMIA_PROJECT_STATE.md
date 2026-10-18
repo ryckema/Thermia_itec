@@ -1,3 +1,9 @@
+# 2026-10-18 — V5DCM22 RUNNING / PARTIAL: new offline RX-only join combines existing validated AdapterEvent, PassiveRxJoin and PassivePackageLedger; source and strict CI test added to firmware repo. Source check performed, full compile/CI result not yet verified. No v31 FIX4 deployment, physical TX, native C2 or Online proof. Next: verify CI, add verified 33-group source mapping and passive replay.
+
+[Implementation note](V5DCM/V5DCM22_PACKAGE_INTEGRATION_PARTIAL_20261018.md)
+
+---
+
 # 2026-10-18 — V5DCM21-PACKAGES-03 RUNNING / PARTIAL. ORIGINAL 2.1.105 appfs 2.3.0–2.4.3 JSON independently yields 570 objects, 541 numeric dependencies and EXACT same 33 W2/W3/W4 selected starts (15/10/8) as prior normalized index; 0 unmapped/ambiguous. Full field-by-field derived CSV equality OPEN (large GitHub CSV not retrievable in this runtime), but original-source package selection now POSITIVE offline. Current v31 FIX4 RX-only, no live native C2 or TX. Next: portable source-audit reproducibility and passive package-receipt chronology.
 
 ---
