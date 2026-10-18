@@ -1,11 +1,11 @@
-# Thermia iTec XTR M — v31 Full Monitoring alpha02 R1–R11 CLEANUP — PREPARED / NOT RUN
+# Thermia iTec XTR M — v31 Full Monitoring alpha01 FIX1 (R1–R11 CLEANUP) — PREPARED / NOT RUN
 # 50 approved redundant/alarm/ESP metadata entities removed; 250 HA entities retained.
 # R7/R8 propagated outdoor temperatures + B3C6 are default-disabled, not deleted.
 # Native register values, conditional options, generic CRC parser and RX-only operation unchanged.
 # Based on public RX-only v30-alpha12 decoder (Thermia_Connect_Firmware/parameters).
 # Calendar fully excluded from HA: no calendar entities, raw calendar diagnostics or schedule decoding.
 # Existing non-calendar parser caches remain intact; no calendar frames transmitted or requested.
-# Alarms likewise excluded from HA exposure; other parameters retained.
+# Alarm/fault entity publishing was removed after user approval; bus CRC and page processing remain.
 # Optional circuits/pool/buffer are HA disabled-by-default, with source capability guards.
 # HOME ASSISTANT LIMITATION: disabled_by_default is registry-time, not dynamically toggled.
 # Installed capability flags remain visible; user must manually enable an optional entity in HA.
@@ -4920,7 +4920,7 @@ binary_sensor:
 
 
   # ===========================================================================
-  # READ-PROD-01L — CURRENT-STATE AGREEMENT DIAGNOSTICS
+  # Historical READ-PROD-01L — comparison entities removed per R5/R6
   # ON = sources agree at the most recent native-page sample.
   # Short OFF periods around transitions can be normal.
   # ===========================================================================
@@ -5156,7 +5156,7 @@ binary_sensor:
     disabled_by_default: true
 
   # ===========================================================================
-  # READ-PROD-01C — SELECTED NATIVE ALARM BITS
+  # Historical READ-PROD-01C — alarm decoder removed from HA per R1/R11
   # All remain diagnostic + disabled by default in alpha3.
   # Profile-colliding bits are intentionally NOT assigned a semantic entity.
   # ===========================================================================
