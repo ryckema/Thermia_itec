@@ -1,3 +1,13 @@
+# CURRENT HANDOFF — V5DCM28 2026-10-18
+
+Live user-flashed **V5DCM23 FIX2: RUNNING / PARTIAL RX-only**, first short log 1/33 strict page groups and clean RX, no FC23 captured, native TX HARD_DENY. Latest **V5DCM28-EPOCH-GUARD-01 COMPLETE / POSITIVE for OFFLINE host tests only**: one inert V5DCM27 source reselect guard now refuses repeated/older controller generation *labels*, cross-tested with the real historical 20261003 FC23 and gap24a/b Fresh/Retained/Recovery metadata. No current independent actual owner/physical epoch/slot proof; proof flag in host test synthetic only; 1/33 unresolved. New ZIP is **NOT FLASHABLE**, no ESPHome/HA changes. V5DCM29 trustworthy independent-session contract PREPARED / NOT RUN; V5DCM26 15–20-minute same-FIX2 passive run also PREPARED / NOT RUN. [Source/host result](V5DCM/V5DCM28_EPOCH_GUARD_AND_LIFECYCLE_PROVENANCE_OFFLINE_20261018.md). Verify newest canonical file headings below, not older snapshots.
+
+---
+
+
+
+---
+
 # CURRENT VERIFIED HANDOFF — 2026-10-18 V5DCM27
 
 Latest user-flashed device is **V5DCM23 FIX2 RX-only, RUNNING / PARTIAL** (first ~2m25 log, actual portable ledger 1/33, clean B11C/B11D and TX HARD_DENY). Previous V5DCM20 18m33 RX-only positive is a different device build. Latest OFFLINE step **V5DCM27-SOURCE-REJOIN-01 COMPLETE / POSITIVE**: strict original-private-C++ host tests confirm native 0x0F FC23 revokes V5DCM23 package ledger and the only reselect call is on ESP boot. Further FC16 alone cannot restore the package ledger, but this has NOT happened in the current short live FIX2 log (no observed FC23). Internal CM930 handshake shadow is NOT physical owner or TX authorization. Next **V5DCM27-REJOIN-BRIDGE-01 PREPARED / NOT RUN**: source-only externally qualified profile/epoch reselect, preserve all 180 current private HA entities, TX hard deny, no extra UART, no automatic FC23 rearm. Report: [V5DCM27 source and regression](V5DCM/V5DCM27_NATIVE_REJOIN_SOURCE_AUDIT_20261018.md). Prior V5DCM26 passive 15-20min live observation also PREPARED / NOT RUN. Verify exact flashed bytes before any code change. This block supersedes older dated snapshots below only for current state.
