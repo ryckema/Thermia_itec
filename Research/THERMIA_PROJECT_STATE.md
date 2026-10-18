@@ -1,3 +1,9 @@
+# 2026-10-18 — V5DCM22 RUNNING / PARTIAL: source-only 33-group W2/W3/W4 ExpectedPackage mapping and full synthetic receive-only frame replay checks committed to Thermia_Connect_Firmware. Source-selector bit and XTR counts checked; no real capture replay or successful fresh CI confirmed yet. Firmware production v31 FIX4 unchanged, TX off. Next verify CI and analyze actual passive XTR capture.
+
+[Implementation update](V5DCM/V5DCM22_PACKAGE_INTEGRATION_PARTIAL_20261018.md)
+
+---
+
 # 2026-10-18 — V5DCM22 RUNNING / PARTIAL: new offline RX-only join combines existing validated AdapterEvent, PassiveRxJoin and PassivePackageLedger; source and strict CI test added to firmware repo. Source check performed, full compile/CI result not yet verified. No v31 FIX4 deployment, physical TX, native C2 or Online proof. Next: verify CI, add verified 33-group source mapping and passive replay.
 
 [Implementation note](V5DCM/V5DCM22_PACKAGE_INTEGRATION_PARTIAL_20261018.md)
