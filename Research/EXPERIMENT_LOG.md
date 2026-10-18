@@ -1,3 +1,7 @@
+# 2026-10-18 — V5DCM21-PACKAGES-03 RUNNING / PARTIAL; offline original-source subcheck POSITIVE. Direct original Connect 2.1.105 CM930 sensor/config JSON parse 99+471=570 objects, token union 541; source selector ranges independently yield exact 33 group starts W2=15 W3=10 W4=8, 0 unmapped or ambiguous. No live experiment, response or TX. Full normalized CSV object-by-object parity OPEN. Report V5DCM21_PACKAGES_03_RAUC_PROVENANCE_PARTIAL_20261018.md.
+
+---
+
 # 2026-10-18 — V5DCM21-PACKAGES-03 RUNNING / PARTIAL original appfs update: exact 2.1.105 2.3.0–2.4.3 sensors/config JSON parsed (99+471 objects), recomputed numeric receive dependencies=541, matching derived counts. No duplicate names; source SHA hashes and provenance in report. Full row-by-row normalized CSV equality untested. No on-device experiment or TX.
 
 [Detailed original-JSON audit](V5DCM/V5DCM21_PACKAGES_03_RAUC_PROVENANCE_PARTIAL_20261018.md)
