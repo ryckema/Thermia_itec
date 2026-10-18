@@ -1,3 +1,33 @@
+## UPDATE 2026-10-18 — exact 34 Unknown states identified from a full user-typed HA snapshot
+
+The user subsequently supplied **all full entity labels** (not truncated) and current state. This supersedes the earlier PDF's 33 *visually printed* Unknown tally: the new submitted full list contains **34 distinct Unknown states** (15 ordinary and 19 diagnostic). These are direct **user-supplied HA observations**; it is still not proof of which YAML blob is flashed.
+
+Unlike the truncated PDF, all 34 can now be assigned unambiguously to exactly **10** existing passive native decoder families in v31 FIX4 source. Each entity belongs to exactly one source family below:
+
+| Source controller native 0x0F FC16 page | All exact unknown HA entity names | Count |
+|---|---|---:|
+| `0x0442` | `Cooling Active Above`, `Cooling Desired Temperature`, `Cooling Enabled`, `Cooling Room Hysteresis High`, `Cooling Room Hysteresis Low`, `Cooling Room Sensor`, `Cooling Time` | 7 |
+| `0x0410` | `DHW Start Temperature`, `DHW Maximum Production Time`, `Anti-legionella Interval`, `Anti-legionella Minimum Time` | 4 |
+| `0x042E` | `Heating Time`, `Hot Water Enabled`, `Hot Water Mode`, `Startup HT` | 4 |
+| `0x0532` | `Pool Installed`, `Buffer Tank Installed`, `Distribution Circuit 1 Installed`, `Distribution Circuit 2 Installed` | 4 |
+| `0x07D0` | `Return Temperature`, `Immersion Heater 1 Active`, `Immersion Heater 2 Active`, `Immersion Heater 3 Active` | 4 |
+| `0x0864` | `DHW Top-up Active`, `Defrost Using Building`, `Defrost Using Hot Water`, `Outdoor Stop Active` | 4 |
+| `0x0870` | `Defrost Count`, `Previous Defrost Interval`, `Time Since Last Defrost` | 3 |
+| `0x0848` | `Supply Temperature Wanted`, `Weighted DHW Temperature` | 2 |
+| `0x0546` | `Operation Mode` | 1 |
+| `0x0820` | `Defrost Active` | 1 |
+| **TOTAL** | **34 unique Unknown names** | **34** |
+
+**Strong source conclusion:** the Unknowns cluster in native controller pages, while direct `0x1E` outdoor-unit telemetry remains active. This makes missing settings-page reception a high-priority hypothesis, NOT a proven cause. Values can also be blocked by decoder ranges/sentinels, option capability state or enum fallbacks even after full source reception. In particular `Hot Water Mode` and `Operation Mode` can be published as literal `"Unknown"` if an unexpected but correctly received enum is encountered.
+
+**Clearly populated user values:** 22 Hz compressor, 0.8 A, compressor running, outdoor heating mode and fan 380 rpm; heating curve 36, heating min/max 20/40, Heating Active Running, supply 30, room setpoint 22, DHW 51 and DHW upper 52, SG Normal 0-0. Bus Healthy Connected; ESP Uptime 2130s (~35.5m). A healthy direct sensor or bus-health flag does **not** guarantee the controller has sent any 0x0F config/runtime pages in the same ESP session.
+
+**Evidence gap:** Neither `Native Settings Pages Seen` (added FIX4) nor `Cooling Settings Page Source` (FIX3) appears in the user's posted state list. This is a **strong clue**, but not proof, that FIX4 isn't flashed/registered or that this state dump predates the additions. Do not call FIX4 COMPLETE, and do not conclude the two diagnostic sources are actually absent from live HA unless user confirms. A 2130s uptime is not enough to infer a successful 0x0F settings-page synchronization.
+
+**First passive follow-up:** after a confirmed installation of FIX4, read one string `Native Settings Pages Seen`; if some of the 10 pages remain N since ESP boot, their related settings Unknown are expected without page transfer. If pages show Y and mapped fields are Unknown, inspect one time-stamped CRC-valid full native 0x0F frame (correct page and count) and exact raw word/range/enum filters. No native TX, no fake values or forced settings page requests. Treat optional installed flag Unknown as UNKNOWN rather than uninstalled. Existing RX-only V5 baseline should be available for rollback. Source remains PREPARED / NOT RUN; no new source modifications resulted from this exact-list classification.
+
+---
+
 # v31 — All visible HA Unknowns / passive-source audit — 2026-10-18
 
 **Status for READ-V31-UNKNOWN-01: PREPARED / NOT RUN.** The source-only corrective observability modification was committed and statically audited. It has **not** been strictly YAML-parsed, ESPHome-compiled, flashed or verified on the user's device. This document is an audit, not confirmation that missing data are fixed.
