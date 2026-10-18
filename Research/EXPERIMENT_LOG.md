@@ -1,3 +1,7 @@
+# V5DCM33-B11D-AUDIT-01 — COMPLETE / POSITIVE (offline source audit only), 2026-10-18. Hypothesis existing B11D incomplete-fragment guard handles all fragment lengths symmetrically; source disproves symmetry: after 25ms idle a 1–4 byte RAW residual faults immediately, whereas >=5-byte recognized pending candidates can defer up to 250ms. Baseline actually deployed RX-only V5DCM32, live rejoin denied on user-confirmed controller power cycle; controlled change NONE (analysis only). No original 22:02 raw residual reproduced, so physical event causation remains UNKNOWN. No compilation, flashing, TX, or live test. NEXT V5DCM33-FIX-A PREPARED / NOT RUN; source-only deferral prototype with strict negative CRC/orphan/timeout fixtures, preserve sticky holds and fallback FIX2. [Report](V5DCM/V5DCM33_B11D_SHORT_RESIDUAL_OFFLINE_20261018.md).
+
+---
+
 # 2026-10-18 V5DCM32-LIVE-OBS-01 follow-up: user explicitly answered YES to having switched the Thermia controller off and on around the observed 22:02:30–22:02:43 interval. Mark manual controller power cycle USER-CONFIRMED; clock-edge times and independent epoch still unmeasured. 22:02:30 B11D incomplete fault, 22:02:43 12923ms callback gap, 22:02:45 FC23 burst, step=2 verdict=5 BadIntegrity, local generation 0, 0/0 revoked; no rejoin. Live result COMPLETE / NEGATIVE unchanged, no TX detected in software. V5DCM33 source-only analysis next.
 
 ---
