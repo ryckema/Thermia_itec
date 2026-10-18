@@ -1,3 +1,7 @@
+# 2026-10-18 — V5DCM21 PREPARED / NOT RUN: native DCM integration contract. Preserve proven 0x0F exact framing/CRC, FC16 pages and owner guards; replace fixed R1 only via private firmware-derived request-dependent adapter; separate firmware handshake, physical owner/TX, config and application readiness. No generic ACK, no universal V4.1 timing. **No TX, YAML change, flash or experiment execution**. Live baseline remains V5DCM19 FIX1 with V5DCM20 COMPLETE / POSITIVE 18m33s RX-only, zero physical TX. V5DCM18 original full Python replay remains PARTIAL; G01-G06 accepted. [Contract](V5DCM/V5DCM21_TX_READINESS_CONTRACT_PREPARED_20261018.md).
+
+---
+
 # 2026-10-18 latest: V5DCM20 COMPLETE / POSITIVE for live passive RX-only duration 18m33s, superseding the earlier PREPARED row below. V5DCM19 FIX1 retained; 37 V5DCM19 diagnostic cycles, parser V5 6590->16050, B11C V5=portable 15885, B11D raw=portable=V5 15880 with zero byte/count divergence. Resync 11->11, integrity 1->1, drops 0, TX candidates 2619 denied 2619 physically sent 0. Natural fan stop/start and compressor ON occurred; selected HA values NaN during part of transition (semantic question). No native challenge/acceptance, owner, slot or Online icon proof. Next V5DCM21 offline TX-readiness audit based on V4.1 + original CM930 reference; G01-G06 accepted risks stay closed; no active TX without explicit separate test. Full V5DCM18 original reference Python replay still separately open.
 
 [Full result](V5DCM/V5DCM20_LIVE_RX_ONLY_RESULT_20261018.md).
