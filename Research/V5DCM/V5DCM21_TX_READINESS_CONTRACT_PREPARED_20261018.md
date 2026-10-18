@@ -2,6 +2,8 @@
 Date: 2026-10-18
 Status: **PREPARED / NOT RUN** (offline source and integration audit only; no hardware experiment).
 
+> **Later user authorization decision — 2026-10-18:** The user now expressly authorizes **general, autonomous native TX in principle**. See [standing authorization](../NATIVE_AUTONOMOUS_TX_AUTHORIZATION_20261018.md). Earlier statements below about preserving physical HARD_DENY describe the then-existing RX-only production baseline and the scope of **this historical PREPARED offline experiment**, not a continuing prohibition against developing or subsequently deploying bounded autonomous native responses. The user's standing permission removes repeated general TX-consent requests; it does **not** flash hardware, prove an owner/slot, or bypass documented fail-closed session/CRC/response bounds. G01–G06 risk decisions remain accepted and their technical evidence labels unchanged.
+
 ## Hypothesis
 A source-traceable separation of native protocol observation, firmware-like internal state, physical response ownership and application readiness can close the V4.1-to-V5 functional gaps without giving passive observations or permissive firmware transitions TX authority.
 
