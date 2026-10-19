@@ -1,5 +1,13 @@
 # V5DCM47-LIVE-ONE-SHOT-01 — first accepted TX Arm, controller-return FC23, integrity denial (2026-10-19)
 
+## Follow-up provenance correction — user-confirmed controller power cycle (2026-10-19)
+
+**USER TESTIMONY / CONFIRMED:** After the `V5DCM44B Arm One-Shot Native TX` button was accepted, the user **manually switched the Thermia controller OFF and then ON** during this V47 test, in response to the direct follow-up question. This **supersedes** the earlier statement in this report that the physical switch operation was unconfirmed. The exact operator switch-off/on clock timestamps, electrically measured line status, controller epoch/owner and precise first-fault-versus-power-cut ordering are still **not independently timestamped**. The logged B11D first fault at 17:55:09.662, software RX callback gap at 17:55:18.343, eight exact incoming native FC23 requests at 17:55:19–49, and the V44B `FaultedRx` denial with zero attempted TX remain unchanged. The previously noted electrical causation of the incomplete raw frame remains a **hypothesis**, not proof from the user's confirmation alone.
+
+**Classification stays V5DCM47-LIVE-ONE-SHOT-01 COMPLETE / INCONCLUSIVE for the native reply/acceptance objective**, with positive local evidence for cold-cycle-associated challenge activity and fail-closed TX. Do not re-arm/reboot or clear B11D/P5 history to force output; next investigation is offline on original B11D partial-frame handling.
+
+---
+
 **Status: COMPLETE / INCONCLUSIVE for native response/acceptance, with POSITIVE safety-path and exact-frame observations.** This is a user-provided on-device log following the separately PREPARED live test. The user has not independently supplied exact physical controller off/on switch timestamps, so a physical controller power cycle is **strongly suggested** by the observed ~9s bus gap but is not independently electrically proven in this capture. **No native response was transmitted.** No YAML or firmware change/flash in this result.
 
 ## Provenance, baseline, hypothesis, one scoped user action
