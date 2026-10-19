@@ -1,0 +1,18 @@
+# V5DCM43 FIX1 — first user-reported device passive RX result, 2026-10-19
+
+**Status: COMPLETE / POSITIVE — PASSIVE RX / HA and FAIL-CLOSED output only.** Distinct follow-up to [V5DCM43 offline integration](V5DCM43_PRIVATE_ESPHOME_INTEGRATION_RESULT_20261019.md). **Native approval/live TX: PREPARED / NOT RUN.**
+
+**Evidence:** user-uploaded `Pasted text(20261019-100220).txt`, ESPHome **2026.9.0**, ESPHome API connected to target device at 12:00:05; timestamps run to 12:02:12, user runtime uptime sensor up to 123 seconds and increasing counters. User previously reported V43 FIX1 successfully compiled after single-pointer `&id(waveshare_rs485_direction)` correction; actual flashed binary digest and exact YAML hash have NOT been supplied or independently checked. Runtime has `V5DCM43 Native DCM TX Status`, showing the integration present on the device. No claim of fully qualified first live native response.
+
+## Observed, specific user evidence
+- At 12:02:12 `V5 Parser Status`: `frames=1150 pages=189 known=189 badGeom=0 unknown=0 resync=0 drops=0 TX=0`; `Valid Frames Since Boot=1150`. Active bus input and existing HA entities still publish (room temp, outdoor, DHW, etc.), but various older semantic values remain `nan`, so **not** all semantic values are functioning.
+- B11D raw vs portable at 12:01:59: **1038/1038 equal**, countDiff=0 byteDiff=0 noise=0 incomplete=0 ambiguous=0 overflow=0, nativeFault=0/0/0, ioTx=0, DE=0, owner unknown. B11C at 12:02:00: 1044 CRC checked, 0 mismatch, 0 fault.
+- `V5 S3 UART Write Calls=0`, `V5 S2 Physical TX Attempts=0`, `V5 S3 Physical Delivered=0`, all old executor candidates denied (last `HARD_DENY candidates=183 denied=183 physical_attempts=0`). New V43 status consistent in 25 records: `step=0 deny=0 armPressed=0 build=0 UARTattempt=0 owner=? epoch=? slot=? timing=? TX=HARD_DENY`. This **does not** test Arm button; `armPressed=0`.
+- Original last known FIX-B2 passive post-gap witness remained `DORMANT reason=NONE frames=0 batches=0 gap=0 OLD_B11D=0 P5_HISTORY=0 NO_TX`. No >90s input gap; no post-gap rejoin or controller-restart acceptance test.
+- `R6 P74E`: last `FRAME_META=188/188 FC16=188 FC23=0 ... EPOCH=UNKNOWN OWNER=UNKNOWN WIRE_END=UNKNOWN SENDER=UNKNOWN SLOT=UNKNOWN TX=DENY`. `R6 P30E`: `H=H0_NO_HANDSHAKE P=0/32 A=0/32 S=0/4 E=UNPROVEN O=UNPROVEN TX=DENY`. Original `V5 Bridge04 FC23 Boundaries=0` and `0708 Polls=0`. Other device's FC23 traffic (0x02/0x0A) does **not** imply a 0x0F native approval event.
+- Brown/red logs show `[B11D-RX]`, `[B11C-PUBLIC]`, `[V5DCM33-FIX-B2]`, `[TX04B-FIX1]` and health checks continue; `[TX04B-FIX1]` labels are **callback-only**, maxGapUs includes scheduler/callback gap and **WIRE_END=UNKNOWN**, not validated electrical turnaround.
+
+## Conclusion / boundaries / next
+**PROVEN LOCALLY:** first V43 FIX1-class running ESP has preserved healthy parser/RX/HA observability and zero TX for this roughly 2-minute excerpt. **STRONGLY SUPPORTED:** source fail-closed default is holding on-device. **OPEN:** actual qualified physical owner/epoch/slot, fresh 0x0F FC23 request/response, real native response generation/transmission, controller acceptance, same-session C2/Online, real DE electrical timing, actual binary source/hash, >90s gap recovery. The ZERO `deny=0` in V43 is not a successful arm denial; no manual arm was pressed.
+
+**Next smallest test:** keep existing V43 FIX1 RX-only, do not power-cycle controller or enable TX. If desired, under observed `build=0 TX=HARD_DENY`, separately test one Configuration Arm click for a **denial-only** observation with pre/post UART=0, DE=0; first validate actual FIX1 code arm behavior and log it as a separate experiment. Otherwise continue passive 3-minute capture. Preserve FIX-B2/FIX2 rollback.
