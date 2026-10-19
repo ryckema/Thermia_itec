@@ -1,4 +1,6 @@
 # V5DCM50 — confirmed V49 controller OFF/ON, native request retry chronology and firmware/HA page-source audit
+
+**V52 CORRECTION / SUPERSEDING EVIDENCE (2026-10-19):** The original 2.0.18 AppFS **does include** the 930 flags map at the older packaged path `usr/lib/python3.10/site-packages/device_client/conf/930/modbus-flags.json`. Its bytes and SHA256 (`bb0b335eaf4e3a98e5d71d1cd1551e0772fedcfcd3f7d17f3c78e04c21844b9e`) match 2.1.105's `etc/device-client.d/930/modbus-flags.json`. V50/V51 earlier 'older flags unavailable' assertions are **SUPERSEDED**. The two original stock profile-directory ranges still differ (old 2.3.0–2.4.1 versus newer 2.3.0–2.4.3); a 2.4.2 selected profile is supported by bundled 2.1.105, not by stock 2.0.18 directory match. No live TX or Online proof follows. [V52](V5DCM/V5DCM52_XTR_V23_V49_03E8_SOURCE_AND_PROFILE_RECONCILIATION_OFFLINE_20261019.md).
 **Date:** 2026-10-19
 **Experiment:** `V5DCM50-POSTGAP-PROVENANCE-PAGE-AUDIT-OFFLINE-01`
 **Status: COMPLETE / POSITIVE (offline source and archived metadata audit only).** No local native responder was activated; native owner, reply slot and acceptance remain **OPEN / UNKNOWN**. This does not reclassify V47 one-shot (COMPLETE / INCONCLUSIVE).
