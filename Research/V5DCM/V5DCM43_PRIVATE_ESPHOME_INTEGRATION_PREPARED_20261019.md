@@ -1,0 +1,26 @@
+# V5DCM43-PRIVATE-ESPHOME-INTEGRATION-OFFLINE-01 — PREPARED contract (2026-10-19)
+**At preparation: PREPARED / NOT RUN.** The linked [offline RESULT](V5DCM43_PRIVATE_ESPHOME_INTEGRATION_RESULT_20261019.md) records subsequent actual execution. The user requested joining the private V41/42 backend, one-response native TX policy and existing ESPHome/HA configuration, not independently executing device TX.
+
+## Hypothesis, baseline, relevant results
+A source-only additive port to the **exact user-original FIX-B2 YAML** can preserve production RX, UART ownership, DE state bookkeeping, all existing HA entities and diagnostic colors, while providing (1) an ESP32-native request-dependent response backend, (2) a bounded one-response TX policy behind still-unqualified hardware authority, (3) exactly one tap on the original CRC-completed UART RX parser, and (4) explicit HA one-shot Arm/Abort controls under Configuration. This is an **integration qualification**, not permission to send or a claim of live accept.
+
+Known-good installed device remains user-confirmed V5DCM33-FIX-B2, latest 204 s locally healthy RX/HA, native executor 393/393 HARD_DENY, zero UART writes, actual installed image hash unknown. Source parent ZIP SHA256 `fdc09c5927b5a351163db95db96dc467abd43cb27e1e7fc8068782bea4a677c7`, original main YAML SHA256 `32e1b7c3ea4f7411fb94d6d769370b9ae10874403961403002250b96e4365d46`. Fallback verified RX-only V5DCM23 FIX2.
+
+Earlier evidence: historical locally positive guarded V4.1 EXP386/387, EXP388 RUNNING/PARTIAL; V5DCM32 live rejoin COMPLETE/NEGATIVE after pre-gap B11D fault; V40 7/7 genuinely captured **cross-model** DCM parity; V41 source-pinned dynamic host interface; V42 standalone bounded TX actor host/fake-IDF positive, on-device not flashed. The 2026-10-03 capture is collaborator ATEC/DCM03, NOT local XTR; Sep25 old model unresolved.
+
+## Exactly one controlled change
+Generate a separate **source-only private V43 YAML candidate** from original B2 and add three headers: V42 unchanged bounded policy, private native dynamic backend, ESPHome borrowed UART/managed-DE integration runtime. Insert precisely one passive hook into the original CRC-completed `uart.debug` parsed-ADU pipeline; keep the existing 9600 8E1 UART and existing GPIO21 **ESPHome-owned DE switch**, original B11C/B11D/P5 fault bookkeeping and old hard-deny adapter. Add manual `Arm One-Shot Native DCM`, `Abort Native DCM TX` buttons under HA `Configuration`, and one diagnostic text sensor; red/brown logs retained.
+
+**Safety lock:** no physical owner/epoch/response slot/current timing is independently proven on user-XTR; the new runtime explicitly keeps those values false/unknown, `timing_independently_qualified=false`, and both optional physical TX build switches absent. The ARM control must therefore return DENIED; abort requests RX. The backend itself has no I/O. No second UART reader, `uart_driver_install`, RX flush or spontaneous TX.
+
+## Target/effects/limits
+Incoming known native request classification only: controller-origin `0x0F` FC23 canonical firmware/genuine-history approval geometry (read `0x0730/count8`, write `0x071C/count8`). Candidate backend produces a request-dependent opaque response in memory; **NO actual live XTR request, actual response payload/CRC, current controller setting, physical response slot or transmission/retry limits are qualified**. No speculative FC16 settings write or mailbox operation. Historic 29–63 ms genuine gateway latencies are observational only, not an XTR transmission schedule.
+
+## Positive/negative/inconclusive
+**Positive offline:** pinned B2 ZIP/YAML unchanged; whole candidate parses as YAML; 117 original sensors/13 binary sensors/all other HA IDs and production top-level configuration retained; exact original UART/debug callback and DE-switch ownership preserved; new buttons config and colors present; private C++ native backend byte-exact on 7/7 genuine historical pairs and separate 256 generated challenges against existing independent Python reference, 32 corrupt-CRC denies; original V42 policy 6 strict host variants and borrowed fake-IDF/ESPHome switch four strict variants; private ZIP member manifest and fresh clean-extract complete suite exit0; output remains explicitly HARD_DENY.
+
+**Negative:** altered production source, lost HA entity, alternative UART reader, direct GPIO bypass, incorrect historical reference parity, a real physical TX opportunity from default source, or source fixture regression. **Inconclusive/not tested:** full ESPHome compilation (tool not installed), actual ESP32 firmware and electrical UART, independently qualified current slot/epoch/owner, working live TX/controller accept, authenticated current profile C2 and Online.
+
+**Abort/recovery:** on source/runner mismatch, discard V43 candidate; do not flash. Existing user FIX-B2 and original sticky faults unchanged, RX-only FIX2 fallback. Later distinct user-initiated live experiment requires separate private exact current request/reply/CRC, trustworthy owner/epoch/response-slot/timing, maximum one response, scope expiry, abort and rollback.
+
+**Confidentiality:** native response computation, keys, and private 0x0F implementation MUST remain in user-private ZIP only; public GitHub gets sanitized provenance, test counts, blockers and handoff, never code.
