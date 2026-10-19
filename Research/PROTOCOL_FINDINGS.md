@@ -1,3 +1,7 @@
+# 2026-10-19 FIX1 INDEPENDENT RECOVERY — **OFFLINE SOURCE/HOST VALIDATED ONLY**, [result](V5DCM/V5DCM45_FIX1_INDEPENDENT_RECOVERY_RESULT_20261019.md). 57/57 new host guard checks against reconstructed private V45-source FIX1; input-aware owner/epoch/physical slot still unproven, on-device FIX1 compile/flash native FC23/TX/semantic Online untested. New ZIP SHA256 `fd004cf1aa0edf2adbe6569a56cf453e1401bf0010378e4e5107aa40c894f067`, distinct from earlier original FIX1 ZIP. Preserves historical P5/B11D evidence rather than interpreting historical clean period as live native acceptance. No new bus protocol claim.
+
+---
+
 # 2026-10-19 V5DCM45-FIX1 — **OFFLINE SOURCE/HOST POSITIVE; device implementation NOT RUN.** [Prepared](V5DCM/V5DCM45_FIX1_FRESH_RX_PREPARED_20261019.md), [result](V5DCM/V5DCM45_FIX1_FRESH_RX_OFFLINE_RESULT_20261019.md). User's V45 passive log: seven historical parser resynchronizations, no subsequent increase over approximately 196 seconds; original historical P5 fault remains held. FIX1 adds separate current-RX health evidence without erasing history. Offline: 56 new diagnostic scenarios and 72 transport regression cases passed. Actual ESPHome compile, FIX1 installation and active test not performed. Native controller request still unobserved. Private source retained only in private ZIP. No confirmed native Online operation.
 
 ---
