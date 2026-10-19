@@ -1,5 +1,7 @@
 # V5DCM51 — 0x03E8 request-bit and configuration-export lifecycle (2026-10-19)
 
+**V52 CORRECTION / SUPERSEDING EVIDENCE (2026-10-19):** V51 incorrectly stated that original Connect 2.0.18 AppFS lacked a `930/modbus-flags.json`. The actual 2.0.18 file is under `usr/lib/python3.10/site-packages/device_client/conf/930/modbus-flags.json`, NOT the later 2.1.105 `/etc/device-client.d/930/` location. Both extracted original files are **byte-identical**, SHA256 `bb0b335eaf4e3a98e5d71d1cd1551e0772fedcfcd3f7d17f3c78e04c21844b9e`. Thus the 1803.bit0 -> 1000–1019 group is source-verified in **BOTH** archived firmware versions. This only corrects mapping availability; V51's packet chronology, 11/11 original 2.1.105 method tests and all unknown physical/native acceptance conditions remain unchanged. Also stock controller-version profile directories differ: 2.0.18 stops at 2.4.1; 2.1.105 covers 2.4.2–2.4.3. [V52 source/host result](V5DCM52_XTR_V23_V49_03E8_SOURCE_AND_PROFILE_RECONCILIATION_OFFLINE_20261019.md).
+
 **ID:** V5DCM51-03E8-CONFIG-REQUEST-LIFECYCLE-OFFLINE-01. **Status: COMPLETE / POSITIVE (OFFLINE ONLY)**. Local XTR native response/owner/slot/Online remain OPEN/UNKNOWN. No new flash, YAML, controller restart, bus TX, native DCM, or HA configuration change.
 
 ## Controlled investigation
