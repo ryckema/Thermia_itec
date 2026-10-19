@@ -76,3 +76,22 @@ Exact original CMClient.on_publish_cm_params_map_event tested with mocked MQTT p
 **OPEN:** actual present-day XTR physical owner/sender/electrical EOF/reply slot; whether first missing 03E8 preceded/lagged profile discovery; exact current 0867 version and whether all significant groups could be requested on live bus; complete accepted native response, full OPERATION/application onboarding and Online. V49 W3=0600/none03E8 and no status polls is INSUFFICIENT to identify specific missing application transition; old RX-only V23 had 03E8 under different context. Prior V47 orphan17 remains independent.
 
 **NEXT — offline only:** reconcile existing raw local XTR and genuine/collaborator chronology around *first* recognized 0864/0867 information-source page, first 03E8, first six-word status poll and subsequent group-request bitmap changes; distinguish pre-profile initial traffic from post-profile readiness and from cloud onboarding. Do not suggest another power cycle, Arm, new responder/0x0708 command tooling or active TX merely to obtain evidence already captured. A later scoped passive-only observer could be considered only if the archived captures cannot resolve the state ordering; current running V49 and its known-good HA, diagnostics and fail-closed output are untouched.
+
+
+## Archived cross-model chronology corroboration (passive offline metadata, not local XTR)
+
+As a separate provenance check within this SAME offline evidence review, re-parsed existing user-supplied genuine/collaborator ATEC/DCM03 RTU capture thermia_capture_20261003_165355.log (cross-model legacy geometry, SHA256 14918065297264473e2357822a8694d184e7821b8c2a3b1cb316039678a708a1). Relevant first **CRC-good envelope** times from the existing capture only:
+
+| First visible event (host timestamp) | Time / captured RTU geometry |
+|---|---|
+| Native FC23 request-shaped interaction | t=27.400 s (request family; no protected reply content included) |
+| Initial controller FC16 source settings | t=29.262 s, native 0x0F:03E8 / **13** words |
+| First service-family 0x085F page | t=61.529 s, count5 |
+| First status six-register poll | t=64.923 s, FC03 0x0708/count6 |
+| **First 0x0864 page (includes version register 0x0867)** | t=86.672 s, FC16 0x0864/count4 |
+
+**Observed cross-model sequence:** initial native 03E8 arrives **57.410 seconds BEFORE** first observed FC16 0864/count4 (the frame geometry carrying register 0867). Even the first 0708 status poll is later than initial 03E8. This supports the separation between **controller-driven physical bootstrap before product/version profile discovery**, and **later application-level package completeness**. It does NOT establish precisely when the original Connect 2.1.105 process decoded its version or asserted the 33-group tracker in this ATEC legacy session; the captured external module software version and its actual internal event queue were not observed. The 03E8/count13 legacy payload is NOT interchangeable with current XTR 03E8/count14. Logged host times are NOT electrically measured UART EOF/slot delays.
+
+Two Eco5 collaborator files start with some runtime/status data before their first visible native FC23; they are not independently bounded from first physical connection and should not be assigned absolute boot-state precedence on their first events. On the present RX-only V49 extracts 03E8 and 0864 profile receipt both remain unproven in this observer, while V49 serial native owner/slot is unknown.
+
+**Strengthened conclusion (firmware plus independently archived cross-model ordering):** Receiving a first bootstrap 03E8 does NOT require that the device-client application has already loaded the final controller-version-specific profile. A firmware implementation can later seed a separate required-package tracker; earlier receipts need not be retroactively counted. This is a staged model with different clocks/evidence, **not a demonstrated V49 protocol error or permission to transmit**.
