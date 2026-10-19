@@ -1,0 +1,22 @@
+# V5DCM41-PRIVATE-DYNAMIC-REFERENCE-BACKEND-OFFLINE-01 — prepared contract (2026-10-19)
+**Originally PREPARED / NOT RUN (OFFLINE ONLY).** The separately linked [RESULT](V5DCM41_PRIVATE_DYNAMIC_REFERENCE_BACKEND_RESULT_20261019.md) records the subsequently executed offline run. User initiated V41, not a live bus experiment.
+
+## Hypothesis and known-good baseline
+Re-use the **exact, already independently historical-capture-validated 2026-10-05 reference** as an *external source-pinned oracle*, rather than inventing another cipher, to implement the missing **dynamic challenge-dependent backend call** at the original V39 BoundProvider request boundary. Show host-only per-request dynamic generation (not lookup) and strict single in-memory mock, with no output/ownership promotion.
+
+Verified actual device baseline still **V5DCM33-FIX-B2**: 204-second last user-attested on-device healthy RX/HA, native executor 393/393 HARD_DENY, UART writes=0, flashed image SHA not verified. Exact B2 parent ZIP SHA256 `fdc09c5927b5a351163db95db96dc467abd43cb27e1e7fc8068782bea4a677c7`, YAML SHA256 `32e1b7c3ea4f7411fb94d6d769370b9ae10874403961403002250b96e4365d46`. Rollback **V5DCM23 FIX2 RX-only**.
+
+Past results: V4.1 EXP386/387 locally COMPLETE/POSITIVE in their scoped context, EXP388 RUNNING/PARTIAL; original V5DCM32 live RX rejoin COMPLETE/NEGATIVE from B11D integrity. V38 318/318 host PASS, V39 2926/2926 host PASS; V40 7/7 exact external genuinely captured Eco5/ATEC DCM historical pairs. October 3 genuine **collaborator ATEC+DCM03**, not local XTR. Existing firmware original reference Git blob `2aeb56f3afb60414f0527acd6960996219a0b0fb`.
+
+## Exactly one controlled offline change
+Create a **separate private nonflashable C++17 dynamic backend adapter** for the unchanged original V39/V38 headers. The adapter takes the original complete CRC-validated FC23 request, passes its payload to a caller-supplied *externally loaded, exact source-pinned reference callback*, then constructs a generic RTU-shaped reply in memory for V39's **one-use mock only**. No embedded original cipher/key, no new generic assumptions about model compatibility, no production source/YAML/HA change, no GPIO/DE/UART/Modbus real sender, no actual 0x0708 or semantic register-write tools.
+
+**Input classification:** known firmware/genuine capture native slave 0x0F FC23, canonical existing approval request geometry. It is **not** a new device write target, and the generated output is NEVER sent to a bus. Neither real current controller register values nor physical response timing/retries are applicable. Scope/owner/epoch/slot values for tests are synthetic test fixture flags only, not independent physical proof.
+
+## Acceptance criteria and safety
+- **POSITIVE offline**: original B2 YAML/ZIP and V39 ZIP/head source exact SHA/byte pins; external original reference blob hash checked before loading; seven genuinely captured cross-model pairs independently match fully; at least 256 distinct *new synthetic* requests produce dynamic oracle-consistent host mock responses (not independent cipher parity); reject malformed/stale/foreign/CRC-corrupt/wrong-address/sticky/competing scopes; default ordinary host and Arduino/ESP always deny, absent live-output API compiler negative; source/ZIP/member manifest validated; clean extract full rerun succeeds.
+- **NEGATIVE**: lost source pin, unexpected physical output path, a failed control permits a host delivery where it should deny, original headers changed, historical captured response mismatch, test-only delivery changes physical authority flags, or output is not one-use.
+- **INCONCLUSIVE**: missing external reference or raw capture, source mismatch preventing legitimate test, or inability to run host compilation. Independently validated crypto for never-captured new inputs is NOT claimed merely because the same oracle computes both sides. A structurally valid but wrong cipher is a known generic V39 limitation: test explicitly measures it, not falsely describes it as prevented.
+- **Abort/recovery**: on any source-pin or guard failure, discard offline output. No physical rollback or power cycle needed. Preserve sticky B11D/P5. Future **separate user-initiated live** trial must privately specify real request, exact reply/CRC, current controller state, owner/epoch/slot, transmission limit, stop/recovery and FIX2 rollback before any native TX.
+
+Security boundary: no fixed keys, recovered security algorithms, private live 0x0F response implementation or mailbox tools published on public GitHub.
