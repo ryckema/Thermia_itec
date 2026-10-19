@@ -1,0 +1,41 @@
+# V5DCM47-LIVE-ONE-SHOT-01 — first accepted TX Arm, controller-return FC23, integrity denial (2026-10-19)
+
+**Status: COMPLETE / INCONCLUSIVE for native response/acceptance, with POSITIVE safety-path and exact-frame observations.** This is a user-provided on-device log following the separately PREPARED live test. The user has not independently supplied exact physical controller off/on switch timestamps, so a physical controller power cycle is **strongly suggested** by the observed ~9s bus gap but is not independently electrically proven in this capture. **No native response was transmitted.** No YAML or firmware change/flash in this result.
+
+## Provenance, baseline, hypothesis, one scoped user action
+
+Source: local XTR user's ESPHome log `Pasted text(20261019-155556).txt`, SHA256 `e807d75612c880fa824314cab9db62d81e87871c466e6f41438318812bfacecd`, 242238 bytes, 3050 logical lines, 17:53:53.965–17:55:50.024 (~116.1s). Source reviewed against exact unchanged private V47/FIX2 YAML and private `v5dcm42_one_shot_tx_policy.hpp`. No private response algorithm or payload published.
+
+Previously verified passive baseline V5DCM47-PASSIVE-PREFLIGHT-01 COMPLETE/POSITIVE: FIX2 QUALIFIED/current=1, B11C/B11D clean, DE low, parser resync=5 from initial startup unchanged, P5_HISTORY=1 retained. Earlier live V5DCM32-LIVE-OBS-01 COMPLETE/NEGATIVE **already showed a similar failure on Oct 18**: user confirmed physical controller restart; B11D `RAW_INCOMPLETE_AT_IDLE` preceded a 12.923s RX callback gap, then FC23 retries and integrity denial. The prior event is not this event and the exact B11D reason differs.
+
+**Prepared live hypothesis:** one operator Arm plus controlled native cold-return leads to one new canonical slave 0x0F FC23 and (only if safe guards hold) exactly one valid bounded response, then controller continuation. **Single live change:** manual V44B Arm in otherwise unchanged deployed FIX2 during a gap/return attempt; no independent register write, scan, unsolicited TX or re-Arm in log. Controller switch operation is not independently timestamped.
+
+## OBSERVED FACTS — LOCAL XTR
+
+- **17:54:59.174** `[V5DCM44B] USER_ARM_ACCEPTED SCOPE=30S ONE_REPLY MAX1 BUILD=TX_CAPABLE NO_UNSOLICITED_TX owner=ASSUMED_ONLY epoch=UNKNOWN slot=REQUEST_SCOPED_ONLY`. Before Arm witness FIX2 `QUALIFIED current=1`; V44B becomes `step=1 armClicks=1`, with `replyAttempts=uartAttempt=admitted=0`.
+- **17:55:09.421** `[R6-P74AV] B11D_INCOMPLETE_DEFER rem=17 max=250ms`; **17:55:09.662** new original B11D sticky FIRST_FAULT `RAW_INCOMPLETE_TIMEOUT_250MS batch=8052 raw=44 cursor=27 expected=1 NO_TX`. The associated sanitized diagnostic `v5PendingAfterCallback=1`, `residualFc=23`, candidate count 2 and no payload. B11D original RAW records `incomplete=1 fault=1`; no DE or UART TX. This begins **before the logged controller callback-gap / retry burst**; physical byte/EOF timing and causation remain unknown.
+- **17:55:14.731** FIX2 phase is still `QUALIFIED` but `current=0` due frame age 5278ms; first fault was already sticky. **17:55:18.343** `[R6-P24] CALLBACK_GAP ms=8972 boot=9F151084 controllerEpoch=UNKNOWN NO_TX`; bridge last gap 8974ms. At return parser resync rises **5 -> 22** (+17), new Bridge02 fault count **1 -> 2**, `[R6-P30EC] FIRST_FAULT=RX_BRIDGE_OR_TX_HEALTH`. B11D first fault remains sticky. At **17:55:19.768**, FIX2 `phase=REVOKED current=0 reason=CURRENT_INTEGRITY_OR_OUTPUT`, never recovers in the excerpt; RX parsing may continue independently.
+- **17:55:19.632** first `[GAP46C] EXACT_FRAME_HOLD_NO_TX n=1 arm=0 return=0 guard=0 clean=0 unused=1`, immediately followed by `[S8] FC23 epoch=1`. This recurs on eight **distinct CRC-validated parsed exact native request-shape frames** at **17:55:19.632, 24.168, 28.387, 32.593, 36.893, 40.895, 45.075, 49.262** (last `n=8`), matching source conditions `f.slave()==0x0F`, `f.function()==0x17`, length 29, canonical read/write/count geometry. This is genuine **local XTR exact 0x0F FC23 incoming-frame proof**, NOT yet proof of electrical sender, response owner or measured response slot. Each remains passive HOLD/NO_TX. In these logs `GAP46C arm=0` is a **separate legacy passive GAP45B Arm flag**, NOT V44B `armClicks=1`; no contradiction. Its `clean=0` and `guard=0` also prevent eligibility.
+- Native `R6 P74E` stricter `FC23=0` persists while `RX=HOLD` and `FRAME_META=3259/3303`, because its evidence filter is halted/does not promote frames during integrity hold. This does not negate the independent exact CRC frame witness. S8 `FC23 epoch=8` is a software boundary counter, not measured controller epoch.
+- Native one-shot actor after return `step=7 deny=5 armClicks=1 replyAttempts=0 uartAttempt=0 admitted=0 DE_RX=1 conflicts=0`. **Exact source mapping** `v5dcm42::Step::Revoked=7` and `v5dcm42::Denial::FaultedRx=5`. Thus safe revoked due real integrity failure; NOT a computed reply failure, timeout diagnosis or controller semantic refusal. 0 output attempts, 0 software DE high, no physical TX. No native Online, C2, owner/slot, reply acceptance or application handshake was demonstrated.
+
+## Strong conclusions versus hypotheses
+
+**PROVEN locally:** V44B accepted Arm once; locally parsed exactly shaped CRC-good native slave 0x0F FC23 arrived eight times after a new 8.97s receive gap, amid B11D original RAW incomplete fault and 17 additional parser resyncs. Actor correctly revoked `FaultedRx` and never attempted output; HA sensor parser continued. The current-source policy maps state 7/denial 5 unambiguously. The intended reply and semantic acceptance remain untested.
+
+**STRONGLY SUPPORTED:** this repeats the *class* of the Oct 18 V5DCM32 controller-return integrity problem, despite a clean extended passive FIX2 witness. A controller bus return often produces exact challenge retries on this installation; it is not unique to all cold starts.
+
+**HYPOTHESIS (not proven):** the original 250ms raw incomplete is caused by interruption of UART mid-frame during power transition. The distinct first partial snapshot `raw=44 consumed=27 remaining=17` could also indicate framing ambiguity/transport batching; do not suppress or auto-clear the latch merely based on gap timing.
+
+**OPEN:** precise physical switch timestamps, actual end-of-wire callback/line timings, who sent frames, physical response slot, whether healthy later return could permit a safely bounded response, and native acceptance. This log cannot establish a successful one-shot native connection.
+
+## Verdict and immediate recovery
+
+**V5DCM47-LIVE-ONE-SHOT-01 COMPLETE / INCONCLUSIVE:** full one-shot attempt was initiated, correct challenges appeared, **but no reply was sent because the independent integrity safety guard blocked transmission**. A positive safety-path subresult is not a positive native emulation result, and no semantic rejection by controller is proven.
+
+**Do not press Arm again, clear sticky histories, automatically retry or reboot controller to force another request.** Current FIX2 guard is REVOKED and B11D fault is sticky. V44B one-shot actor is already Revoked/DE_RX, so Abort is optional as an explicit safe-state control (does not clear B11D or re-arm). Keep receive-only monitoring; if HA telemetry / Thermia operation is impaired, follow known-good output-disabled V44B rollback with normal unit recovery. Do not automatically reboot or flash.
+
+**NEXT:** offline repeatability/recovery investigation using exact existing V5DCM32 and V47 traces, original B11D 250ms incomplete and parser resync code, B11C parity and callback gating. Model a partial frame before 9–13s bus gap and post-return clean frames, preserving raw first-fault and fail-closed physical TX. Any proposed diagnostic/requalification change must distinguish recovering passive health from immutable historical fault and require independent fresh CRC/RAW agreement, no new faults and clear electrical slot; don't silently relax original latch. No new live test until separately reviewed.
+
+## Minimum missing user fact
+Please confirm whether the Thermia controller was physically powered OFF then ON after the **17:54:59 Arm**, and approximately when. This clarifies event attribution; it does not change the integrity denial and no-TX result.
