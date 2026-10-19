@@ -1,3 +1,13 @@
+# 2026-10-19 V5DCM37 REPRODUCTION — PROVEN SOURCE/HOST, NOT NEW LOCAL XTR NATIVE SESSION.
+
+Original prior V37 result remains historically documented with 1017 checks; old ZIP missing and not claimed verified. New distinct recovered artifact has 11507/11507 host checks, predecessor V35/V36/B2 checks and 23472 independently CRC-good historic captured frames, complete clean extraction/runner PASS. [Reproduction provenance](V5DCM/V5DCM37_REPRODUCED_ARCHIVE_VERIFICATION_20261019.md).
+
+Source-derived 33 groups = 15 W2 +10 W3 +8 W4, exact start/count modern XTR; old 03E8/count13 is not 03E8/count14. A shadow accepted state, model mock delivery, structural Core authorization or 33/33 seen shapes is NOT physical TX permission, controller accepted, complete Connect C2 or Online. Retained/recovery 085F is observational candidate only. All output stays DENY, original B11D/P5 sticky faults remain protected.
+
+OPEN: current native physical owner, response slot, independently proven controller epoch, genuine request-dependent response delivery, semantic write and cloud Online; no new live TX/flash/controller restart performed.
+
+---
+
 # 2026-10-19 V5DCM37 exact-source spot check — **PROVEN HISTORICAL SHAPES/SOURCE ONLY**, not current DCM session. Fresh 113/113 strict C++17 host checks against original private B2 passive RX33 witness; exact source/ZIP/YAML pins; 23,472/23,472 CRC-valid original frames. XTR Oct03 historical 31/33 modern start+count shapes, including legacy shorter 03E8/count13 and 0410/count21 excluded from required modern count14/count22; XTR Sep25 24/33; Eco5 collaborator two captures 33/33 **over each whole recording only**, no authenticated single session. No virtual 33/33 history, FC23 boundary, synthetic mock delivery or Core structural eligibility alone proves owner/slot/epoch, native controller reply acceptance, C2, Online or TX. **No new live TX.** Six-file offline audit SHA256 `050b98fe4b1dbd25d8a613ae2cf84ce74b80acb102fc68d06958aa48ecd3d55e`; complete rerun PASS. [Source/capture check](V5DCM/V5DCM37_SOURCE_CAPTURE_SPOTCHECK_RESULT_20261019.md). Previous original 1017/1017 and independent 2848/2848 V37 results unchanged. **OPEN:** current dynamic private native response, owner/epoch/slot physical proof, post-gap B2 live >90s, app C2/Online. 
 
 ---
