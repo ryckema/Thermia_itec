@@ -367,3 +367,9 @@ configuration service ready
 with a reproducible genuine Eco5 configuration-service boundary near 120 s after controller bus return in all six successful sessions.
 
 No live Thermia experiment was advanced or closed by this offline result.
+
+---
+
+## 2026-10-19 V5DCM59 count clarification — preserve original report
+
+**Minor archived count correction (SUPERSEDED interpretation only; original capture and historic results preserved):** Each of the two early-response Sep28 epochs contains **102 native 03E8 request envelopes with timestamps before the first 03E8 FC16 ACK**, **including** the last request which is the FIRST request to receive that ACK (raw logged request→ACK at 556.416→556.478s and 852.829→852.860s). Consequently **101 earlier requests were unACKed**, then the 102nd request was acknowledged. Phrases above such as “102 unACKed 03E8 before ACK” count the ACKed request among unacknowledged requests and are off by one. The original six-success/one-failed-boot analysis, ~118.478–120.296s first ACK range, early approval/session versus delayed page-service distinction and original negative controls remain unchanged. Strict direct raw replay and V49 comparison are recorded in [V5DCM59](../V5DCM/V5DCM59_FRESH_APPROVAL_VS_RETAINED_SERVICE_EPOCH_CONTRAST_OFFLINE_RESULT_20261019.md). Host log timestamps do not prove physical UART reply timing.
