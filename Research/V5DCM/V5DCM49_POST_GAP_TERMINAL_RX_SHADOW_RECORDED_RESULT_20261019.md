@@ -1,5 +1,7 @@
 # V5DCM49 — local post-gap RX cohort reaches terminal historical witness (2026-10-19)
 
+> **Later provenance clarification (2026-10-19):** User explicitly confirmed causing the 10,351ms V49 interruption by manually switching the Thermia OFF and ON. The callback gap + CRC return + cold-pattern and unanswered native FC23 series are therefore **manual intervention anchored**. The precise electrical main-controller rail, hardware frame EOF, physical sender/owner and exclusive native TX slot **remain unmeasured**. Source/cross-version/03E8 offline follow-up: [V5DCM50 audit](V5DCM50_POSTGAP_PROVENANCE_PAGE_LIFECYCLE_OFFLINE_RESULT_20261019.md). Earlier “physical cycle unconfirmed” text records the state of knowledge when that paragraph was originally written and is superseded **only on the user-intervention provenance point**.
+
 **Experiment ID:** `V5DCM49-POST-GAP-COHORT-DEVICE-01`. **RESULT: COMPLETE / POSITIVE (RX-only evidence goal ONLY).** Previous RUNNING / PARTIAL 19:21–19:24 capture is now closed by the next local XTR capture. This is **not native DCM response/Online success** and **not a test of recovering V47's orphan-17 case**.
 
 ## Provenance and controlled scope
