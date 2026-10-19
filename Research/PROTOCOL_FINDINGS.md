@@ -1,3 +1,5 @@
+# 2026-10-19 V5DCM45-FIX1 first live RX qualification — **PROVEN LOCALLY** no native TX and clean RX in supplied excerpt; source **STRONGLY SUPPORTED** premature fail-closed qualification due to B11D startup-readiness gate. Native DCM authentication/slot, owner, epoch remain OPEN / UNKNOWN; FC23=0. No protocol acceptance or native semantic write inferred. This is an ESP observer initialization issue, not a finding about controller response acceptance. [Source and log](V5DCM/V5DCM45_FIX1_FIRST_PASSIVE_STARTUP_REVOKE_20261019.md).
+
 # 2026-10-19 FIX1 INDEPENDENT RECOVERY — **OFFLINE SOURCE/HOST VALIDATED ONLY**, [result](V5DCM/V5DCM45_FIX1_INDEPENDENT_RECOVERY_RESULT_20261019.md). 57/57 new host guard checks against reconstructed private V45-source FIX1; input-aware owner/epoch/physical slot still unproven, on-device FIX1 compile/flash native FC23/TX/semantic Online untested. New ZIP SHA256 `fd004cf1aa0edf2adbe6569a56cf453e1401bf0010378e4e5107aa40c894f067`, distinct from earlier original FIX1 ZIP. Preserves historical P5/B11D evidence rather than interpreting historical clean period as live native acceptance. No new bus protocol claim.
 
 ---
