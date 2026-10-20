@@ -1,5 +1,14 @@
 # 2026-10-20 — ATEC/DHP-AQ third-party gateway V3, sanitized external source review
 
+## 2026-10-20 source-framer comparison addendum (OFFLINE generic frames)
+
+**A concrete V5 advantage was reproduced at SOURCE/HOST scope, NOT proven as an actual ATEC field failure.** The third-party V3 `Framer::poll` checks whether its entire buffered byte span has a valid CRC, otherwise accepts a valid suffix, emits once and clears the complete buffer. In `ThermiaSniffer::loop`, `now=micros()` is sampled once before draining all available UART bytes; consequently multiple already-buffered RTU ADUs can be pushed with the same timestamp without their original inter-frame gap. An offline standalone C++17 `Framer` test using two synthetic, independently CRC-valid 8-byte FC03 requests for generic slave addresses 0x02 and 0x04, both buffered before the poll, deterministically returned **one** emitted frame for **slave 0x04**, `ok=1`, `bad=1`, then **zero** frames on a later poll. The valid first frame was not delivered.
+
+This is a **source-confirmed backlog/coalescing loss mode** in V3; there is no evidence it occurred on the original ATEC hardware or with any specific frequency. It contrasts with our original V49 generic StreamParser SOURCE/HOST replay in V5DCM80, where all **2687/2687** archived XTR ADUs were emitted for individual, fragmented and synthetic six-frame-coalesced delivery. The V5DCM80 *new* per-ADU router was host-only and V49 V43/V44B original TX actors still had a single-frame callback gate: do **not** present that host-only router as deployed live TX improvement. V83-FAS1 later provided **1028** byte/count-aligned B11D comparisons on the real XTR RX-only firmware, separately, not as this same two-frame coalescing test.
+
+**Action:** preserve V5's multi-ADU parser semantics in any future native response architecture; continue comparing safety and real on-device reliability separately. No bus TX, XTR change, ATEC hardware, ESPHome compile, or private backend was used in this synthetic host check.
+
+
 **Classification:** EXTERNAL / CROSS-MODEL SOURCE EVIDENCE ONLY; not a local XTR experiment, flash, TX or confirmation. Input: user-provided `V3.thermia-gateway-2026-10-20.tar`, SHA256 `e1dc7f316cd887e96e481e7e509570e9c1836b68ed271f47630b0d754f985abc`. The private original archive contains protected authentication/gateway material and MUST NOT be copied to GitHub. This note omits credentials, challenge response algorithms, private replies and command-mailbox implementation.
 
 ## Source-observed (not independently field-verified)
