@@ -1,0 +1,31 @@
+# Service-40 — Actual B11D/watchdog callback ownership witness (RX-only integration draft)
+
+**Date:** 2026-10-21. **Experiment:** V5-NATIVE-SERVICE40-ACTUAL-CALLBACK-JOIN-GATE-OFFLINE-01. **Status: COMPLETE / POSITIVE (OFFLINE SOURCE/HOST ONLY)**. Embedded candidate and physical XTR **PREPARED / NOT RUN**.
+
+## OBSERVED FACTS AND PRIORITY
+Last user-confirmed physical baseline: V83-family **RX_ONLY/HARD_DENY**, EXP388 **RUNNING / PARTIAL**, unresolved first B11D boot-alignment fault; V49 remains fallback. FAS1 add-on does not have independently confirmed subsequent flash evidence. Source parent is verified user-private Service39 ZIP, SHA256 **9ecae2f2063c81b595e77da4781f8e70c4575a92a56c5a5b5db133164ff9e1e7**, with **230/230 members byte-identical** after this experiment.
+
+**Hypothesis:** Although the original V5 YAML already contains conditional calls from the actual 50ms B11D and 1s DE-watchdog callbacks to the same native service instance, the conditional boot path calls `set_same_owner_supervisor_wiring(true)` merely from the two Service23 build switches. That is **not evidence that both callbacks ever sampled one lease on a running ESP32**. The existing Service36 RX-only compile gate prevents those switches in its current target, so this is a future TX-build integration risk, **not a current physical TX bypass**.
+
+**ONE controlled offline integration change:** introduce one pure diagnostic callback witness in a *separate* prepared YAML. Remove the premature boot-time TRUE assumption, initialize the witness under the current ESP boot ID, retain service wiring explicitly FALSE, and add one observation call to each of the real original B11D and watchdog callback sites, with a red/brown diagnostic log in the existing 30-second health block. Original production/YAML/headers untouched. The new witness observes software service object identity, per-callback activity, timing freshness and DE/legacy/B11D faults. It has no session arm, no electrical slot classifier and a permanently false TX-authority result. Old B11D faults are never cleared to satisfy the witness.
+
+## ACTUAL OFFLINE VALIDATION
+- New standalone C++17 callback witness tests **4/4 configurations PASS**: strict, no-exceptions/no-RTTI, UBSan and host compiler with ESP_PLATFORM/ARDUINO preprocessor symbols. The last is a **host compile**, NOT ESP-IDF/PlatformIO validation. Positive: same service pointer, same boot and both fresh callbacks after DE-low. Negative: missing/stale callback, wrong pointer, changed boot, DE switch/pin mismatch, observed DE-high, legacy actor activity or prior B11D sticky fault prevent qualification. Even positive callback observation **never** permits physical TX.
+- New YAML/source/ancestry verifier **21/21 PASS**; both original and candidate parse as YAML with PyYAML (NOT full ESPHome schema validation), all 24 top-level blocks identical, **403/403 YAML ID fields unchanged** (including the prior **198** Home Assistant identity pairs), original UART and V5 RX/supervisor code preserved, existing Service36 RX-only compiler guard still active.
+- Prior source-host regression **35/35 executable tests PASS**; inherited Service36 compiler/source denial **40/40 PASS**; Service39 exact source auditor **12/12 PASS**. No new UART reader, GPIO/DE writer, native response, protected challenge logic or mailbox implementation added. Original parent firmware sources are byte unchanged.
+- User-private audit bundle **SHA256 47af7ec68e369a7b4e862295c3ed6772cc3c21663e65f5ab8371313c7aba0a34**, **240 ZIP members, CRC/manifest verified**, and a separate TX-disabled draft YAML SHA256 **f389effdd034330f3b0b7e7c6ab56e787866f0b42a105287d014761ea46308f2**. No private code or protected source is committed to GitHub.
+- **NOT RUN:** actual ESPHome/ESP-IDF embedded compile, real 50ms/1s callback execution on the ESP32, physical UART/DE TX, independent electrical bus EOF/slot/peer/epoch measurement, native Connect APP C2/Online or semantic write/readback.
+
+## CROSS-SOURCE RECONCILIATION
+**LOCAL XTR V4.1**: earlier individually scoped EXP343/352/355/386 and other completed experiments support 32-page native bootstrap, selected W1 desired-page changes and W3 current refresh with actual controller reaction in those historical sessions, not present V83 wire timing/slot.
+
+**ATEC V3**: external unlicensed source and author claims corroborate a slave0F gateway architecture, startup/runtime, FC16/FC03 and refresh/readback models, not XTR owner/slot/electrical roles. Its protected authentication/key, mailbox tool and command material stay private; no code transplant.
+
+**Original Connect 2.0.18/2.1.105**: independently derived controller request selectors, info/profile/receipt lifecycle and application readiness. Firmware-only architecture and FC16 ACK cannot substitute for real local controller epoch/peer/physical slot attestation.
+
+## CONCLUSIONS, UNKNOWNS AND NEXT
+**PROVEN OFFLINE:** the future TX source's boot TRUE wiring claim was premature. A separately prepared passive candidate now observes the two actual callback code paths instead and maintains the existing hard build denial. **STRONG LIMIT:** observing matching singleton identity and fresh B11D/watchdog calls still does NOT attest real electrical slot, physical DE-owner/peer or true XTR epoch.
+
+**OPEN:** source-to-ESP binary equivalence, real callback history/first B11D fault, measurement of UART turnaround and peer absence, present XTR version/session and original Connect acceptance, TX-aware embedded safety integration. **NEXT:** prioritize already archived local V4.1 bus/timing evidence for an independently supportable owner/epoch/slot discriminator; if insufficient, prepare the smallest passive external electrical measurement. Then design a distinct **TX-aware** ESPHome target with an actual jointly supervised DE lease and user-scoped bounded active test. Do not turn off the RX-only compiler guard or use the legacy V83 supervisor as a blanket TX owner; no speculative auto-TX or heat-pump reboot.
+
+Rollback is unnecessary for this offline step. Verified V83 RX_ONLY/HARD_DENY and V49 fallback are unchanged.
