@@ -1,0 +1,3 @@
+# FAS1 live RX-only result — 2026-10-20
+
+**Status: COMPLETE / POSITIVE for passive RX verification only.** The user supplied a 141.57-second ESPHome device log containing the first-alignment snapshot `raw=2 exp=2 COUNT_EQUAL`. Subsequent reported B11D comparisons reached 1,028 complete frames without count or byte mismatches. The V5 parser reported zero resyncs and drops; the RX supervisor remained locked, direction low and software transmit counters zero. Current RX status became QUALIFIED; device-session ownership and response-window proof remain unknown. The earlier V83 startup mismatch was on a separate reboot and remains unexplained. No controller restart or active bus operation was performed for this evaluation.
