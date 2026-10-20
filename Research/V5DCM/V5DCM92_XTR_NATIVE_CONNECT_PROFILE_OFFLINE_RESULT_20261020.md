@@ -1,3 +1,5 @@
+> **2026-10-20 SOURCE-PROVENANCE ERRATUM (Service-32, DISPROVEN / SUPERSEDED attribution only):** This historical report's five Sep24/25+Oct03 files were described as local XTR captures without model proof. Oct03 is ATEC; Sep24/25 are model-unconfirmed per prior V64. Their 19 version0867=22 and three product1337=1 observations are REAL CRC-valid historical bytes, but do NOT establish local XTR version/identity or contradict local reported S11D version242. Preserve the original report below as historical analysis; authoritative correction: [Service-32](V5_NATIVE_SERVICE32_VERSION_IDENTITY_PROVENANCE_CORRECTION_OFFLINE_RESULT_20261020.md). Current V83 epoch remains unknown.
+
 # V5DCM92 — XTR support in original Thermia Connect 2.1.105 firmware
 
 **ID:** V5DCM92-XTR-NATIVE-CONNECT-PROFILE-OFFLINE-01. **COMPLETE / POSITIVE (OFFLINE original-source support verified, current XTR session/profile remains OPEN)**. 2026-10-20.
