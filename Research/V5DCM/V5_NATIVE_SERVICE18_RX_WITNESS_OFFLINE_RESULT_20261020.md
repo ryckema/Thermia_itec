@@ -1,3 +1,5 @@
+> **ERRATUM / SUPERSEDED CLAIMS (2026-10-20):** This original Service18 report incorrectly labels `thermia_capture_20261003_165355.log` as LOCAL XTR; it is a genuine collaborator ATEC+DCM03 cold-start capture (Research/Atec/ATEC_DCM03_COLD_START_20261003.md). September capture exact model identity is also unresolved. The Service18 FC23 classifier swapped read/write fields, and the mirrored host fixture hid this defect. Correct 29-byte FC23 request reads 0730/8 and writes 071C/8. Corrected FIX1 sees ONE genuine ATEC FC23 request rather than zero; this is not XTR acceptance. All original results below are preserved as historical erroneous statements and must not be cited as local XTR startup evidence. See V5_NATIVE_SERVICE_11_TO_18_FIRMWARE_REAUDIT_AND_S18_FIX1_20261020.md.
+
 # V5-NATIVE-SERVICE-18 — passive V5 RX integration (2026-10-20)
 
 **Experiment status: PREPARED / NOT RUN** (offline development and historic replay; no new XTR runtime execution).
