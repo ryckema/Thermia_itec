@@ -1,0 +1,31 @@
+# V5-NATIVE-SERVICE-24 — transactional FC16 commit and scoped TX invalidation (2026-10-20)
+
+**Experiment ID:** V5-NATIVE-SERVICE24-TRANSACTIONAL-NATIVE-MERGE-OFFLINE-01.
+**Status:** COMPLETE / POSITIVE **for SOURCE + HOST tests only**. **Related hardware-scoped native TX remains PREPARED / NOT RUN.** No flash, ESPHome compile, controller reboot or physical bus TX.
+
+## Baseline and one combined code change
+- Verified user-running fallback V83 FAS1 RX-only source SHA256 `b4aaedf27f8dd3d58fcc7c09316cfe03d9c8f41d40fcd827a31bf1f104d389fa` retained byte-for-byte; controller EXP388 RUNNING / PARTIAL and separate B11D first-start issue OPEN.
+- Verified private S23 integrated V5+XTR V4.1 source+ATEC V3 architectural concepts package SHA256 `7a3aa83908199662ccf2fba363e006dd83afa5e6d11fe01eeb639e8e8e597ae7`; its staged YAML SHA256 `e93a0c034f31f1879befb9e544ba89da1167170b11f39133a3444d91fd4a94cd`.
+- Hypothesis: controller FC16 current pages must not become a source of later FC03 current-page replies until the corresponding *local* ACK transport completion, and an unqualified post-arm request must irrevocably close that native TX scope. This is a conservative implementation policy, **not a claim that original Connect firmware requires ACK-before-cache**.
+- Changed existing S23 three-way native service and transport classes, updated one V5 RX callback evidence context, and added targeted tests. No fourth protocol architecture, new RX reader, independent observer, extra HA entity, speculative register scan or automatic takeover.
+
+## OBSERVED FACTS — implemented/host exercised
+1. Transactional 32-group controller current-page cache stages one CRC-verified FC16 page without changing the last committed snapshot; after success of the only guarded port send and DE return to RX, `note_delivery()` commits it. A wrong epoch, incomplete/failed transport or abort discards the staged page. FC03 cannot read uncommitted/staged values. Note that local UART drain is transport evidence **not controller semantic acceptance**.
+2. Scoped native port revokes an ARM after CRC/physical-slot/peer/B11D/epoch qualification loss, expired scope, zero/replayed/non-monotonic token or output failure. The revoked epoch remains blocked even across an intermediate reset-to-zero. A genuinely different externally verified session epoch and separately reviewed user ARM is required to begin another scope.
+3. Existing V5 completed-frame parser supplies actual measured software bus health (`B11C/B11D`, parser integrity), GPIO21/switch DE-low and monotonic parser token to *the same* native service. Real controller epoch, peer exclusivity, physical response slot, native profile and cold-state proof remain deliberately FALSE/UNKNOWN rather than inferred from a callback gap. This callback is **not** an active TX arm.
+4. Original 24 top-level YAML blocks, 197 existing entity ID/name pairs, S23 conditional shared 50ms B11D and 1s watchdog ownership, original HA/UI and old UART/DE calls are preserved. No new direct UART writes or DE-high calls in YAML. Original V83 YAML and its SHA256 remain unchanged.
+5. **24/24** strict C++17 normal host executables PASS plus **1/1** conditional two-build-flag FakeIo scoped TX executable PASS. Five selected ASan/UBSan suites PASS, including whole merged engine, denial paths, transactional staging, scope revocation and the reviewed-macro FakeIo scope test.
+6. Original user-extracted Connect 2.0.18/2.1.105 `modbus_server15.py` and CM930 mailbox flag map cross-checked as source references; flags byte-identical SHA256 `bb0b335eaf4e3a98e5d71d1cd1551e0772fedcfcd3f7d17f3c78e04c21844b9e`. Firmware source/protocol parity does **not** imply current XTR acceptance, application C2, or current electrical TX permissions.
+7. Private source ZIP `V5_NATIVE_SERVICE24_TRANSACTIONAL_NATIVE_MERGE_PRIVATE_20261020.zip` SHA256 `9f186e9bcaa9ba14cd8a762b1b49ab28df54065cd0567c803d1f5f075f878c88`, 150 files and 149 manifest-verified member digests; ZIP CRC verified. Staged candidate YAML SHA256 `33c79a57c39ed4bc26633009e74922fd351284ee380e25c00361b640f607484b`. Original protected private backend remains **PRIVATE**, not published on GitHub.
+
+## STRONG CONCLUSIONS
+- One integrated V5 codebase now avoids publishing new controller-current data from a not-yet-delivered ACK and prevents resuming a revoked TX arm using the same epoch.
+- Host FakeIo TX still exercises a *synthetic* manually scoped full response sequence. It is not evidence of an ESPHome build, actual GPIO/DE timing, FC23 approval on XTR, application C2, Online acceptance or semantic settings change.
+- The candidate RX callback now handles a useful subset of true runtime software evidence without fabricating the unknown physical/controller facts; therefore the staged YAML **cannot activate physical TX by itself**.
+
+## HYPOTHESES, unknowns, abort / rollback
+- OPEN: exact controller-sourced session epoch and peer/slot, original-source approval delivery in the ESP32 build, profile-specific 0x0708 and 33 significant-package completeness, all required runtime request groups, actual controller semantic readback, physical owner/EOF and the distinct B11D startup issue. V4.1 legacy 22-page resume path remains source-present but unproven as active.
+- Abort future scoped test on new CRC/parity/B11D fault, unexpected peer/slot, DE-switch/GPIO mismatch, controller alarm, absent required request handler or wrong readback. Stop output, preserve first-fault evidence, restore unchanged V83 FAS1 RX-only. No uncontrolled scan or repeated partial-only startup (historical EXP256 caused real COMM ERR/LINK).
+
+## Next action
+Complete profile-specific firmware reference handling (Connect CM930 W0–W4 / 33 significant groups) and source-grounded current controller epoch to user-scoped full-session ARM within this single S23/S24 codebase. Prepare one substantial, bounded, user-initiated live test of the *complete* service: startup, config export, runtime/refresh, bounded reversible one-word change and controller readback — only with a reviewed physical owner/slot assumption, exact frames and rollback. No instruction to flash the currently incomplete staged YAML as a working TX gateway.
