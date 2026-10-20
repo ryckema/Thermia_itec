@@ -1,0 +1,37 @@
+# V5 NATIVE-SERVICE-25 — CM930 W0–W4 group/runtime lifecycle integrated OFFLINE (2026-10-20)
+
+**Experiment:** `V5-NATIVE-SERVICE25-CM930-GROUPS-LIFECYCLE-OFFLINE-01`. **Status: COMPLETE / POSITIVE — exact private S24 source + host-only implementation/test scope.** Related XTR runtime/physical TX remains **PREPARED / NOT RUN**. No full ESPHome compile, flash, bus transmission or new local controller write.
+
+## Baseline, hypothesis, controlled source change
+- Last user-verified original **V83 FAS1 RX-only** SHA256 `b4aaedf27f8dd3d58fcc7c09316cfe03d9c8f41d40fcd827a31bf1f104d389fa`, byte-identically preserved as rollback. EXP388 `RUNNING / PARTIAL`; historical separate B11D startup issue OPEN. Default device TX `HARD_DENY`.
+- Exact previous private **Service24 V5+XTR V4.1 native merge** used as base; S24 source/host positive, not a verified live gateway. ATEC V3 used only as EXTERNAL architectural reference; no substantial ATEC code or protected Connect authentication source copied into public notes.
+- One combined private source change: add vendor-source-derived group mapping and profile-gated runtime lifecycle to the EXISTING S23/S24 native service, not another parser, UART reader, observer or physical output stack.
+
+## OBSERVED FACTS: genuine source
+- Directly re-read user-provided original **Connect 2.0.18** `appfs_2018.zip` and **Connect 2.1.105** extracted AppFS. Both CM930 `modbus-flags.json` bytes are identical SHA256 `bb0b335eaf4e3a98e5d71d1cd1551e0772fedcfcd3f7d17f3c78e04c21844b9e`.
+- Exact firmware group geometry: **75 map entries** across `W0=1800` 16 desired-setting bits; `W1=1801` 16 desired-setting bits; `W2=1802` 16 current-setting request bits; `W3=1803` 16 current-setting request bits; `W4=1804` **11** operational request bits. This is **32 settings and 11 operation group entries** on request side, not a local XTR 33/33 completeness claim. Original `cm/modbus_server15.py` and `cm/cm_client_type.py` use distinct requests/received-mask tracking and runtime events; `cm/client.py` distinguishes information collection, version-profile load, onboarding and `OPERATION`. Source correctness is not live XTR proof.
+
+## OBSERVED FACTS: implemented private C++17
+- Generated 75-entry private `v5_native_service25_cm930.hpp` map; source-audit script independently compared **all 75 address/start/end/bit entries** to both original extracted versions. No key, challenge-response bytes, protected crypto algorithm, or ATEC gateway code is published.
+- Integrated into original `v5_native_service23_threeway.hpp` / `v5_native_service23_esphome_runtime.hpp`: explicit verified profile/source admission, source-scoped significant register set (not hardcoded universal APP33), lifecycle shadow of FC23 request, private reply transport, qualified first FC16, **separate** information/onboarding/serial/operation state events (only externally attested), raw `0x0867` observation **without** automatically inferring a profile.
+- Distinct **significant-package pending** and live **W2/W3/W4 request** masks: a later refresh does NOT undo achieved significant-package completeness. A pending group is cleared only after corresponding controller FC16 source-shape and local ACK transport completion; this does not prove semantic acceptance.
+- FC16 controller-current-page cache extended to 11 source-defined W4 operational groups, including full **60-word** block and complete FC03 readback; unknown operation groups / unverified XTR profile not auto-serviced. A supported mailbox poll may advertise mapped outstanding requests, while the already supported one-word semantic mailbox intent remains isolated and CRC rebuilt.
+- Native ESPHome stage adds **one header include** and no extra UART/DE or HA entity. Original 24 top-level sections and **197 existing HA identity tuples** unchanged, all existing physical UART/DE expressions unchanged. Existing B11D, independent parser, watchdog and first-fault history remain present; `thermia_last_valid_frame_ms` is not an explicitly named symbol in pinned YAML, so no unsupported claim about it inside external components.
+
+## ACTUALLY EXECUTED VALIDATION
+- **26/26** preexisting-plus-new ordinary strict C++17 host test executables PASS (`-std=c++17 -O2 -Wall -Wextra -Werror -pedantic`). **2/2** separately compiled synthetic FakeIo TX configurations PASS: **28/28 total host executable invocations**.
+- **4/4** selected ASan+UBSan test executions PASS. End-to-end synthetic `Cold10` and `ExplicitLong32` configuration cohorts, W2/W3/W4 outstanding requests, simulated controller 085F group, 60-word operation history/cache read, refresh after C2, profile missing/unknown rejection, app transition retrigger, wrong epoch and failed delivery rejection exercised. The explicit long32 path and synthetic profile lists remain tests, **not local XTR accepted session evidence**.
+- Source-map row-by-row parity checks PASS for both original Connect versions; YAML 24/24 blocks, 197 identity tuples, S24 caller/callback/DE source parity PASS. Original V83 source SHA verified unchanged.
+- Private complete source ZIP `V5_NATIVE_SERVICE25_CM930_RUNTIME_MERGED_PRIVATE_20261020.zip` SHA256 `88b330ab7ffd8615bfbbbf6c838f2e3c5814a9d3dda019b6fbba1c9d65323dc0` (158 entries; CRC plus all 157 member hashes checked). Staged candidate YAML SHA256 `72457bbe72a4d687996cc72feb3399119aa70f3f762370c76f703817623770ba`. No private code ZIP or original protected backend uploaded publicly.
+
+## STRONG CONCLUSIONS
+- Original CM930 W0–W4 mapping and a coherent lifecycle/data-package request engine are now integrated **at source and host scope** into the same private V5 gateway candidate; not a new passive observer.
+- The profile-conditioned version/significant-register grouping is an essential real gap from previous S23/S24. Hardware `HARD_DENY` is **not removed on the installed device**. The source-only guarded TX build is unchanged and manual-scoped; no new automatic takeover.
+
+## HYPOTHESES / OPEN
+- Exact currently active **XTR** firmware/profile identity and its genuine significant register list remain OPEN; do not label synthesized 33 groups as a proven local C2. Historical 0x0867 raw values and legacy `0.2.2` version/profile mismatch remain unresolved.
+- Actual physical controller epoch, native `0x0F` peer/slot/DE and first-start B11D anomaly unresolved; true vendor-native session, full cloud/Online onboarding, complete profile-specific runtime signal semantics, V5 semantic write accepted by XTR and ESPHome full compile/flash remain **NOT VERIFIED**.
+- Do not promote collaborator ATEC/DHP-AQ bootstrap or ATEC V3 auto-TX defaults to current XTR evidence; the 2026-10-03 genuine DCM03 capture is ATEC, not local XTR.
+
+## Next action / stop / rollback
+Continue **within this single codebase**: bind the **actual verified XTR/version-specific significant-register set** and current-source session/user-scoped evidence to the existing runtime; review available XTR logs/source profiles first (no repeat observer or scans). Only then prepare one substantial user-initiated full-session native test with exact page sequence, timing/slot assumptions, semantics, abort and rollback. Stop on unknown peer/slot/epoch, B11D/parity/CRC/DE error, controller COMM ERR or wrong readback. Return to verified unmodified V83 FAS1 RX-only; no TX/flash took place in Service25.
