@@ -1,3 +1,6 @@
+## S90→S91 source handoff — 2026-10-21 — implementation wiring finding (SOURCE)
+Source finding: exact supplied S88 P5 RX_ONLY YAML does not activate full NativeEsphome23 session lifecycle (bind/profile/arm/on_complete_frame), though service header defines APIs. Compile-only inclusion and native 32/32 observation are not native reply execution. This is an integration FIX, not new XTR protocol evidence. Preserve G01/G02/G04 risk closure; physical G05/G06 and first TX remain open. No code or physical changes. Next only integrated S91 candidate, not further standalone audits.
+
 ## S90-B9 FIX1 — 2026-10-21 — user ESP-IDF build success (software only)
 PROVEN FROM USER LOG: ESPHome 2026.9.0, ESP-IDF 5.5.5, target esp32s3 complete application + bootloader build, factory/OTA/ELF files, final `INFO Successfully compiled program`. UNKNOWN: whether native B9 UART adapter and IDF signature probe compiled, because log names `thermia-itec-xtr-m.yaml` rather than FIX1 diagnostic YAML. Do not promote a general successful build into physical TX/DE proof. No flash or bus TX observed; G05/G06, native session, semantic write remain OPEN. S90 partial, S91–S93 not run.
 
