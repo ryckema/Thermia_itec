@@ -1,3 +1,6 @@
+## S86 phase 4 — build provenance boundary (2026-10-21)
+HOST/OFFLINE: archived V83 YAML identical across both S83 ZIPs, static include/substitution sanity PASS. This is build-source consistency, NOT evidence of ESPHome target compile, installed binary identity, native XTR session or slot ownership. No TX. ATEC Oct3 FC23 is EXTERNAL, not XTR. Keep physical proof and actual target build OPEN.
+
 ## S86 phase 3 — source-only RX observation integration (2026-10-21)
 HOST/OFFLINE: exact two-change patch onto archived V83 root YAML adds S86 observer include and callback before original V5 c.on_frame; inverse patch reproduces source. Strict C++17 host test PASS; no ESPHome target build or real device validation. No semantic protocol claims. External ATEC sample remains cross-model only; no local XTR accepted native startup. UNKNOWN installed V83 source identity, electrical slot/owner, epoch and native session. RX_ONLY/HARD_DENY preserved in source; physical TX not attempted.
 
