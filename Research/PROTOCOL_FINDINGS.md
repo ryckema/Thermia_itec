@@ -1,3 +1,6 @@
+## S88 P5 live classification — PROVEN locally for scoped fix (2026-10-21)
+On XTR P5 RX_ONLY observer logged fc16=84, partitioned f085f=28 and f04a6=56, other FC16 subtype f03e8=0. This corrects the P4 observer zero caused by narrow hardcoded filter. V5 showed native FC16 and RX integrity clean, B11D raw/portable/V5 equality. This proves local parser classification for observed 085F and 04A6; not a session or FC16 ACK/semantic acceptance proof. FC23 startup not observed; owner/epoch/slot remain unknown; TX HARD_DENY.
+
 ## S88 phase 5 — offline observer fix only (2026-10-21)
 OFFLINE tested: previous S86 observer counted only 0F FC16 requests at 03E8/13, which excludes locally observed XTR 085F/5 and 04A6/13. New P5 observer recognizes structurally valid 0F FC16 frames and exposes 085F, 04A6, 03E8 subcounts; both C++17 tests pass. This is a code-level causal finding, not yet live confirmation. OPEN: whether real frames satisfy generic length/CRC geometry and match V5 counters; startup and session still unproven. No TX.
 
