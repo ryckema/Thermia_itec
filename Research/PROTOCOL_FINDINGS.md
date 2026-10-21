@@ -1,3 +1,6 @@
+## S91/S92 controller-driven session observer — 2026-10-22 — SOURCE only
+NativeEsphome23 now includes passive Cm930ObservedSession tracking CRC-valid native 0x0F startup/FC16/FC03 request classes and Stage-D bootstrap progress. This does not implement protected Connect handshake, session acceptance, physical epoch evidence or TX. Exact archive SHA256 d42d9ea966f30f3bec055bedbad9ffc5ed701eb9b233762260efd63e3aed1793; 142 member CRC PASS, YAML 24-block parse; no new XTR capture, target build or live TX. Existing S62 accepted-risk decisions unchanged.
+
 ## S91/S92 CM930 passive bootstrap join — 2026-10-22 — SOURCE ONLY
 Original S88 Stage D already tracks controller-origin 32-page bootstrap, ACKs and faults but its observations had not been passed into native Service23. Integrated single call to observe_passive_bootstrap() uses existing per-frame ledger, preserving fail-closed native rejection of faulted states. Source-only; no XTR new frames, device build, native handshake, TX or semantic acceptance. 141-member ZIP CRC PASS, SHA256 6da7670b3ebff812d6ac936496c1aaff2b070d6888e7a50c335dd9b7750d7088. Native epoch remains unqualified, S62 decisions unchanged.
 
