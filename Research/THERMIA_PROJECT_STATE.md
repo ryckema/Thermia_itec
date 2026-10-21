@@ -1,3 +1,6 @@
+## S88 P5 — 2026-10-21 — PREPARED / NOT RUN
+Prepared RX-only FC16 observer repair package. Corrected S86's overly narrow FC16 request filter, adding passive counts for 085F/5, 04A6/13 and 03E8/13. Two C++17 tests pass; YAML and ZIP verified. No target compile, flash or live result. Safety unchanged: HARD_DENY and zero native TX permission. Next user-controlled build/flash, then verify S86 versus V5 counters and RX health. Package S88_PHASE5_RX_ONLY_FC16_FIX_20261021.zip.
+
 ## S88 phase 4 extended live capture — 2026-10-21 — RUNNING / PARTIAL
 Second user log (21:58:42–22:01:56; overlapping first capture) corroborates previous result: at 22:01:48 V5 parser frames=2912 knownPages=475 badGeom/unknown/resync/drops/TX=0; at 22:01:51 0F FC16 page count=480; B11D-RX at 22:01:41 raw=portable=comparedV5=2848, count/byteDiff/fault=0; V83 shared RX_ONLY locked and physical_attempts=0. S88 snapshots 21:59:07/22:00:08/22:01:08 show valid=252/336/420; fc16=0, startup_req/rsp=0, rejected=1290/1720/2149. Confirmed regression in *new observer classification*, not in V5 bus reception. S88 remains RUNNING/PARTIAL; offline classifier input/geometry correction next, no TX or further live action until reviewed.
 
