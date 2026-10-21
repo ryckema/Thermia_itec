@@ -1,3 +1,6 @@
+## S88 extended live capture (2026-10-21)
+PROVEN locally: additional 21:58:42–22:01:56 XTR log has V5 FC16 pages 480 with zero parser drops/resync and B11D raw/portable/V5 identical over 2848 frames; S88 observer nevertheless fc16=0 across valid=252/336/420, rejected=1290/1720/2149. DISPROVEN within S88 P4 candidate: S86 observer's FC16 classification works against native XTR V5 frames. OPEN mechanism (geometry/offset/interface), ownership, startup. HYPOTHESIS only: on-wire shape mismatch in observer input. TX remained HARD_DENY and no physical attempts.
+
 ## S88 phase 4 live — observer classifier mismatch (2026-10-21)
 PROVEN locally within supplied log: V5 counted ~255 FC16; B11D comparison zero faults/differences and TX HARD_DENY. Separately S88 S86 observer snapshots count fc16=0 and rejected increases 429→1290 across same session, despite valid 84→252. STRONGLY SUPPORTED: observer's classifications do not currently cover observed V5 FC16 traffic; zero S86 FC16 must NOT be interpreted as zero XTR FC16. HYPOTHESIS: S86 expects different frame structure/addressing. OPEN: exact mismatch, genuine startup and ownership. No active TX.
 
