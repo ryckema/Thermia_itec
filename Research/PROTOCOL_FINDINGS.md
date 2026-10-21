@@ -1,3 +1,6 @@
+## S90-B5 — 2026-10-21 — S88 P5 source correction (not native bus finding)
+OBSERVED in user-supplied S88 P5 ZIP (`v5_native_tx_esphome_io.hpp`): UART adapter calls `uart_tx_chars()` for bounded FIFO admission, `uart_wait_tx_done()` for drain, `de_.turn_off()` after known drain, and checks GPIO21 MCU pad level. Ambiguous admission/unresolved in-flight is latched; default-zero reviewed budgets deny TX. Earlier `write_array+flush` diagnosis applies to its older exact reviewed backend, not universally to this S88 source. OPEN: embedded target compile, actual transceiver DE, final stopbit timing, native XTR session and semantic acceptance. S90 partial; S91 not run.
+
 ## S90-B5 — 2026-10-21 — source identity audit only; not protocol finding
 OBSERVED offline: strict private ZIP hash/header identity utility passes 4/4 synthetic cases, and with no private exact parent remains BLOCKED. Unlike B4 keyword count, this cannot treat arbitrary header presence as code provenance. Proven scope is only synthetic gate behavior; no source validation of UART wire-last-bit drain, DE-low, original ESPHome callbacks, physical gateway session or semantic writes. G01/G02/G04 operational risk closure preserved, G05/G06 open. S90 partial. Artifact SHA256 ea1e5f26ff2c9de07f7e3b02a91ad3dec6a05caf6d796efa952c2759a5920996.
 
