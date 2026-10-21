@@ -1,3 +1,6 @@
+## XTR controller VERSION menu vs Connect 930 profile — 2026-10-22
+Photo-observed DISPLAY 2.4.2, HUB 3.0, COMM.KIT 24102201, MAIN MICOM 25011301, EEPROM 23071301. Original Connect 930 config includes 2.3.0–2.4.3 band (471 configurations). Numeric match of DISPLAY does NOT establish source of Connect `cm-fw-version`; determine firmware selector semantics before binding version-pinned native profile. No register, RX session or physical write evidence.
+
 ## Genuine Connect client 930 versioned configuration — 2026-10-22 — SOURCE FACT
 In original 2.1.105 appfs, `etc/device-client.d/device-client.conf` declares version-selected 930 `info`, `sensors`, `operations`, and `configurations` JSON data. Original band directories cover 1.1.1-2.1.0, 2.2.0-2.2.1, 2.3.0-2.4.3, 3.0.0-3.1.1 with configurations array lengths 463/478/471/478. This establishes host profile version sensitivity, not XTR-specific firmware version, raw RS485 startup/session encoding, authenticated context, DE slot or UART drain/FIFO budgets. Current S91 bridge passes time-only live evidence, retains BUILD_LOCKED, and cannot autonomously turn the firmware JSON into a native S91 reply. No new controller semantics proven; NO-GO for physical TX.
 
