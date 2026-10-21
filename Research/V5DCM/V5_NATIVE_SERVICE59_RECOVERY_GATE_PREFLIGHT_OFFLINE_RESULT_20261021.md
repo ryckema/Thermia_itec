@@ -1,0 +1,15 @@
+# Service-59 — recovery gate source preflight, TX compile guards (offline)
+**Date:** 2026-10-21. **Experiment:** V5-NATIVE-SERVICE59-RECOVERY-GATE-PREFLIGHT-01. **Status: COMPLETE / POSITIVE — OFFLINE SOURCE/GUARD ONLY.** Full ESPHome/ESP-IDF compile and physical DE recovery: **PREPARED / NOT RUN**.
+
+## Verified baseline, one change and evidence
+User-confirmed installed V83-family RX_ONLY/HARD_DENY, V49 RX-only fallback, EXP388 RUNNING/PARTIAL, B11D first fault OPEN. Replayed exact **original user-private S52-58** source ZIP SHA256 `5e45798f3ea7bf7375920b1c73fdf20e926a4f0522f027d4f22c182786b01c3e`, ZIP CRC clean. **No changes to private native/firmware-derived source or YAML**. One offline step: independently verify source-state recovery conditions, exact RX-only compile guard and available build tools.
+
+**Observed source:** original S52-58 `GuardedPort::reset_rx_only()` only clears owner fault after both successful `leave_de_rx()` and observed RX/DE LOW; borrowed existing IDF UART adapter persists `UnresolvedInFlight` across reset attempts and refuses `rx_and_de_low()` while unresolved. This is *software fail-closed*, not a physical bus-unblock mechanism.
+
+**Actual results:** **13/13** independent ZIP/source safety/guard checks PASS; **4/4** C++ `-fsyntax-only` attempts with the four prohibited TX macros correctly rejected by the original Service36 RX-only guard, returning the expected error. An early preflight script run reported 12/13 due to checking a ZIP filename without its `SOURCE_CANDIDATE/` prefix; script-only fix and rerun yielded 13/13. No Thermia code altered. `esphome` and `pio` binaries/modules absent, therefore **no target firmware compilation performed**. Full host regression from S52-58 is historically recorded but NOT rerun in S59; do not inflate the S59 count.
+
+**Conclusion:** software re-arm after uncertain FIFO or drain is appropriately blocked; a cold reboot could erase local latch without proving wire completion and may truncate an in-flight frame. Do **not** treat an unreviewed restart as approved recovery. Physical UART stop bit, transceiver DE driver/pull behavior, actual controller exclusive slot/peer/epoch, native Connect session/C2, first B11D fault and semantic controller readback remain OPEN/UNKNOWN. Prior G01-G06 accepted risks do not prove current electrical safety.
+
+**Next:** explicitly define one hardware-safe recovery contract (single existing DE owner, shifter completion and transceiver state observed), obtain actual ESPHome 2026.9.x build, and only afterward scope a separate user-initiated native TX experiment with exact payload/CRC, stop conditions and rollback. Keep installed V83 RX_ONLY/HARD_DENY, EXP388 PARTIAL, and V49 fallback.
+
+User-downloadable public **audit-only** artifact `V5_NATIVE_SERVICE59_RECOVERY_GATE_PREFLIGHT_OFFLINE_20261021.zip`, 3 non-secret files, SHA256 `4e8bfbe4f326b4847e57900441d86846fdcf0f6568bd2a593c6384c9f62bc12b`. It requires the existing private S52-58 ZIP for replay; no private source, authentication, 0x0F native responder or 0x0708 mailbox implementation included.
