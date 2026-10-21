@@ -1,3 +1,6 @@
+## S88 phase 3 — observer visibility boundary (2026-10-21)
+HOST/OFFLINE observation: strict C++17 host test PASS, exact observer callback present once, but YAML calls no `s86_rx_observer.snapshot()`. Accordingly no S86 classification counters are published to logs/HA by this S88 candidate. This is an instrumentation limitation, not a negative XTR startup result. ESPHome CLI absent, target compile NOT RUN. No new native protocol evidence, physical ownership, TX or acceptance claim.
+
 ## S87 phase 4 — transport admission host-only (2026-10-21)
 HOST/OFFLINE: strict C++17 default/no-TX and two-macro guarded mock tests PASS. `ScopedTransport23` refuses expired deadline, token zero, RX not healthy and slot not qualified; faults revoke arm and require safe distinct-epoch restoration. Zero fake UART writes. Source predicate for `unique_request_token<=last_delivered_token_` inspected but replay after a successful delivered token NOT dynamically tested. Native successful startup, private provider, true physical timing, S62 override safety and XTR acceptance remain OPEN. No device TX.
 
