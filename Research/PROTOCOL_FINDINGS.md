@@ -1,3 +1,6 @@
+## S89 — historical local 0F service activity (2026-10-21)
+PROVEN in sampled local September log lines: four XTR files have 0F03 traffic including requests to 0708 count6 (11/18/6/19 requests by file), alongside 0F10 frames. No 0F17 lines found in those sampled files. S88 P5 live short observation instead counted native FC16 085F/04A6 and no startup/FC03. STRONGLY SUPPORTED: observed native service traffic differs between capture windows. OPEN: which node originated historic polls, genuine Online session, owner/epoch/physical slot. Oct3 0F17 belongs external ATEC/DCM03; not XTR evidence. No TX.
+
 ## S88 P5 live classification — PROVEN locally for scoped fix (2026-10-21)
 On XTR P5 RX_ONLY observer logged fc16=84, partitioned f085f=28 and f04a6=56, other FC16 subtype f03e8=0. This corrects the P4 observer zero caused by narrow hardcoded filter. V5 showed native FC16 and RX integrity clean, B11D raw/portable/V5 equality. This proves local parser classification for observed 085F and 04A6; not a session or FC16 ACK/semantic acceptance proof. FC23 startup not observed; owner/epoch/slot remain unknown; TX HARD_DENY.
 
