@@ -1,3 +1,6 @@
+## S88 phase 4 — extra live-log — RUNNING / PARTIAL (2026-10-21)
+Additional local log confirms V5 reception is healthy (2912 frames, zero resync and drops); S88 observer still reports FC16=0 despite V5 showing FC16 pages. Native startup not observed, owner unproven, TX remains disabled. Offline correction and regression tests required; no new flashing or physical TX in this analysis.
+
 ## S88 phase 4 live observation — RUNNING / PARTIAL (2026-10-21)
 User supplied flashed ESPHome log 21:56:18–21:59:29. Hypothesis passive metadata observer recognizes native FC16 without impacting V5/HA/TX. Positive RX/safety: V5 healthy (1559 frames/255 FC16 at 21:59:09), B11D raw=portable=V5 (1568), difference/fault/resync/drop=0, TX=HARD_DENY; physical attempts=0, shared RX-only lock. Negative observer classification: 60s S88 snapshots valid=84/168/252 yet FC16=0, rejects=429/859/1290. Inconclusive native session: startup_req/rsp=0; ownership/epoch unknown. Overall RUNNING/PARTIAL, not COMPLETE; investigate shape mismatch offline, no bus TX. Abort on any later TX or RX regression; rollback known V83.
 
