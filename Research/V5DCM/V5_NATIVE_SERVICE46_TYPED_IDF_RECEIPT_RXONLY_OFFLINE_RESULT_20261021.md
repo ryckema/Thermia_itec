@@ -1,0 +1,34 @@
+# Service-46 — typed UART admission/drain receipt and pinned API signature check (RX-only source)
+
+**Date:** 2026-10-21. **Experiment ID:** V5-NATIVE-SERVICE46-TYPED-IDF-RECEIPT-RXONLY-OFFLINE-01. **Status: COMPLETE / POSITIVE — OFFLINE SOURCE/HOST ONLY.** Real ESPHome/ESP-IDF compiler/codegen, physical ESP32 execution, flash and native XTR TX **PREPARED / NOT RUN**.
+
+## Verified baseline and one controlled source operation
+The last **user-confirmed installed** firmware remains V83-family **RX_ONLY/HARD_DENY**, original V49 RX-only rollback. **EXP388 RUNNING / PARTIAL** (remaining cancellation branches), B11D first boot/alignment fault **OPEN**. This step does **not** complete either. User's bounded experimental G01–G06 research-risk acceptance remains recognized but is **not physical proof** of owner, EOF or slot.
+
+Exact input private Service45 ZIP SHA256 `737964f7d63a45f18e6db76296ad2e38e125d1059bf3712a2af30afa43ff8a1e`, **292 files**, CRC clean. All **292/292 original members are byte-identical**, including the old `v5_native_tx_esphome_io.hpp`, complete V5 session service, V5 parser, UART, bus health, B11D/watchdog and existing HA entities.
+
+**Hypothesis:** without modifying the live RX-only implementation, a separate private source-only candidate can explicitly type-check the existing ESPHome/ESP-IDF UART send/drain APIs and model the distinct FIFO-admission, UART-drain, DE-low return and fault states without mistaking mock progress for actual accepted TX.
+
+**ONE isolated source addition:** two new private headers and a separate **NOT FLASHABLE** S46 YAML candidate. The first header defines a pure `TypedReceipt` state ledger with FIFO partial/full, drain, DE release and fail-closed negative cases; `tx_authorized() == false` and `physical_delivery_proven() == false` ALWAYS, including host success. The second header statically checks expected IDF API pointer types and uses the existing S45 read-only native UART-instance and installed-driver check; it makes **no calls** to UART output/drain functions. The separate YAML adds only these include names and a 30-second brown diagnostic to the original S45 source YAML; no additional UART consumer, new driver, output controller, DE action or arm.
+
+## OBSERVED FACTS / offline test results
+- **7/7 C++17 host tests PASS:** ordinary, strict, noexceptions/noRTTI, UBSan, simulated ESP_PLATFORM API stubs, ESP stub noexceptions and Arduino stub. Simulations cover partial/invalid FIFO admission, zero progress, owner loss, negative drain, DE disagreement, late invalidation and a synthetic complete receipt. These are **host-stub fixtures**, not actual ESP-IDF/ESPHome builds or RS485 frames.
+- **4/4 forbidden source TX macro builds correctly rejected** by the unchanged Service36 RX-only compilation guard.
+- **32/32 source/YAML/ancestry checks PASS**: original S45 ZIP SHA/CRC; 292/292 inherited files; all 24 YAML top-level blocks; 403 original ID fields; UART 9600 8E1 pins GPIO17/GPIO18/DE GPIO21; single RX debugger callback; Configuration entities; production bus-health/stale-watchdog and B11D sticky faults unchanged.
+- The original **S45 source test PASS (28/28)**; original **S44 host suite PASS (3/3 guarded-port plus 5/5 denial variants)**. S43 and S42 standalone pinned historical packages also PASS when run against **their respective exact parent source archives** (S43 26/26, S42 25/25 and inherited 35/35 V5 host checks). Historical nested wrappers run directly against a **later modified descendant source tree** report ancestry mismatches (S43 25/26, S42 24/25); this is preserved as a non-passing run, not silently relabeled a pass.
+- The **authentic public headers** ESP-IDF **v5.3.2** `driver/uart.h` and ESPHome **2026.9.0** `uart_component_esp_idf.h` were re-read through GitHub. Exact declared signatures match the S46 source contract: `int uart_tx_chars(uart_port_t, const char*, uint32_t)` and `esp_err_t uart_wait_tx_done(uart_port_t, TickType_t)`; `IDFUARTComponent::get_hw_serial_number()` exists. The S46 C++ exercise uses **equivalent local host stubs**, not the actual embedded toolchain.
+- Private S46 bundle: `V5_NATIVE_SERVICE46_TYPED_UART_RECEIPT_RX_ONLY_PRIVATE_20261021.zip`, **307 CRC-clean members**, SHA256 `9b4745c5f161ade47772b9c0f4c3f8ac5545deed663c3291099e904a94f6e2ba`, **306/306 manifest entries checked**. Contains user-private firmware-derived sources; do not redistribute. No protected algorithm/key/native response implementation or 0x0708 tooling is committed here.
+
+**NOT RUN:** true ESPHome schema/codegen/IDF compile or link, physical ESP RX-only candidate observation, bus TX/DE, UART last stop bit, exact electrical reply slot, current XTR epoch/peer, original Connect application C2, Online session or semantic setting readback.
+
+## Findings and interpretation
+**PROVEN OFFLINE SOURCE FACT:** original `EspHomePhysicalIo::write()` reports requested count after `UARTComponent::write_array(void)`, and original `drain()` discards `UARTFlushResult`. This older embedded adapter is **still unchanged** in S46 and cannot substantiate a TX delivery success. UART FIFO admission is not a drain, drain completion is not a verified electrical slot, and neither is controller semantic acceptance.
+
+**STRONGLY SUPPORTED:** future reviewed TX-aware adapter must propagate real partial-write/error and typed `uart_wait_tx_done` outcomes through the *same* GuardedPort and both B11D/watchdog callbacks. Do not use historical logger timestamps as physical EOF, do not infer a global deadline from host fixtures, and do not deassert DE mid-frame without handling the truncation/fault hazard.
+
+**HYPOTHESIS:** an independently scoped future firmware target can implement the public IDF API behind a single source-pinned existing UART/DE owner and then undergo a deliberately bounded user-initiated live test, preserving the earlier locally positive V4.1 full-session model. Nothing in S46 proves current XTR acceptance.
+
+**OPEN/UNKNOWN:** real actual embedded API build, status-bearing physical writer, protected native session onboarding, sender and physical slot/epoch, owner health on actual ESP, B11D first fault mechanism, EXP388 cancellation cases, Connect/Online application C2 and any new semantic writing.
+
+## NEXT ACTION — Service47
+Prepare the **separate** replacement for the *older optimistic physical UART write/drain adapter*, with typed return results, explicit failure accounting and one existing DE/UART owner; independently validate a real ESPHome 2026.9.x build before proposing any physical TX. Do not modify/flash current V83 RX_ONLY/HARD_DENY, auto-enable ATEC V3 behavior, disconnect the room sensor, or bypass the build-time TX denial in the present source. Any later active bus test needs its **own exact user-initiated scope**, source/CRC, timing and slot criteria, abort and rollback. No physical action or rollback was required for this offline result.
