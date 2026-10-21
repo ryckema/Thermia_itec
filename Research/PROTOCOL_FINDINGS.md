@@ -1,3 +1,17 @@
+## S91/S92 transfer finding — 2026-10-22 — SOURCE REVIEW, no new bus evidence
+
+**OBSERVED SOURCE FACTS:** In the latest prepared S88-based Service23 integration, `NativeEsphome23` contains session bind, CM930 profile install, scoped arming and frame-handling APIs, but the live bridge passes time-only `LiveEvidence23` and never binds/installs/arms. Stage-D 32-page bootstrap and CRC-valid native RX are observed. Reviewed FIFO/drain budgets remain zero. These are currently missing integration calls/configuration, NOT a proven controller requirement for independently physically verified reboot-epoch. Source review does not prove end-to-end behavior, original Connect authentication or XTR acceptance.
+
+**STRONG CONCLUSIONS:** Repeated passive observers will not solve TX. Connect-faithful protocol lifecycle should be primary: receive controller-driven startup/authentication, sync FC16, refresh, FC03, readback; separate local protocol generation from actual controller acceptance, and enforce electrical/slot safeguards. Historical V4.1 local positives establish bounded prior XTR operation, not universal role or unrestricted TX.
+
+**HYPOTHESES:** genuine protocol event lineage can qualify a scoped session within accepted S62 risk, using existing same UART/DE owner and Service23 native response machinery. Requires integrated implementation and bounded user-initiated live verification, not synthetic evidence.
+
+**OPEN/UNKNOWN:** verified controller acceptance in current V5; sourced exact time/drain/FIFO budget for new native instance; complete session handshake and semantic S93 write; physical G05/G06 distinctions. No new XTR captures, target compile, flash, physical TX or semantic readback in this handoff.
+
+**NEXT ACTION:** one integrated implementation connecting genuine lifecycle evidence to Service23 bind/profile/arm/frame response. Preserve S62 G01/G02/G04 accepted risk, TX HARD_DENY until bounded qualification. Firmware-derived keys, protected authentication routines, private mailbox details and unlicensed ATEC code must not be published.
+
+---
+
 ## S91/S92 controller-driven session observer — 2026-10-22 — SOURCE only
 NativeEsphome23 now includes passive Cm930ObservedSession tracking CRC-valid native 0x0F startup/FC16/FC03 request classes and Stage-D bootstrap progress. This does not implement protected Connect handshake, session acceptance, physical epoch evidence or TX. Exact archive SHA256 d42d9ea966f30f3bec055bedbad9ffc5ed701eb9b233762260efd63e3aed1793; 142 member CRC PASS, YAML 24-block parse; no new XTR capture, target build or live TX. Existing S62 accepted-risk decisions unchanged.
 
