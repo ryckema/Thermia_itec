@@ -1,3 +1,6 @@
+## S91 source comparison — 2026-10-21 — SOURCE correction
+Direct inspection of uploaded S82 private full source finds `v5_native_service23_esphome_runtime.hpp` already included and `esphome_service23(...).on_complete_frame()` already called within existing UART RX callback; no second owner needed. It also invokes reset_boot and operational policy, but leaves supervisor wiring false and does not perform bind/profile/arm; consequently S82 is RX_ONLY. This supersedes blanket claim that V5 callback integration is absent, not any claim of XTR live acceptance. Uploaded V43/V44B/V45/V47 contain preparatory one-response TX paths; none proves flashed/live S91. G01/G02/G04 accepted S62 scope intact; G05/G06 physical still unknown. No live tests/new protocol captures.
+
 ## S90→S91 source handoff — 2026-10-21 — implementation wiring finding (SOURCE)
 Source finding: exact supplied S88 P5 RX_ONLY YAML does not activate full NativeEsphome23 session lifecycle (bind/profile/arm/on_complete_frame), though service header defines APIs. Compile-only inclusion and native 32/32 observation are not native reply execution. This is an integration FIX, not new XTR protocol evidence. Preserve G01/G02/G04 risk closure; physical G05/G06 and first TX remain open. No code or physical changes. Next only integrated S91 candidate, not further standalone audits.
 
