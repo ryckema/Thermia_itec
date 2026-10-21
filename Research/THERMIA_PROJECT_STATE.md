@@ -1,3 +1,6 @@
+## S87 phase 4 — 2026-10-21 — RUNNING / PARTIAL, scoped transport negative-path offline
+Two separate strict C++17 host builds PASS using unchanged S82 scoped transport: normal build compile-lock denies arm, test-only guarded flags allow mock arm but revoke on expired deadline, zero request token, unhealthy RX, unqualified physical slot and explicit abort; unsafe RX/DE-low reset rejected, safe distinct-epoch reset accepted. Fake UART write attempts=0. Limits: successful-delivery duplicate-token branch not exercised (no verified private response provider), no full native startup, live IO, target ESPHome build or XTR acceptance. Operational S62 risk exception exists but was NOT enabled; no production code change, flash or bus TX. Artifact SHA256 675be20fc0e67cf4c71c19de323cb790b7c85f674816be6ce45f93e26de940a1. S86 parked partial, V83 RX_ONLY/HARD_DENY remains baseline; next S88 compile-only preparation without treating S87 partial as TX approval.
+
 ## S87 phase 3 — 2026-10-21 — RUNNING / PARTIAL
 Strict C++17 simulation on archived GuardedPort passed 11 cases, including error handling, safe reset, and single-use transport. This proves only host-side behavior; no hardware, firmware build, flash or live TX. Actual session, timing and scoped policy still OPEN. ZIP SHA256 d28f131c05d38c8ba603c0c8bc3fff613b034908c3a2b7582cd385f2d3c04bc4.
 
