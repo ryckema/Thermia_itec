@@ -1,3 +1,6 @@
+## S87 phase 3 — lower transport fault contract (2026-10-21)
+HOST/OFFLINE: 11 strict C++17 mocked PhysicalIo scenarios PASS against unchanged guarded port. Injected enter-DE, DE-command/readback disagreement, short UART write, drain/release failures and failed RX-low postcheck cause sticky fault and no immediate reentry; reset requires mock RX-low; default scoped TX build remains disabled. This is software-level behavior, not independent physical DE/electrical ownership/timing nor XTR accepted native session. Armed scoped expiry/replay remains OPEN; no TX or flash.
+
 ## S87 phase 2 — S23 fail-closed code properties (2026-10-21)
 HOST/OFFLINE strict C++17 test PASS: unverified provider blocks startup, no pending delivery may be confirmed, staged FC16 pages withheld/discarded, wrong-epoch commit refused and reset clears readback, refresh before Runtime denied, TX compile lock off. Not proof of physical delivery failure behavior, external scheduler retries, complete accepted Online session or real refresh. Source files unchanged; ATEC October 3 external. XTR TX/semantic acceptance OPEN.
 
