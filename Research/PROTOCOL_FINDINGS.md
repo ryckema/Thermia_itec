@@ -1,3 +1,6 @@
+## S91/S92 CM930 passive bootstrap join — 2026-10-22 — SOURCE ONLY
+Original S88 Stage D already tracks controller-origin 32-page bootstrap, ACKs and faults but its observations had not been passed into native Service23. Integrated single call to observe_passive_bootstrap() uses existing per-frame ledger, preserving fail-closed native rejection of faulted states. Source-only; no XTR new frames, device build, native handshake, TX or semantic acceptance. 141-member ZIP CRC PASS, SHA256 6da7670b3ebff812d6ac936496c1aaff2b070d6888e7a50c335dd9b7750d7088. Native epoch remains unqualified, S62 decisions unchanged.
+
 ## S91 abort admission cleanup — 2026-10-22 — SOURCE finding only
 Current S88-derived native runtime's abort previously delegated solely to TX, preserving some bound session/admission state. Source fix now revokes policy, epoch binding, supervisor join and native service along with TX. All prior native protocol evidence unchanged; no XTR frames or semantic results collected. ZIP SHA256 7a0c0dcce9671ff007b6874ac04509c9039d9788b05c0293f778a6d9a46ba7ed; source/YAML and archive checks only, no ESP-IDF build or flash. S62 accepted risk remains unchanged; G05/G06 physically OPEN.
 
