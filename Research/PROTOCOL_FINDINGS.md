@@ -1,3 +1,6 @@
+## S87 phase 2 — S23 fail-closed code properties (2026-10-21)
+HOST/OFFLINE strict C++17 test PASS: unverified provider blocks startup, no pending delivery may be confirmed, staged FC16 pages withheld/discarded, wrong-epoch commit refused and reset clears readback, refresh before Runtime denied, TX compile lock off. Not proof of physical delivery failure behavior, external scheduler retries, complete accepted Online session or real refresh. Source files unchanged; ATEC October 3 external. XTR TX/semantic acceptance OPEN.
+
 ## S87 phase 1 — engine host safety properties (2026-10-21)
 HOST/OFFLINE: unmodified S23 engine strict g++ tests prove fail-closed under simulated unverified source, epoch and slot; valid-shaped FC23 bytes are insufficient to prepare output or advance state. ControllerPageStore23 stages FC16 locally and exposes only after acknowledged current-epoch commit; discard, wrong epoch and reset prevent stale readback in tested cases. These are code properties, NOT local XTR Online session, electrical timing or semantic acceptance. `accepted_risk82` can bypass certain checks generally but test shows unverified provider still blocks startup. Physical owner, full session and TX remain OPEN; ATEC Oct3 is EXTERNAL.
 
