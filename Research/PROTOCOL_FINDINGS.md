@@ -1,3 +1,6 @@
+## S86 final gate boundary — 2026-10-21
+HOST/OFFLINE: archived V83 YAML reproducible across two archives; no matched flashed image identity; guarded compile-only script syntax PASS, no ESPHome target toolchain. Physical RX-only regression not performed. No new protocol proof, XTR native acceptance or TX authorisation. Genuine Oct3 FC23 belongs to EXTERNAL ATEC/DCM03. Keep installed V83 RX_ONLY/HARD_DENY until actual compile and user evidence.
+
 ## S86 phase 4 — build provenance boundary (2026-10-21)
 HOST/OFFLINE: archived V83 YAML identical across both S83 ZIPs, static include/substitution sanity PASS. This is build-source consistency, NOT evidence of ESPHome target compile, installed binary identity, native XTR session or slot ownership. No TX. ATEC Oct3 FC23 is EXTERNAL, not XTR. Keep physical proof and actual target build OPEN.
 
