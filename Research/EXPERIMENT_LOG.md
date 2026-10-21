@@ -1,3 +1,5 @@
+# S74 (2026-10-21): exact private S73 source re-verified; bundled strict GCC C++ host runner re-executed 37/37 PASS, physical TX=0. Real ESPHome/ESP-IDF compile NOT RUN: toolchain absent. No source, YAML or deployed V83 changes. V49 passive return and R6-P30D 32/32 are not a new epoch. V41-V5-S74-TARGET-BUILD-READY-01 RUNNING / PARTIAL. Report Research/V5DCM/V41_TO_V5_S74_TARGET_BUILD_HANDOFF_20261021.md.
+
 # S73 2026-10-21: offline source plus 36 host checks positive; passive bootstrap counters wired into private native runtime; no real embedded build, session acceptance, TX or flash. RX-only production unchanged. Research/V5DCM/V41_TO_V5_PASSIVE_BOOTSTRAP_HANDOFF_S73_20261021.md
 
 # 2026-10-21 V41-V5-V49-CALLBACK-01 RUNNING / PARTIAL: existing V49 passive bus-return observation now revokes NativeEsphome23 session in private RX-only source. No qualified next epoch, rebind, ESPHome build, flash or TX; installed V83 unchanged. Details Research/V5DCM/V41_TO_V5_V49_CALLBACK_REVOCATION_PARTIAL_20261021.md.
