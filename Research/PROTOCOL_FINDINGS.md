@@ -1,3 +1,6 @@
+## S90 — passive historic XTR service timing (2026-10-21)
+PROVEN within recorded timestamp/hex lines: 0F FC16 and FC03 request/reply-shaped events repeatedly occur in four local September XTR captures. Offline 200ms matching yielded 144 FC16 shape/time pairs and 40 FC03 pairs; median paired delays about 13-14ms and 24-25ms. One capture has many unmatched requests (31 FC16; 16 FC03); not proof of rejection, incomplete capture or absent reply. 0F FC23 not seen in these windows. HYPOTHESIS: participants/capture conditions differ. OPEN: sender/owner/epoch/slot, true wire timing, CRC independent validation, semantic acceptance and native session. ATEC Oct3 external. No TX.
+
 ## S89 — historical local 0F service activity (2026-10-21)
 PROVEN in sampled local September log lines: four XTR files have 0F03 traffic including requests to 0708 count6 (11/18/6/19 requests by file), alongside 0F10 frames. No 0F17 lines found in those sampled files. S88 P5 live short observation instead counted native FC16 085F/04A6 and no startup/FC03. STRONGLY SUPPORTED: observed native service traffic differs between capture windows. OPEN: which node originated historic polls, genuine Online session, owner/epoch/physical slot. Oct3 0F17 belongs external ATEC/DCM03; not XTR evidence. No TX.
 
