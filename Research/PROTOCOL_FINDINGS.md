@@ -1,3 +1,6 @@
+## S91 FIX3 runtime safety — 2026-10-22 — SOURCE ONLY
+S91 source inspection found B11D and watchdog aborted older V43/V44B runtimes but did not abort newly joined NativeEsphome23. FIX3 inserts native singleton `abort()` in both existing fault branches, retaining one UART owner. 24-block YAML offline parsed, ZIP CRC PASS; sha256 861d981b6d6e076ce43d85c8c80ed4d5748925a54a43c82a513791779c763831. No new protocol capture, target compilation, flash, real DE fault or S91 physical TX. S62 accepted risk unchanged.
+
 ## S91 FIX2 source repair — 2026-10-22 — SOURCE ONLY
 Fixed invalid on_boot YAML indentation and duplicate native Service23 singleton in prior RX-join candidate. YAML parses (24 root blocks); ZIP 148 members CRC PASS; SHA256 77851b2e37ef0b169e7a372b455b873b5cbd69799fc75bf0b4be453485b39f7f. No target compilation, flash, bus TX or semantic readback. S62 accepted-risk unchanged; G05/G06 physical OPEN.
 
