@@ -1,3 +1,6 @@
+## S89 — historic-vs-live native-service cohort comparison — COMPLETE / INCONCLUSIVE (2026-10-21)
+Hypothesis: historical local XTR FC03 service activity explains different current S88 passive counters but may not prove Online startup. No production change; static parser counts from four local September captures: 0F10 lines 42/80/82/115; 0F03 lines 26/36/12/22; 0F17 lines 0 each. FC03 0708/6 requests 11/18/6/19. Positive: historic 0F03 request/response shapes evident. Negative: none of the sampled local files has 0F17 startup. Inconclusive: sender/epoch/owner and native Online session unknown; Oct3 is external ATEC. No flash/TX or added bus risk. Rollback none. Artifact S89_PASSIVE_NATIVE_SESSION_PROVENANCE_20261021.md. Next S90 offline sequence fixture tests.
+
 ## S88 P5 result — COMPLETE / POSITIVE (2026-10-21)
 Hypothesis: broaden passive S86 FC16 recognition without RX/TX regression. User flashed P5; live log 22:09:42–22:10:36 confirms observer valid=84 fc16=84, f085f=28, f04a6=56, f03e8=0, startup req/rsp=0, tx_allowed=0. V5 health valid=294 fc16=49 (different timestamp), no RX drops/resync. B11D 276 raw=portable=V5 and countDiff=byteDiff=fault=0; executor physical_attempts=0 HARD_DENY. Positive for scoped classifier, not session handshake, ownership or gateway write. No further TX. Next S89 passive review. Evidence Pasted text(20261021-201051).txt.
 
