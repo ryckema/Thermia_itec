@@ -1,3 +1,7 @@
+> **S62 SUPERSESSION (2026-10-21): S61-PA-01 three-channel GPIO18/GPIO1/DE measurement = SUPERSEDED / NOT RUN.** User cannot access GPIO18, and no more G01/G02/G04 mandatory physical probing is desired. Four different **user-supplied** digital CSV recordings were actually decoded in new S62 (2,280/2,280 CRC-good TTL frames and paired second-channel marker in longest; native FC16 min 102.311ms gap), with standalone result `Research/V5DCM/V5_NATIVE_S62_TIMED_TTL_RISK_CLOSEOUT_20261021.md`. On explicit user direction, G01/G02/G04 are **COMPLETE / POSITIVE — USER-ACCEPTED OPERATIONAL RISK CLOSURE** for the unchanged installation (G02 remains CONDITIONAL), not falsely labeled independent electrical/FC23 slot proof. **Do not request GPIO18 access or reopen the S61 passive plan** unless requested or installation materially changes. Earlier S61 offline 14/14 source and 4/4 analyzer host tests remain valid historical results, but S61-PA-01's specific physical hookup was not performed. No TX/flash.
+
+---
+
 # S61 — G01/G02 evidence reconciliation and passive physical timing witness
 Date: 2026-10-21. ID: V5-NATIVE-S61-EPOCH-PEER-SLOT-RECONCILIATION-01. Source-only audit: COMPLETE / POSITIVE (14/14 S60 source checks, 4/4 analyzer host tests). Physical test S61-PA-01: PREPARED / NOT RUN. Strict independent physical G03/G04 response slot and fresh controller epoch: OPEN / UNKNOWN. User-installed V83 family RX_ONLY/HARD_DENY unchanged; EXP388 RUNNING/PARTIAL, B11D first-fault OPEN, V49 fallback.
 
