@@ -1,3 +1,6 @@
+## S86 phase 1 — source-only passive observer (2026-10-21)
+HOST/OFFLINE: new TX-incapable metadata-only C++ observer compiles under strict C++17 and recognizes synthetically framed 0x0F startup request/reply and FC16/ACK; negative order/timeout/CRC checks PASS. Not local XTR semantic proof; not wired to V5 production or ESP32-S3 target. OPEN: real V5 integration, independent sender provenance, physical owner/epoch/slot and application acceptance. Do not promote this result to native TX readiness.
+
 ## S85 phase 3 — passive startup replay — 2026-10-21
 PROVEN / locally confirmed raw capture: one exact 0x0F FC23 startup request/reply pair (29ms timestamp gap) followed by 0x03E8/count13 FC16 request (1.862s after startup request) and short ACK (+14ms). 458 CRC-valid 0x0F ADUs in archived local sample. HOST/OFFLINE: read-only classifier and three negative/empty assertions PASS; no TX and no protected raw contents in outputs. STRONGLY SUPPORTED: one request/reply exchange followed by a settings page, not two FC23 requests. OPEN / UNKNOWN: electrical reply origin, real gateway ownership/epoch/slot, higher-layer authentication and semantic acceptance. Keep S62 accepted-risk off; no XTR live gateway acceptance inferred.
 
