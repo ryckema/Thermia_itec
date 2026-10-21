@@ -1,3 +1,6 @@
+## S87 phase 4 — transport admission host-only (2026-10-21)
+HOST/OFFLINE: strict C++17 default/no-TX and two-macro guarded mock tests PASS. `ScopedTransport23` refuses expired deadline, token zero, RX not healthy and slot not qualified; faults revoke arm and require safe distinct-epoch restoration. Zero fake UART writes. Source predicate for `unique_request_token<=last_delivered_token_` inspected but replay after a successful delivered token NOT dynamically tested. Native successful startup, private provider, true physical timing, S62 override safety and XTR acceptance remain OPEN. No device TX.
+
 ## S87 phase 3 — lower transport fault contract (2026-10-21)
 HOST/OFFLINE: 11 strict C++17 mocked PhysicalIo scenarios PASS against unchanged guarded port. Injected enter-DE, DE-command/readback disagreement, short UART write, drain/release failures and failed RX-low postcheck cause sticky fault and no immediate reentry; reset requires mock RX-low; default scoped TX build remains disabled. This is software-level behavior, not independent physical DE/electrical ownership/timing nor XTR accepted native session. Armed scoped expiry/replay remains OPEN; no TX or flash.
 
