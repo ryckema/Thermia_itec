@@ -1,3 +1,6 @@
+## S88 P5 result — COMPLETE / POSITIVE (2026-10-21)
+Hypothesis: broaden passive S86 FC16 recognition without RX/TX regression. User flashed P5; live log 22:09:42–22:10:36 confirms observer valid=84 fc16=84, f085f=28, f04a6=56, f03e8=0, startup req/rsp=0, tx_allowed=0. V5 health valid=294 fc16=49 (different timestamp), no RX drops/resync. B11D 276 raw=portable=V5 and countDiff=byteDiff=fault=0; executor physical_attempts=0 HARD_DENY. Positive for scoped classifier, not session handshake, ownership or gateway write. No further TX. Next S89 passive review. Evidence Pasted text(20261021-201051).txt.
+
 ## S88 P5 (2026-10-21) — PREPARED / NOT RUN
 Passive diagnostic classifier updated to count FC16 more generally. Offline host tests passed. Target compilation and live test not run. Safety configuration unchanged. See S88 phase 5 package.
 
