@@ -1,3 +1,6 @@
+## S86 new artifact provenance — 2026-10-21
+HOST/OFFLINE: direct user ESPHome YAML bytes match archived V83 YAML SHA256 b4aaedf27f8dd3d58fcc7c09316cfe03d9c8f41d40fcd827a31bf1f104d389fa. User-supplied factory image has V5DCM83, ONE_SHARED_RX_OWNER and TX=HARD_DENY embedded diagnostics, SHA256 f9ec707e94bbfd1e368d0552519e3530747172dcb7fd6cbbfa6d7fa34ead3e51. Strong binary-family corroboration only; not firmware build or installed-image attestation, not native protocol acceptance. No TX.
+
 ## S86 final gate boundary — 2026-10-21
 HOST/OFFLINE: archived V83 YAML reproducible across two archives; no matched flashed image identity; guarded compile-only script syntax PASS, no ESPHome target toolchain. Physical RX-only regression not performed. No new protocol proof, XTR native acceptance or TX authorisation. Genuine Oct3 FC23 belongs to EXTERNAL ATEC/DCM03. Keep installed V83 RX_ONLY/HARD_DENY until actual compile and user evidence.
 
