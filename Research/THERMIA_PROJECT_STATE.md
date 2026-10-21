@@ -1,3 +1,6 @@
+## S88 P5 — 2026-10-21 — COMPLETE / POSITIVE (scoped FC16 classification)
+User flashed P5 and supplied ESPHome log 22:09:42–22:10:36. Live S86 summary: valid=84 fc16=84 f085f=28 f04a6=56 f03e8=0 startup_req/rsp=0 ack=0 fc03=0 rejected=420 tx_allowed=0. V5 health at 22:10:10: valid=294 fc16=49 deltaResync=0 deltaDrops=0; B11D raw=portable=V5 276 frames with zero differences/faults. Safety TX HARD_DENY, physical_attempts=0. This confirms the intended P5 FC16 classifier fix on XTR (the P4 zero count was filter mismatch), not native startup/session/semantic acceptance. Because logging timestamps and scopes differ, do not assert exact equality of S86 and V5 FC16 counts. Next S89 should be passive/offline session evidence review only. V83 rollback remains.
+
 ## S88 P5 — 2026-10-21 — PREPARED / NOT RUN
 Prepared RX-only FC16 observer repair package. Corrected S86's overly narrow FC16 request filter, adding passive counts for 085F/5, 04A6/13 and 03E8/13. Two C++17 tests pass; YAML and ZIP verified. No target compile, flash or live result. Safety unchanged: HARD_DENY and zero native TX permission. Next user-controlled build/flash, then verify S86 versus V5 counters and RX health. Package S88_PHASE5_RX_ONLY_FC16_FIX_20261021.zip.
 
