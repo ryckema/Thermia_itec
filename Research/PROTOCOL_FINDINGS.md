@@ -1,3 +1,6 @@
+## S88 phase 4 live — observer classifier mismatch (2026-10-21)
+PROVEN locally within supplied log: V5 counted ~255 FC16; B11D comparison zero faults/differences and TX HARD_DENY. Separately S88 S86 observer snapshots count fc16=0 and rejected increases 429→1290 across same session, despite valid 84→252. STRONGLY SUPPORTED: observer's classifications do not currently cover observed V5 FC16 traffic; zero S86 FC16 must NOT be interpreted as zero XTR FC16. HYPOTHESIS: S86 expects different frame structure/addressing. OPEN: exact mismatch, genuine startup and ownership. No active TX.
+
 ## S88 phase 4 — passive classifier diagnostics candidate (2026-10-21)
 HOST/OFFLINE: added periodic 60-second metadata-only S86 counters to S88 candidate; no new XTR bus or protocol observation. Snapshot may expose recognized FC23 request/reply and FC16/FC03 frame counts after future runtime validation, but cannot establish physical owner, session or semantic acceptance. Strict C++17 host test and static YAML checks PASS; ESP32-S3 target compile, flash and TX NOT RUN. TX HARD_DENY retained.
 
