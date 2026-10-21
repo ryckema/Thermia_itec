@@ -1,3 +1,6 @@
+## S88 phase 5 — offline observer fix only (2026-10-21)
+OFFLINE tested: previous S86 observer counted only 0F FC16 requests at 03E8/13, which excludes locally observed XTR 085F/5 and 04A6/13. New P5 observer recognizes structurally valid 0F FC16 frames and exposes 085F, 04A6, 03E8 subcounts; both C++17 tests pass. This is a code-level causal finding, not yet live confirmation. OPEN: whether real frames satisfy generic length/CRC geometry and match V5 counters; startup and session still unproven. No TX.
+
 ## S88 extended live capture (2026-10-21)
 PROVEN locally: additional 21:58:42–22:01:56 XTR log has V5 FC16 pages 480 with zero parser drops/resync and B11D raw/portable/V5 identical over 2848 frames; S88 observer nevertheless fc16=0 across valid=252/336/420, rejected=1290/1720/2149. DISPROVEN within S88 P4 candidate: S86 observer's FC16 classification works against native XTR V5 frames. OPEN mechanism (geometry/offset/interface), ownership, startup. HYPOTHESIS only: on-wire shape mismatch in observer input. TX remained HARD_DENY and no physical attempts.
 
