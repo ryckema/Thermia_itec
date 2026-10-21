@@ -1,3 +1,6 @@
+## Original Connect CM930 version selector — SOURCE PROVENANCE, 2026-10-22
+2.1.105 `device_client/data/info.py` uses decimal 2151 (0x0867) for Control Module (display) version with formula `semver((raw//100)%10,(raw//10)%10,raw%10)`; `cm/client.py` loads versioned config after first parsed version; `configuration.py` resolves matching CM type/version directory. Photo DISPLAY 2.4.2 corresponds raw 242 and band 2.3.0–2.4.3 (471 configs). Existing S88/S91 `v5_native_service34_passive_version_witness.hpp` already observes CRC-valid FC16 0x0864/count4 word 3 (0x0867), and `v5_native_service29_version_provenance.hpp` already implements the same formula/range policy. RX-derived version is NOT hardware epoch/authentication or TX admission proof. No duplicate decoder or new TX proposed.
+
 ## XTR controller VERSION menu vs Connect 930 profile — 2026-10-22
 Photo-observed DISPLAY 2.4.2, HUB 3.0, COMM.KIT 24102201, MAIN MICOM 25011301, EEPROM 23071301. Original Connect 930 config includes 2.3.0–2.4.3 band (471 configurations). Numeric match of DISPLAY does NOT establish source of Connect `cm-fw-version`; determine firmware selector semantics before binding version-pinned native profile. No register, RX session or physical write evidence.
 
