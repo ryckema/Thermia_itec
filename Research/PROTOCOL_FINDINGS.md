@@ -1,3 +1,6 @@
+## S91 abort admission cleanup — 2026-10-22 — SOURCE finding only
+Current S88-derived native runtime's abort previously delegated solely to TX, preserving some bound session/admission state. Source fix now revokes policy, epoch binding, supervisor join and native service along with TX. All prior native protocol evidence unchanged; no XTR frames or semantic results collected. ZIP SHA256 7a0c0dcce9671ff007b6874ac04509c9039d9788b05c0293f778a6d9a46ba7ed; source/YAML and archive checks only, no ESP-IDF build or flash. S62 accepted risk remains unchanged; G05/G06 physically OPEN.
+
 ## S91 combined manual abort — 2026-10-22 — SOURCE ONLY
 The S88-derived S91 native singleton is now explicitly aborted from both legacy HA V43/V44B manual abort actions as well as existing B11D/watchdog fault branches. This is source-level safety integration and produces NO new XTR protocol finding. YAML parser 24 blocks PASS, ZIP CRC PASS; sha256 c5733a3707a6432bea805be49ea392a00fbd050e481d0742070a7527eb12dd8d. Live session, physical TX, readback, G05/G06 and semantic acceptance unverified. S62 acceptance G01/G02/G04 unchanged.
 
