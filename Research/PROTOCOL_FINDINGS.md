@@ -1,3 +1,6 @@
+## S90-B9 FIX1 — 2026-10-21 — ESPHome include dependency finding (software, not protocol)
+OBSERVED user compilation with ESPHome 2026.9.0 / ESP-IDF 5.5.5 reached native header but failed because `v5_native_s82_build_profile.hpp` absent from build's staged includes; B9 source ZIP actually contained header. Software conclusion: explicit `esphome.includes` transitive header staging missing; six local dependencies added in new separate compile-only YAML. Offline dependency closure PASS, corrected target compile NOT RUN. No evidence from this about electrical UART, native session, or XTR acceptance; no flash/TX. S90 remains partial.
+
 ## S90-B9 — 2026-10-21 — target compile-only package prepared (not protocol evidence)
 OBSERVED: exact user S88 P5 ESP32-S3 ESP-IDF YAML originally omits explicit includes of native UART physical adapter and IDF API signature probe; diagnostic copy now includes both while original production YAML stays unchanged. Full source ZIP SHA256 2b58ab69a866e4c48202d02b43276637e2b939e57d4451582598e990e5d4aa77; archive integrity PASS. OPEN: ESPHome/ESP-IDF actual target build (toolchain absent), adapter API signatures, physical TX completion/DE, session and semantic readback. No flash/TX. Do not interpret source inclusion or ZIP PASS as TX approval. S90 partial, S91–93 not run.
 
