@@ -1,3 +1,6 @@
+## S87 phase 1 — engine host safety properties (2026-10-21)
+HOST/OFFLINE: unmodified S23 engine strict g++ tests prove fail-closed under simulated unverified source, epoch and slot; valid-shaped FC23 bytes are insufficient to prepare output or advance state. ControllerPageStore23 stages FC16 locally and exposes only after acknowledged current-epoch commit; discard, wrong epoch and reset prevent stale readback in tested cases. These are code properties, NOT local XTR Online session, electrical timing or semantic acceptance. `accepted_risk82` can bypass certain checks generally but test shows unverified provider still blocks startup. Physical owner, full session and TX remain OPEN; ATEC Oct3 is EXTERNAL.
+
 ## S86 new artifact provenance — 2026-10-21
 HOST/OFFLINE: direct user ESPHome YAML bytes match archived V83 YAML SHA256 b4aaedf27f8dd3d58fcc7c09316cfe03d9c8f41d40fcd827a31bf1f104d389fa. User-supplied factory image has V5DCM83, ONE_SHARED_RX_OWNER and TX=HARD_DENY embedded diagnostics, SHA256 f9ec707e94bbfd1e368d0552519e3530747172dcb7fd6cbbfa6d7fa34ead3e51. Strong binary-family corroboration only; not firmware build or installed-image attestation, not native protocol acceptance. No TX.
 
