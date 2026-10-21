@@ -1,3 +1,6 @@
+## S88 P5 (2026-10-21) — PREPARED / NOT RUN
+Passive diagnostic classifier updated to count FC16 more generally. Offline host tests passed. Target compilation and live test not run. Safety configuration unchanged. See S88 phase 5 package.
+
 ## S88 phase 4 — extra live-log — RUNNING / PARTIAL (2026-10-21)
 Additional local log confirms V5 reception is healthy (2912 frames, zero resync and drops); S88 observer still reports FC16=0 despite V5 showing FC16 pages. Native startup not observed, owner unproven, TX remains disabled. Offline correction and regression tests required; no new flashing or physical TX in this analysis.
 
