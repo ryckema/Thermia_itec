@@ -1,3 +1,6 @@
+## S90-B9 FIX1 — 2026-10-21 — user ESP-IDF build success (software only)
+PROVEN FROM USER LOG: ESPHome 2026.9.0, ESP-IDF 5.5.5, target esp32s3 complete application + bootloader build, factory/OTA/ELF files, final `INFO Successfully compiled program`. UNKNOWN: whether native B9 UART adapter and IDF signature probe compiled, because log names `thermia-itec-xtr-m.yaml` rather than FIX1 diagnostic YAML. Do not promote a general successful build into physical TX/DE proof. No flash or bus TX observed; G05/G06, native session, semantic write remain OPEN. S90 partial, S91–S93 not run.
+
 ## S90-B9 FIX1 — 2026-10-21 — ESPHome include dependency finding (software, not protocol)
 OBSERVED user compilation with ESPHome 2026.9.0 / ESP-IDF 5.5.5 reached native header but failed because `v5_native_s82_build_profile.hpp` absent from build's staged includes; B9 source ZIP actually contained header. Software conclusion: explicit `esphome.includes` transitive header staging missing; six local dependencies added in new separate compile-only YAML. Offline dependency closure PASS, corrected target compile NOT RUN. No evidence from this about electrical UART, native session, or XTR acceptance; no flash/TX. S90 remains partial.
 
