@@ -1,3 +1,6 @@
+## S91 combined manual abort — 2026-10-22 — SOURCE ONLY
+The S88-derived S91 native singleton is now explicitly aborted from both legacy HA V43/V44B manual abort actions as well as existing B11D/watchdog fault branches. This is source-level safety integration and produces NO new XTR protocol finding. YAML parser 24 blocks PASS, ZIP CRC PASS; sha256 c5733a3707a6432bea805be49ea392a00fbd050e481d0742070a7527eb12dd8d. Live session, physical TX, readback, G05/G06 and semantic acceptance unverified. S62 acceptance G01/G02/G04 unchanged.
+
 ## S91 FIX3 runtime safety — 2026-10-22 — SOURCE ONLY
 S91 source inspection found B11D and watchdog aborted older V43/V44B runtimes but did not abort newly joined NativeEsphome23. FIX3 inserts native singleton `abort()` in both existing fault branches, retaining one UART owner. 24-block YAML offline parsed, ZIP CRC PASS; sha256 861d981b6d6e076ce43d85c8c80ed4d5748925a54a43c82a513791779c763831. No new protocol capture, target compilation, flash, real DE fault or S91 physical TX. S62 accepted risk unchanged.
 
