@@ -1,3 +1,6 @@
+## S86 phase 3 — source-only RX observation integration (2026-10-21)
+HOST/OFFLINE: exact two-change patch onto archived V83 root YAML adds S86 observer include and callback before original V5 c.on_frame; inverse patch reproduces source. Strict C++17 host test PASS; no ESPHome target build or real device validation. No semantic protocol claims. External ATEC sample remains cross-model only; no local XTR accepted native startup. UNKNOWN installed V83 source identity, electrical slot/owner, epoch and native session. RX_ONLY/HARD_DENY preserved in source; physical TX not attempted.
+
 ## S86 phase 2 — read-only V5 seam / capture provenance (2026-10-21)
 HOST/OFFLINE: strict C++17 observer compiled and replayed complete ADUs; callback insertion site is original V5 `for(const auto &f:parsed)` without touching TX branch. One pairing in Oct 3 capture is ATEC EXTERNAL genuine DCM03 reference, not XTR. Old local XTR Sep 24 0x0F population had no equivalent startup pair in captured window. No source ownership, epoch, physical slot, accepted gateway or XTR writable functionality proven. Firmware compile/flash not done, accepted_risk82 stays false / RX_ONLY HARD_DENY. Do not promote cross-model replay to local native-session evidence.
 
