@@ -1,3 +1,6 @@
+## S91-CONNECT-CM930-VERSION-PROVENANCE-20261022 — PREPARED / NOT RUN
+Hypothesis: original Connect firmware proves whether `cm-fw-version` is sourced from display register 0x0867, permitting reuse of existing version witness without more tests. Baseline S88 P5 locally RX-only positive, current S91 atomic candidate unflashed. ONE source comparison: genuine 2.1.105 info.py -> cm/client.py -> configuration.py and existing Service34/29/YAML. POSITIVE source result: register 2151/0x0867 decodes raw 242 to 2.4.2, selects CM930 directory. Version witness and policy already implemented in existing firmware. No bus experiment, TX bytes, register writes or additional code change. Abort and rollback unchanged (S88 P5). Session admission and reviewed UART drain/FIFO still NO-GO. TARGET COMPILE/FLASH/LIVE NOT RUN.
+
 ## S91-XTR-VERSION-PHOTO-20261022 — PREPARED / NOT RUN
 Baseline: user photographed original Thermia XTR VERSION menu. Observed DISPLAY 2.4.2, HUB 3.0, COMM.KIT 24102201, MAIN MICOM 25011301, EEPROM 23071301. Connect original 930 profile band 2.3.0–2.4.3 contains 471 configuration entries, but selector provenance unproven. No frames/addresses changed, no test executed; physical NO-GO preserved, S88 P5 rollback. Follow original `cm-fw-version` source; do not infer physical epoch/session.
 
