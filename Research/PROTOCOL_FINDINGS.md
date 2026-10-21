@@ -1,3 +1,6 @@
+## S88 phase 4 — passive classifier diagnostics candidate (2026-10-21)
+HOST/OFFLINE: added periodic 60-second metadata-only S86 counters to S88 candidate; no new XTR bus or protocol observation. Snapshot may expose recognized FC23 request/reply and FC16/FC03 frame counts after future runtime validation, but cannot establish physical owner, session or semantic acceptance. Strict C++17 host test and static YAML checks PASS; ESP32-S3 target compile, flash and TX NOT RUN. TX HARD_DENY retained.
+
 ## S88 phase 3 — observer visibility boundary (2026-10-21)
 HOST/OFFLINE observation: strict C++17 host test PASS, exact observer callback present once, but YAML calls no `s86_rx_observer.snapshot()`. Accordingly no S86 classification counters are published to logs/HA by this S88 candidate. This is an instrumentation limitation, not a negative XTR startup result. ESPHome CLI absent, target compile NOT RUN. No new native protocol evidence, physical ownership, TX or acceptance claim.
 
