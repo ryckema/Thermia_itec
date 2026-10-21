@@ -1,3 +1,6 @@
+## S87 phase 3 — 2026-10-21 — RUNNING / PARTIAL
+Strict C++17 simulation on archived GuardedPort passed 11 cases, including error handling, safe reset, and single-use transport. This proves only host-side behavior; no hardware, firmware build, flash or live TX. Actual session, timing and scoped policy still OPEN. ZIP SHA256 d28f131c05d38c8ba603c0c8bc3fff613b034908c3a2b7582cd385f2d3c04bc4.
+
 ## S87 phase 2 — 2026-10-21 — RUNNING / PARTIAL (offline negative paths)
 New strict C++17 host test against unmodified S23 engine PASS. Unverified startup provider blocks FC23 even with risk override; repeated times do not advance phase; `note_delivery` absent pending faults and no same-epoch automatic recovery; FC16 staged cache withheld/discarded after simulated failed delivery; wrong-epoch commit denied; reset invalidates; pre-Runtime refresh denied; scoped transport TX build disabled. **Limits:** no UART/DE failure injection, no successful authenticated startup/full refresh cycle, no scheduler auto-retry proof, no ESPHome target build/flash/TX. Local V83 RX_ONLY unchanged; ATEC Oct3 is EXTERNAL. Artifact S87_PHASE2_OFFLINE_20261021.zip SHA256 41c398515110f2dfd750d4b1700bfbc23ee387f900f2d7ff3d203b6a2e34fc99. Next guarded IO failure injection with no real TX, S87 remains PARTIAL.
 
