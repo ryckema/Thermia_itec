@@ -1,3 +1,6 @@
+## S91 current V5 admission preflight — SOURCE 2026-10-22
+New HA text diagnostic calls thermia_s91::preflight_status from same S91 RX bridge; flags actual compile lock, missing manual provider, or unqualified owner state rather than interpreting staged HA intent as TX arm. Cold request explicitly logs missing manual-provider denial. Real controller epoch, physical slot, UART budgets and supervisor lease remain unresolved; source additions never assert these. Full private V5 bundle sha256 b183332daf03aa0b17dcdea238c0ffc995a0efd4ac5dbcc0bac93e0b4e096c7a; YAML parsed and local S91 includes present; no ESPHome target compilation or live validation.
+
 ## S91 manual provider same-ADU interface (source 2026-10-22)
 `ManualStartupInputsProvider91` changed from timestamp-only `bool(uint32_t, Inputs&)` to `bool(const uint8_t*,size_t,const LiveEvidence23&,Inputs&)`. `manual_startup_arm` now explicitly checks echoed token, timestamp, controller epoch, epoch_verified, physical_slot_measured, B11D/RX/DE against owner frame. No provider registered and no physical safety field manufactured; only fixes stale/split-source interface. 149-entry ZIP CRC valid, SHA256 a3a97ca1a1e5093609359d747ea87dfe2fdafc7be16cab60a318ca8367886e16, uncompiled/unused on heat pump. Physical TX NO-GO.
 
