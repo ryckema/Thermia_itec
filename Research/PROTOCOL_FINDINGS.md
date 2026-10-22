@@ -1,3 +1,6 @@
+## S91 owner-derived passive evidence fields — 2026-10-22 — SOURCE ONLY
+Single existing V5 CRC-valid callback now passes measured health/DE-switch booleans and timestamp to OwnerFrameEvidence91 via observe_crc_valid_adu_with_owner_evidence. `hardware_de_low` is the actual existing direction-switch state, NOT independent MCU-pad verification. `epoch_verified`, `physical_slot_measured`, `token`, `peer_absent`, profile fields remain default false/zero. Qualified session aborts on current guard degradation. This increases provenance but does not authorize startup TX or Connect app acceptance. Source-only, ZIP SHA256 0bbd1b3793b76220ef8866cdff6ab3ce259e84e9ccbd5be4c150389950f286e7, 142 members CRC/manifest PASS; physical NO-GO.
+
 ## S91 manual owner-callback join — SOURCE / PREPARED NOT RUN
 S91 HA/manual owner callbacks SOURCE-only 2026-10-22: added real Service23 manual startup button and per-frame owner-evidence callback hook to shared bridge; no qualified owner providers installed, BUILD_LOCKED; no compile/flash/TX. Full 142-file ZIP local SHA256 278aaa70a45ab34fb09a7770e15c08375dda65d91300c253948ea4426ad7cae7. S88 P5 RX-only verified baseline. Historical EXP344/345/355/386/387 not repeated. Physical S91 NO-GO pending real owner evidence, UART timing and profile. Rollback S88 P5.
 
