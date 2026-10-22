@@ -1,3 +1,6 @@
+## S91 evidence limit for UART/TX release — SOURCE VERIFIED 2026-10-22
+Latest S91 source uses EspHomePhysicalIo(…, reviewed_drain_ms=0, reviewed_fifo_attempts=0), rejecting enter_de_tx if either zero; Service23 scoped compile flags absent; scope additionally requires physical timing and current owner evidence. V4.1 EXP386/387 locally proved its own native transaction route and cold restart but did not in itself measure the new Service23 FIFO/drain bound or produce a verified per-frame owner slot token. Request geometry and software-generated candidate_generation are not electrical slot authorization. Keep existing gates; no code or live TX in this decision.
+
 ## S91 cold user intent separate from epoch admission — SOURCE 2026-10-22
 Manual HA action can stage max 120s one-time intent. Existing cold witness invalidates previous bound epoch; exact startup consumes new intent, calling same Service23 guarded admission. This distinguishes user authorization from cryptographic/authenticated controller epoch and physical slot evidence. Null owner provider and zero reviewed UART budgets remain explicit blockers; candidate generation is NEVER promoted to verified epoch. No new response payload, no external firmware algorithm, no second UART owner. Source only ZIP SHA256 7f3b91b7b5c1fac8bf54f90f813e01c971266f4e640b338270e0f5cde83c14fd, 142 files, NO-GO live TX.
 
