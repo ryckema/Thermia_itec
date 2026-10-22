@@ -1,3 +1,6 @@
+## S91 bootstrap observation phase regression — SOURCE 2026-10-22
+Existing S91 `Cm930ObservedSession::on_bootstrap()` set `bootstrap_complete=false` on a newer incomplete bootstrap but could leave prior `phase=PagesComplete`. The packaged source correction explicitly resets phase to Synchronizing/AwaitStartup when not complete (unless prior fault). This fixes misleading RX-only lifecycle state, not application acceptance or hardware controller epoch, and grants no TX. Historical native response TX is supported by EXP344/345 but same-owner IDF physical FIFO/drain qualification remains missing; Service23 runtime still initializes reviewed budgets zero. No target compile, live test or semantic HA write performed. Archive SHA256 337f853a654bd67fe6cb447db04314cee5d2c19f295562c831da11facd77c60d.
+
 ## Connect 2.1.105 application session vs CM930 passive observations — SOURCE 2026-10-22
 Original Connect server separates application handshake state from WAITING_FOR_DEVICE_INFO; passive FC16/FC03 and version observation do not prove acceptance. S91 source-only change expresses this independent unverified acceptance state without granting TX. Exact historical EXP344/345 YAML corroborates ESP32 9600 8E1 UART with GPIO21 DE and flush-based TX; it does not establish IDF FIFO/drain bound for present Service23. No live S91 validation.
 
