@@ -1,3 +1,6 @@
+## S91 manual owner-callback join — SOURCE / PREPARED NOT RUN
+S91 HA/manual owner callbacks SOURCE-only 2026-10-22: added real Service23 manual startup button and per-frame owner-evidence callback hook to shared bridge; no qualified owner providers installed, BUILD_LOCKED; no compile/flash/TX. Full 142-file ZIP local SHA256 278aaa70a45ab34fb09a7770e15c08375dda65d91300c253948ea4426ad7cae7. S88 P5 RX-only verified baseline. Historical EXP344/345/355/386/387 not repeated. Physical S91 NO-GO pending real owner evidence, UART timing and profile. Rollback S88 P5.
+
 ## S91-PROVIDER-STARTUP-SCOPE-20261022 — PREPARED / NOT RUN
 One SOURCE review, no physical experiment, no new response bytes. Verified latest S91 StartupProvider23 private adapter and UnifiedNative23 AwaitChallenge: startup response provider is independent of versioned current settings pages; pre-information restriction is currently imposed by common profile and ScopedTransport23 arm. Baseline S88 P5 RX-only locally verified; original Connect 2.1.105 separates native start from app acceptance. Positive source result: separate startup provider exists. Negative for current S91 release: scope separation not implemented, physical budget and epoch/slot unqualified. Abort and rollback unchanged. Next: integrate exact startup-only transport profile with existing physical guards, not another audit.
 
