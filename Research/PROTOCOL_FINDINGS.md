@@ -1,3 +1,6 @@
+## S91 manual owner-callback join — SOURCE / PREPARED NOT RUN
+S91 HA/manual owner callbacks SOURCE-only 2026-10-22: added real Service23 manual startup button and per-frame owner-evidence callback hook to shared bridge; no qualified owner providers installed, BUILD_LOCKED; no compile/flash/TX. Full 142-file ZIP local SHA256 278aaa70a45ab34fb09a7770e15c08375dda65d91300c253948ea4426ad7cae7. S88 P5 RX-only verified baseline. Historical EXP344/345/355/386/387 not repeated. Physical S91 NO-GO pending real owner evidence, UART timing and profile. Rollback S88 P5.
+
 ## S91 independent startup-source admission — 2026-10-22 SOURCE
 UnifiedNative23::source_complete() previously coupled verified OriginalBackendAdapter23 startup provider to full 32-page XTR source map. Original Connect 2.1.105 native server begins before complete info and application acceptance remains independent. Added startup_source_complete() (provider.source_verified + response buffer size) and routed only manually scoped startup_only admission and guarded send complete_service predicate through it. Runtime/HA writes retain full source_complete() and required profiles. No new response content, protected code, slot, or controller identity. Source-only / not compiled or live; physical BUILD_LOCKED NO-GO unchanged.
 
