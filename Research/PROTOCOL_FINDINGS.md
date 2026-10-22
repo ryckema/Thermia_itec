@@ -1,3 +1,6 @@
+## S91-E2 runtime admission exact source provenance — 2026-10-22
+YAML:4164 stages intent; YAML:1727 injects genuine CRC-valid ADU. No YAML manual-provider registration. `s91_native_rx_bridge.hpp:194` aborts on null `manual_inputs_provider`. `v5_native_service23_esphome_runtime.hpp:310` requires bound qualified epoch + `supervisor_lease_join_verified_`; ctor:90 default 0 FIFO/drain budgets. `v5_native_tx_esphome_io.hpp:44` fails with `NoReviewedBudget`; build guard runtime:280. Source proves current ZIP cannot transmit with only lock override. Local token does not validate controller epoch or electrical response slot. No new independent tests and no TX, source only.
+
 ## S91 current V5 admission preflight — SOURCE 2026-10-22
 New HA text diagnostic calls thermia_s91::preflight_status from same S91 RX bridge; flags actual compile lock, missing manual provider, or unqualified owner state rather than interpreting staged HA intent as TX arm. Cold request explicitly logs missing manual-provider denial. Real controller epoch, physical slot, UART budgets and supervisor lease remain unresolved; source additions never assert these. Full private V5 bundle sha256 b183332daf03aa0b17dcdea238c0ffc995a0efd4ac5dbcc0bac93e0b4e096c7a; YAML parsed and local S91 includes present; no ESPHome target compilation or live validation.
 
