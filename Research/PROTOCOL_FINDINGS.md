@@ -1,3 +1,6 @@
+## S91-TX1 bounded ESPHome queue completion — SOURCE 2026-10-22
+Experimental V4.1 `write_array()` backend no longer invokes unbounded `uart_.flush()`; it checks `reviewed_drain_ms` and calls bounded `uart_wait_tx_done` on existing IDF UART port, then uses existing post-drain DE-release logic. This does not prove all ESPHome queueing semantics, a free bus slot, or DCM application acceptance. No new owner source callbacks, so firmware remains compile-locked with zero drain/FIFO budgets. ZIP SHA256 d45e5f8f0adc3b1dd1abde73ee09e49d629873c45a760c483bb19e9429393437, 146 files, source only.
+
 ## S91-TX1 optional ESPHome V4.1 physical path — SOURCE 2026-10-22
 Inside original Service23 PhysicalIo an optional undefined `S91_TX1_EXPERIMENTAL_V41_UART_BACKEND` switch selects V4.1-style ESPHome `uart_.write_array()` then `uart_.flush()` without another UART/DE owner. Not active: build guard and zero budgets unchanged. `flush()` is not a proven bounded IDF drain or reliable partial FIFO fault witness, so cannot substitute for fail-closed timeout without owner verification. Also original `manual_inputs_provider`/`frame_evidence_provider` callbacks remain unregistered. This bundle is source only, not scoped live TX. ZIP SHA256 0e1850c06feb36ca01e4a3c781b97198d36ebc4fb61d89c812338488bc17d872.
 
