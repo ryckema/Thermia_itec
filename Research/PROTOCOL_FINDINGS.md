@@ -1,3 +1,6 @@
+## S91 actual YAML vs header admission — SOURCE 2026-10-22
+Latest ZIP contains S88 RX-only YAML despite S91 startup-only C++ scope; HA config button `V5DCM44B Arm One-Shot Native TX` calls v5dcm44b runtime, not NativeEsphome23 prepare. s91_native_rx_bridge defines manual prepare but no YAML caller and passes timestamp-only evidence on RX. Original Connect startup ordering does not supply epoch/slot/hardware budgets. Therefore code admission split is source-only, not connected and not a physical TX-ready controller. Do not interpret legacy HA USER_ARM_ACCEPTED as native Service23 armed. No flash/live; physical NO-GO.
+
 ## S91 source-reviewed startup provider exists — SOURCE 2026-10-22
 Private OriginalBackendAdapter23 with request-bound StartupProvider23 interface and UnifiedNative23 AwaitChallenge already handles isolated startup response generation without a loaded version-pinned settings cache. The missing piece is admission: the current common Service23 profile and ScopedTransport23 arm demand post-information app/service profile flags before any reply. Fix must separate one-shot startup admission from runtime/HA-write authorization while retaining physical TX guards. This source finding does NOT establish original Connect application acceptance, controller epoch, physical response slot or UART timing. No code changed or TX executed.
 
