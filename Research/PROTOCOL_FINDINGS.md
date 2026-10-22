@@ -1,3 +1,6 @@
+## S91 independent startup-source admission — 2026-10-22 SOURCE
+UnifiedNative23::source_complete() previously coupled verified OriginalBackendAdapter23 startup provider to full 32-page XTR source map. Original Connect 2.1.105 native server begins before complete info and application acceptance remains independent. Added startup_source_complete() (provider.source_verified + response buffer size) and routed only manually scoped startup_only admission and guarded send complete_service predicate through it. Runtime/HA writes retain full source_complete() and required profiles. No new response content, protected code, slot, or controller identity. Source-only / not compiled or live; physical BUILD_LOCKED NO-GO unchanged.
+
 ## S91 actual YAML vs header admission — SOURCE 2026-10-22
 Latest ZIP contains S88 RX-only YAML despite S91 startup-only C++ scope; HA config button `V5DCM44B Arm One-Shot Native TX` calls v5dcm44b runtime, not NativeEsphome23 prepare. s91_native_rx_bridge defines manual prepare but no YAML caller and passes timestamp-only evidence on RX. Original Connect startup ordering does not supply epoch/slot/hardware budgets. Therefore code admission split is source-only, not connected and not a physical TX-ready controller. Do not interpret legacy HA USER_ARM_ACCEPTED as native Service23 armed. No flash/live; physical NO-GO.
 
