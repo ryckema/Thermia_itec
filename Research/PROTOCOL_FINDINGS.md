@@ -1,3 +1,6 @@
+## V5 owner-generated local ADU correlation token — SOURCE 2026-10-22
+In existing CRC-valid V5 parser callback `thermia-itec-xtr-m.yaml`, every parsed ADU now receives one nonzero incrementing local software token in `LiveEvidence23.token`, before existing S91 callback. Distinct from `controller_epoch`, `physical_slot_measured`, `epoch_verified`; none is inferred from token. This corrects a missing software correlate only, not physical TX ownership, manual profile, or native Connect acceptance. TX compile lock still intact. Complete ZIP SHA256 eade00abdb973b3ed65ed4ad19acadb85b061405808b1083a54bf1d5693d26c4, source only.
+
 ## S91-TX1 bounded ESPHome queue completion — SOURCE 2026-10-22
 Experimental V4.1 `write_array()` backend no longer invokes unbounded `uart_.flush()`; it checks `reviewed_drain_ms` and calls bounded `uart_wait_tx_done` on existing IDF UART port, then uses existing post-drain DE-release logic. This does not prove all ESPHome queueing semantics, a free bus slot, or DCM application acceptance. No new owner source callbacks, so firmware remains compile-locked with zero drain/FIFO budgets. ZIP SHA256 d45e5f8f0adc3b1dd1abde73ee09e49d629873c45a760c483bb19e9429393437, 146 files, source only.
 
