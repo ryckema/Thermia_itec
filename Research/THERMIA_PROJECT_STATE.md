@@ -1,3 +1,11 @@
+## 2026-10-23 FIX13 FIRST USER LIVE RX-ONLY — COMPLETE / POSITIVE (PASSIVE ONLY)
+
+User ESPHome log 14:27:16–14:27:36 after OTA: FIX13 FLASHED/LIVE RX-ONLY, 32s uptime, CRC_CHECK=249, CRC_DIFF=0, SHAPE_OTHER=0, 15 known FC16 shapes, 0 RX buffer drops. Parser resync total not supplied. Auto rejoin remains NATIVE FC16 OBSERVED / SESSION OWNER UNKNOWN / TX LOCKED. Lifecycle M6 / ABORTED / RX ONLY / DE LOW; FC03 session=NOT_QUALIFIED, config=NOT_SYNCED, pages=0/4, FC03=0, refresh=WAIT_SESSION_OWNER, confirmed=0, button=0. HA write queue 0. One ESPHome API client CONNECTION_CLOSED, no evidence of UART fault. Existing M6 stop status is preserved in RX-only, not a failed new recovery.
+
+Classification: FIX13 passive bus function and WAIT_SESSION_OWNER diagnostic COMPLETE / POSITIVE; cold-start, hot-rejoin, recovery transitions and FC03 4/4 NOT RUN in this observation, overall functional session integration RUNNING / PARTIAL. No automatic TX or HA writes. Skip repeat RX testing; prioritize one functional native session progression and FC03 integration under sole owner.
+
+---
+
 ## 2026-10-23 MAIN01-M6-FIX13 — integrated authoritative session engine — PREPARED / NOT RUN
 
 **Baseline:** MAIN01-M6-FIX12 manually flashed/live passive; 1,946 V5 CRC checks / 0 mismatches, 0 parser resyncs, 0 RX drops, 116 recognized FC16 shapes. Detector: NATIVE FC16 OBSERVED / SESSION OWNER UNKNOWN / TX LOCKED; lifecycle RX ONLY / DE LOW; 0/4 native pages, FC03 0. FIX12 passive recognition COMPLETE / POSITIVE; no manual START, native takeover or refresh demonstrated.
