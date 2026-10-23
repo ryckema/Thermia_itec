@@ -1,3 +1,12 @@
+## 2026-10-23 FIX17 — current-mailbox TX requires prior same-epoch native FC16 ACK (SOURCE implementation only)
+
+Local FIX16 evidence confirms that 28 physically transmitted 0x0F FC03 0708 CURRENT-only replies occurred during manually armed stage40 RETAINED_UNPROVEN despite zero physically acknowledged owned 085F requests. The FIX16 sole-UART-owner 0708 served counter increments AFTER UART write_array/flush, and startup write_tx_used / NO_TX=1 did not describe all physical transmissions. Manual epoch matching is not accepted native ownership.
+
+FIX17 private SOURCE adds a nonfatal poll-side refusal and sole-owner transport refusal for unqualified FC03 0708 traffic. Eligibility requires previous *actually sent* native FC16 ACK in the same user-manually authorized epoch and clean peer/parser guards, not mere FC16 observation. Requiring native accepted_epoch before serving the first 0708 would be circular; accepted_epoch is promoted by owned FC16 ACK plus subsequent served 0708 and remains distinct from semantic controller acceptance. On-bus TX is now counted once per sole UART write+flush after DE LOW; no new electrical architecture/frames or HA desired writes.
+
+**Evidence classes:** FIX16 on-bus defect=LOCALLY VERIFIED. FIX17 guard and counters=SOURCE/OFFLINE TESTED only; FIX17 TARGET COMPILED / FLASHED / LIVE=NO. Retained 085F ownership and complete four-page CURRENT refresh=OPEN. Never infer proven physical TX=0 from startup-R1 flags; use owner-based transmission accounting and on-device evidence. Firmware-derived private framing, protected algorithms and payloads deliberately omitted.
+
+---
 ## 2026-10-23 FIX16 original-UART-owner live finding: 0708 response TX under retained-unproven session
 
 Locally observed XTR: user-manual stage40 retained-unproven, 56 FC16 085F/count5 zero-context requests without ACK, 28 controller 0708 read polls answered, 0/4 native current pages, no native controller acceptance, 120088ms automatic stop and DE LOW. RX CRC=2124 with zero differences, no resync/drop.
