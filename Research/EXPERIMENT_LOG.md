@@ -1,3 +1,10 @@
+## 2026-10-23 FIX16 MANUAL START — COMPLETE / NEGATIVE (session), COMPLETE / POSITIVE (120s expiry)
+
+User initiated S92 START at 16:30:11.607 on healthy XTR bus. One existing FIX16 engine. Hypothesis: retained native session may qualify with a bounded fail-closed manual authorization. Actual: stage40 RETAINED_UNPROVEN, 56 zero-context 085F requests/0 ACK, FC03 0708 current-only responses count 28, no owned FC16 ACK, no config sync (0/4). Automatic M6 STOP at 16:32:11.703, age 120088ms; stage99 RX ONLY DE LOW, no later re-arm. 2124 CRC checks/0 mismatches, 0 parser resync/drop. No controller cold restart. Intended trial lasted 120s and exceeded earlier 60-second scope, with expiry built into firmware.
+
+**Important source-backed correction:** FC03SERVED=28 increments after successful physical sole-owner UART write_array/flush, so there WERE 28 on-bus CURRENT-only responses despite the misleading NO_TX=1 watchdog message. M6 owned=1 at STOP refers to manual epoch equality, not a proven native owner. No HA parameter write observed. Session takeover outcome COMPLETE / NEGATIVE; expiry outcome COMPLETE / POSITIVE. REAL BLOCKER: repair unqualified 0708 response-gate and total TX reporting in one integrated revision before another active run. Rollback user-live FIX15 or stay FIX16 RX-only; ABORT preserved. HA parameter writes ON HOLD.
+
+---
 ## MAIN01-M6-FIX16 user-live RX-only — COMPLETE / POSITIVE (passive) — 2026-10-23
 
 Baseline: FIX15 PASSIVE LIVE. User log 16:21:55–16:22:18 after ESPHome OTA; CRC 155/0 mismatch, SHAPE_OTHER 0, eight known FC16; resync/drop counters not in excerpt. M6 ABORTED RX ONLY DE LOW; owner UNKNOWN TX LOCKED, FC03 WAIT_SESSION_OWNER, pages 0/4, ackMask 00, button 0, queue 0. No manual START, recovery or CURRENT refresh was observed. Passive status COMPLETE / POSITIVE; actual session deadline, cold fallback and FC03 behavior not run and remain PREPARED / NOT RUN. Existing manual ABORT and FIX15 rollback retained. No HA setting writes.
