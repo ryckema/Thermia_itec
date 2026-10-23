@@ -1,3 +1,13 @@
+## MAIN01-M6-FIX15 user-live passive — COMPLETE / POSITIVE (RX-only) — 2026-10-23
+
+Baseline: user-live FIX14 RX-only, with 257 CRC checks / zero differences. One intervention: FIX15 private firmware user flashed after preparing the integrated manual 4-page CURRENT-only refresh; no S92 START/refresh requested in this capture.
+
+Actual log 15:42:06–15:47:21: most recent CRC count 8506 and CRC differences 0; 0 parser resync, 0 RX buffer drops and ambiguous frames 0; separately sampled 8402 valid frames and 506 native FC16 known shapes; uptime 1054 s. Lifecycle ABORTED / RX ONLY / DE LOW; passive session ownership UNKNOWN / TX LOCKED; FC03 pages 0/4, ackMask 00, WAIT_SESSION_OWNER, button 0 and FC03 count 0, HA queued writes 0. No evidence of user-started native TX.
+
+Decision: COMPLETE / POSITIVE for passive regression only. Native session qualification and 4-page active CURRENT refresh PREPARED / NOT RUN live; do not mistake passive result for acceptance or failed refresh. No further passive loop. Existing ABORT and rollback FIX14. HA settings writes ON HOLD.
+
+---
+
 ## MAIN01-M6-FIX14 — user-live passive result COMPLETE / POSITIVE — 2026-10-23
 
 **Hypothesis:** Integrated post-TX-owner 0708 session accounting and M6 stop reconciliation preserve previously verified V5 receive quality and fail-closed status when no manual session is started. **Baseline:** FIX13 FLASHED/LIVE passive 249 CRC checks/0 diffs, 15 known FC16 shapes, 0 RX drops, 0/4 pages. **One intervention:** FIX14 firmware supplied and user ran ESPHome OTA, no recorded S92 START/Recovery/Refresh buttons or native TX.
