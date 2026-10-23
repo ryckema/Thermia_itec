@@ -1,3 +1,20 @@
+## MAIN01-M6-FIX17 user-local active retained test — COMPLETE / POSITIVE (TX guard), COMPLETE / NEGATIVE (native ownership) — 2026-10-23
+
+**ID:** MAIN01-M6-FIX17. **Baseline:** FIX16 user-live: 56 unqualified 085F requests/0 ACK but 28 physically transmitted CURRENT-only 0708 responses, 120.088s timeout, RX clean, pages 0/4. **One change:** FIX17 guard withholds 0708 before native owned-FC16-ACK and counts actual physical TX at the existing sole UART owner.
+
+**Actual:** user START 17:14:38.409, manual ABORT 17:16:36.840 (~118s, exceeding 60s defined scope). Observed 56 local exact FC16 085F/count5 zero/0800-context captures, 0 owned ACK; 28 exact FC03 0708/count6 controller reads, `0708_UNQUALIFIED_NO_REPLY`, **physicalTXthisSession=0** and `totalPhysicalTX=0` from sole owner. No four-page sync (0/4), no native accepted session, no HA setting write; DE LOW/RX ONLY after ABORT. Last RX: 2751 checked CRC, 0 mismatch, 0 unknown shapes, resync=0 drops=0. A80E/AFDC natural state pulses are not session acceptance.
+
+**Decision:** FIX17 owner-based physical reply suppression **COMPLETE / POSITIVE**. Retained session recognition/qualification **COMPLETE / NEGATIVE** in that live-bus state (not a failed controller cold-start; fallback NOT RUN). Real implementation defect remains in old FC03 `withheld` diagnostic, which omits the new guard count. No repeat warm retained test.
+
+**Abort / rollback:** manual ABORT done, RX ONLY DE LOW; keep FIX17 as current safe RX-only version or recover to known RX-only FIX15 if needed. No new active START on FIX16. No HA writes.
+
+## MAIN01-M6-FIX18 — PREPARED / NOT RUN — 2026-10-23
+
+**Hypothesis:** adding accurate FC03 guarded-no-response and real physical TX metrics, and bringing retained manual authorization back to the scoped 60-second limit, corrects two real source defects without altering proven cold-start paths. **Baseline:** FIX17 LIVE 28 blocked 0708/0 TX, stage40 retained-unproven, 56 085F/0 ACK, 118s manual ABORT, clean RX. **One integrated code patch:** show combined `withheld` plus `blocked0708` and `physicalTXthisSession` in the existing text entity; emit per-session TX summary at manual ABORT; stop unqualified stage40 retained session after 60s in firmware (stage1 cold-start 120s unchanged). Preserve one RX/UART/DE owner and B11C/B11D/V5, FC16/runtime/refresh, HA parameter-write HOLD.
+
+**Expected only (not live):** on repeated unqualified healthy-bus polls, owner stays unqualified, `blocked0708` increments, `physicalTXthisSession` remains zero; firmware returns RX-only at 60s or user ABORT earlier. This is not authorization to repeat an unchanged warm-session test. **Actual so far:** complete FIX18 private YAML/patch ZIP produced; PyYAML/IDs/substitutions/ZIP PASS, same 767 unique IDs, same 74 native owner call sites; target compilation/flash/live NOT RUN. **Status PREPARED / NOT RUN.** Rollback FIX17 RX-only / FIX15 RX-only, user only manually flashes; active bus transmission only with separate defined user-initiated trial.
+
+---
 ## 2026-10-23 MAIN01-M6-FIX17 — SOURCE/OFFLINE, PREPARED / NOT RUN
 
 ID: MAIN01-M6-FIX17. Hypothesis: the 28 physically served 0708 replies during FIX16 retained-unproven START result from an insufficient native FC03 TX ownership gate, and diagnostic NO_TX confuses startup-R1 flag with all native TX. Verified baseline: FIX16 manual START 16:30:11.607, 56 FC16 085F/count5 / zero owned ACK, 28 current-only FC03 0708 on-wire replies, 0/4 cache, auto STOP after 120088ms, 2124 CRC/0 mismatch, 0 resync/drop. Exact source confirmed counter increment after sole-owner UART write/flush. Existing source's owned flag is only manual epoch match.
