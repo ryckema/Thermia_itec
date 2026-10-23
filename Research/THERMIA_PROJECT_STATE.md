@@ -1,3 +1,11 @@
+## 2026-10-23 FIX16 first user-live passive log — COMPLETE / POSITIVE (RX-only)
+
+User-associated FIX16 log 16:21:55–16:22:18 after ESPHome OTA, API connected. Observed CRC_CHECK 155, CRC_DIFF 0, SHAPE_OTHER 0, native known FC16 shapes 8; resync and drop totals not reported in this excerpt. Session remains M6 ABORTED / RX ONLY / DE LOW, detector OWNER UNKNOWN / TX LOCKED, native FC03 WAIT_SESSION_OWNER, pages 0/4, ackMask 00, refresh button 0 and HA write queue 0. OTA reset shown; binary image digest unavailable.
+
+FIX16 passive regression COMPLETE / POSITIVE only. Bounded manual session timeout, guarded cold fallback, and post-send accounting were not exercised: no user START or native physical TX in evidence. Do not repeat passively. Retained ownership remains OPEN. Last user-live rollback FIX15. HA parameter writes ON HOLD.
+
+---
+
 ## 2026-10-23 FIX15 USER LIVE PASSIVE — COMPLETE / POSITIVE (RX ONLY)
 
 **Observed XTR user log 15:42:06–15:47:21, 315 s sample.** Firmware is user-reported FIX15, installed and running; no binary hash provided. Latest V5 CRC_CHECK=8506, CRC_DIFF=0, SHAPE_OTHER=0, ambiguous=0. Latest independently sampled valid frame total 8402; parser resync=0 and RX buffer drops=0. Known native FC16 shapes last count 506. ESP uptime 1054 s at last uptime sample; loop ~20–23 ms, heap free ~224272 B at last heap sample. Existing production telemetry continues.
