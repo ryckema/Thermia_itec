@@ -1,3 +1,11 @@
+## 2026-10-23 FIX13 first live passive evidence
+
+Local XTR log after FIX13 OTA: CRC_CHECK=249, CRC_DIFF=0, 15 native known FC16 shapes and 0 RX buffer drops. Native detection OWNER UNKNOWN / TX LOCKED; M6 remains ABORTED / RX ONLY / DE LOW. FC03 says session NOT_QUALIFIED, pages 0/4, FC03 0, refresh WAIT_SESSION_OWNER. Parser resync not reported in supplied short log.
+
+Interpretation: demonstrates passive detector and session owner-gated FC03 diagnostic; does not prove session exclusive owner, semantic acceptance, current controller epoch, 085F response authorization, or page refresh. Existing stopped M6 status does not represent a new attempted recovery. Original Connect handshake/runtime/packet-completeness distinction remains applicable as an analytical model only. No automatic TX and HA setting writes ON HOLD.
+
+---
+
 ## 2026-10-23 FIX12 live passive and FIX13 integrated session engine (SOURCE/OFFLINE)
 
 **OBSERVED XTR:** FIX12 passive CRC_CHECK 1946 / CRC_DIFF 0, resync/drop 0, 116 native known FC16 shapes, OWNER UNKNOWN / TX LOCKED, RX ONLY / DE LOW, 0/4 native pages, FC03 0. No ownership, automatic rejoin or semantic acceptance is implied.
