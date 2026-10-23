@@ -1,3 +1,12 @@
+## MAIN01-M6-FIX18 live continuation — 2026-10-23 — COMPLETE / POSITIVE for FC03 guard/diagnostics; COMPLETE / INCONCLUSIVE for precise timeout origin
+
+**ID:** MAIN01-M6-FIX18, same manually initiated 17:30:14.665 START as preceding `RUNNING / PARTIAL` log, NOT a new experiment. **Hypothesis/change/baseline:** already documented above; sole integrated FIX17→FIX18 change is combined no-owner 0708 `withheld` diagnostic / physical TX status / stage40 60s budget / manual ABORT summary.
+
+**Actual continuation 17:31:18.825–17:36:35.975:** expected auto-threshold at ~17:31:14.665. At first sampled 17:31:19.215 lifecycle `M6 / ABORTED / RX ONLY / DE LOW` already; remains stable through 17:36:34.311. Native `085F/0800` 29 observed, `noContext=29`, `contextACK=0`; exact `0708/count6` FC03 seen=14, `withheld=14 blocked0708=14 physicalTXthisSession=0`, post-stop pages=0/4, NOT_SYNCED, no HA desired writes. RX check 5069/0 CRC differences, unknown shapes 0, ambiguity/resync/drops 0; no observed bus disturbance or subsequent ESP restart. Observations make FIX18 dashboard counter correction and safe no-owner FC03 guard **COMPLETE / POSITIVE**.
+
+**Outcome limitation:** the upload begins ~4s after threshold and omits `RETAINED_UNPROVEN_EXPIRED` / any manual ABORT event near the threshold. Cannot prove *which* transition caused RX-only or precisely when; code has 60s gate SOURCE/OFFLINE, but live cause **COMPLETE / INCONCLUSIVE**. Accepted nonblocking uncertainty, no repetitive warm retained-session retest. Keep FIX18, user-only flash/control, no unrequested TX. **Abort & rollback:** observed ABORTED/RX ONLY/DE LOW; rollback FIX17 RX-only or known RX-only FIX15 if later regression occurs. Next meaningful trial is separately scoped user-initiated controller cold-start, not S90/S91 warm-loop nor HA parameter write.
+
+---
 ## MAIN01-M6-FIX18 user-local initial LIVE excerpt — RUNNING / PARTIAL — 2026-10-23
 
 **Baseline:** FIX17 live user START 17:14:38, 56 unqualified 085F/0 ACK and 28 guarded 0708 polls/0 TX; FIX18 prepared integrated diagnostics + 60s retained manual timeout. **ONE change from FIX17:** FIX18 already delivered as complete private YAML ZIP with counter/status and timeout corrections, preserving single UART/DE/RX owner and all production entities.
