@@ -1,3 +1,14 @@
+## 2026-10-23 MAIN01-M6-FIX17 — SOURCE/OFFLINE, PREPARED / NOT RUN
+
+ID: MAIN01-M6-FIX17. Hypothesis: the 28 physically served 0708 replies during FIX16 retained-unproven START result from an insufficient native FC03 TX ownership gate, and diagnostic NO_TX confuses startup-R1 flag with all native TX. Verified baseline: FIX16 manual START 16:30:11.607, 56 FC16 085F/count5 / zero owned ACK, 28 current-only FC03 0708 on-wire replies, 0/4 cache, auto STOP after 120088ms, 2124 CRC/0 mismatch, 0 resync/drop. Exact source confirmed counter increment after sole-owner UART write/flush. Existing source's owned flag is only manual epoch match.
+
+ONE integrated implementation change from FIX16: before all stage40 0708 responder paths, refuse unqualified polls unless a same-session physically sent native FC16 ACK with clean peer/RX context precedes the response; repeat this fail-closed guard in the sole physical owner (without circular dependence on accepted_epoch). Count all owner writes and show per-session TX in status/expiry diagnostics. Preserve verified startup, export, manual hot-rejoin, cold-start fallback, four-page CURRENT refresh and HA write HOLD.
+
+Expected for a bounded future **user-initiated** ≤60s S92 START under only zero-context 085F: FC16ACK=0, FC03SERVED=0, 0708_WITHHELD>0, physicalTXthisSession=0, DE LOW, no session qualification; ABORT manually at ≤60s. This is NOT actual FIX17 live evidence. Abort immediately for controller alarms, unsolicited TX, DE HIGH, RX corruption or unknown framing. Rollback to last locally verified FIX15 RX-only, not FIX16 active START.
+
+Actual to date: complete FIX17 YAML/patch/private ZIP, PyYAML PASS, unique IDs PASS (764 baseline+3 globals), existing native TX owner 74 calls unchanged, physical UART write site=1, DE HIGH site=1, ZIP PASS. ESPHome TARGET COMPILE/FLASH/LIVE **NOT RUN**. **Status PREPARED / NOT RUN**. HA parameter writes remain ON HOLD.
+
+---
 ## 2026-10-23 FIX16 MANUAL START — COMPLETE / NEGATIVE (session), COMPLETE / POSITIVE (120s expiry)
 
 User initiated S92 START at 16:30:11.607 on healthy XTR bus. One existing FIX16 engine. Hypothesis: retained native session may qualify with a bounded fail-closed manual authorization. Actual: stage40 RETAINED_UNPROVEN, 56 zero-context 085F requests/0 ACK, FC03 0708 current-only responses count 28, no owned FC16 ACK, no config sync (0/4). Automatic M6 STOP at 16:32:11.703, age 120088ms; stage99 RX ONLY DE LOW, no later re-arm. 2124 CRC checks/0 mismatches, 0 parser resync/drop. No controller cold restart. Intended trial lasted 120s and exceeded earlier 60-second scope, with expiry built into firmware.
