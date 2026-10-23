@@ -1,3 +1,9 @@
+## 2026-10-23 FIX27 original CM930 per-package requests and XTR synchronization
+
+Compared original Connect 2.1.105 CM930 `request_read_all_registers`, `set_register_read_request`, `reset_register_read_request` and register-received event with recovered original 930/modbus-flags.json and exact local 33 XTR FC16 start/count geometries: all 33 align to defined request bit ranges across original 1802/1803/1804. Generic all-request skips operations bit8. Logical pending bit remains until matching package arrives; FIX27 demands actual existing native ACK-owner success before clearing a requested package during manually active app-read cycle. Four known XTR CURRENT page freshness TTL is locally supported 300s; no arbitrary TTL is added to other packages. Native request W0/W1 remain zero and W2/W3/W4 read intent is derived from SOURCE under bounded manual arm only. This is source evidence, not proof XTR semantically adopts all bits or DCM Online. A user-flashed and live active full read is NOT claimed. Original proprietary firmware source, full flags, protected handshake and sensitive captures kept PRIVATE.
+
+---
+
 ## 2026-10-23 FIX26 native controller epoch and rejoin provenance (source finding)
 
 In FIX25, M6 STOP and controller-loss discarded native owner/cache evidence but did not atomically discard all 04A6 one-shot/resume/hot-rejoin export latches; delayed queued event3 could leave a short window before cleanup. FIX26 clears old resume/export provenance in the existing lifecycle engine and synchronously on bus-loss before transition queueing. This is source-based lifecycle integrity, not proof of native DCM Online acceptance or retained session takeover. Existing original cold FC16 and guarded 0708 remain untouched; no unsolicited TX, no setting writes. Evidence SOURCE/OFFLINE TESTED; no target/live verification.
