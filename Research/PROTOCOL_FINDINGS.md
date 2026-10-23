@@ -1,3 +1,9 @@
+## 2026-10-23 FIX21 user-reported OTA and live passive native transport
+
+Fresh XTR ESPHome 20:25–20:26 logs controller 0x02, room sensor 0x0A, outdoor 0x1E continuing to update after ESP OTA reboot. User confirms FIX21 installed; firmware reset-reason reports esphome.ota. M6 ABORTED RX ONLY DE LOW / owner unknown TX locked, physicalTXthisSession=0, CRC_CHECK 121→607 with CRC_DIFF=0, SHAPE_OTHER=0, parser resync=0, RX buffer drops=0, FC16 known shape counter 9→37. No FC03 replies or CURRENT 4-page republish; NaN native parameters, WAIT_SESSION_OWNER, and 0/4 are expected passive consequences, not native read defect. Compressor active (~24–27Hz) at observation, so no controller restart during running heat/DHW. Semantic DCM acceptance and FIX21 active epoch/export-provenance fix remain untested; binary build hash not independently observed. No HA parameter writes.
+
+---
+
 ## 2026-10-23 passive XTR S92 transport integrity / local authority observation
 
 In supplied ESPHome 20:08:51–20:14:07 passive sensor log, native FC16 requests remained visible (known shape counter 531→680) while software correctly reported OWNER UNKNOWN / TX LOCKED and M6 ABORTED / RX ONLY / DE LOW. V5 CRC checks 9026→11421, differences 0, buffer drops 0, parser resync stable at 17. Runtime FC03 0708 seen/served=0, config CURRENT PageStore 0/4, native parameter refresh WAIT_SESSION_OWNER and NaN cache fields are expected consequences of no qualified accessory response, not native FC03 parser failure. 0x02/0x0A/0x1E bus frames remained fresh. This log contains no explicit FIX21 build proof and no physical external TX witness; do not mark FIX21 session or FC03 semantic path as LIVE. Transport/decoder PASSIVE OBSERVED only. The A80E/AFDC periodic 0x20 transitions observed in passive mode must not be credited as DCM acceptance. HA parameter writes not authorized.
