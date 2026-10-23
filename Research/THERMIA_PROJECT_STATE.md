@@ -1,3 +1,12 @@
+## 2026-10-23 FIX16 USER START — native session COMPLETE / NEGATIVE, 120s guard COMPLETE / POSITIVE, real 0708 TX-gating defect
+
+User START at 16:30:11.607 on healthy bus. 56 FC16 085F/count5 zero-context requests yielded 0 owned ACKs and no accepted native session; stage40 RETAINED_UNPROVEN throughout. After 120088ms at 16:32:11.703 automatic STOP returned stage99, Write Active OFF, RX ONLY, DE LOW; remained stopped until 16:34:11. CRC_CHECK=2124/CRC_DIFF=0, parser resync 0, buffer drops 0, four-page cache 0/4. Cold-start fallback NOT RUN because bus never went silent.
+
+**CRITICAL SOURCE+LIVE CORRECTION:** FC03SERVED=28 is 28 successful physical UART current-only FC03 0708 replies. Exact FIX16 source increments this counter AFTER the central UART owner write_array+flush and DE LOW. The timeout's NO_TX=1 only reflects an unrelated startup-transmit latch, and is NOT a valid statement about total bus transmission. The M6 log owned=1 is manual write-arm/session-epoch equality, NOT qualified controller acceptance. No evidence of HA setting writes.
+
+**REAL BLOCKER:** Deny 0708 physical responses under retained-unproven ownership absent independently proven native response authorization and report ALL physical TX accurately, preserving the one existing UART/RX/DE owner, guarded cold startup, RX parser and HA parameter write HOLD. No new active FIX16 experiment before a single integrated fix. Keep history and XTR evidence priority.
+
+---
 ## 2026-10-23 FIX16 first user-live passive log — COMPLETE / POSITIVE (RX-only)
 
 User-associated FIX16 log 16:21:55–16:22:18 after ESPHome OTA, API connected. Observed CRC_CHECK 155, CRC_DIFF 0, SHAPE_OTHER 0, native known FC16 shapes 8; resync and drop totals not reported in this excerpt. Session remains M6 ABORTED / RX ONLY / DE LOW, detector OWNER UNKNOWN / TX LOCKED, native FC03 WAIT_SESSION_OWNER, pages 0/4, ackMask 00, refresh button 0 and HA write queue 0. OTA reset shown; binary image digest unavailable.
