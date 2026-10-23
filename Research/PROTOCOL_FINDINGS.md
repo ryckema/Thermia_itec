@@ -1,3 +1,12 @@
+## 2026-10-23 FIX16 original-UART-owner live finding: 0708 response TX under retained-unproven session
+
+Locally observed XTR: user-manual stage40 retained-unproven, 56 FC16 085F/count5 zero-context requests without ACK, 28 controller 0708 read polls answered, 0/4 native current pages, no native controller acceptance, 120088ms automatic stop and DE LOW. RX CRC=2124 with zero differences, no resync/drop.
+
+Original private FIX16 SOURCE confirms write_runtime_0708_reply_count increments ONLY AFTER the sole native owner physically transmits a matching CURRENT-only 0708 response via UART write_array and flush. Hence 28 transmitted native replies, even though the STOP diagnostic says NO_TX=1 (it reports a distinct startup latch, not overall TX). M6 field owned=1 at STOP is manual arm/session-epoch match, not proof of accepted exclusive slave ownership. Physical CURRENT mailbox response is not an HA desired-setting write nor semantic acceptance. Stop claiming zero physical TX from the wrong latch.
+
+Next engineering decision: guard retained-unqualified 0708 responses by independently established owner/response context (avoid a qualification circularity); account and report all physical transmissions truthfully. Keep exact existing RX/DE owner and cold-start path, no speculative 085F ACK, no HA parameter writes, no fresh active trial before corrective integrated source.
+
+---
 ## 2026-10-23 FIX16 first live passive evidence
 
 Local user log after OTA: V5 parser 155 CRC checks, 0 differences and 0 unknown shapes; eight recognized FC16 shapes. S92 still RX ONLY / DE LOW, native owner UNKNOWN / TX LOCKED. FC03 unqualified, 0/4 pages, request button 0. This is passive proof of maintained receiver behavior only, not evidence of accepted native session, retained context, cold-start fallback, 120-second deadline or four-page refresh. Parser resync and RX-drop totals not present in excerpt. No HA parameter writes.
