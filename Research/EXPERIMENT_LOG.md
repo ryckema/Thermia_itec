@@ -1,3 +1,9 @@
+## MAIN01-M6-FIX16 user-live RX-only — COMPLETE / POSITIVE (passive) — 2026-10-23
+
+Baseline: FIX15 PASSIVE LIVE. User log 16:21:55–16:22:18 after ESPHome OTA; CRC 155/0 mismatch, SHAPE_OTHER 0, eight known FC16; resync/drop counters not in excerpt. M6 ABORTED RX ONLY DE LOW; owner UNKNOWN TX LOCKED, FC03 WAIT_SESSION_OWNER, pages 0/4, ackMask 00, button 0, queue 0. No manual START, recovery or CURRENT refresh was observed. Passive status COMPLETE / POSITIVE; actual session deadline, cold fallback and FC03 behavior not run and remain PREPARED / NOT RUN. Existing manual ABORT and FIX15 rollback retained. No HA setting writes.
+
+---
+
 ## MAIN01-M6-FIX15 user-live passive — COMPLETE / POSITIVE (RX-only) — 2026-10-23
 
 Baseline: user-live FIX14 RX-only, with 257 CRC checks / zero differences. One intervention: FIX15 private firmware user flashed after preparing the integrated manual 4-page CURRENT-only refresh; no S92 START/refresh requested in this capture.
