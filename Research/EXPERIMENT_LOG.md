@@ -8,6 +8,16 @@ Decision: COMPLETE / POSITIVE for passive regression only. Native session qualif
 
 ---
 
+
+## MAIN01-M6-FIX15 preparation — PREPARED / NOT RUN (before user-live pass) — 2026-10-23
+
+**Hypothesis:** FIX14's one-page current-only request cannot populate four independent same-session native parameter groups. **Baseline:** FIX14 passive CRC 257/0, native owner unknown, pages 0/4. **ONE integrated implementation change:** FIX15 extends the existing manually armed, qualified-session native CURRENT refresh to four XTR-known page groups. It counts distinct exact CRC-valid, same-epoch controller pages only after successful existing owner ACK, and requires 4/4; bounds one user-arm, retains manual ABORT/rollback, excludes semantic HA parameter writes and does not auto-retry. Old independent one-page refresh response suppressed; one UART/RX/DE owner retained.
+
+**Expected:** passive mode no TX; refresh action denied without qualified session; authorized native request succeeds only with four matching fresh controller replies; incomplete requests time out without false success. **Actual at preparation:** YAML/764 unique IDs/one physical UART-owner/ZIP offline checked. Target compile and active four-page live test not yet run. **Status PREPARED / NOT RUN** for active function; later passive LIVE outcome recorded above. Exact grouped XTR effect still unknown.
+
+---
+
+
 ## MAIN01-M6-FIX14 — user-live passive result COMPLETE / POSITIVE — 2026-10-23
 
 **Hypothesis:** Integrated post-TX-owner 0708 session accounting and M6 stop reconciliation preserve previously verified V5 receive quality and fail-closed status when no manual session is started. **Baseline:** FIX13 FLASHED/LIVE passive 249 CRC checks/0 diffs, 15 known FC16 shapes, 0 RX drops, 0/4 pages. **One intervention:** FIX14 firmware supplied and user ran ESPHome OTA, no recorded S92 START/Recovery/Refresh buttons or native TX.
