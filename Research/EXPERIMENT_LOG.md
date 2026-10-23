@@ -1,3 +1,13 @@
+## MAIN01-M6-FIX13 — PREPARED / NOT RUN (2026-10-23)
+
+**Hypothesis:** Previously independent M6 event arbiter and HA status inference could diverge after STOP, controller recovery or page staleness. **Verified baseline:** FIX12 flashed/passive 13:55–13:59; CRC 1946/0 differences; 0 parser resync/drop; 116 known FC16 shapes; owner unknown; no TX; native page 0/4 and FC03 0.
+
+**ONE integrated firmware change:** the existing M6 transition script becomes authoritative; existing bus-health timer drives event-8 reconciliation. Native accepted/receipt epochs and PageStore timestamps are invalidated on STOP/ABORT/recovery; HA lifecycle becomes read-only view; FC03 diagnostic waits for session owner instead of merely profile. Unchanged original TX/DE owner, fail-closed gates and manual cold/rejoin/recovery. NO HA parameter writes.
+
+**Expected:** passive RX unchanged with no autonomous send; stale config demotes operation to sync-needed; rejoin remains unproven until authorized context. **Actual:** SOURCE/OFFLINE YAML, IDs, substitutions, 72 owner-send source occurrences and ZIP passed. TARGET COMPILE, FLASH and LIVE FIX13 NOT RUN. **Abort:** existing manual ABORT; DE LOW, rollback FIX12. **Status:** PREPARED / NOT RUN.
+
+---
+
 ## S92-EXP458 MAIN01-M6-FIX11 — PREPARED / NOT RUN (2026-10-23)
 Hypothesis: final cold-start 06F4 acknowledgment must not advance to stage40 when original native TX owner refuses frame. Baseline FIX10 user FLASHED/LIVE RX-only CRC_DIFF0 and DE LOW; prior FIX9 EXP457 ACTIVE still has 085F NO_CONTEXT and PageStore0/4. ONE integrated source change: relocate existing 06F4 stage40/latch/time/epoch/status credit after TX-owner success, without changing bytes, guard, owner, timing, or any other path. Expected owner refusal: STOP, no 06F4 initial-sync credit; owner success: original transition sequence, still not semantic controller acceptance. Actual FIX11 hardware NOT RUN; offline YAML parse, unchanged owner-call count, one DE control, ZIP CRC PASS. HA writes ON HOLD. Private ZIP SHA256 55998ea0a7f3c30b56d52834f3fb6b0d0fb3210179268cd656f5306625247e85, YAML 1e682b658f337b73132226b4c00653e8c597cf9433dda98a88630482de563e1e. Experiment bounded to passive post-OTA observation; ABORT and rollback user-LIVE FIX4B if anomaly.
 
