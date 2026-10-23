@@ -1,3 +1,9 @@
+## 2026-10-23 FIX22 cold/profile boundary and CURRENT refresh source finding
+
+Actual XTR COLD03 FC16 start/count captures: exact source 2.4.2 app-group shapes include 32/33 distinct pages before the first version observation, 10/33 from runtime thereafter, and all 33/33 across both parts of the SAME cold session. Old observation-only ledger intentionally began credit after version and thus remained at 10/33 even with no missing actual controller page. FIX22 saves preprofile exact CRC-valid controller-originated cold frames in session-scoped candidate bitmap; only after actually guarded cold R1, final 06F4 ACK, runtime entry and recognized profile 242 does it merge this observation set. Semantic native DCM/Online acceptance not established; observed 33/33 shadow explicitly remains NOT_ONLINE and has no TX authorization effect. COLD03 also confirmed CURRENT data naturally expires after 300s although stage40 FC16/0708 replies persist. The old manual M6 4-page button included a global refresh_request_count==0 gate (SOURCE defect); FIX22 replaces it with rate-limited per-session independently pressed read-only 4-page requests, without autonomous TX and with original exact FC03/FC16, owner, epoch, CRC and session guards. FIX22 SOURCE/OFFLINE TESTED only, no active bus TX tested and HA parameter writes ON HOLD.
+
+---
+
 ## 2026-10-23 XTR FIX21 COLD03 terminal verification and native freshness TTL
 
 Live user continuation ends trial with manual ABORT 20:46:30, software summary: FC16ACK=176; FC03 polls=98, 2 initial unqualified withheld and 96 served; physicalTXthisSession=305; DE LOW/RX ONLY; Write Active OFF; subsequent M6 ABORTED with continuing valid controller/room/outdoor RX, no later TX executed in this log fragment. CRC_DIFF=0, RX drops=0, parser resync=0. Distinguish software TX counts/DE status from independent hardware-level line witnessing.
