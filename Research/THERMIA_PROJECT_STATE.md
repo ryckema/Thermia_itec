@@ -1,3 +1,11 @@
+## 2026-10-23 MAIN01-M6-FIX14 user-live passive result — COMPLETE / POSITIVE (RX ONLY)
+
+**OBSERVED from supplied user ESPHome log, 14:50:49–14:51:28:** after OTA, uptime 33s in sampled diagnostic; CRC_CHECK=257, CRC_DIFF=0, SHAPE_OTHER=0, parser resyncs=0, RX buffer drops=0; 241 valid frames in separately sampled counter, 16 recognized native FC16 shapes. M6 stays ABORTED / RX ONLY / DE LOW; AUTO REJOIN says NATIVE FC16 OBSERVED / SESSION OWNER UNKNOWN / TX LOCKED; FC03 session NOT_QUALIFIED, config NOT_SYNCED, pages 0/4, FC03=0, WAIT_SESSION_OWNER, button=0, confirmed=0, result NEVER_RECEIVED. Write queue pending 0. Native setting sensor NaNs consistent with missing cache. ESPHome reports reset reason 'Reboot request from esphome.ota'; the log lacks an independently authenticated FIX14 binary digest, so user-reported FIX14 installation is FLASHED/LIVE by user context, not binary attestation.
+
+**Decision:** FIX14 RX-only verification COMPLETE / POSITIVE. Functional post-owner FC03 send qualification, hot-rejoin, recovery, and full 4/4 native page refresh remain NOT LIVE TESTED by this passive observation, so no false session-completion claim. Healthy bus does not establish native session. No new passive test loop. Next milestone engineering: one integrated functional native session progression/retained ownership and FC03 page refresh under the unchanged sole UART/RX/DE owner, with TX only in explicit user-initiated bounded experiment; HA parameter writes ON HOLD. Existing FIX13 remains rollback.
+
+---
+
 ## 2026-10-23 MAIN01-M6-FIX14 — post-owner session qualification and FC03 closure — PREPARED / NOT RUN
 
 User live FIX13 baseline (14:27) RX-only: CRC_CHECK 249, CRC_DIFF 0, 15 native FC16 shapes, RX drops 0, DE LOW, OWNER UNKNOWN / TX LOCKED, FC03 WAIT_SESSION_OWNER and pages 0/4. No active session attempted in that log.
