@@ -1,3 +1,9 @@
+## 2026-10-23 FIX16 first live passive evidence
+
+Local user log after OTA: V5 parser 155 CRC checks, 0 differences and 0 unknown shapes; eight recognized FC16 shapes. S92 still RX ONLY / DE LOW, native owner UNKNOWN / TX LOCKED. FC03 unqualified, 0/4 pages, request button 0. This is passive proof of maintained receiver behavior only, not evidence of accepted native session, retained context, cold-start fallback, 120-second deadline or four-page refresh. Parser resync and RX-drop totals not present in excerpt. No HA parameter writes.
+
+---
+
 ## 2026-10-23 FIX15 passive RX-only result — live XTR evidence
 
 User firmware run 15:42:06–15:47:21 yields latest CRC_CHECK 8506, CRC_DIFF 0, parser resync 0, RX drops 0, 506 known native FC16 shapes and a separately sampled 8402 valid frames. The session remains RX ONLY, DE LOW and OWNER UNKNOWN; FC03 current-page state NOT_QUALIFIED, 0/4 pages, ackMask 00, no request and WAIT_SESSION_OWNER.
