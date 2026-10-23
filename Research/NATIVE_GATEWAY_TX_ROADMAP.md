@@ -1,3 +1,5 @@
+> **Historical S86–S93 plan (2026-10-21).** The active cloud-free implementation roadmap is [S92_LOCAL_DCM_IMPLEMENTATION_ROADMAP.md](S92_LOCAL_DCM_IMPLEMENTATION_ROADMAP.md). This older document is retained for experiment history, not the next-action queue; its S86/S88/S90/S91 gates must not restart a redundant test loop or override the later XTR S92/FIX28 live findings. This navigation notice does not grant native bus TX or HA parameter writes.
+
 # Thermia iTec XTR M — Native Gateway & TX roadmap
 Updated 2026-10-21. **Planning only; no flash or live TX authorized.**
 Goal: native Thermia Online/Connect-like gateway accepted by XTR M, then one independently verified, reversible Home Assistant semantic write. Preserve verified V5 RX, B11C/B11D, watchdog and HA. Do not substitute room sensor 0x0A or blind Modbus writes.
