@@ -1,3 +1,11 @@
+## MAIN01-M6-FIX14 — user-live passive result COMPLETE / POSITIVE — 2026-10-23
+
+**Hypothesis:** Integrated post-TX-owner 0708 session accounting and M6 stop reconciliation preserve previously verified V5 receive quality and fail-closed status when no manual session is started. **Baseline:** FIX13 FLASHED/LIVE passive 249 CRC checks/0 diffs, 15 known FC16 shapes, 0 RX drops, 0/4 pages. **One intervention:** FIX14 firmware supplied and user ran ESPHome OTA, no recorded S92 START/Recovery/Refresh buttons or native TX.
+
+**Actual user log 14:50:49–14:51:28:** latest integrity status CRC_CHECK=257, CRC_DIFF=0, SHAPE_OTHER=0; parser resyncs since boot 0, RX drops 0; 241 separately sampled valid frames; 16 known FC16 shapes. Uptime 33s sampled. M6 ABORTED/RX ONLY/DE LOW, native observer OWNER UNKNOWN/TX LOCKED, FC03 NOT_QUALIFIED, NOT_SYNCED, pages0/4, FC03=0, WAIT_SESSION_OWNER, manual button0, confirmed0, write queue0. Reset reason ESPHome OTA. No claimed independent FIX14 image hash. **Result:** COMPLETE / POSITIVE for RX-only regression, *not* a functional session acceptance/recovery or FC03-refresh test. No further passive retest required. Abort/rollback unchanged FIX13, physical TX remains separately user-initiated, HA setting writes ON HOLD.
+
+---
+
 ## MAIN01-M6-FIX14 — PREPARED / NOT RUN — 2026-10-23
 
 Hypothesis: FIX13 controller FC03 0708 request was credited before actual UART-owner send, producing potentially false local qualified session, positive hot-rejoin/recovery and refresh accounting upon owner refusal. Direct legacy timer/watchdog STOP could leave M6 old cache credentials. BASELINE: user FLASHED/LIVE FIX13 RX-only CRC 249/0, 15 FC16 known shapes, drops 0, owner unknown, 0/4 page cache, WAIT_SESSION_OWNER, DE LOW.
