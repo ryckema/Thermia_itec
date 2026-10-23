@@ -1,3 +1,13 @@
+## MAIN01-M6-FIX14 — PREPARED / NOT RUN — 2026-10-23
+
+Hypothesis: FIX13 controller FC03 0708 request was credited before actual UART-owner send, producing potentially false local qualified session, positive hot-rejoin/recovery and refresh accounting upon owner refusal. Direct legacy timer/watchdog STOP could leave M6 old cache credentials. BASELINE: user FLASHED/LIVE FIX13 RX-only CRC 249/0, 15 FC16 known shapes, drops 0, owner unknown, 0/4 page cache, WAIT_SESSION_OWNER, DE LOW.
+
+ONE integrated implementation change: relocate all native FC03 0708 served-reply credit, native M6 event4 and hot-rejoin/recovery positive completion into the sole existing owner after exact controller poll/current-only response and successful UART flush/DE LOW. Defer runtime active beyond terminal 06F4 ACK. Existing M6 event8 now revokes stale epochs/cache/pages/one-shot arms after direct nonmanual STOP. Existing manual W3bit0 CURRENT refresh reports confirmed controller 03E8 page or already-defined 10s timeout accurately. No added TX call, byte payload, CRC, sender, DE pin action, parameter write or autonomous response.
+
+Expected in later user-initiated bounded session: denied/absent mailbox send does not credit session, successful owner send credits once, fresh FC16 controller page only confirms current refresh, missing page times out, ABORT returns DE LOW. Actual SOURCE/OFFLINE: YAML/224 unique IDs PASS, 72/72 native TX calls, 1/1 physical UART send, 1/1 DE-on, ZIP CRC PASS. ESPHome TARGET COMPILE, FLASH and LIVE FIX14 NOT RUN. Status PREPARED / NOT RUN. Abort existing buttons, rollback live FIX13. HA parameter writes ON HOLD.
+
+---
+
 ## MAIN01-M6-FIX13 first passive user-live log — COMPLETE / POSITIVE (RX-only) — 2026-10-23
 
 Baseline FIX12 passive success; change under observation previously prepared FIX13 integrated M6 arbiter. Expected preserved RX-only and correct ownership gate. Actual from user 14:27:16–14:27:36 after OTA: uptime 32s, 249 CRC checks / 0 differences, 15 known FC16 shapes, 0 RX drops; resync total absent from extract. Lifecycle ABORTED / RX ONLY / DE LOW, auto detection OWNER UNKNOWN / TX LOCKED, FC03 NOT_QUALIFIED and NOT_SYNCED, 0/4 pages, FC03=0, refresh WAIT_SESSION_OWNER, queue 0. One API-client CONNECTION_CLOSED unrelated to demonstrated bus integrity.
