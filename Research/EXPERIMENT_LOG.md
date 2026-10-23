@@ -1,3 +1,12 @@
+## MAIN01-M6-FIX18 user-local initial LIVE excerpt — RUNNING / PARTIAL — 2026-10-23
+
+**Baseline:** FIX17 live user START 17:14:38, 56 unqualified 085F/0 ACK and 28 guarded 0708 polls/0 TX; FIX18 prepared integrated diagnostics + 60s retained manual timeout. **ONE change from FIX17:** FIX18 already delivered as complete private YAML ZIP with counter/status and timeout corrections, preserving single UART/DE/RX owner and all production entities.
+
+**Actual evidence:** User log covers 17:26:05–17:30:23 and shows FIX18 runtime naming and OTA-reboot reset reason. RX-only baseline `ABORTED / RX ONLY / DE LOW`, last pre-START CRC_CHECK=2055, CRC_DIFF=0, SHAPE_OTHER=0, parser resync=0, drops=0, native pages=0/4, no write queue. Manual START 17:30:14.665 at stage40 RETAINED_UNPROVEN, followed in ~9.2s by five local 0x0F FC16 085F/count5 (`0861=0800`) NO_ACK captures and one FC03 0708 `UNQUALIFIED_NO_REPLY polls=1 physicalTXthisSession=0 fc16ACK=0 DE=LOW`. No justified native session ACK, cold-start or parameter write. The last FC03 status publish before START still shows `blocked0708=0` — do NOT interpret that as a failure; the next 15s status update was outside capture.
+
+**Observed outcome:** passively stable; first blocked 0708/no physical TX logged. **Unobserved:** no 60s expiry, after-stop RX-only, updated blocked status, or manual ABORT summary. The file ends at 17:30:23.881, ~9.2s after START. **Status RUNNING / PARTIAL** for FIX18 integration; never claim 60-second timeout complete or print an invented TX count for remainder. **One next action:** obtain only any already-recorded continuation at ~17:31:14, not another active retained-session trial; if unavailable, leave this as partial and proceed to the separate cold-start milestone. HA setting writes ON HOLD; abort/rollback FIX17 RX-only or locally proven FIX15 RX-only.
+
+---
 ## MAIN01-M6-FIX17 user-local active retained test — COMPLETE / POSITIVE (TX guard), COMPLETE / NEGATIVE (native ownership) — 2026-10-23
 
 **ID:** MAIN01-M6-FIX17. **Baseline:** FIX16 user-live: 56 unqualified 085F requests/0 ACK but 28 physically transmitted CURRENT-only 0708 responses, 120.088s timeout, RX clean, pages 0/4. **One change:** FIX17 guard withholds 0708 before native owned-FC16-ACK and counts actual physical TX at the existing sole UART owner.
