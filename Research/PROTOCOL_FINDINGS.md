@@ -6,6 +6,14 @@ This confirms stable passive RX with the new refresh structures present; it does
 
 ---
 
+
+## 2026-10-23 FIX15 source change — session-owned current-page request
+
+Original Connect firmware distinguishes current/read-request signaling from desired/setting signaling and requires separate package receipts. Local XTR has four current-page families. The private FIX15 integrated four-group manual refresh in the existing S92 M6 UART/DE owner, acknowledging matching same-session controller replies before crediting each unique cache page; all four are required for completeness. Prior one-page M3 physical response is suppressed, session-loss or abort invalidates partial results, and missing data times out without autonomous retry. This is SOURCE/OFFLINE, not proof the XTR will answer the combined request. Proprietary mailbox bytes and original code omitted; HA writes remain ON HOLD.
+
+---
+
+
 ## 2026-10-23 FIX14 passive XTR confirmation and remaining native-session boundary
 
 User-live FIX14-associated OTA log: V5 CRC_CHECK 257, CRC_DIFF 0, SHAPE_OTHER 0, 0 parser resync, 0 RX drops; 16 known native FC16 frames observed and 241 separately sampled valid frames. No current native owner: OWNER UNKNOWN/TX LOCKED, M6 ABORTED/RX ONLY/DE LOW. Native FC03 diagnostic remains NOT_QUALIFIED/NOT_SYNCED 0/4, FC03 0, WAIT_SESSION_OWNER; refresh never received.
