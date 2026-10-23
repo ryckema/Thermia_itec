@@ -1,3 +1,9 @@
+## 2026-10-23 MAIN02/M6/FIX20 — PREPARED / NOT RUN — integrated recovery epoch repair
+
+SOURCE/OFFLINE TESTED, NOT TARGET COMPILED, NOT FLASHED, NOT LIVE. Built on exact private FIX19 YAML SHA256 93cc17548795c585d2ae428bccb57b886744e13c0d206d4b37d2a69c170e2aab. Source-only P0 correction: remove the independent write_arm_ms rebase following final recovery 06F4/count19 ACK; boot-return event7 owns the local session binding, while write_runtime_enter_ms retains its independent post-bootstrap 60s unqualified STOP clock. At 06F4 recovery completion a mismatched local epoch or missing manual approval now aborts fail-closed, DE LOW. Passive configuration-shape diagnostic timing follows runtime entry. Native CRC/FC16 bytes, one physical UART/DE owner, production HA entities and 74 owner calls preserved. HA parameter writes remain ON HOLD. Source checks: 767 unique IDs, !secret-aware YAML parsed, unchanged production UART/config and both timeout gates. No fresh session, 0708 service, version/33 groups, PageStore4/4 or semantic acceptance can be claimed live. User-initiated bounded FIX20-COLD02 is PREPARED / NOT RUN. RX-only passive OTA first; ABORT on failure, rollback to locally verified RX-only. One next action: user compiles/flashes FIX20 passively to establish source-to-target readiness; physical TX requires separate explicit user-initiated experiment.
+
+---
+
 ## 2026-10-23 FIX19-SOURCE-REVIEW-20261023 — PREPARED / NOT RUN — post-cold session timestamp mismatch
 
 Reviewed complete private FIX19 source YAML SHA256 93cc17548795c585d2ae428bccb57b886744e13c0d206d4b37d2a69c170e2aab. SOURCE/OFFLINE: full YAML parsed (767 unique IDs), one physical UART write_array owner, package CRC PASS; TARGET COMPILED/FLASHED/LIVE for FIX19 NOT RUN. FIX19 adds a 60s post-cold stage40 unqualified STOP measured from runtime entry; retains old retained-60s limit, cold-start and all native TX/DE safety guards, no HA parameter writes or unsolicited TX.
