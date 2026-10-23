@@ -1,3 +1,11 @@
+## MAIN01-M6-FIX13 first passive user-live log — COMPLETE / POSITIVE (RX-only) — 2026-10-23
+
+Baseline FIX12 passive success; change under observation previously prepared FIX13 integrated M6 arbiter. Expected preserved RX-only and correct ownership gate. Actual from user 14:27:16–14:27:36 after OTA: uptime 32s, 249 CRC checks / 0 differences, 15 known FC16 shapes, 0 RX drops; resync total absent from extract. Lifecycle ABORTED / RX ONLY / DE LOW, auto detection OWNER UNKNOWN / TX LOCKED, FC03 NOT_QUALIFIED and NOT_SYNCED, 0/4 pages, FC03=0, refresh WAIT_SESSION_OWNER, queue 0. One API-client CONNECTION_CLOSED unrelated to demonstrated bus integrity.
+
+Status COMPLETE / POSITIVE for passive verification only; session qualification, recovery, native FC03 remain RUNNING / PARTIAL and not live tested. Abort existing, DE LOW, rollback FIX12, HA settings writes ON HOLD. Next integrated engineering code, no repetitive passive test.
+
+---
+
 ## MAIN01-M6-FIX13 — PREPARED / NOT RUN (2026-10-23)
 
 **Hypothesis:** Previously independent M6 event arbiter and HA status inference could diverge after STOP, controller recovery or page staleness. **Verified baseline:** FIX12 flashed/passive 13:55–13:59; CRC 1946/0 differences; 0 parser resync/drop; 116 known FC16 shapes; owner unknown; no TX; native page 0/4 and FC03 0.
