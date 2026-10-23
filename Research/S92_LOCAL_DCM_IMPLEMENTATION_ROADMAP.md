@@ -1,3 +1,5 @@
+> **FIX31 — integrated R1/R2 firmware prepared (2026-10-24):** Built complete private FIX31 firmware from the precise FIX30 source. The existing S92 engine now commits CURRENT pages only after successful owned FC16 ACK; naturally received four current pages can qualify local freshness independently of the separately verified manual-refresh ACK mask; an in-flight manual read-only refresh can be cancelled for the existing guarded controller cold-start fallback. No new UART, no unattended bus TX, no HA parameter writes. SOURCE/OFFLINE TESTED only, not target-compiled, flashed or live. R1 automatic owner acquisition and sustained hot-rejoin remain OPEN; R2 native long-running refresh and CM930 application completeness remain OPEN. Next: user compile and passive check, then at most one separately initiated bounded native session if desired. Rollback user-LIVE FIX28. No cloud.
+
 # S92 LOCAL DCM — Implementation roadmap (cloud-free)
 
 **Updated:** 2026-10-24. **Planning decision only — not a live experiment or TX authorization.**
