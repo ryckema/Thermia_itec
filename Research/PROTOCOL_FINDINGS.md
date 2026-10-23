@@ -1,3 +1,13 @@
+## 2026-10-23 FIX12 live passive and FIX13 integrated session engine (SOURCE/OFFLINE)
+
+**OBSERVED XTR:** FIX12 passive CRC_CHECK 1946 / CRC_DIFF 0, resync/drop 0, 116 native known FC16 shapes, OWNER UNKNOWN / TX LOCKED, RX ONLY / DE LOW, 0/4 native pages, FC03 0. No ownership, automatic rejoin or semantic acceptance is implied.
+
+**Original Connect 2.0.18 / 2.1.105 evidence:** CM930 slave 0x0F separates handshake NOT_ACCEPTED -> RESPONSE_SENT -> ACCEPTED from runtime WAITING_FOR_DEVICE_INFO and package-completeness; native FC16 controller exports, 0708 mailbox and FC03 pulls have independent state/refresh purposes. This is firmware evidence, not transferable XTR session authorization.
+
+**FIX13 consequence:** one existing M6 session arbiter now owns lifecycle state and reconciles with existing bus health; no extra serial reader/sender. Abort/recovery invalidate native page epochs and accepted authority; FC03 diagnostics do not report a profile-only wait without qualified session. ACK still not semantic acceptance. Retained 085F remains no-auto-ACK, HA writes ON HOLD, S62 accepted risk closure retained. Status FIX13 SOURCE/OFFLINE, not flashed or live.
+
+---
+
 ## 2026-10-23 FIX11 SOURCE: final 06F4 ACK must precede local stage40 completion
 Source inspection of exact FIX10 shows final ordered controller FC16 06F4/count19 sender updated write_06f4_ack_used, runtime enter/service clocks, state=40, optional recovery epoch and UI before s92_tx_owner_send. Native UART owner refusal could therefore create false local runtime qualification despite STOP afterward. FIX11 moves these commits after owner true, preserving original frame/CRC and all TX admission guards. This is source integrity improvement, NOT controller acceptance or 085F ownership. FIX10 user OTA/RX-only observed; FIX11 SOURCE/OFFLINE, not target compiled or flashed. Retained 085F zero requests remain unowned and NO_ACK; controller FC03 polling and config0/4 are separately observed. Private ZIP SHA256 55998ea0a7f3c30b56d52834f3fb6b0d0fb3210179268cd656f5306625247e85; YAML 1e682b658f337b73132226b4c00653e8c597cf9433dda98a88630482de563e1e; no HA writes.
 
