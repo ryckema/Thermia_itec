@@ -1,3 +1,9 @@
+## MAIN02-M6-FIX20-COLD02 — PREPARED / NOT RUN (2026-10-23)
+
+Hypothesis: FIX18 COLD01's blocked 0708 after successful cold bootstrap was at least partly caused by the FIX19-source local recovery session_epoch/write_arm_ms discrepancy. This is SOURCE PROVEN as a code-flow mismatch, STRONGLY SUPPORTED but not verified as the sole live cause. Baseline: exact private MAIN01/M6/FIX19 YAML SHA256 93cc17548795c585d2ae428bccb57b886744e13c0d206d4b37d2a69c170e2aab. Prior XTR evidence: COLD01 cold boot with native FC16 ACKs but >=27 denied 0708 and PageStore0/4; subsequent FIX19 warm retained test had one FC16 and six locally served 0708 but still 0/4 and no actual application acceptance. ONE source change: remove second write_arm_ms assignment on recovery 06F4 ACK, preserve event7 binding, add fail-closed recovery owner+user approval consistency check and use runtime_enter_ms for a related passive timing marker. Expected: exact current 0708 after owned runtime FC16 can pass unchanged pre-existing guards when all RX, manual scope and peer checks pass; otherwise deny or 60s unqualified STOP. No test bus TX initiated. Abort S92 manual button on any safety anomaly; rollback to locally verified passive RX-only. HA setting writes ON HOLD. Evidence levels: source/offline parser and invariants PASS; ESPHome TARGET COMPILE, FLASH and LIVE NOT RUN. Final outcome OPEN.
+
+---
+
 ## FIX19-EPOCH-REVIEW-20261023 — PREPARED / NOT RUN
 
 Hypothesis: COLD01 post-cold FC03 blockage is due at least in part to local session-epoch mismatch. Baseline: private user-live FIX18 COLD01 report: complete guarded cold bootstrap after 5119ms controller silence; 44 runtime FC16 ACKs, 27+ denied 0708 polls, >=72 TX, config PageStore0/4 and clean RX; full raw log/final ABORT not provided in this review, so COLD01 remains RUNNING / PARTIAL. Exact FIX19 source (TARGET COMPILED/FLASHED/LIVE NOT RUN) adds fail-close 60s runtime timeout after cold startup.
