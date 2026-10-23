@@ -1,3 +1,13 @@
+## 2026-10-23 FIX14 source finding — native FC03 0708 post-send transaction boundary
+
+SOURCE finding in exact FIX13 YAML: native FC03 0708/count6 handler incremented served-0708 count and advanced M6 native accepted epoch, positive hot-rejoin and recovery BEFORE physical UART owner accepted/sent response. An observed FC03 request is not a sent mailbox response, transport ACK is not semantic acceptance. FIX14 now commits these only after exact controller 0708 request, current-only 17-byte mailbox response, sole existing UART-owner flush and DE LOW. No new native frame or auto TX.
+
+Related in-place M6 fix: legacy stage99/watchdog direct stop previously bypassed explicit M6 event6 invalidation and could preserve stale native accepted/page authority; current event8 revokes during existing health tick. Following 06F4 ACK no longer claims runtime-active until valid FC16 owner ACK plus served 0708. Manual W3bit0 current-only refresh reports confirmed original 03E8 FC16 receipt vs bounded existing 10-second failure; no new current-page scheduler or semantic write.
+
+Profile, 33-package shadow, independent four PageStore groups, retained 085F ownership, true controller acceptance and full FC03 synchronization are distinct and remain unproven until user-live session. This is SOURCE/OFFLINE only. HA parameter writes ON HOLD; S62 unchanged topology accepted-risk closure unchanged.
+
+---
+
 ## 2026-10-23 FIX13 first live passive evidence
 
 Local XTR log after FIX13 OTA: CRC_CHECK=249, CRC_DIFF=0, 15 native known FC16 shapes and 0 RX buffer drops. Native detection OWNER UNKNOWN / TX LOCKED; M6 remains ABORTED / RX ONLY / DE LOW. FC03 says session NOT_QUALIFIED, pages 0/4, FC03 0, refresh WAIT_SESSION_OWNER. Parser resync not reported in supplied short log.
