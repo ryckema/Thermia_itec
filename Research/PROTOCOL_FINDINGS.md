@@ -1,3 +1,11 @@
+## 2026-10-23 FIX15 passive RX-only result — live XTR evidence
+
+User firmware run 15:42:06–15:47:21 yields latest CRC_CHECK 8506, CRC_DIFF 0, parser resync 0, RX drops 0, 506 known native FC16 shapes and a separately sampled 8402 valid frames. The session remains RX ONLY, DE LOW and OWNER UNKNOWN; FC03 current-page state NOT_QUALIFIED, 0/4 pages, ackMask 00, no request and WAIT_SESSION_OWNER.
+
+This confirms stable passive RX with the new refresh structures present; it does not exercise manual/current mailbox reply, native session owner proof, controller acknowledgment or four-page completeness. Original Connect firmware-derived selection model remains separate from local XTR proof. No autonomous TX, no HA setting writes.
+
+---
+
 ## 2026-10-23 FIX14 passive XTR confirmation and remaining native-session boundary
 
 User-live FIX14-associated OTA log: V5 CRC_CHECK 257, CRC_DIFF 0, SHAPE_OTHER 0, 0 parser resync, 0 RX drops; 16 known native FC16 frames observed and 241 separately sampled valid frames. No current native owner: OWNER UNKNOWN/TX LOCKED, M6 ABORTED/RX ONLY/DE LOW. Native FC03 diagnostic remains NOT_QUALIFIED/NOT_SYNCED 0/4, FC03 0, WAIT_SESSION_OWNER; refresh never received.
