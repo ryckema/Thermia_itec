@@ -1,3 +1,13 @@
+## 2026-10-23 FIX19-SOURCE-REVIEW-20261023 — PREPARED / NOT RUN — post-cold session timestamp mismatch
+
+Reviewed complete private FIX19 source YAML SHA256 93cc17548795c585d2ae428bccb57b886744e13c0d206d4b37d2a69c170e2aab. SOURCE/OFFLINE: full YAML parsed (767 unique IDs), one physical UART write_array owner, package CRC PASS; TARGET COMPILED/FLASHED/LIVE for FIX19 NOT RUN. FIX19 adds a 60s post-cold stage40 unqualified STOP measured from runtime entry; retains old retained-60s limit, cold-start and all native TX/DE safety guards, no HA parameter writes or unsolicited TX.
+
+Bundled COLD01 handoff reports FIX18 user-live 5119ms bus silence, guarded cold-start + R1/FC16, 44 runtime FC16 ACKs, at least 27 native 0708 polls withheld, 72 or more physical TX, PageStore0/4, NOT_QUALIFIED; raw COLD01 log and final ABORT not independently supplied, overall COLD01 RUNNING / PARTIAL.
+
+SOURCE-PROVEN discrepancy: controller-loss event3 clears main01_m6_session_epoch; boot return event7 binds it to the current write_arm_ms; final 06F4 cold-bootstrap ACK in recovery then changes write_arm_ms again to its ACK timestamp, without updating the session epoch. Both FC03 RX and central TX owner guards require equality. This is STRONGLY SUPPORTED as a reason for blocked post-cold 0708, but not yet independently proven as the sole live cause. DO NOT relax owner checks, invent controller epoch or authorize automatic TX. One next engineering action: integrated FIX20 local-epoch coherence correction separating bounded manual authorization from recovery/runtime timing, preserving FIX19 60s fail-close and full production functionality.
+
+---
+
 ## 2026-10-23 FIX19 user-live retained START: unsafe self-qualification, NO-GO active S92
 
 **OBSERVED / LOCALLY VERIFIED (user states FIX19 flashed):** At 18:43:05 user pressed manual START on a healthy live bus, with no proven controller restart or cold R1; one `0848/count23` runtime FC16 ACK was physically sent ~18:43:07, then local 0708 service began ~18:43:08. The self-accounted state transitioned to `ACCEPTED / DATA SYNC NEEDED`, but all `085F/count5` captured without valid context (`noContext=12 contextACK=0 freshApproval=0`), CM930 not qualified, config `0/4`, read refresh `WAIT_PROFILE_242`. Manual ABORT 18:43:33.780 after 28405ms recorded 1 physical FC16 ACK + 6 FC03 served / 7 physical native TX, `RX ONLY / DE LOW`. No observed setting writes, CRC differences 0, drops 0. One earlier parser resync before START. Alarm for communication with Online module reported by user, but no alarm code/onset captured and no proof of causality.
