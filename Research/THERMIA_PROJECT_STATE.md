@@ -1,3 +1,13 @@
+## 2026-10-23 FIX15 USER LIVE PASSIVE — COMPLETE / POSITIVE (RX ONLY)
+
+**Observed XTR user log 15:42:06–15:47:21, 315 s sample.** Firmware is user-reported FIX15, installed and running; no binary hash provided. Latest V5 CRC_CHECK=8506, CRC_DIFF=0, SHAPE_OTHER=0, ambiguous=0. Latest independently sampled valid frame total 8402; parser resync=0 and RX buffer drops=0. Known native FC16 shapes last count 506. ESP uptime 1054 s at last uptime sample; loop ~20–23 ms, heap free ~224272 B at last heap sample. Existing production telemetry continues.
+
+**Native S92:** Throughout this log, MAIN01 remains M6 / ABORTED / RX ONLY / DE LOW; passive detector NATIVE FC16 OBSERVED / SESSION OWNER UNKNOWN / TX LOCKED. Native FC03 is NOT_QUALIFIED/NOT_SYNCED, pages 0/4, ackMask=00, FC03=0, WAIT_SESSION_OWNER, button=0, result NEVER_RECEIVED. Queue pending=0. No manual START, recovery or refresh action in observed window. This is not a failed four-page refresh, nor evidence of session qualification, 085F ownership or semantic acceptance.
+
+**Decision:** FIX15 passive LIVE regression check COMPLETE / POSITIVE. Four-page active acquisition and session transitions remain PREPARED / NOT RUN on device. No repetitive passive test needed. Source priority unchanged, no autonomous TX and HA parameter writes ON HOLD. Next engineering action: functional, fail-closed session-owner/retained-context integration, then four-page FC03 confirmation under one existing UART/RX/DE owner. Rollback user-live FIX14 if future functional anomaly.
+
+---
+
 ## 2026-10-23 MAIN01-M6-FIX15 — integrated manual 4-page native CURRENT refresh — PREPARED / NOT RUN
 
 **Baseline**: user FLASHED/LIVE FIX14 passive on 2026-10-23 14:50–14:51; CRC_CHECK=257, CRC_DIFF=0, 0 parser resync/drop, 16 known native FC16 shapes, M6 RX ONLY / DE LOW, session-owner UNKNOWN / TX LOCKED, FC03 WAIT_SESSION_OWNER, current PageStore 0/4. FIX14's active send and post-send state promotion have not been live verified.
