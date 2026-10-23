@@ -1,3 +1,11 @@
+## 2026-10-23 FIX14 passive XTR confirmation and remaining native-session boundary
+
+User-live FIX14-associated OTA log: V5 CRC_CHECK 257, CRC_DIFF 0, SHAPE_OTHER 0, 0 parser resync, 0 RX drops; 16 known native FC16 frames observed and 241 separately sampled valid frames. No current native owner: OWNER UNKNOWN/TX LOCKED, M6 ABORTED/RX ONLY/DE LOW. Native FC03 diagnostic remains NOT_QUALIFIED/NOT_SYNCED 0/4, FC03 0, WAIT_SESSION_OWNER; refresh never received.
+
+**Interpretation:** confirms only safe, stable passive bus decoding and truthful gate after FIX14 source changes. No on-wire TX was exercised in the submitted log; hence neither moved post-send acknowledgment accounting nor current refresh confirmation has been live established. Native FC16 passive observation, FC03 polling in other experiments, and transport ACK remain distinct from session ownership, complete parameter-package receipt and semantic/controller acceptance. Retained 085F context still unknown. No speculative auto TX and no HA parameter writes.
+
+---
+
 ## 2026-10-23 FIX14 source finding — native FC03 0708 post-send transaction boundary
 
 SOURCE finding in exact FIX13 YAML: native FC03 0708/count6 handler incremented served-0708 count and advanced M6 native accepted epoch, positive hot-rejoin and recovery BEFORE physical UART owner accepted/sent response. An observed FC03 request is not a sent mailbox response, transport ACK is not semantic acceptance. FIX14 now commits these only after exact controller 0708 request, current-only 17-byte mailbox response, sole existing UART-owner flush and DE LOW. No new native frame or auto TX.
