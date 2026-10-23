@@ -1,3 +1,13 @@
+## 2026-10-23 MAIN01-M6-FIX14 — post-owner session qualification and FC03 closure — PREPARED / NOT RUN
+
+User live FIX13 baseline (14:27) RX-only: CRC_CHECK 249, CRC_DIFF 0, 15 native FC16 shapes, RX drops 0, DE LOW, OWNER UNKNOWN / TX LOCKED, FC03 WAIT_SESSION_OWNER and pages 0/4. No active session attempted in that log.
+
+FIX14 integrated source change: existing sole S92 UART/DE owner commits native FC03 0708 reply credit, accepted session event-4, hot-rejoin and recovery success only AFTER matching exact controller FC03 0708/count6 and owner successful 17-byte current-only response, UART flush and DE LOW. Old FIX13 branch wrongly credited incoming requests pre-send. Stage40 after final 06F4 remains runtime-unqualified until FC16 ACK plus served 0708. Pre-existing 5s M6 reconciliation tick also revokes native accepted epoch, PageStore four timestamps, version/profile shadow, caches, one-shot arms after direct legacy stop/watchdog exits. Existing manual M3 current-only W3bit0 refresh status now records actual controller FC16 03E8 CONFIRMED versus existing 10s TIMEOUT. Same 12s manual refresh authorization, 72 native send callsites, physical UART 1, DE on 1, no new response bytes/scheduler, no autonomous TX. HA setting writes ON HOLD.
+
+SOURCE/OFFLINE PyYAML PASS, 224 unique IDs, original sole UART/DE owner and TX gate preserved, private ZIP CRC PASS. ZIP SHA256 157fd38d46efd37067fb71406f41595766fbde9dec0ac2a07aac25e189083de0; YAML SHA256 5dfd504924c15d5d7885c698c7a0a0b07e8c5a31141ad105f87b64672ba20299. ESPHome target COMPILED: NO; FIX14 FLASHED/LIVE: NO. Existing FIX13 is user-live rollback. No claim that transport-ACK is semantic/controller acceptance. Retained 085F ownership and 4/4 native FC03 freshness still not established. S62 unchanged-topology accepted risks not reopened. Next: user manually installs FIX14 RX-only, followed by source-grounded integrated native session/refresh functionality; no new test loop or HA parameter write.
+
+---
+
 ## 2026-10-23 FIX13 FIRST USER LIVE RX-ONLY — COMPLETE / POSITIVE (PASSIVE ONLY)
 
 User ESPHome log 14:27:16–14:27:36 after OTA: FIX13 FLASHED/LIVE RX-ONLY, 32s uptime, CRC_CHECK=249, CRC_DIFF=0, SHAPE_OTHER=0, 15 known FC16 shapes, 0 RX buffer drops. Parser resync total not supplied. Auto rejoin remains NATIVE FC16 OBSERVED / SESSION OWNER UNKNOWN / TX LOCKED. Lifecycle M6 / ABORTED / RX ONLY / DE LOW; FC03 session=NOT_QUALIFIED, config=NOT_SYNCED, pages=0/4, FC03=0, refresh=WAIT_SESSION_OWNER, confirmed=0, button=0. HA write queue 0. One ESPHome API client CONNECTION_CLOSED, no evidence of UART fault. Existing M6 stop status is preserved in RX-only, not a failed new recovery.
