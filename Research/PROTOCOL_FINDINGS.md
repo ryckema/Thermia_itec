@@ -1,3 +1,9 @@
+## FIX19-EPOCH-SOURCE-FINDING-20261023 — local recovery timestamps can deny native FC03 0708
+
+Original private FIX19 YAML source: controller-loss event3 clears main01_m6_session_epoch. At first valid boot-return event7, it is set to current write_arm_ms. At guarded cold bootstrap completion (06F4 ACK) while recovery_in_progress, write_arm_ms is changed again to final ACK time; main01_m6_session_epoch is not. FC03 0708 admission in both the RX selector and central sole UART owner requires equality, together with actual owned FC16 send and RX/peer safeguards. Thus a SOURCE-PROVEN internal timestamp mismatch can deny current 0708 despite cold-start ACKs. COLD01 private report of 27+ withheld polls and config0/4 is consistent; cause is not established as exclusive without raw log. FIX19 adds a 60s unqualified post-cold runtime fail-close only; TARGET COMPILE/FLASH/LIVE NOT RUN. Next FIX20 must reconcile local generations without fabricating hardware epoch, removing guards or permitting unsolicited TX. Distinguish real 0708/controller republish and 33 significant application groups from cold 32-page bootstrap. No HA parameter writes.
+
+---
+
 ## 2026-10-23 XTR live FIX19 warm-retained: FC16+FC03 local acceptance is not remote ownership
 
 **XTR LIVE:** Manually started stage40 on an already-running controller, no >=5s cold-start silence and no R1 in that session. One known 0848/23 FC16 ACK plus first served 0708/6 FC03 induced local `M6 ACCEPTED`. Subsequent 085F/5 controller FC16 requests had twelve ZERO no-context frames, `contextACK=0`, while 0708/6 requests continued physically serviced. After ~28.4 seconds user's manual ABORT summary reported 1 FC16 ACK, 6 served FC03, 0 denied 0708, 7 physical owner TX, DE LOW. Native config remained 0/4 and CM930 shadow unqualified/WAIT_VERSION. RX CRC_DIFF=0 / RX drops=0.
