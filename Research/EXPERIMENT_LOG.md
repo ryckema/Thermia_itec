@@ -1,3 +1,13 @@
+# 2026-10-24 — EXP-OFFLINE-CM930-UNIFIED-SNAPSHOT — PREPARED / NOT RUN
+
+**Engineering hypothesis:** original Connect 2.1.105 treats application package requests/receipts, runtime state, versioned data interpretation and publication separately from Modbus service. FIX47 already has native M6 state, 33-package requested/received/pending bitmap, four CURRENT page timestamps and secure TX-owner. In a next integrated revision, route existing read-only HA values through one qualified immutable or staged snapshot of four CURRENT pages with explicit same controller/session epoch, CRC, successful owned ACK, known XTR profile and complete request cycle; maintain incomplete/stale data as NaN. This is NOT a new transport engine, Modbus owner, unsolicited frame, parameter write or cloud login.
+
+**Review evidence:** supplied private Connect source modules and locally inspected complete FIX47 YAML; firmware-specific dynamic profile concept exists in original archive but unverified cross-model profiles are not XTR evidence. Local original gateway storage flush/read code is TODO, not proof of persistent settings storage. No new physical bus capture, target compile, flash or firmware patch in this review.
+
+**Decision/status:** PREPARED / NOT RUN as a single next M1/M3 implementation candidate. Do not expand into repeated mock/test cycles. User-LIVE FIX42 remains rollback; FIX47 is SOURCE/OFFLINE TESTED. M2 separate controller 0708 refresh trigger remains NO-GO new physical TX. HA writes ON HOLD. Future complete firmware package only when the integrated implementation is actually made; preservation of all production IDs, V5/B11C/B11D and sole DE writer mandatory.
+
+---
+
 # 2026-10-24 — EXP-M2-0708-UNSOLICITED-MASTER-TX-GATE — SUPERSEDED / NOT RUN
 
 **Question:** after explicit user reiteration that controlled TX experimentation is permitted, may a new independent 0F 03 0708 physical master poll be injected to refresh data in qualified S92 runtime? **Evidence baseline:** user-LIVE FIX42 first manually owned FC03 CURRENT 4/4 and CM930 33/33 OBSERVED, healthy runtime past strict 300s expiry; subsequent manual read denied NO_RECENT_0708 / NO TX. FIX47 SOURCE/OFFLINE TESTED deferred 60s request in real future controller 0708 owner-slot, not live.
