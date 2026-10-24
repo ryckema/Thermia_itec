@@ -1,3 +1,17 @@
+# 2026-10-24 — FIX45 M3/M5 native read-only abort/stop fence — SOURCE / OFFLINE TESTED; PREPARED / NOT RUN
+
+**Authoritative last XTR user-FLASHED / LIVE / LOCALLY VERIFIED baseline remains FIX42.** Manual S92 cold-return reached CONFIG_SYNCED, native FC16 runtime and first FC03 H/D/C/M CURRENT 4/4 FRESH, CM930 33/33 OBSERVED. CURRENT expired correctly after 300s without losing qualified FC16 runtime; manual second refresh denied NO_RECENT_0708 with NO TX. FIX43 and FIX44 are SOURCE only, not flashed; FIX45 does not establish Online semantic acceptance or a new controller 0708.
+
+**One integrated FIX45 code change from exact FIX44:** align CM930 requested-page TTL to strictly under 300000ms; on manual S92 ABORT immediately fence owner/epoch, CM930 app page ledger, H/D/C/M stamps, one-shot read authorization and status before M6 event2; in the already-existing 250-ms watchdog stop helper synchronously clear app page timestamps and narrow qualified M6 read-only state8/timer before the original queued event6. Conditional read reset requires current M6 refresh owner, same manual epoch and no pending write/dirty mask. Semantic setting transactions retain original failclosed behavior; no additional TX, auto recovery, register/frame changes, UART/DE owner, HA entities or setting writes.
+
+**Firmware deliverable:** one private ZIP THERMIA_MAIN02_M6_FIX45_M3_M5_ABORT_STOP_PRIVATE_20261024.zip SHA256 9fa08e05ac71961219ff18f64884a9b17a3c87dd5bed09a8a1f262f65aa94acb; full YAML SHA256 985ab2e9e5ae0b8e9d9431c381e5c443221f3a8e38d72010fb4f3854f56cdc25. Full YAML, example secrets, manifest, release/compile/flash, bounded user experiment, abort/rollback and source patch. Parent FIX44 SHA256 confirmed. YAML parsed offline, all substitutions defined, existing 784 IDs and 9 Configuration buttons retained, 75 S92 native send sites, 2 textual UART writer sites and one DE-on site unchanged, archive CRC/SHA checks passed. **TARGET COMPILE NOT RUN. NO FLASH / LIVE / PHYSICAL TX.**
+
+**Roadmap:** M2 recurring FC03 remains NO-GO for unproved autonomous TX (no supported next controller 0708); M3 FIX45 source improvement, M5 synchronous read-only abort/watchdog fence source improvement, M1 remains one engine, M4 ESP-only owner takeover remains RX ONLY/OWNER UNKNOWN until separate manual/proven authorization, M6 hours-long running release not yet proven. Continue one integrated implementation per milestone; no S90/S91 loops, room sensor disconnect, invented bus slot or HA parameter writes.
+
+**CURRENT MILESTONE:** M3/M5 code-level read-only abort/stop cleanup. **DELIVERABLE:** full private FIX45 offline verified. **REAL BLOCKER:** controller-driven subsequent 0708 not observed/proven. **ONE NEXT ACTION:** only if user initiates, one bounded FIX45 target compile and live observation with user-live FIX42 as rollback; no repeated negative refresh button test.
+
+---
+
 # 2026-10-24 — FIX44 integrated M3 CURRENT owner/TTL integrity — SOURCE / OFFLINE TESTED, PREPARED / NOT RUN
 
 **Last user-LIVE locally verified baseline remains FIX42.** User-manual S92 cold-return achieved FC16 CONFIG_SYNCED, native runtime/recovery, initial 4/4 H/D/C/M CURRENT fresh and CM930 33/33 OBSERVED. By >300s CURRENT expired to 0/4 while qualified FC16 transport persisted; subsequent once-pressed refresh button correctly refused NO_RECENT_0708 without TX. This is not Online semantic acceptance or proof of a second controller 0708. FIX43 is SOURCE/OFFLINE TESTED but NOT RUN; it only defers manual authorization for future genuine controller 0708.
