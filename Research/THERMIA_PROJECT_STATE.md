@@ -1,3 +1,9 @@
+## 2026-10-25 C5 post-restart timing clarification — LIVE evidence
+
+Single ESP-only restart on MAIN03-C1C3: pre-reboot last qualified traffic approximately 01:09:38; post-reboot `BOOT_RX_ONLY / OWNER NOT INHERITED / TX LOCKED` by 01:10:11. User observed Online communication alarm approximately 01:11:30–35. Passive `NATIVE FC16 OBSERVED / SESSION OWNER UNKNOWN / TX LOCKED` first reported 01:11:33.281, after the reported alarm boundary; known FC16 shapes reached 25 by 01:12:20. No accepted new handshake is evidenced in this log. Native frame reception after alarm is NOT warm-session ownership. ~112-117 s to reported alarm supports an approximately two-minute monitoring timeout as a hypothesis, not an OEM-confirmed timing contract. C5 remains COMPLETE / NEGATIVE; do not promote FC16 observation to TX authority. OEM source initializes NOT_ACCEPTED and requires subsequent handshake acceptance evidence but does not prove warm takeover. Engineering NO-GO for unqualified physical auto-TX; retain last locally verified C1C3 and guarded cold-start. No new flash or test performed.
+
+---
+
 ## 2026-10-25 C5 LIVE: ESP-only rejoin NO-GO
 
 On alarm-free user-live MAIN03-C1C3, one ESP-only restart led to `BOOT_RX_ONLY / OWNER NOT INHERITED / TX LOCKED`, while passive native traffic did not prove session authority. User observed Online communication alarm at about 01:11:30. COMPLETE / NEGATIVE for unattended hot-rejoin on this baseline. Current fail-closed gate protects the bus but lacks controller-approved session recovery. Earlier `FRESH_BOOT_RUNTIME_QUALIFIED` was old-session runtime, not post-reboot proof. Do not flash C3A as a cure; it is source-only. No more restart/TX experiments under alarm, no parameter writes. C5 repair requires a verified controller-authorized warm-session recovery path; do not invent credentials or grant ownership from traffic alone.
