@@ -1,3 +1,15 @@
+# 2026-10-24 — FIX45 source-only abort/watchdog CURRENT read fences (M3/M5)
+
+**LOCAL XTR FACTS (last user-LIVE FIX42):** the genuine user-manual S92 cold-return reached FC16 CONFIG_SYNCED, native runtime, first native 4/4 CURRENT FRESH, CM930 33/33 OBSERVED, and later strict 300s cache expiry with qualified FC16 still present. Manual second FC03 refresh failed correctly with NO_RECENT_0708 and no TX. Native service/ACK is not Online semantic acceptance.
+
+**SOURCE FIX45 (not LIVE):** FIX44's existing manual ABORT and nonmanual watchdog STOP first set DE LOW/active false and revoke owner, but let the queued M6 event2/event6 finish the app page timestamp and read-state cleanup. A correctly identified live, read-only four-CURRENT cycle in write_state=8 could therefore remain orphaned in read-state bookkeeping after stop. FIX45 clears only a matching current read (active M6 refresh, equal nonzero manual epoch, no pending setting write/dirty mask) to state0 and clears its read timer. It also synchronously clears CM930 per-page received timestamps and H/D/C/M accepted epoch/timestamps on manual ABORT. Watchdog helper synchronously clears app page stamps and active-read bookkeeping. Original M6 transition engine stays the only lifecycle state owner and sole S92 native TX dispatcher. Other semantic states are not silently reset; the purpose is to fence a read-only orphan, not enable setting writes.
+
+**Freshness unification:** M6 four CURRENT native page predicates already require (now-ts)<300000 ms. CM930 four requested-page receipt ledger previously expired only at (now-ts)>300000; FIX45 expires at >=300000. No invented address, frame, CRC, read request, bus slot, send path, epoch or user-setting permission. Private ZIP SHA256 9fa08e05ac71961219ff18f64884a9b17a3c87dd5bed09a8a1f262f65aa94acb; YAML SHA256 985ab2e9e5ae0b8e9d9431c381e5c443221f3a8e38d72010fb4f3854f56cdc25. **SOURCE/OFFLINE TESTED, PREPARED / NOT RUN; NOT TARGET COMPILED, FLASHED OR LIVE.**
+
+**M2 remains NO-GO:** supported Connect request bits do not establish an XTR mechanism to force a second controller-generated 0x0708 during healthy runtime. FIX42 remains last local live rollback; user HA parameter writes remain ON HOLD.
+
+---
+
 # 2026-10-24 — FIX44 M3 native CURRENT presentation / owner-epoch integrity (SOURCE only)
 
 **LOCAL XTR baseline:** user-LIVE FIX42 initial guarded native FC03 CURRENT H/D/C/M 4/4 fresh; subsequently each page exceeded the existing 300000-ms TTL and display became STALE_OR_MISSING 0/4, while transport/FC16 qualified. Manual repeat CURRENT request received NO_RECENT_0708 and correctly generated no TX. This does not demonstrate a subsequent controller 0708 or Online semantic acceptance.
