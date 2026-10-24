@@ -1,3 +1,13 @@
+# 2026-10-24 — FIX44 M3 native CURRENT presentation / owner-epoch integrity (SOURCE only)
+
+**LOCAL XTR baseline:** user-LIVE FIX42 initial guarded native FC03 CURRENT H/D/C/M 4/4 fresh; subsequently each page exceeded the existing 300000-ms TTL and display became STALE_OR_MISSING 0/4, while transport/FC16 qualified. Manual repeat CURRENT request received NO_RECENT_0708 and correctly generated no TX. This does not demonstrate a subsequent controller 0708 or Online semantic acceptance.
+
+**SOURCE defect/fix (FIX42 -> private FIX44):** 21 read-only native HA values and their page-count sensor checked profile242, stage40, frame counters and page epoch, but did not independently check same accepted M6 session-owner epoch and RX-integrity baselines; they also accepted age <=300000 ms while the central M6 fresh transition correctly used <300000. FIX44 applies the same owner, M6-state, config-synced, parser resync/RX drop/peer/unknown-frame guards and strictly less-than TTL; diagnostic MAIN01 FC03 and Cache Freshness now stops showing qualified session when existing integrity gates fail. Result is presentation/cache provenance only, not a new protocol mapping, UART role or RX parser. The source-corrected read-only HA entities return NaN if unowned/stale rather than reusing old values. An observed >=5s silence proves **bus loss**, not necessarily a controller hardware restart, so report unconfirmed restart until genuine controller boot evidence exists.
+
+**M2 disposition still NO-GO:** original private Connect 2.1.105 request bits (W2 bit0, W3 bits0/3/4) and the XTR FIX42 read-only request reply are correct; no source- and local-XTR-supported trigger for unsolicited/new controller 0708 was discovered. No raw FC03 frame, owner privilege, frame shape, electrical role, timeout or CRC changed. No parameter/setting writes authorized. FIX44 source/offline only; ZIP SHA256 3d05c8f273ce4af14ae70cb4203545b3cdd0f313093ea97636fedb38f42f6bdc, YAML SHA256 f0648bf242e6db62e333bd3b314dc5f7201c405e96dc3fca69eb12a871c8e4c1. **Not target compiled / flashed / live proven.**
+
+---
+
 # 2026-10-24 — R2 source comparison outcome
 
 Original Connect 2.1.105 request flags mapped for profile 930 to W2 bit 0 (operation), W3 bits 0, 3 and 4 (settings). The existing FIX43 response already uses W2=0001 and W3=0019, with W0 and W1 zero. Original request setters update server registers; no source-grounded authority found for starting unsolicited XTR bus polling. Native refresh without a later controller-initiated 0708 remains NO-GO; retain user-live FIX42, no unsolicited TX or parameter writes. FIX43 is not flashed or live tested.
