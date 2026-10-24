@@ -1,5 +1,13 @@
 # 2026-10-24 — EXP-FIX51-OEM-OPERATIONS-READONLY — PREPARED / NOT RUN
 
+## EXP86-FIX53-60S-RETAINED-STOP-COMPLETE-20261024 — COMPLETE / INCONCLUSIVE (user live experiment resolved)
+**ID:** EXP86 / FIX53-USER-LIVE-2235 retained/hot-rejoin after OTA. **Hypothesis:** manual stage40 on an already-running controller could safely qualify a retained DCM owner and expose a subsequent genuine 0708, without unsolicited TX.
+**Verified baseline:** FIX42 last successful LIVE native manual controller cold-return with owner + first CURRENT 4/4; FIX53 private exact-0708-RX firmware user flashed via OTA, visible new RX0708 text.
+**ONE test / actual:** full user log 22:35:06–22:44:16. Exactly one S92 manual START 22:38:14.717 (stage40, no inherited owner). 84 FC16 RX captures across 59 seconds with known shapes 042E/15 and 07D0/19. 04A6 seen=0, native FC16 ACK=0, FC03 seen=0, exact RX0708=0, served0708=0, physical TX this session/total=0, no owner. At 22:39:14.731 **RETAINED_UNPROVEN_EXPIRED age 60010ms, DE LOW**, session event6 next7, `SESSION_LOST / GUARD STOP / RX ONLY`. The remaining five minutes retain passive RX; CRC_DIFF=0, parser resync=38 steady, RX buffer drops=0. Healthy bus does not entail ownership.
+**Assessment:** **COMPLETE / INCONCLUSIVE** for safe retained ownership and M2 second poll (neither was reached). Safety invariant and automatic timeout observed **POSITIVE**. This is NOT a negative controller 0708 experiment, not evidence of semantic Online acceptance, and not a reason to weaken owner guards. Exactly no HA parameter write. No new physical experiment performed by the assistant.
+**SOURCE DECISION:** stage40 60-second guard and FC16 same-epoch proof gates in exact FIX53 inspect as intended. NO-GO relaxing owner predicate based on passive FC16 or introducing master 0708. **ABORT/rollback:** guard automatically revoked, DE LOW; FIX42 remains last successful owned rollback. **ONE NEXT ACTION:** one grounded M4 engine change only if a real defect is identified from verified evidence; otherwise reuse existing bounded cold-start fallback only with explicit user-initiated permission. No repeat EXP86.
+
+
 ## FIX53-20261024-2235-LIVE-PASSIVE-RETAINED-OWNER-UNPROVEN — RUNNING / PARTIAL
 **ID/hypothesis:** FIX53-USER-LIVE-2235: exact 0708 RX telemetry during passive OTA and one user-initiated S92 manual retained session discriminates owner acquisition vs controller poll.
 **Baseline:** FIX42 last LOCALLY VERIFIED successful S92 cold-start -> owned H/D/C/M4/4; FIX53 SOURCE/OFFLINE TESTED package ZIP SHA256 6ceb919399b3538c9a7c2bc0fd8e09750839c790ab524410c896844615e47f7c, user flashed via OTA (new exact RX0708 field present). 
