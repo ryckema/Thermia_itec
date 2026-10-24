@@ -28,6 +28,9 @@ B. Establish a source- and XTR-supported **legal** mechanism by which controller
 C. Once a legal RX trigger exists, integrate explicit request pending -> same epoch owner/CRC/profile guard -> existing four-page RX response -> matching receipts -> cache validity. Bound pending, cooldown, cycle count and timeout. Initial and subsequent 4/4 must be separated in ledgers.
 Acceptance: at least one subsequent genuine read returns H/D/C/M 4/4 without controller reboot; if no legal trigger known, **NO-GO** new physical TX, stop speculative testing and progress non-TX engineering.
 
+### M3a — Source-informed offline CM930 snapshot (NEXT SOURCE TASK, NOT IMPLEMENTED)
+The original private Connect 2.1.105 separates Modbus RTU service, versioned register/profile interpretation, requested/received data-package tracking, application state and change-driven publication from cloud/MQTT delivery. FIX47 already has one M6 owner and 33-page + H/D/C/M receipt ledgers: do not introduce a second reader or state architecture. Next integrated read-only change should stage and commit one coherent same-controller-epoch, owner-ACKed, CRC-verified, profile-matched CURRENT H/D/C/M cycle and use it as the authoritative source of existing HA entities; partial or stale data remains NaN. No new TX, controller poll, guessed profile, cloud login or HA setting writes. This is an implementation target, not SOURCE proof of semantic acceptance, M2 refresh or live stability. Original GatewayParamStorage persistence in this archived source is TODO, not proven functional.
+
 ### M3 — Cache, RX, FC16 and epoch integrity (partially LIVE)
 One source of truth for per-page freshness, same-controller epoch, ACK identity, parser shape and CRC; avoid stale-era values, preserve last_valid_frame_ms/watchdog, B11C/B11D safeguards and metrics. Differentiate refresh failure from controller/session loss. Acceptance: no false FRESH or accidental session ABORT after timeout, no second reader.
 
