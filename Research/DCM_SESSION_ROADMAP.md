@@ -1,5 +1,118 @@
 # Thermia iTec XTR M — native DCM session roadmap
 
+> **AUTHORITATIVE DELIVERY PLAN — 2026-10-24 — CONNECT-EQUIVALENT LOCAL READ-ONLY GATEWAY**
+>
+> This plan supersedes the priority/order and "next action" instructions in the archived 2026-10-24 roadmap below. Historical evidence and release SHA references remain intact. **Planning decision only: no new firmware, compilation, flashing, experiment or physical TX is claimed.**
+
+## 1. End product and definition of parity
+
+Build **ONE ESP32/ESPHome/Home Assistant native CM930-compatible local gateway** that reproduces the *relevant local observation-side functions* of Thermia Connect 2.1.105 on this XTR M, while preserving the proven Thermia controller as bus master and the existing S92/FC16/FC03 lifecycle.
+
+"Connect-equivalent" here means equivalence of **local read-only outcomes and robustness**, not line-by-line duplication of Connect, guaranteed compatibility across all Thermia models, official Thermia Online status or internet/cloud access.
+
+**In scope:** native session startup/handshake/owner qualification; controller profile/version detection; initial full configuration/operation synchronization; original CM930 request/receipt lifecycle; continuous read-side data acquisition and cache aging; original documented read-only measurements, operating state, alarms and diagnostics where matched to local XTR evidence; ESP-reboot/rejoin, controller cold-return and recoverable session loss; local Home Assistant entities and production-grade availability.
+
+**Explicitly out of scope for this release:** changing heat curve, room target, DHW mode/boost, cooling enable, operating mode or ANY other Thermia setting/parameter (including indirect or scheduled writes); Thermia Online registration/cloud login/authentication, OTA service and cloud delivery; Smart Energy/cloud bridge components unless a local **read-only** value is already source- and XTR-supported. OEM command handling or setting-write formulas are NOT release requirements. Do not add a fake writable entity. HA parameter writes remain ON HOLD until separate explicit reauthorization.
+
+**Important:** a legitimate slave-side FC03 response, FC16 ACK or native session exchange is *protocol participation*, not a user-facing parameter write. Preparing guarded native responses is in scope; **actual physical bus TX only in a separately defined USER-INITIATED experiment**, with ABORT, deadlines, hard DE LOW and rollback. No autonomous flash, unsolicited polling/master TX or owner promotion from passive traffic. Production unattended bus TX is NOT authorized by this roadmap.
+
+## 2. Baseline (freeze until contradicted by evidence)
+
+- **FIX42**: last user-LIVE POSITIVE *qualified* manual cold-return, native initial sync, FC16 runtime, first FC03 CURRENT H/D/C/M 4/4, 33 CM930 package groups OBSERVED; at >300s CURRENT became STALE even while FC16 continued. It is the functional cold-session rollback, not evidence of continuous refresh or Online semantic acceptance.
+- **FIX53/FIX54**: user FLASHED/LIVE only for passive RX, manual unowned stage40, no-owner 60s timeout and DE LOW. FIX54 stale ACK-latch reset code executed, but its after-prior-owned-session functional effect is not locally proven. Neither FIX53-LIVE-01 nor FIX54-LIVE-01 acquired a session, observed FC03 0708 or proved hot rejoin.
+- **FIX48–FIX52**: useful atomic snapshot/OEM read-only migrations at SOURCE/OFFLINE TESTED level; not automatically XTR-LIVE. FIX53/54 extend that source lineage. Protect existing firmware entities/controls, parser, CRC, B11C/B11D, `thermia_last_valid_frame_ms`, frame counters, stale watchdog, one UART/RX/DE owner, fail-closed session guards.
+- Original **Connect 2.1.105** source describes a native **0x0F Modbus slave**, app profile/version interpretation, request bits and received-package clearing on FC16, separately managed startup/operation states, and change-driven local publication. It does NOT supply a proven independent safe master-originated 0708 request for our ESP.
+- Local XTR capture (2026-10-03): **65** genuine repeat FC03 `0x0708/count6` queries at ~4.199s median, but **only one** initial H/D/C/M four-page transfer. **Recurring 0708 is NOT proof of recurring 4/4 CURRENT.** No assumption that W4=nonzero is an immediate polling prerequisite.
+- Original CM930 **42 read-all positions**, **33 XTR-observed significant group shapes**, and **32 generically requestable local shapes** are different sets. Do not equate 33/33, 42/42, bitmap clear, transport ACK, profile ready and semantic acceptance.
+
+## 3. Connect-equivalence acceptance matrix
+
+| Connect-side local function | XTR/ESP status today | Exit criterion for read-only parity |
+| --- | --- | --- |
+| Detect local CM930 / physical bus | Read-only passive bus stable; 0x0F role/source understood | Same sole CRC-valid UART path selects supported XTR/profile; no competing owner |
+| Native handshake and cold-start | FIX42 positive manually owned cold session | Repeatable user-authorized native cold session; no stale-epoch authority |
+| FC16 initial configuration / application package receipt | Initial 4/4 + 33 observed in FIX42; source counters later extended | Same-epoch profile-matched requested/received/owner-ACKed groups; correct honest missing accounting |
+| FC03 mailbox/request service | First controller 0708 and responses verified; later native 0708 still open | Controller-initiated read served in lawful owned slot and request lifecycle verified; no master injection |
+| Continuous current config refresh | **OPEN / REAL BLOCKER** (stale after 300s) | At least TWO separate, complete, genuine owner-ACKed H/D/C/M cycles in ONE qualified controller epoch, no controller restart |
+| Operating telemetry and read-only OEM semantics | Production passive HA values; FIX49–52 extra semantics SOURCE only | Locally observed values interpreted with matching OEM profile, quality/freshness and unknown/stale states |
+| Alarms/status/version | Limited OEM source mappings; full alarm claims not proven | Only XTR-supported alarm/status/version fields, never “no alarm” from an incomplete page |
+| ESP restart, controller restart, hot rejoin | Manual cold-return positive; retained takeover unproven | Separate tested behaviors; either qualified safe continuation or explicit RX ONLY + recoverable cold fallback |
+| Continuous local HA endpoint | RX reliable; some native CURRENT expires | Multi-hour stable relevant read-only entities, no false FRESH, no HA regression or unsolicited TX |
+
+**Definition of done:** read-only local Connect-equivalent functions above reach their acceptance criteria, including a truly *second* CURRENT cycle and proven bounded recovery. Offline source completeness and passive telemetry alone are not release completion. Report actual hardware/runtime scope; do not assert official Online connectivity.
+
+## 4. Ordered integrated delivery milestones (gates, not experiment loops)
+
+### C0 — Source baseline and invariant lock | CURRENT PREPARATION
+**Action:** establish exact FIX54 full ZIP ancestry and working code dependencies, compare only relevant FIX42 positive cold path and original Connect startup/CM930 source; audit existing one-owner S92 decisions and read-only HA parity once. Distinguish production features from historical test scaffolding; preserve all existing working controls until verified removable.
+
+**Exit / GO:** exact full starting YAML + required headers available and verified; one owner, no duplicate UART; no lost FIX42 flow, substitutions/IDs/CRC/DE/watchdog correct. If private source inaccessible: **REAL BLOCKER for code release**, not an excuse to rebuild from old YAML.
+
+### C1 — Native session lifecycle and lawful ownership | P1
+**Integrate in the SAME S92 engine:** cold-start, initial FC16 sync, qualified owner, runtime, passive classification, manual bounded hot-rejoin, controller-loss revocation and recovery/cold fallback. Treat ESP reboot, actual controller epoch boundary, data stale and owner loss as distinct events. Fix demonstrated state defects; preserve FIX54 latch-reset, challenge boundary and stage40 fail-close. Do not infer owner from FC16 volume or successful transport ACK.
+
+**Acceptance:** preserve FIX42 successful cold return and one native initial complete sync; after ESP restart, either demonstrate verified same-session reacquisition or remain RX ONLY/OWNER UNKNOWN with zero TX. Old pending TX/FC16 ACK authority cannot cross a new epoch. Existing manual ABORT works immediately.
+
+**Decision:** retained takeover based ONLY on passive FC16 remains **NO-GO**. This is not permission to retest FIX53-LIVE-01/FIX54-LIVE-01 unchanged.
+
+### C2 — CM930 original request/receipt and application-read completeness | P2
+**Integrate:** one profile-gated request bitmap/receipt ledger connected to the same CRC-valid RX callback and *real owner-ACKed* FC16, separating `request pending`, `received`, `served/ACKed`, `fresh`, `stale`, `application locally ready`. Cover locally supported significant packages, including H/D/C/M. Use exact XTR-observed register geometry; verify original version/profile-specific interpretation; no fabricated 42/42.
+
+**Acceptance:** source-grounded initial requests/receipts complete only from genuine matching data in the current session; incomplete packages stay visible as unknown/partial, not falsely accepted. One stale or timed-out page never silently refreshes others.
+
+### C3 — Persistent native FC03 / H-D-C-M refresh | P1 RELEASE BLOCKER
+**Treat as TWO related but distinct questions:**
+1. Why does a genuine subsequent `0x0708/count6` appear in old captures but not yet reliably in an *owned* FIX42 session? Separate exact observed / qualified / replied / denied timestamps, no new diagnostic entities.
+2. Under what **controller-led, original-source-supported** request-bit and receipt lifecycle do *new* H/D/C/M FC16 pages arrive within the same session? A new 0708 alone is insufficient.
+
+Use the existing FC03 response branch and one application request/receipt engine, with bounded same-epoch pending/expiry/cooldown and no invented bit value, register, slot, independent master TX or repeated W4 experiments. If no legal physical trigger exists: NO-GO new TX, document limitation and continue non-TX C4/C5 engineering rather than inventing a test.
+
+**Acceptance:** one qualified, user-initiated native runtime has an initial 4/4 H/D/C/M, then **a second distinct genuine full 4/4** with matching CRC, profile, owner-ACK and renewed per-page timestamps *without controller reboot*; demonstrate a third refresh or honest expiry as appropriate. The second real cycle—not a refreshed HA timestamp—is the gate. A genuine FC03 without FC16 renewal is reported as a refresh failure, not a lost transport owner.
+
+### C4 — Read-only OEM application semantics / HA features | P3, conditional on local evidence
+Migrate **useful** original Connect functions into HA from *already valid local data*: temperatures, setpoints as READ-ONLY, heating/cooling/DHW configuration/state, compressor/outdoor telemetry, operating mode, demand, version/identity, alarms, error state and eligible statistics. Preserve V5 production readings and existing H/D/C/M snapshot; enforce correct source/profile/version, units/enum/bitfields and stale/unknown handling. Prefer consolidated meaningful entities; no diagnostic clutter, no new TX solely to populate optional fields.
+
+**Acceptance:** each shipped field has an OEM source descriptor plus locally supported register/frame shape, stable quality semantics and normal HA state; missing data => unavailable/unknown, no false alarm clearance. FIX49–52 are candidate source migrations until actually compiled/flashed/verified. Do not block C1/C3 on an optional unknown field.
+
+### C5 — Durable session, recovery and integrity | P2
+One state machine handles timed-out refresh versus entire session loss, ESP reboot, legitimate cold controller restart and RX corruption. Preserve one UART/DE writer, full original parser/CRC/B11C/B11D, frame health and controls. Any asynchronous queued response becomes invalid after owner/epoch/STOP revocation; bounded authorized recovery only; fallback RX ONLY / manual cold path when ownership cannot be recovered.
+
+**Acceptance:** no phantom FRESH, no stale epoch continuation, no extra bus writers; clean traffic during transient data staleness; safe recoveries or explicitly scoped fails-closed outcomes, each evidenced separately.
+
+### C6 — Local Connect-equivalent READ-ONLY production release | P4
+One consolidated, user-initiated release test after C1–C5 actually implemented: check initial sync, **multiple** current cycles across >300s, sustained multi-hour runtime, HA controls/telemetry parity, individual RX/CRC counters, session expiry and one relevant recovery edge. Preserve all production HA entities; retain useful Configuration controls, red/brown critical diagnostics, remove obsolete tests only after dependency checks. User compiles/flashes; no silent auto-update.
+
+**Acceptance:** all mandatory matrix rows verified LIVE at stated scope. Otherwise use explicit RELEASE NO-GO or qualified PARTIAL, not percentage-based or undocumented “Connect complete”.
+
+### C7 — Future HA parameter writes | ON HOLD / NOT PART OF THIS RELEASE
+No setting-write UI, parameter-write campaign, mailbox write probe, parameter semantic change or automated test in C0–C6. Reauthorize separately after read-only release with reversible individual target, controller-confirmed readback and independent safeguards. No preset date or automatic promotion.
+
+## 5. Anti-loop and shipment contract
+
+- **Milestones, not version count:** one integrated firmware update only when it fixes a real code defect or delivers a mandatory acceptance criterion. No FIX55 that merely adds a counter, entity or repeated fail-close check.
+- Max ONE consolidated preparatory evidence review per milestone; a hardware test must change a specific implementation GO/FIX/NO-GO choice. Unknowns = NONBLOCKING UNKNOWN unless demonstrably necessary. Do not repeat S62/S88/V4.1/S92 accepted evidence without contradiction.
+- Use `FIXnn-SRC-nn`, `FIXnn-LIVE-nn` and `C1/C3-<descriptive-name>`, **not new colliding EXP numbers**. Status strings only: PREPARED / NOT RUN; RUNNING / PARTIAL; COMPLETE / POSITIVE; COMPLETE / NEGATIVE; COMPLETE / INCONCLUSIVE; SUPERSEDED / NOT RUN.
+- Firmware delivery = **ONE private complete ZIP** from the exact latest user-verified/integrated source, with complete YAML, dependencies/headers, manifest/checksums, build/flash instructions, expected signal, bounded experiment, ABORT/DE LOW and rollback. SOURCE, OFFLINE TESTED, TARGET COMPILED, FLASHED, LIVE and LOCALLY VERIFIED stay separate. Never put OEM protected session algorithms, secrets, private logs, challenge material, `0x0708` tools or `0x0F` emulator code in public GitHub.
+- Publication/update policy: this plan is PUBLIC non-sensitive project direction; actual experiment outcomes and material protocol findings belong in the existing 3 Research canonicals. **Do not rewrite or retroactively label the historical records as LIVE.**
+
+## 6. Immediate execution decision
+
+**CURRENT MILESTONE:** C0 → C1/C3 integrated native-session and repeat-read architecture, with C3 still the read-only release blocker.
+
+**DELIVERABLE:** next code release must carry a concrete verified-in-source C1/C3 functional fix in the single engine, not another diagnostic-only FIX. Current action is roadmap alignment; no new firmware was built by this update.
+
+**REAL BLOCKER:** safe ownership across a running-session ESP restart is unproven; sustained owner-qualified second H/D/C/M refresh is unproven and its legal controller-led trigger unresolved. Exact FIX54 private parent bytes must be available to safely patch code. Unknown alone does not justify extra tests.
+
+**ONE NEXT ACTION:** with the exact FIX54 complete source, inspect the original Connect CM930 startup/request/receipt transitions versus S92 once, identify a concrete implementable C1/C3 discrepancy and deliver ONE integrated private firmware correction; if no grounded change exists, record explicit NO-GO for new TX and move to C2/C4 read-only functionality without speculative bus traffic.
+
+---
+
+# Historical roadmap and evidence — preserved verbatim
+
+> The material below is retained for traceability. Its older next-action statements and prioritization are **SUPERSEDED** by the authoritative Connect-equivalent read-only plan above. Historical experiment status, source evidence and rollback references remain valid within their original scope.
+
+# Thermia iTec XTR M — native DCM session roadmap
+
 ## Identifier policy — added 2026-10-24
 - **Never allocate a new `EXP<number>` identifier for S92/M2–M6 follow-ups.** The legacy EXP series already contains distinct experiments with those numbers; references in migrated chat summaries to a new “EXP86/EXP87” are collisions, not new canonical identifiers.
 - Current observations are **FIX53-LIVE-01** (FIX53 after OTA, 22:38 manual start, 60s fail-closed, no qualified owner) and **FIX54-LIVE-01** (FIX54 after OTA, 23:01 manual start, 60s fail-closed, no qualified owner). Existing detailed log entries remain the authority. Do not rename historical EXP86/EXP87.
