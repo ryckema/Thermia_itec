@@ -1,3 +1,9 @@
+# 2026-10-24 — MAIN03-C1C2C3-LIVE-01: retained FC16 RX is not ownership
+
+**LOCAL XTR / USER FLASHED LIVE, bounded scope:** MAIN03-C1C3 build string present following ESP-only OTA restart. After one manual START at 23:59:31.852, 39 0x0F FC16 pages in 28s (26×042E/count15, 13×07D0/count19), 0 native owner ACK, 0 04A6, 0 FC03 and RX0708, 0 physical TX; owner unqualified, stage40 RETAINED_UNPROVEN/DE LOW. CRC_DIFF=0 and no observed resync/drops. **No new protocol behavior:** corroborates that passively receiving these two routine FC16 shapes cannot confer the native CM930 owner or bootstrap. Log ends before 60s deadline; no proof of this build's timeout from excerpt. Cached CURRENT and second 4/4 cannot be evaluated in this unowned run. No extra TX, firmware change, HA setting write, room sensor disconnect, or controller restart. FIX42 remains last locally verified qualified first 4/4; M4 and M2 remain OPEN.
+
+---
+
 # 2026-10-24 — MAIN03-C1C2C3-SRC-01: CM930 demand vs freshness and last-good CURRENT
 
 **SOURCE / OFFLINE TESTED, not new local XTR proof.** The original user-provided Connect 2.1.105 `device_client/cm/modbus_server15.py` distinguishes `request_read_all_registers` / `set_register_read_request` (application-initiated demand) from `reset_register_read_request` (called for controller FC16 receipt, clearing the corresponding bit). A local HA 300-second CURRENT cache age is **NOT** shown to trigger a new Connect application demand. No new physical bus poll or owner entitlement follows from TTL expiry.
