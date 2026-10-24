@@ -9,6 +9,8 @@ One ESPHome M6 native DCM session owner that safely handles first startup, FC16 
 - At >300 s, native CURRENT became STALE_OR_MISSING 0/4, but qualified FC16 ACK runtime continued. CRC integrity clean. FIX42 one-shot refresh button **COMPLETE / NEGATIVE**: denied because no recent controller-initiated FC03 0708. No new physical TX by denied request.
 - FIX43 **SOURCE / OFFLINE TESTED, PREPARED / NOT RUN**, defers authorization for a genuine future controller 0708 up to 60s; does not create polling.
 - Private original Connect 2.1.105 request mapping W2=0001, W3=0019 (W0/W1 zero) matches present native 930 response. Original server request-bit architecture does **not** prove XTR physical master TX/slot. No new bus frame may be invented.
+- FIX44 **SOURCE / OFFLINE TESTED — PREPARED / NOT RUN**: exact FIX42 private YAML parent, 21 native HA read-only page predicates and existing page-count/CURRENT diagnostic tightened to same owner epoch, existing RX integrity and strict 300-second TTL. One bus-loss label no longer asserts an unproven controller reboot. All 784 IDs and original UART/TX/DE sites retained, no extra bus TX or HA writes; ZIP SHA256 `3d05c8f273ce4af14ae70cb4203545b3cdd0f313093ea97636fedb38f42f6bdc`. FIX42 remains last user-LIVE rollback. M2 controller-0708 trigger remains NO-GO; M3 source fix is not compiled/flashed/live.
+
 
 ## Priority work packages
 ### M1 — Unified session engine (partially LIVE)
