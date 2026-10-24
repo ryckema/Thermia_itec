@@ -1,3 +1,15 @@
+# 2026-10-24 — EXP-FIX42-R1R2-CURRENT-READ-INTEGRATION — PREPARED / NOT RUN
+
+**Hypothesis and verified baseline:** FIX41 R1 stop/controller fence is SOURCE/OFFLINE TESTED; XTR FIX39 OTA passive owner lock LIVE and FIX34 manually authorized cold native FC16/FC03/CURRENT 4/4/CM930 33/33 observed LIVE. Source FIX41 required both correctly owned 4/4 CURRENT stamps and a distinct legacy single-03E8 cache to label native M6 SYNCED, despite the 4 pages having separate post-ACK commits. On a manual read-only 10s FC03 timeout arriving before the watchdog tick, the RX path would abort an otherwise good session.
+
+**ONE integrated R1/R2 implementation:** make central M6 and HA display use exactly four post-owned-ACK same-session/profile CURRENT page timestamps and strict 300000 ms expiry. Preserve old diagnostic 03E8 separately and display age of oldest same-epoch receipt even when stale. For existing explicitly user-armed four-CURRENT transaction, when a 0708 request lands on/after its 10s deadline, preserve SAME native runtime and use the already guarded idle response only if owner/profile/RX/semantic guards are unchanged; else ABORT/DE LOW. Read timeout in watchdog gets a distinct runtime-preserving outcome; no automatic retries, new request frames or new TX authority.
+
+**Offline actual:** YAML parse, 784/784 existing IDs, 9 Configuration buttons, 75 native owner-send call sites, one physical UART writer, one DE enable, same event count, ZIP CRC/SHA manifest PASS. Complete private `MAIN02_M6_FIX42_R1_R2_OWNED_REFRESH_PRIVATE_FIRMWARE_20261024.zip` SHA256 `4abf98b0485c172c64f7eba85e331b5f89758930edaf65ecaaa89bb44de4de67`; YAML SHA256 `97e9d39554e2c318bbd7adc79f1c44380b486fdbf306f97506c4d40fef019346`. **NOT RUN:** target compile, flashing, physical bus TX, XTR live/300s expiry, original Connect semantic acceptance.
+
+**Expected:** post-OTA passive remains BOOT_RX_ONLY/TX LOCKED, native 0/4; after separately initiated qualified native runtime, exact ACKed H/D/C/M yields 4/4 and expires after 300s without poll-as-data credit. A missing CURRENT-page timeout does not terminate a healthy native session; mismatched owner or RX guard still fails closed. **Abort:** existing ABORT, verify RX ONLY and DE LOW; rollback user-live FIX39 passive or FIX34 qualified manual. No forced controller restart, S90/S91 loops or HA parameter writes. **Decision: FIX / SOURCE GO, LIVE PREPARED / NOT RUN.** Full unattended owner takeover remains NO-GO.
+
+---
+
 # 2026-10-24 — EXP-FIX41-R1-UNIFIED-STOP-RECOVERY — PREPARED / NOT RUN
 
 **Hypothesis:** FIX40 added queued M6 STOP events to old S92 watchdog exits, but queued transition completion could lag physical stop and leave short-lived app/CURRENT/refresh state; likewise genuine controller-loss recovery had to await queued event3 to wipe prior CURRENT timestamps. The single M6 status classified all stage99 stops as ABORTED. **Verified baseline:** user XTR FIX39 passive OTA BOOT_RX_ONLY/unknown-owner/TX locked, and FIX34 user manual cold-return qualified native FC16/FC03/CURRENT 4/4 plus CM930 observed 33/33; FIX40 itself only SOURCE/OFFLINE TESTED.
