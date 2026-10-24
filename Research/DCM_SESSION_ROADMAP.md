@@ -1,3 +1,9 @@
+## MAIN03 C3 — LIVE POSITIVE four-page native CURRENT one-shot (2026-10-25)
+
+**AUTHORITATIVE NEW EVIDENCE:** On user-FLASHED/LIVE MAIN03-C1C3, after ~45min qualified stage40 session and stale first CURRENT snapshot (`snapGen=1`), user pressed existing `MAIN01 | Arm One-Shot Four-Page CURRENT Refresh`. Press 00:52:50.691, guarded next controller FC03/0708 demand at 00:52:53.925 using W2=0001/W3=0019, then genuine controller FC16 H=03E8, D=042E, C=0442, M=0546, all owner-ACKed by 00:52:56.884. `CURRENT_4PAGE_CONFIRMED`, `snapGen=2`, FRESH, 4/4, confirmed=1, denied=0. RX integrity zero errors; no user parameter writes, no controller/ESP reboot. **C3 manual native refresh mechanism: COMPLETE / POSITIVE.** Previous 35min passive/no-request negative remains valid and is now explained at implementation level by missing request demand. **NEXT C3 ENGINEERING:** consolidate an integrated bounded repeatable native read-only refresh scheduler using the now PROVEN W2/W3 request → FC03 → FC16 ACK → generation pathway, stale/timeout/failure handling and original single-UART/DE/owner safety. **Physical autonomous TX remains NOT AUTHORIZED** and must stay disabled until a specifically user-initiated scoped experiment; scheduler can be prepared offline. Preserve flashed working firmware; do not OTA merely to test the separate source-only 60s cache staging patch. ESP-only automatic hot-rejoin still OPEN; no speculative owner promotion or HA parameter writes.
+
+---
+
 # Thermia iTec XTR M — native DCM session roadmap
 
 > **AUTHORITATIVE DELIVERY PLAN — 2026-10-24 — CONNECT-EQUIVALENT LOCAL READ-ONLY GATEWAY**
