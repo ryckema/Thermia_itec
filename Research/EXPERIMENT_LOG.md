@@ -1,3 +1,9 @@
+# 2026-10-24 — EXP-R2-CONNECT-REQUEST-BRIDGE — SUPERSEDED / NOT RUN (NO-GO implementation)
+
+**Baseline:** FIX42 user-LIVE native session FC16 stable; four initial FC03 0708 reads / CURRENT 4/4; after 300s CURRENT stale 0/4, manual press denied NO_RECENT_0708. FIX43 prepared SOURCE-only deferred 60s request at genuine future 0708, no live test. **One consolidated source review changes implementation decision:** original private Connect `device_client/cm/modbus_server15.py` plus 2.1.105 `930/modbus-flags.json` specify operation W2 bit0 and settings W3 bits0,3,4; FIX43 M6 RX already generates W2=0001 W3=0019 W0/W1=0 via existing sole TX owner on observed FC03 0708/6. No vendor-original authority for independent XTR FC03 master TX or forced poll. Therefore **NO-GO** for any proposed automatic/proactive wire trigger; avoid speculative code branch, no repeat buttons, no forced controller cycle. Preserved full FIX42 LIVE, FIX43 SOURCE-only, bounded stop/ABORT/rollback. Status SUPERSEDED / NOT RUN refers to speculative new trigger experiment only, not previous positive FIX42 evidence. HA parameter writes ON HOLD. Reconsider only with a new controller 0708 observed in genuine XTR session or proof of alternative permissible delivery.
+
+---
+
 # 2026-10-24 — EXP-FIX42-MANUAL-REFRESH — COMPLETE / NEGATIVE; FIX43 PREPARED / NOT RUN
 
 **Baseline:** user-LIVE FIX42 manual native cold-return and initial CURRENT 4/4; after 300s CURRENT expires while M6 native transport remains qualified. **User action:** one Configuration button for four-CURRENT refresh. **Observed:** `PRESS_RECEIVED count=1` then `REFRESH_ARM_DENIED stage=40 active=1 fresh=1 idle=1 healthy=1 NO_TX=1`; subsequent cache diagnostic `DENIED / NO_RECENT_0708`, FC03 unchanged 4, CURRENT 0/4. This is a positive safety denial, negative useful refresh. No evidence of new controller FC03 during captured healthy runtime. Do not repeat the same button as a microtest.
