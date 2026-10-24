@@ -1,3 +1,13 @@
+# 2026-10-24 — M2 controlled-TX permission / controller 0708 provenance gate (no new firmware)
+
+**OBSERVED FACTS:** user explicitly reiterated TX may be prepared for an active protocol experiment, but no user-defined hardware experiment was started and no physical TX/flash was performed in this step. Last user-LIVE XTR firmware FIX42; FIX47 complete SOURCE/OFFLINE TESTED but NOT TARGET COMPILED, FLASHED, or LIVE. Actual older local XTR capture from 2026-10-03 shows 65 source-observed 0F03 0708/6 controller polls at ~4.199s median spacing and 65 responses, while the qualified FIX42 native runtime had no proven subsequent 0708 after first CURRENT 4/4 and 300s expiry. The difference remains unresolved and DOES NOT authorize TX.
+
+**CONSOLIDATED SOURCE REVIEW:** original private Connect 2.1.105 CM930 implements Modbus SLAVE 0x0F response-register read-request flags, rather than a proven DCM-master transmission mechanism to create a controller read. Thus unscheduled independent ESP-master 0F03 0708 transmission has unknown arbitration/ownership. **NO-GO** for speculative unsolicited physical trigger despite TX permission. User-controlled native protocol responses remain in scope only in an explicitly defined bounded run, with the existing sole S92 UART/TX/DE owner, ABORT, rollback, RX-only default and no HA setting/parameter writes. No additional firmware ZIP or unnecessary test loop warranted by this evidence. Roadmap M2 REAL BLOCKER: source-and-XTR-proven repeat-poll trigger in continuing session.
+
+**CURRENT MILESTONE:** M2 role/refresh decision, NO-GO invented master TX. **DELIVERABLE:** verified archived XTR poll-rate finding and explicit scoped TX authorization decision documented in Research. **REAL BLOCKER:** missing supported controller-poll re-trigger or verified safe independent slot. **ONE NEXT ACTION:** only resume implementation when qualified live controller poll or genuine-source arbitration evidence changes the decision; keep FIX47 as prepared source and FIX42 as live rollback.
+
+---
+
 # 2026-10-24 — FIX47 M2 deferred future controller 0708 integration — SOURCE / OFFLINE TESTED, PREPARED / NOT RUN
 
 **LAST VERIFIED USER-LIVE VERSION REMAINS FIX42**: user S92 manual controller cold-return -> CONFIG_SYNCED, FC16 qualified runtime, first native FC03 0708 H/D/C/M CURRENT 4/4 FRESH and CM930 33/33 OBSERVED (not Online semantic acceptance). Cache expired after >300s to 0/4 stale while FC16 transport remained qualified. One manual subsequent refresh press failed NO_RECENT_0708 with NO TX, COMPLETE / NEGATIVE. No naturally recurring controller 0708 was observed/proven.
