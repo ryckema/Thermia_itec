@@ -4,6 +4,14 @@
 >
 > This plan supersedes the priority/order and "next action" instructions in the archived 2026-10-24 roadmap below. Historical evidence and release SHA references remain intact. **Planning decision only: no new firmware, compilation, flashing, experiment or physical TX is claimed.**
 
+## MAIN03 - C0 source milestone — 2026-10-24
+
+**PREPARED / NOT RUN, SOURCE / OFFLINE TESTED:** the user supplied exact complete FIX54 firmware. One consolidated C0 source review covered the existing S92 owner, Connect 2.1.105 `0x0F` slave, controller-initiated FC03 `0708` request lifecycle, 33/32/42 requestable/observed sets, H/D/C/M atomic snapshot and XTR FC16 evidence. The *one concrete code defect* fixed is failed explicit CURRENT 4/4 group staging surviving all three failure boundaries (RX timeout, interval timeout, rejected final freshness). Revocation is local and does not erase genuinely ACKed per-page telemetry. Candidate private MAIN03-C0 ZIP SHA256 `47def918037e55357164b00ee2daa63a60e551d54e2a846deca71956aceb1216` and candidate YAML SHA256 `944941d27a0a351ad7b0fdfb4396f0eaabf3fb14f5e2378826841bcd01e4d6bd`. Full source validation PASS, not ESPHome compiled, flashed or LIVE. No new TX/DE path or HA writes.
+
+**C0 SOURCE FIX/GO; not a completed Connect gateway.** FIX42 remains last locally verified owned cold return/first H-D-C-M 4/4. FIX54 user-LIVE only for safety/healthy RX on unowned stage40. Persistent second same-epoch 4/4 and ESP-only hot rejoin remain OPEN; passive FC16 must not generate ownership. **NEXT integrated milestone:** C1/C2/C3 application + session progression as one engineering pass where justified by actual code; NO repetitive C0/retained-stage40 live test or speculative physical `0708` injection. Any real bus TX only in bounded user-initiated experiment. C7 HA setting writes ON HOLD.
+
+---
+
 ## 1. End product and definition of parity
 
 Build **ONE ESP32/ESPHome/Home Assistant native CM930-compatible local gateway** that reproduces the *relevant local observation-side functions* of Thermia Connect 2.1.105 on this XTR M, while preserving the proven Thermia controller as bus master and the existing S92/FC16/FC03 lifecycle.
