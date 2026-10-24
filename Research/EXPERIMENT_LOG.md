@@ -1,3 +1,11 @@
+# 2026-10-24 — EXP-FIX42-LIVE-NATIVE-COLD-RETURN — COMPLETE / POSITIVE (scoped)
+
+**Hypothesis:** FIX42 retains FIX34 manual S92 cold-return and qualifies native FC16/FC03 page receipts without EXP455 handoff. **Verified baseline:** FIX39 OTA passively received FC16 without owner; FIX34 manually initialized native session earlier; FIX41 SOURCE only. **ONE integrated live scenario:** FIX42 OTA with RX-only guard, one user-manual S92 start at 11:23:14, one controller cold-return, then first transport/R2 synchronization. **Actual:** `CONFIG_SYNCED` 11:23:39; `RECOVERY_POSITIVE` 11:24:13; `FRESH_BOOT_RUNTIME_QUALIFIED` 11:24:17; CM930 33/33 observed 11:24:32; 4 FC03 and 4/4 native H/D/C/M FRESH 11:24:33, still FRESH age69s at 11:24:48. Firmware FIX42 label observed in same log. Prior EXP378 old diagnostic ABORT with 8 resyncs did not stop M6 native runtime; do not infer parser faults are harmless generally. ACK and CM930 receipt are LOCAL transport evidence only, NOT Online application acceptance.
+
+**Status boundary:** first cold-return and initial FC03/CURRENT 4/4 **COMPLETE / POSITIVE**. Independent 300-second TTL, manually rearmed repeated 4-page FC03 cycle, refresh-timeout behavior and long-run soak **RUNNING / PARTIAL / OPEN**—no user logs after 11:24:56 in this capture. No new test needed until the already-running native session naturally exceeds the TTL. No arbitrary controller restart or HA parameter writes. **Abort/rollback:** existing S92 ABORT / DE LOW; rollback to verified FIX39 passive or FIX34 native if current firmware regresses. No autonomous flash or TX.
+
+---
+
 # 2026-10-24 — EXP-FIX42-R1R2-CURRENT-READ-INTEGRATION — PREPARED / NOT RUN
 
 **Hypothesis and verified baseline:** FIX41 R1 stop/controller fence is SOURCE/OFFLINE TESTED; XTR FIX39 OTA passive owner lock LIVE and FIX34 manually authorized cold native FC16/FC03/CURRENT 4/4/CM930 33/33 observed LIVE. Source FIX41 required both correctly owned 4/4 CURRENT stamps and a distinct legacy single-03E8 cache to label native M6 SYNCED, despite the 4 pages having separate post-ACK commits. On a manual read-only 10s FC03 timeout arriving before the watchdog tick, the RX path would abort an otherwise good session.
