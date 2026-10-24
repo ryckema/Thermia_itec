@@ -1,5 +1,15 @@
 # 2026-10-24 — EXP-FIX51-OEM-OPERATIONS-READONLY — PREPARED / NOT RUN
 
+## FIX53-20261024-2235-LIVE-PASSIVE-RETAINED-OWNER-UNPROVEN — RUNNING / PARTIAL
+**ID/hypothesis:** FIX53-USER-LIVE-2235: exact 0708 RX telemetry during passive OTA and one user-initiated S92 manual retained session discriminates owner acquisition vs controller poll.
+**Baseline:** FIX42 last LOCALLY VERIFIED successful S92 cold-start -> owned H/D/C/M4/4; FIX53 SOURCE/OFFLINE TESTED package ZIP SHA256 6ceb919399b3538c9a7c2bc0fd8e09750839c790ab524410c896844615e47f7c, user flashed via OTA (new exact RX0708 field present). 
+**ONE change / physical experiment:** FIX53 OTA plus one START at 22:38:14.723; no autonomous TX. User-provided log covers 22:35:07–22:38:40. No additional user changes/test or repeat.
+**Actual:** passive BOOT_RX_ONLY TX LOCKED with CRC diff=0, drops=0, stable parser resync=38, valid bus. Before START FC03=0 RX0708=0. Manual retained candidate stage40 -> M6 state2 RETAINED_UNPROVEN; in 25.5s after START 36 FC16 042E/07D0 RX pages captured, 0 native FC16 ACKs, 0 0708 served, 0 physicalTXthisSession, still FC03=RX0708=0 and DE LOW. Not a qualified native session. Source-only 60s retained-unproven automatic timeout exists; log terminates before the expected expiry. Firmware build label still FIX52 literal despite FIX53-only new diag being present.
+**Expected/abort/rollback:** only true owner proof can authorize controlled session replies; stage40 no-owner should self-revoke after 60s of manual start; if unexpected behavior user can ABORT with DE LOW, last successful native rollback FIX42. No controller restart or room sensor disconnect requested.
+**Assessment:** RUNNING / PARTIAL, passive FIX53 new diagnostic positive; M4 manual owner acquisition not achieved in observed interval, M2 repeated 0708 and refreshed CURRENT not evaluated. ACK or observed FC16 not semantic acceptance. No HA parameter writes.
+**ONE NEXT ACTION:** do NOT repeat unqualified manual START. Treat this as M4 source/design obstacle; if timeout later observed it can close the one bounded session, otherwise preserve RX-only and pursue one grounded integrated M4 fix.
+
+
 ## FIX53-EXACT-0708-RX-PROVENANCE-20261024 — PREPARED / NOT RUN
 **ID / hypothesis:** FIX53 proves whether the existing S92 diagnostic conflates ANY CRC-valid 0x0F FC03 with exact second 0708; distinct timestamps avoid false `NO_RECENT_0708` after an alternate controller request.
 **Verified baseline:** user-LIVE FIX42 native cold-return -> CONFIG_SYNCED -> first 4/4 CURRENT; cache expires at 300s despite continued FC16. No proven recurring 0708 within that owned run. FIX52 exact parent SHA256 8f111541d2b136f0353a68c75a9d80525a6fef575d9dc1e68ff99a7bd34874e6 (SOURCE only). Cross-capture CRC replay verifies 122 generic FC03 / 119 exact 0708; Oct3 66 generic/65 exact including other 0F0305460014.
