@@ -1,5 +1,15 @@
 # 2026-10-24 — EXP-FIX51-OEM-OPERATIONS-READONLY — PREPARED / NOT RUN
 
+## FIX54-M4-MANUAL-EPOCH-ACK-LATCH-RESET-20261024 — PREPARED / NOT RUN
+**ID/hypothesis:** FIX54/M4 manual new-epoch one-shot ACK latch reset. After one terminated native session, FIX53's 32 ordered FC16 ACK latches and their timestamp fields survive new manual START (unlike its controller-loss cold fallback), potentially vetoing a later legitimate cold bootstrap or bringing stale 06F4 full-export provenance into the next manual epoch.
+**VERIFIED BASELINE:** FIX42 FLASHED/LIVE/LOCALLY VERIFIED successful manual controller cold return/first H/D/C/M4/4. FIX53 SHA256 6ceb919399b3538c9a7c2bc0fd8e09750839c790ab524410c896844615e47f7c FLASHED/LIVE only for passive RX and EXP86 unowned 60s stop: 84 FC16 RX, FC03=RX0708=0, TX=0, guard timeout positive, hot rejoin INCONCLUSIVE.
+**ONE INTEGRATED CHANGE:** at existing manual S92 START, mirror EXACT already present cold-fallback 32 ACK one-shot used+ms reset pairs and clear stale runtime-enter/last-service/last-ACK provenance; update stale build identifier for traceability. Same single session engine and RX/TX/DE owner, no extra owner grant, new frame, read parser or device change.
+**EXPECTED (NOT LIVE):** after manual STOP and later user-start in same ESP boot, old 03E8/06F4 ACK latches cannot suppress a valid controller cold-start; a healthy controller with no qualified owner still remains RX-only and stage40 expires automatically in 60s. No second 0708 generated or implied.
+**OFFLINE TESTED:** YAML/!secret syntax, substitutions, SHA/ZIP CRC, original ID/entity set, source diff and exact 32 latch pair copy; 75 native send sites, one physical UART writer, CRC and DE sites unchanged. Full private FIX54 ZIP SHA256 33a599beb5614d4031f44ce8eb5ecdf9d49895b93f19ca92892216ca94846016; YAML SHA256 7bae04e056491ce1c8d4db941ab24f7040731e5e22ca8c529f416fc973dda43c. **NOT TARGET COMPILED / FLASHED / LIVE; physical experiment PREPARED / NOT RUN.**
+**ABORT / ROLLBACK:** manual S92 ABORT, DE LOW/RX ONLY, restore last positively owned FIX42; no room sensor disconnect. Physical bus TX only during specifically user-initiated bounded experiment; HA settings writes remain HOLD.
+**DECISION:** SOURCE FIX/GO for proven stale-latch initialization discrepancy. Auto owner-inheritance NO-GO, M2 repeating genuine 0708 / FC16 CURRENT renewal OPEN. **ONE NEXT ACTION:** user-controlled passive-first FIX54 installation and explicit user-run cold session if appropriate; skip repeating EXP86 retained/unowned test.
+
+
 ## EXP86-FIX53-60S-RETAINED-STOP-COMPLETE-20261024 — COMPLETE / INCONCLUSIVE (user live experiment resolved)
 **ID:** EXP86 / FIX53-USER-LIVE-2235 retained/hot-rejoin after OTA. **Hypothesis:** manual stage40 on an already-running controller could safely qualify a retained DCM owner and expose a subsequent genuine 0708, without unsolicited TX.
 **Verified baseline:** FIX42 last successful LIVE native manual controller cold-return with owner + first CURRENT 4/4; FIX53 private exact-0708-RX firmware user flashed via OTA, visible new RX0708 text.
