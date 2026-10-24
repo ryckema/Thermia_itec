@@ -1,3 +1,9 @@
+# 2026-10-25 — Controller alarm clearing is independent of manual DCM session acceptance
+
+**XTR user-reported chronology correction (not inferred from CM930 firmware):** Manual S92 START was engaged **for both physical heat-pump/controller restarts**, not exclusively for second. Online/communication-module alarm was visible before restart #1 and **no longer shown afterward**, while WP display still showed **no DCM indication**. Restart #2 also preceded by manual START, and supplied MAIN03-C1C3 live log proves newly accepted native cold-start transport and first complete CURRENT 4/4. No second-restart UI DCM display report provided. This separates controller alarm reset, frontend DCM indication and native transport state; neither first-start failure mechanism nor alarm cause known. Do not attribute success to first START omitted, and do not use alarm clearing as ACK/acceptance witness. No additional bus TX/parameter setting writes or WP restarts justified by finding.
+
+---
+
 # 2026-10-25 — MAIN03 cold-return second controller restart and real partial CM930 refresh proof
 
 **LOCAL XTR USER-LIVE / SOURCE-ALIGNED:** User reported a Thermia display Online/communication-module alarm, requiring first WP/controller restart and a second WP/controller restart with S92 manual START armed. In provided log, first manual stage40 at 00:03:19.895 hears repeated FC23 and `04A6/085F` while A80E=0008/A80F=0050; strict guard withholds native response (no TX). A distinct >5-second controller bus-silence/return at 00:04:00.870 transitions into previously implemented cold recovery, and 00:04:07.699 A80E=0000/A80F=0005 admits qualified native FC23 response and genuine controller FC16 readout. This is a **controller-led cold-return acquisition**, **NOT** ESP reboot retained-owner promotion. First handshake response alone is not semantic Online acceptance.
