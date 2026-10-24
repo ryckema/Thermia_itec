@@ -4,6 +4,12 @@
 >
 > This plan supersedes the priority/order and "next action" instructions in the archived 2026-10-24 roadmap below. Historical evidence and release SHA references remain intact. **Planning decision only: no new firmware, compilation, flashing, experiment or physical TX is claimed.**
 
+## MAIN03 live log forensics and C1 next engineering gate — 2026-10-25
+
+**New verified chronology:** both controller restarts were preceded by manual START; first cleared Online/communication alarm but no DCM UI indication, second gave native transport success. The first manual START 23:59:31 was followed by ordinary unowned FC16, but uploaded captures omit ~63s between 23:59:59 and 00:01:03 around first reboot/timeout; **there is insufficient evidence to assign a first-reboot guard-state cause**. Second START 00:03:19 includes nine correctly withheld pre-reboot FC23 challenges in normal controller state A80E=0008/A80F=0050 (state_ok=0). Genuine >=5s bus loss 00:04:00 -> boot return 00:04:06 -> controller A80E=0000/A80F=0005 (state_ok=1) at 00:04:07 -> protected native response and controller 03E8/14 FC16 same-session sync. Decision: **retain proven guard/cold-start flow**, do not weaken retained-owner safety to chase unavailable first-restart evidence. Continue integrating persistent controller-led read-only C3 four-page refresh, not repeated WP restarts, S90/S91 tests, or setting writes. This is no new code/lab experiment.
+
+---
+
 ## MAIN03 controller-restart chronology correction — 2026-10-25
 
 **USER-REPORTED FACT (priority over earlier phrasing):** Both separate WP restarts preceded by pressing **S92 Native DCM | Start Session Manually**. Prior to first restart an Online/communication-module alarm visible. First restart **cleared alarm**, yet no DCM appeared on heat-pump display. Same START manually pressed **again before second restart**, after which captured qualified native CM930 cold session/first H/D/C/M 4/4 occurred. **START was not omitted at first reboot.** UI DCM indication after second boot not reported; alarm cause, first-boot lack of DCM and necessity for two boots remain UNKNOWN. Established integration path and full C3 read-only second CURRENT freshness work remain as planned. NO repeats of physical restarts, no unsolicited TX, HA settings writes ON HOLD.
