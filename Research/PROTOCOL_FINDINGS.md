@@ -1,3 +1,15 @@
+# 2026-10-24 — FIX47 deferred genuine controller 0708 in ONE native S92 engine (SOURCE only)
+
+**LOCAL XTR LIVE baseline FIX42:** after a user-started S92 native cold-return, one initial 0x0F FC03 0x0708 gave first owned H/D/C/M 4/4 CURRENT fresh and CM930 33/33 OBSERVED. By >300s CURRENT became 0/4 stale without losing qualified FC16. One user manual refresh button press was denied NO_RECENT_0708 and no physical TX occurred. No independent later controller-originated 0708 is proven during long runtime.
+
+**Original Connect / FIX43 source-derived design:** Connect 2.1.105 request flags W2 bit0 and W3 bits0/3/4 map to current read-request response W0=W1=0 W2=0001 W3=0019. This does NOT establish a new XTR physical bus poll. The separate previously SOURCE-tested FIX43 defined a 60s deferred user arm awaiting a future genuine 0708, not a new bus frame. Its private archive was not available for the present fix; FIX47 integrates the documented behavior into the exact inspected FIX46 source, not a claimed byte-for-byte import.
+
+**FIX47 one implementation:** old FIX46 manual M3 arm required a past 0708 (which had caused live negative DENIED). The button now arms 60s with no button-triggered TX, and duplicate presses cannot extend the original interval. Matching 60s fences are applied in the existing M6 RX request eligibility, read-only current/cache diagnostic, and non-TX watchdog expiry. Exact subsequently observed controller 0708 and all pre-existing current qualified S92 owner/epoch/profile/RX/peer/dirty/cooldown guards are still required to reach sole unchanged physical TX writer. Existing native current-only FC03 reply bytes/CRC, four post-owned-ACK FC16 CURRENT receipts, strict 300s cache TTL and 10s read timeout unchanged. A controller poll by itself never certifies freshness or Online semantic acceptance.
+
+**Offline evidence only:** complete private ZIP SHA256 92b339c5307f6031da6bab746e4ce9645e76b20fa4bde5d9dd1d2a95a9661348; YAML SHA256 94e94eabd3193b61f7060064657b6c04beb106f7ab81d8dfa5e67b7f31905110. 784 IDs, 9 buttons, 75 owner-send call sites, one physical UART writer/DE-ON unchanged, ZIP/YAML checks PASS. NOT TARGET COMPILED / FLASHED / LIVE. **NO-GO** unsolicited/reconstructed controller polling; M4 passive ESP hot-rejoin remains RX ONLY / OWNER UNKNOWN; user HA writes ON HOLD. Legitimate recurring controller-initiated 0708 remains UNPROVEN.
+
+---
+
 # 2026-10-24 — FIX46 native RX-owner fail-close provenance (SOURCE ONLY)
 
 **XTR OBSERVED baseline remains FIX42 LIVE:** first native owned CURRENT 4/4, CM930 33/33 OBSERVED, valid FC16 qualified runtime even after strict 300s CURRENT expiry; the second manual refresh got NO_RECENT_0708 / NO TX. Transport ACK and observed CM930 pages do not prove semantic Online acceptance.
