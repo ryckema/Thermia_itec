@@ -1,3 +1,13 @@
+# 2026-10-24 — FIX51 OEM CM930 2.4.2 read-only operation interpretation (SOURCE, not LIVE)
+
+**Original private Connect 2.1.105, 930 profile 2.3.0–2.4.3 operations.json:** operation_mode formula {1363} with legal values OFF=0, Auto=1, Compressor only=2, Auxiliary heater only=3, Tapwater only=4; hot_tapwater_boost formula {1072} OFF=0/ON=1. Original also contains configuration write formulas: THESE ARE NOT MIGRATED because HA parameter/setting writes remain ON HOLD. No proprietary original source or secrets reproduced here.
+
+**Actual SOURCE overlap with FIX50 single native S92/V5 owner:** 1363 decimal is hex0x0553 (0546/count20 offset13), 1072 decimal hex0x0430 (042E/count15 offset2); both live in the existing coherent FIX48 owner-ACKed read-only H/D/C/M snapshot vectors m6s_mode_words[13] and m6s_dhw_words[2]. FIX51 adds one HA diagnostic text sensor using existing profile242, accepted owner/epoch, CRC/RX parser/drop/unknown/peer counters and oldest accepted snapshot strict 300-second TTL, without changing existing numeric native mode value, HA controls, FC16 ACK, FC03, UART/TX/DE, cloud or software refresh engine. Unknown enum stays UNKNOWN; stale/unowned state UNAVAILABLE. OEM operation labels are descriptive, not a semantic Online control or controller-side read-cycle marker.
+
+**Evidence boundary:** ZIP SHA256 d8e45d6030aba394ce6bf72afe87ece28e920454f4e12c0f1c2fa891ddf82505, YAML SHA256 046edb52b6d2833560301c9666fe1abf97dc65e436c16762477aad46a0ff2adc; source YAML/manifest OFFLINE PASS; 800 pre-existing IDs plus one new entity; existing sole physical writer/DE, 75 original native send call sites preserved. FIX51 SOURCE / OFFLINE TESTED — PREPARED / NOT RUN; not compiled, flashed, live or physically TX-tested. FIX42 remains last user-LIVE baseline. Repeat controller-initiated 0x0708 remains M2 OPEN / REAL BLOCKER.
+
+---
+
 # 2026-10-24 — OEM Connect 2.1.105 930/2.4.2 alarm evidence on locally known 085F (FIX50 SOURCE ONLY)
 
 **Original private firmware SOURCE:** profile 930 version range 2.3.0–2.4.3 declares OEM alarm bit descriptors at decimal 2143 (0x085F), 2144 (0x0860), 2145 (0x0861) and a separate input at 2095. Bit 11 of register 2145 in original alarm profile is described as internet gateway communication error. This is a descriptor, not evidence of a physical hardware fault or complete locally verified alarm map. No original code, unlicensed algorithms, credentials or protected handshake disclosed here.
