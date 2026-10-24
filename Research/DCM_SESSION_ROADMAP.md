@@ -4,6 +4,14 @@
 >
 > This plan supersedes the priority/order and "next action" instructions in the archived 2026-10-24 roadmap below. Historical evidence and release SHA references remain intact. **Planning decision only: no new firmware, compilation, flashing, experiment or physical TX is claimed.**
 
+## MAIN03 C1/C2/C3 integrated source milestone — 2026-10-24
+
+**SOURCE / OFFLINE TESTED, PREPARED / NOT RUN.** Built one complete private MAIN03 firmware successor from exact user MAIN03-C0 (not older public YAML). Source-correct CM930 original demand/receipt semantics (request bits not rearmed by local 300s display TTL), owner-ACKed atomic *last-good* H/D/C/M snapshot persists during a newly authorized request and after a failed refresh while the original TTL is valid, and a newly served four-page read only CONFIRMS when the snapshot generation actually advances past the pre-request baseline. Session STOP/controller loss still invalidates full snapshot; all physical UART/DE/CRC/owner/TX guards, 9 HA Configuration buttons and 75 native sends preserved. Private source ZIP SHA256 `ff66db1bf0a332f05a84a0373cdb7d8183c872906786911bc2d4bec157931f7b`, YAML SHA256 `09549b6ef50c7e729f694ce026d59eb6b53503b9a63e9014190b7331f31c5a16`. **No TARGET COMPILE, flash, user LIVE or TX.**
+**Decision:** C1/C2/C3 SOURCE FIX/GO for coherent cache/request integrity; **NO-GO** unsupported automatic retained owner promotion or guessed master FC03. C3 genuine *second* H/D/C/M 4/4 and M4 hot-rejoin remain real open deliverables. No extra telemetry/test-only entity. The C0 comment requiring the entire accepted snapshot to be revoked after a failed read is superseded by preserving last-good under original unchanged 300s TTL; actual C0 historical result remains historical. HA parameter writes ON HOLD.
+**ONE NEXT ACTION:** user-initiated compile/flash and *one* bounded already-qualified native session read/refresh only when such session exists, or else proceed source-backed C4 useful read-only parity without introducing new bus behavior.
+
+---
+
 ## MAIN03 - C0 source milestone — 2026-10-24
 
 **PREPARED / NOT RUN, SOURCE / OFFLINE TESTED:** the user supplied exact complete FIX54 firmware. One consolidated C0 source review covered the existing S92 owner, Connect 2.1.105 `0x0F` slave, controller-initiated FC03 `0708` request lifecycle, 33/32/42 requestable/observed sets, H/D/C/M atomic snapshot and XTR FC16 evidence. The *one concrete code defect* fixed is failed explicit CURRENT 4/4 group staging surviving all three failure boundaries (RX timeout, interval timeout, rejected final freshness). Revocation is local and does not erase genuinely ACKed per-page telemetry. Candidate private MAIN03-C0 ZIP SHA256 `47def918037e55357164b00ee2daa63a60e551d54e2a846deca71956aceb1216` and candidate YAML SHA256 `944941d27a0a351ad7b0fdfb4396f0eaabf3fb14f5e2378826841bcd01e4d6bd`. Full source validation PASS, not ESPHome compiled, flashed or LIVE. No new TX/DE path or HA writes.
