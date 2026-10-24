@@ -1,3 +1,19 @@
+# MAIN03-C0-SRC-01-20261024 — PREPARED / NOT RUN
+
+**HYPOTHESIS / REAL DEFECT:** FIX54's manually requested native four-CURRENT group can expire without revoking all in-progress atomic staging, so a later unrelated owner-ACKed FC16 page may contribute to the previous failed group. A failed 4/4 freshness check also fails to fence group data. This is local cache behavior, not a new native protocol discovery.
+
+**VERIFIED BASELINE:** user-supplied exact private FIX54 full YAML SHA256 `7bae04e056491ce1c8d4db941ab24f7040731e5e22ca8c529f416fc973dda43c`; FIX54 latest user-FLASHED/LIVE passive fail-closed stage40 experiment, and FIX42 latest positively LIVE owned cold-start, initial H/D/C/M 4/4. Original Connect 2.1.105 controller-master/0x0F-slave FC03 request and FC16 receipt lifecycle examined; no claimed lawful independent master 0708.
+
+**ONE INTEGRATED CHANGE:** named `MAIN03 - C0`, preserve full FIX54 base, insert matching provisional group/snapshot invalidation at (1) RX late native-current timeout, (2) independent existing interval timeout, (3) unsuccessful complete 4/4 freshness gate. Preserve genuinely ACKed individual page timestamps and app requested/received/ACKed ledger. No new globals, entities, protocol payloads, TX/DE owner or settings writes. Keep all nine Configuration buttons and HA production entities.
+
+**EXPECTED / OFFLINE ACTUAL:** source YAML diff at three guarded failure branches; complete candidate YAML SHA256 `944941d27a0a351ad7b0fdfb4396f0eaabf3fb14f5e2378826841bcd01e4d6bd`; private full ZIP SHA256 `47def918037e55357164b00ee2daa63a60e551d54e2a846deca71956aceb1216`. PyYAML + substitutions + entity and configuration parity PASS; 75 unchanged native TX-owner send-call sites, one UART physical write site, unchanged CRC/B11C/B11D/DE sites. **TARGET COMPILE NOT RUN; ESP FLASH NOT RUN; XTR LIVE NOT RUN.** This is a source correctness gate only, not evidence the controller will refresh.
+
+**ABORT / ROLLBACK:** user-initiated S92 ABORT, DE LOW/RX ONLY, FIX42 last positively verified native cold-start (or prior verified passive RX build). No controller restart or room sensor disconnect requested.
+
+**DECISION / NEXT:** C0 source FIX/GO. Automatic retained hot-rejoin remains NO-GO on current owner evidence; persistent genuine second H/D/C/M remains OPEN/REAL BLOCKER; no speculative master TX or parameter writes. Next: one integrated source-backed C1/C2/C3 functional progression, not another unowned-stage40 test loop.
+
+---
+
 # 2026-10-24 — EXP-FIX51-OEM-OPERATIONS-READONLY — PREPARED / NOT RUN
 
 ## FIX54-LIVE-01-20261024-PASSIVE-SAFETY — COMPLETE / INCONCLUSIVE
