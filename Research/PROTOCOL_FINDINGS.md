@@ -1,3 +1,15 @@
+# 2026-10-24 — M2 0708 TX-scope decision: archived XTR polls versus native runtime
+
+**LOCAL XTR archived capture, independently rechecked offline:** thermia_capture_20261003_165355.log SHA256 14918065297264473e2357822a8694d184e7821b8c2a3b1cb316039678a708a1 contains 65 exact CRC-valid 0F 03 0708 0006 polls (from relative 64.923 s to 333.955 s) and 65 corresponding 0F 03 0C replies; consecutive polls have median spacing 4.199 s (minimum 4.071, maximum 4.332). Earlier local thermia_capture_20260924_210001(1).log SHA256 a284d6c80d8fd5abdd9db10ac77b2f755263122e0c8abb802bfb368403009744 has 11 such polls and 11 replies at ~4.2 s median. This establishes the controller CAN repeatedly issue the *exact* 0708 read in other XTR observed contexts. It does NOT establish a trigger or show that polls recur in a fully established FIX42 native session.
+
+**Last locally VERIFIED runtime FIX42:** during healthy native FC16 runtime, first initial CURRENT H/D/C/M 4/4 became stale after >300s with no observed later controller 0708. Existing button attempt NO_RECENT_0708 / NO TX. This is context-dependent behaviour, not proof of hardware impossibility. Do not conflate old passive 0708 cadence with owned qualified-runtime availability.
+
+**ORIGINAL PRIVATE Connect 2.1.105 source checked again (do not publish proprietary code or keys):** CM930 is an RTU *slave* on address 0x0F: internal read-request bits become available in the response bank; incoming controller-originated FC03/other requests are serviced through its existing server. This does not provide a DCM-master Modbus transaction or a collision-free RS485 arbitration slot with which an ESP could force a new 0F 03 0708 poll. In FIX47 the 60s deferred manual arm is implemented inside the already qualified RX-owner response path and sends NOTHING until a new controller-issued 0708 is actually received.
+
+**Explicit user TX authorization (2026-10-24):** user reiterated TX is allowed for investigation. Preparing/proposing scoped native session/protocol responses is permitted; physical bus TX remains limited to a clearly defined user-initiated, bounded experiment. No autonomous flash, unsolicited master read, guessed slot/epoch, or HA parameter/setting write. **Decision: NO-GO new physical master-TX trigger in absence of source + local XTR arbitration proof, while accepting TX under existing proven owner for future user-run experiments.** Keep FIX42 last user-LIVE; FIX47 SOURCE only; M2 recurring 0708 remains OPEN.
+
+---
+
 # 2026-10-24 — FIX47 deferred genuine controller 0708 in ONE native S92 engine (SOURCE only)
 
 **LOCAL XTR LIVE baseline FIX42:** after a user-started S92 native cold-return, one initial 0x0F FC03 0x0708 gave first owned H/D/C/M 4/4 CURRENT fresh and CM930 33/33 OBSERVED. By >300s CURRENT became 0/4 stale without losing qualified FC16. One user manual refresh button press was denied NO_RECENT_0708 and no physical TX occurred. No independent later controller-originated 0708 is proven during long runtime.
