@@ -1,3 +1,9 @@
+# 2026-10-25 — USER CORRECTION: manual S92 START used for BOTH heat-pump restarts
+
+**USER-OBSERVED CHRONOLOGY, overriding imprecise wording in MAIN03-C1C2C3-LIVE-02 (history retained):** (1) At the heat pump, an Online/communication-module alarm was visible; user **pressed S92 Native DCM | Start Session Manually before FIRST WP/controller restart**. That restart **CLEARED THE ALARM** but produced **NO VISIBLE DCM indication on the WP display**. (2) User **pressed the same manual START again before SECOND WP/controller restart**. This time qualified native DCM session observed in MAIN03-C1C2C3 logs with genuine cold bootstrap, owned FC16 runtime, initial H/D/C/M 4/4 and CM930 package receipts. Difference was NOT simply no START first / START second; **both were manually armed**. Avoid conflating disappearing controller alarm, WP display DCM indication and native TRANSPORT QUALIFIED firmware status: three separate observations. User has NOT specified whether display showed DCM after second restart. Original alarm code/cause and decisive difference between restarts UNKNOWN. This does NOT prove ESP caused alarm, two-restart necessity, failed protocol timing on first restart, or cloud acceptance. No repeat WP restart or extra bus TX requested. C3 second same-epoch 4/4, >300s refresh and ESP-only hot-rejoin remain OPEN.
+
+---
+
 # 2026-10-25 — MAIN03-C1C2C3-LIVE-02: qualified native cold-return after second controller restart
 
 - **USER-REPORTED SAFETY CONTEXT:** Thermia UI displayed an Online/communication-module alarm. User reports **two** controller/heat-pump restarts were required; first did not yet establish a working native session, and second was performed with manual S92 Start already armed. Alarm exact code, cause and whether it cleared are **UNKNOWN**. A native `085F` mapped-bits-clear signal does NOT clear/identify every real controller/UI alarm.
