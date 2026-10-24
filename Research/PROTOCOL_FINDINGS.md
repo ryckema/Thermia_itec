@@ -1,3 +1,11 @@
+# 2026-10-24 — Connect original read flags versus XTR 0708 (FIX43 SOURCE)
+
+**ORIGINAL Connect source:** the supplied private `device_client/cm/modbus_server15.py` implements `request_read_all_registers()`, `set_register_read_request()`, and `_are_registers_requested()`; client-side commands set register-bank read-request bits, later Modbus read callbacks observe requests. This supports deferred read-request semantics only. It does NOT show an independently authorized XTR bus-slot/epoch or establish safe spontaneous TX for a new FC03 poll. No proprietary source reproduced publicly.
+
+**LOCAL XTR FIX42:** after first FC03=4 and 300s stale cache, explicit user button was denied solely due to no prior recent 0708 while `stage40 active fresh idle healthy` were true. This validates correctly guarded NO_TX, but does not prove any further controller 0708. **FIX43 private SOURCE/OFFLINE TESTED** defers same explicit user authorization for 60s and executes only if real 0708 arrives through existing sole RX/TX owner and session/profile/CRC/epoch checks. The no-controller-poll case now expires NO TX with native runtime preserved. NO autonomous TX, independent bus request, read success claim or HA setting writes. R2 missing poll is a REAL BLOCKER for recurring refresh, not grounds for bypassing it.
+
+---
+
 # 2026-10-24 — FIX42 XTR live R1/R2 first native FC03 synchronization
 
 **LOCAL XTR LIVE, not just source:** user flashed FIX42; manual S92 stage40 start at 11:23:14, genuine controller return yielded `CONFIG_SYNCED` at 11:23:39 with observed curve=36/min=20/max=40, and `RECOVERY_POSITIVE` 11:24:13. Native runtime success after cold-return followed. By 11:24:33, local ledger `session=RUNTIME config=SYNCED page=FRESH pages=4/4 H/D/C/M=1 FC03=4` and separate CM930 shadow `33/33 observed` (zero pending) at 11:24:32. These observations **STRONGLY SUPPORT** locally functioning source-observed first native CURRENT 4-page synchronization and unchanged authorized S92 cold start on FIX42. 69s old four-page cache remained FRESH 11:24:48. Do not infer complete 300s TTL transition, second refresh, semantic Online acceptance or post-ESP-only hot-rejoin. An old EXP378 diagnostic aborted independently at 11:24:25 while central M6 subsequently qualified; keep independent diagnostic outcomes distinct from session ownership/integrity evidence.
