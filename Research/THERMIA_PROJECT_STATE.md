@@ -1,3 +1,15 @@
+# 2026-10-24 — M2-first decision: recurring 0708 must precede offline CM930 app completeness
+
+**OBSERVED FACTS:** last FLASHED/LIVE/LOCALLY VERIFIED XTR source remains FIX42, with user-manual native S92 controller cold-return, CONFIG_SYNCED, first FC03 H/D/C/M 4/4 and CM930 observed 33/33, later 300s stale CURRENT while FC16 transport continued, subsequent one-shot refresh denied NO_RECENT_0708 with NO TX. FIX48 is full private source-only offline-tested coherent CURRENT snapshot, NOT TARGET COMPILED/FLASHED/LIVE. The original Connect 2.1.105 is a slave presenting read-request flags, not a proven independently legal controller poll trigger.
+
+**New bounded OFFLINE XTR evidence:** September 25 09:02 capture shows six periodic exact 0F03 0708 polls, median 4.209s; five of six corresponding 6-register responses had W4=0000 (first W4=0080), W5=0006 in all. October 3 archive shows 65 exact polls with median 4.199s and mostly W4=077F. Nonzero operation W4 is therefore NOT NECESSARY for polls to continue in the observed interval; W4-forcing is not a justified M2 physical TX fix. Capture does not establish behavior after its endpoint. No new user-run experiment, flash, firmware code or physical TX executed. M2 root cause/controller scheduler/online-session conditions remain OPEN.
+
+**Roadmap priority:** freeze extra M1/M3 CM930 application-feature additions, focus next on M2 native repeat controller-originated 0708 through single original guarded UART/RX/TX/DE path, preserving already built FIX48 SOURCE and last user-LIVE FIX42 rollback. Repeat 0708 alone does NOT complete original cloudless CM930 app semantics: versioned data interpretation, all relevant package/alarms/info, own-state recovery and HA publication still require integration/verification. HA parameter writes ON HOLD. Physical protocol TX permitted only during defined user-initiated safeguarded run; no unsolicited master poll, guessed role/slot or blind W4 bitmap manipulation.
+
+**CURRENT MILESTONE:** M2 first, legitimate recurring controller 0708. **DELIVERABLE:** original XTR capture counterexample + explicit source NO-GO forced W4, documented. **REAL BLOCKER:** causally identified controller-side re-poll condition in owned native runtime. **ONE NEXT ACTION:** analyze only source-grounded native session-phase triggers/response contents, then implement one justified source fix or retain NO-GO; no extra microtest loops.
+
+---
+
 # 2026-10-24 — FIX48 M1/M3 coherent local CM930 CURRENT snapshot — SOURCE / OFFLINE TESTED; PREPARED / NOT RUN
 
 **Last XTR user-FLASHED / LIVE / LOCALLY VERIFIED firmware is STILL FIX42**, with manual S92 controller cold-return -> CONFIG_SYNCED, first native FC03 H/D/C/M CURRENT 4/4 fresh and CM930 33/33 observed, valid FC16 transport remaining qualified after strict 300s CURRENT expiry; one second manual refresh denied NO_RECENT_0708 / NO TX. These are transport/cache-local findings, not Online semantic acceptance or proof of a second controller-generated 0708. FIX43 through FIX48 are source-only and unflashed.
