@@ -1,3 +1,9 @@
+## 2026-10-25 — MAIN03-C5R OEM internal lifecycle reset — PREPARED / NOT RUN
+
+One complete private firmware ZIP `THERMIA_MAIN03_C5R_OEM_LIFECYCLE_PRIVATE_20261025.zip` built from original user-LIVE C1C3 and source-only C5. Corrected one actual C5 state-coherence defect: internal OEM ACCEPTED/FC16 source is invalidated on native session authority revocation, manual START/ABORT and boot. Original valid FC16 OEM acceptance exceptions 085F/04BA and successful-FC23 RESPONSE_SENT unchanged. Single UART/DE owner, TX guards and 75 send occurrences preserved. YAML parsed offline with ESPHome secret-tag handling; no target compilation, flash, live testing, no HA parameter writes. SHA256 YAML `f0bad49ac29d36b8f9b0852d7ab3fb240d2b3e38d7daf9772b5749acb956f8f5`. Status PREPARED / NOT RUN. This is NOT physical hot-rejoin restoration: owner remains UNKNOWN after ESP reboot and alarm is known; no new TX permission inferred from internal acceptance. C5 remains REAL BLOCKER; do not flash merely to repeat failed restart.
+
+---
+
 ## 2026-10-25 — MAIN03-C5 OEM internal acceptance parity — PREPARED / NOT RUN
 
 Produced private complete ZIP `THERMIA_MAIN03_C5_OEM_INTERNAL_ACCEPTANCE_PRIVATE_20261025.zip` from locally LIVE-proven MAIN03-C1C3 (not source-only C3A). OEM Connect 2.1.105 `_on_function16` equivalent internal state: NOT_ACCEPTED at ESP boot; RESPONSE_SENT after already-guarded FC23 physical response success; ACCEPTED upon valid controller FC16 excluding 0x085F and 0x04BA. Internal state is NOT native owner/TX permission; no sender, UART/DE or safety-guard changes. One read-only diagnostic entity. YAML parsed offline, existing native send call count 75 unchanged. Full target compile, flash and XTR live verification NOT performed. This is an internal parity correction, NOT an autonomous hot-rejoin fix; online alarm/hot-rejoin remain REAL BLOCKER. No flash into current alarm/qualified session, HA writes on hold. Status PREPARED / NOT RUN.
