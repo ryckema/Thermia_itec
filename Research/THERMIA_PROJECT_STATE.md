@@ -1,3 +1,17 @@
+# 2026-10-24 — FIX46 M1/M3/M5 immediate RX owner fail-close — SOURCE / OFFLINE TESTED, PREPARED / NOT RUN
+
+**Last user-LIVE firmware remains FIX42** (FLASHED / LIVE / LOCALLY VERIFIED manual S92 controller cold-return, CONFIG_SYNCED, FC16 runtime, initial CURRENT H/D/C/M 4/4 FRESH, CM930 33/33 OBSERVED, no semantic Online proof). CURRENT expired at >300s without loss of qualified FC16. The manual second refresh was denied NO_RECENT_0708 with NO TX. FIX43 through FIX46 are SOURCE only, not user flashed/live.
+
+**FIX46 source change:** from exact FIX45 YAML SHA256 985ab2e9e5ae0b8e9d9431c381e5c443221f3a8e38d72010fb4f3854f56cdc25. Four existing physical TX-owner denial branches and RX-local write_stop set DE LOW/inactive/stage99 but deferred epoch/CM930/CURRENT revocation to queued M6. One local RX-context fail-close helper now synchronously fences owner, session/rejoin/recovery, app receipt and H/D/C/M timestamps, cancelling only same-epoch clean read-only CURRENT state8, then queues existing M6 event6 once when ending an active run. No separate lifecycle engine, UART RX/TX/DE owner, bus geometry, CRC, requests, automatic owner takeover, entities or HA parameter writes.
+
+**Private complete deliverable:** THERMIA_MAIN02_M6_FIX46_RX_OWNER_FAILCLOSE_PRIVATE_20261024.zip SHA256 53d2698d80bf8fccc5e92d75dbbac5b035b6c101e929c8f1ee4d49d0de84ac98, full YAML SHA256 a3da78c3e4f4e143e751194165d44027fae156fb2491c82ab4639daf8fe917ea. Full YAML, example secrets, patch, manifest, compile/flash/ABORT/rollback instructions. Offline YAML(!secret-compatible), substitutions, ZIP CRC/SHA PASS; 22 top-level sections, 784 IDs, 9 buttons, 75 owner-send call sites, one physical UART writer, one DE-on site preserved. **NOT TARGET COMPILED / NOT FLASHED / NOT LIVE.**
+
+**Roadmap:** M1/M3/M5 FIX source integrated; M2 repeat controller-initiated 0708 remains NO-GO for unsupported TX; M4 ESP-only passive rejoin remains RX ONLY/OWNER UNKNOWN, no auto TX; M6 hours-long native release OPEN. HA setting/parameter writes ON HOLD. No bus action requested while user away.
+
+**CURRENT MILESTONE:** M1/M3/M5 owner/epoch fail-close. **DELIVERABLE:** complete private FIX46 SOURCE/OFFLINE ZIP. **REAL BLOCKER:** no proven next controller 0708 in persistent runtime. **ONE NEXT ACTION:** only later if user starts a defined bounded experiment, compile/flash FIX46 and passively verify runtime/fail-close with verified FIX42 rollback, without forced faults or repeated tests.
+
+---
+
 # 2026-10-24 — FIX45 M3/M5 native read-only abort/stop fence — SOURCE / OFFLINE TESTED; PREPARED / NOT RUN
 
 **Authoritative last XTR user-FLASHED / LIVE / LOCALLY VERIFIED baseline remains FIX42.** Manual S92 cold-return reached CONFIG_SYNCED, native FC16 runtime and first FC03 H/D/C/M CURRENT 4/4 FRESH, CM930 33/33 OBSERVED. CURRENT expired correctly after 300s without losing qualified FC16 runtime; manual second refresh denied NO_RECENT_0708 with NO TX. FIX43 and FIX44 are SOURCE only, not flashed; FIX45 does not establish Online semantic acceptance or a new controller 0708.
