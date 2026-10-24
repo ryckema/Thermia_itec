@@ -1,5 +1,11 @@
 # Thermia iTec XTR M — native DCM session roadmap
 
+## Identifier policy — added 2026-10-24
+- **Never allocate a new `EXP<number>` identifier for S92/M2–M6 follow-ups.** The legacy EXP series already contains distinct experiments with those numbers; references in migrated chat summaries to a new “EXP86/EXP87” are collisions, not new canonical identifiers.
+- Current observations are **FIX53-LIVE-01** (FIX53 after OTA, 22:38 manual start, 60s fail-closed, no qualified owner) and **FIX54-LIVE-01** (FIX54 after OTA, 23:01 manual start, 60s fail-closed, no qualified owner). Existing detailed log entries remain the authority. Do not rename historical EXP86/EXP87.
+- Going forward use **FIXnn-LIVE-nn** for a firmware-specific user run, **FIXnn-SRC-nn** for a source-only correction, or **M2/M4-<descriptive-name>** for a milestone decision. Status must use only PREPARED / NOT RUN, RUNNING / PARTIAL, COMPLETE / POSITIVE, COMPLETE / NEGATIVE, COMPLETE / INCONCLUSIVE, or SUPERSEDED / NOT RUN. Preserve SOURCE versus COMPILED/FLASHED/LIVE evidence levels.
+
+
 ### 2026-10-24 — FIX54-LIVE-01-20261024-PASSIVE-SAFETY: FIX54 user live validates safe manual boundary, NOT hot rejoin
 - **User FLASHED/LIVE FIX54** recorded in ESPHome log 23:00:58–23:05:22; exact FIX54 firmware build string appears at 23:01:54. One user `MANUAL_START stage=40 recoveryLatches=CLEARED` 23:01:58.692. 85 existing-bus FC16 pages (56 × 042E/count15, 29 × 07D0/count19) received with no qualification, 0 native ACK and 0 TX, generic FC03=0 and RX0708=0. Existing 60-second `RETAINED_UNPROVEN_EXPIRED age=60008ms` at 23:02:58.772, DE LOW and RX ONLY remain through log end. 0 CRC_DIFF, 0 SHAPE_OTHER, resync0, RX buffer drops0.
 - **Evidence level:** FIX54 FLASHED/LIVE/LOCALLY VERIFIED *for passive RX, manual-latch-reset branch execution and fail-closed timeout only*. No prior successful owned session within this ESP boot; clearing stale already-used ACK latches remains SOURCE/OFFLINE TESTED, not live behavior proven. FIX42 remains last user-LIVE POSITIVE owned cold-start and CURRENT4/4.
