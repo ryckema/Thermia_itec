@@ -1,3 +1,17 @@
+# 2026-10-24 — FIX46 native RX-owner fail-close provenance (SOURCE ONLY)
+
+**XTR OBSERVED baseline remains FIX42 LIVE:** first native owned CURRENT 4/4, CM930 33/33 OBSERVED, valid FC16 qualified runtime even after strict 300s CURRENT expiry; the second manual refresh got NO_RECENT_0708 / NO TX. Transport ACK and observed CM930 pages do not prove semantic Online acceptance.
+
+**SOURCE defect from FIX45:** four existing physical TX-owner denials and RX-local write_stop put GPIO21 DE LOW and deactivated S92, but could leave old native accepted/session epoch and read-only CURRENT/CM930 page authority until the queued M6 STOP/reconcile event. These are local firmware lifecycle boundaries, not novel Thermia register semantics.
+
+**FIX46 SOURCE/OFFLINE TESTED:** one synchronous existing-RX-context revocation helper called by those five failclose sites. Invalidate owner, session/recovery/rejoin tokens, four native CURRENT timestamps, CM930 receipt ledger and pending read-only refresh; cancel manual CURRENT read state8 only on matching owner epoch with no pending write and zero dirty mask. Then the original queued M6 event6 handles final lifecycle state. Preserve one physical writer/DE-ON, all original FC16/FC03 frames and native guarded TX, B11C/B11D, V5 CRC and 300s freshness. No new bus request, timing, addresses, CRC, TX authority, parameter write or invented controller epoch.
+
+Private ZIP SHA256 53d2698d80bf8fccc5e92d75dbbac5b035b6c101e929c8f1ee4d49d0de84ac98; full YAML SHA256 a3da78c3e4f4e143e751194165d44027fae156fb2491c82ab4639daf8fe917ea. **SOURCE / OFFLINE TESTED — PREPARED / NOT RUN; NOT COMPILED / FLASHED / LIVE.**
+
+**M2 unchanged NO-GO:** no source- and genuine XTR-supported way to induce repeat controller-originated FC03 0708 in continuing native runtime. M4 ESP-only passive recognition remains non-authoritative RX ONLY / OWNER UNKNOWN; parameter writes ON HOLD.
+
+---
+
 # 2026-10-24 — FIX45 source-only abort/watchdog CURRENT read fences (M3/M5)
 
 **LOCAL XTR FACTS (last user-LIVE FIX42):** the genuine user-manual S92 cold-return reached FC16 CONFIG_SYNCED, native runtime, first native 4/4 CURRENT FRESH, CM930 33/33 OBSERVED, and later strict 300s cache expiry with qualified FC16 still present. Manual second FC03 refresh failed correctly with NO_RECENT_0708 and no TX. Native service/ACK is not Online semantic acceptance.
