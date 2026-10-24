@@ -1,5 +1,14 @@
 # 2026-10-24 — EXP-FIX51-OEM-OPERATIONS-READONLY — PREPARED / NOT RUN
 
+## FIX53-EXACT-0708-RX-PROVENANCE-20261024 — PREPARED / NOT RUN
+**ID / hypothesis:** FIX53 proves whether the existing S92 diagnostic conflates ANY CRC-valid 0x0F FC03 with exact second 0708; distinct timestamps avoid false `NO_RECENT_0708` after an alternate controller request.
+**Verified baseline:** user-LIVE FIX42 native cold-return -> CONFIG_SYNCED -> first 4/4 CURRENT; cache expires at 300s despite continued FC16. No proven recurring 0708 within that owned run. FIX52 exact parent SHA256 8f111541d2b136f0353a68c75a9d80525a6fef575d9dc1e68ff99a7bd34874e6 (SOURCE only). Cross-capture CRC replay verifies 122 generic FC03 / 119 exact 0708; Oct3 66 generic/65 exact including other 0F0305460014.
+**ONE change:** in existing single RX callback add exact 0708 count/last timestamp; existing `MAIN01 | FC03 and Cache Freshness` publishes both generic and exact counters and uses exact time for `NO_RECENT_0708`. No new TX path, user setting write or entities. No speculative trigger. Existing FC16/DE owner/abort unchanged.
+**Expected (not actual hardware):** next real CRC-valid controller exact 0708 increments RX0708 even if owner withholds TX; other FC03 increments generic only, does not erase last exact 0708 age. CURRENT does not become FRESH without full same-epoch FC16 H/D/C/M.
+**OFFLINE TESTED:** YAML parser/substitutions, original IDs/production entities and 9 Config buttons retained; 75 owner send sites, one UART writer and DE-high preserved. ZIP SHA256 6ceb919399b3538c9a7c2bc0fd8e09750839c790ab524410c896844615e47f7c; YAML SHA256 f033cf815633f3c968f80b0a462e08aa1621f7c880621e2ae0f1aafe218a7aef. Full source package with manifest, expected results, user-run bounded experiment, ABORT/DE LOW and FIX42 rollback. **NOT TARGET COMPILED / FLASHED / LIVE.**
+**Decision:** PREPARED / NOT RUN / SOURCE GO. M2 second-controller 0708 and second complete FC16 CURRENT 4/4 remain OPEN; speculative master TX NO-GO. One next action: user-controlled bounded source-qualified runtime observation, no multiple microtests, no room-sensor disconnect, no HA parameter writes.
+
+
 ## M2-OFFLINE-0708-20261024-CONSOLIDATED — COMPLETE / POSITIVE (offline comparison only; NO physical experiment)
 **ID/hypothesis:** M2-OFFLINE-0708-20261024; determine whether W4 nonzero is required for each subsequent genuine controller FC03 0708, and whether original Connect supplies a supported independent master-trigger.
 **Verified baseline:** user FIX42 FLASHED/LIVE, manual S92 cold-start/config/native runtime initial CURRENT 4/4; after 300s CURRENT stale with qualified FC16 continuing, no later controller 0708 shown in that live run. FIX52 SOURCE/OFFLINE TESTED only (exact ZIP SHA256 8f111541d2b136f0353a68c75a9d80525a6fef575d9dc1e68ff99a7bd34874e6).
