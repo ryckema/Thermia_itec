@@ -1,3 +1,13 @@
+# 2026-10-24 — MAIN03-C0-SRC-01: source-only atomic CURRENT timeout integrity
+
+**SOURCE / OFFLINE TESTED — PREPARED / NOT RUN.** The exact user-supplied FIX54 private full YAML (SHA256 7bae04e056491ce1c8d4db941ab24f7040731e5e22ca8c529f416fc973dda43c) retains incomplete H/D/C/M four-page atomic staging after three unsuccessful manual refresh paths: native RX timeout, independent watchdog timeout, and rejected final 4/4 timestamp/freshness. This is a local firmware integrity defect, **NOT** new evidence about controller behavior or the proprietary handshake.
+
+One integrated SAME-S92-engine fix now revokes `m6s_stage_mask`, `m6s_stage_epoch`, `m6s_epoch`, `m6s_oldest_ms` at all three branches while preserving genuine individual FC16 ACK receipt timestamps and the existing CM930 request/received ledger. Existing user manual FC03 `0x0708/count6` semantics, TX/DE calls, CRC/parser, owner/epoch guards and 300-second CURRENT TTL are unchanged. No new physical TX/frames/HA setting writes. Complete **PRIVATE** MAIN03-C0 firmware archive SHA256 47def918037e55357164b00ee2daa63a60e551d54e2a846deca71956aceb1216, full YAML SHA256 944941d27a0a351ad7b0fdfb4396f0eaabf3fb14f5e2378826841bcd01e4d6bd. Off-device source/YAML validations PASS; full ESPHome compile and user hardware run NOT DONE.
+
+**Evidence boundary:** FIX42 remains last user-LIVE positive qualified native cold-start / initial H/D/C/M 4/4; FIX54 only user-LIVE scoped safety/RX. MAIN03-C0 does not fix auto hot-rejoin, cause a second 0708, or prove a second CURRENT 4/4. Continued FC03 polls alone do not prove application refresh. HA parameter writes remain ON HOLD. See [current Connect-equivalent roadmap](DCM_SESSION_ROADMAP.md).
+
+---
+
 # 2026-10-24 — FIX51 OEM CM930 2.4.2 read-only operation interpretation (SOURCE, not LIVE)
 
 ## 2026-10-24 — FIX54-LIVE-01-20261024-PASSIVE-SAFETY: FIX54 log repeats unowned FC16 without controller 0708
