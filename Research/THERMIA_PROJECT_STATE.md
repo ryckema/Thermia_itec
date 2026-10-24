@@ -1,3 +1,13 @@
+# 2026-10-24 — MAIN03-C0 current baseline — SOURCE / OFFLINE TESTED
+
+- **Current source candidate:** `MAIN03 - C0`, built solely from the user's full uploaded FIX54 YAML (base SHA256 7bae04e056491ce1c8d4db941ab24f7040731e5e22ca8c529f416fc973dda43c), **PREPARED / NOT RUN**; candidate YAML SHA256 944941d27a0a351ad7b0fdfb4396f0eaabf3fb14f5e2378826841bcd01e4d6bd; complete private ZIP SHA256 47def918037e55357164b00ee2daa63a60e551d54e2a846deca71956aceb1216. GitHub does NOT contain the private full firmware source.
+- **C0 integrated defect fix:** revokes failed, incomplete H/D/C/M temporary atomic cache staging on RX timeout, independent interval watchdog timeout and rejected 4/4 freshness in the one existing S92 M6 owner. Genuine individual page ACK receipt records are preserved. Existing physical UART writer, 75 native send invocations, DE, V5/B11C/B11D/CRC, HA entities and nine Configuration buttons unchanged; YAML and source parity offline checks passed. No newly authorized TX, no parameter writes.
+- **EVIDENCE LIMIT:** **NOT TARGET COMPILED, NOT FLASHED, NOT LIVE** for MAIN03-C0. Latest user LIVE FIX54 confirms manual unowned-stage40 timeout/DE LOW only. **FIX42 remains last user-LOCALLY VERIFIED positive owned native cold-start and initial four CURRENT pages**. No verified safe hot rejoin or second same-session four-page refresh. Do not relabel C0 as Connect-equivalent complete.
+- **CURRENT DELIVERY ROADMAP:** [DCM_SESSION_ROADMAP.md](DCM_SESSION_ROADMAP.md), C0 (source baseline) -> C1 session, C2 app request/receipt, C3 genuine repeat H/D/C/M, C5 recovery, C4 read-only HA functionality, C6 production. C7 all HA user parameter writes remains ON HOLD. No new EXP-number collisions.
+- **ONE NEXT ACTION:** continue C1/C2/C3 integrated functionality in this same engine, based on actual original Connect protocol and XTR evidence; no repetition of FIX53/FIX54 unowned-mode tests or guessed physical master 0708. Physical TX only under a separate bounded USER-INITIATED experiment.
+
+---
+
 # 2026-10-24 — FIX54-M4-MANUAL-EPOCH-ACK-LATCH-RESET-20261024 — SOURCE FIX / GO, PREPARED / NOT RUN
 
 ## 2026-10-24 — FIX54-LIVE-01-20261024-PASSIVE-SAFETY — FIX54 FLASHED / LIVE / LOCALLY VERIFIED (scoped)
