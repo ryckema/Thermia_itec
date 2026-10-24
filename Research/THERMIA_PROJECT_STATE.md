@@ -1,3 +1,15 @@
+# 2026-10-24 — FIX51 OEM 2.4.2 read-only operations — SOURCE / OFFLINE TESTED, PREPARED / NOT RUN
+
+**Last user-LIVE remains FIX42.** Manually authorized S92 cold-return, CONFIG_SYNCED, initial native FC03 0708 and H/D/C/M CURRENT 4/4, CM930 33/33 observed; native FC16 transport survived 300s cache expiry while no later genuine controller 0708 was proven. FIX43–51 all SOURCE only, NOT TARGET COMPILED/FLASHED/LIVE.
+
+**FIX51 complete private ZIP:** THERMIA_MAIN02_M6_FIX51_OEM_READONLY_OPERATION_PRIVATE_20261024.zip SHA256 d8e45d6030aba394ce6bf72afe87ece28e920454f4e12c0f1c2fa891ddf82505, full YAML SHA256 046edb52b6d2833560301c9666fe1abf97dc65e436c16762477aad46a0ff2adc, exact FIX50 parent YAML SHA256 b18e8485bd5b652866d2edf0a35ed8b93f08606a591730d5b6644d86f77e8683. Original private Connect 2.1.105 profile930/2.4.2 operations.json defines mode={1363} and hot_tapwater_boost={1072}. FIX51 adds one diagnostic read-only HA text status from the existing same-epoch acknowledged/current snapshot m6s_mode_words[13] and m6s_dhw_words[2] with original profile, session, RX and 300s TTL gates. Does not import OEM write formulas or modify 0708 reply.
+
+**Offline validation:** full YAML parses with !secret-compatible loader, all substitutions defined, 22 original root sections, all 800 previous IDs and HA controls retained plus one read-only text sensor, 9 Configuration buttons, unchanged 75 native S92 send invocations, one physical UART write_array and DE-on, CRC/B11C/B11D/watchdog untouched. ZIP CRC/SHA manifest PASS. No hardware TX, no extra UART owner and no new cloud. Parameter/setting writes ON HOLD.
+
+**CURRENT MILESTONE:** read-only original CM930 operations migration implemented at source level. **DELIVERABLE:** full private FIX51 ZIP with manifest and rollback. **REAL BLOCKER:** controller-initiated subsequent FC03 0708 absent in proven persistent runtime; FIX51 not target/live verified. **ONE NEXT ACTION:** user-initiated bounded target compile/live verification of cumulative source improvement, with user-LIVE FIX42 as rollback; no repeated S90/S91, controller reset, room sensor disconnect or unsolicited TX.
+
+---
+
 # 2026-10-24 — FIX50 OEM CM930 2.4.2 local alarm evidence — SOURCE / OFFLINE TESTED; PREPARED / NOT RUN
 
 **Last user-FLASHED/LIVE/LOCALLY VERIFIED XTR firmware remains FIX42.** That run demonstrated manually owned S92 cold-return, CONFIG_SYNCED, native FC16 and first four CURRENT pages H/D/C/M 4/4 and CM930 33/33 observed, but no live repeated controller 0708 after 300s. FIX43 through FIX50 are source-level only and none should be presented as flashed/live. HA parameter writes ON HOLD.
