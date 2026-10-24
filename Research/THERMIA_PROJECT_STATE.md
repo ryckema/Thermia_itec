@@ -1,3 +1,17 @@
+# 2026-10-24 — M2-OFFLINE-0708-20261024-CONSOLIDATED — SOURCE/OFFLINE VERIFIED; physical master-trigger NO-GO
+
+**OBSERVED FACTS:** exact private FIX52 ZIP SHA256 8f111541d2b136f0353a68c75a9d80525a6fef575d9dc1e68ff99a7bd34874e6; five historic XTR captures contain 119 exact CRC-valid controller FC03 0708/count6 polls (11,18,6,19,65), including 65 repeated polls at median 4.199s on 2026-10-03. The 2026-09-25 09:02 capture has five successive W4=0000 replies without immediately halting the observed ~4.2s poll cycle. 2026-09-25 09:05 shows 19 controller requests and only 3 matching responses in this capture; do not infer what happened electrically to invisible responses. Original Connect 2.1.105 serves 0x0F as slave and clears data-package request bits upon received FC16; no source-proven safe independent FC03 master-injection slot.
+
+**STRONG CONCLUSIONS:** W4 nonzero is not mandatory for every immediately subsequent poll; a longer-term W4 state effect is UNKNOWN. Requestbit lifecycle is separate from master poll scheduling. No source-supported change to native TX timing/frames follows from this review.
+
+**OPEN / REAL BLOCKER:** why the last locally verified FIX42 native runtime did not show a second qualified controller 0708 despite continuing FC16 transport. A controller-side limitation, session-phase gate and long-term requestbit effect are unproven. ACK and 33/33 OBSERVED are not Online semantic acceptance.
+
+**DECISION:** NO-GO speculative 0708 master TX or forced W4 bitmap. FIX42 is last FLASHED/LIVE/LOCALLY VERIFIED firmware. FIX52 remains SOURCE/OFFLINE TESTED — PREPARED / NOT RUN. This review made no source change, physical TX, target build/flash, HA setting write or new live experiment. One UART/RX/DE owner and existing manual authorized protocol responses retained.
+
+**ONE NEXT ACTION:** only implement an identified real same-owner M1/M3 defect; otherwise perform one bounded user-initiated FC03/FC16 epoch/seen-versus-served observation using existing counters and fail-closed guards. Avoid repetitive flag tests.
+
+---
+
 # 2026-10-24 — FIX51 OEM 2.4.2 read-only operations — SOURCE / OFFLINE TESTED, PREPARED / NOT RUN
 
 **Last user-LIVE remains FIX42.** Manually authorized S92 cold-return, CONFIG_SYNCED, initial native FC03 0708 and H/D/C/M CURRENT 4/4, CM930 33/33 observed; native FC16 transport survived 300s cache expiry while no later genuine controller 0708 was proven. FIX43–51 all SOURCE only, NOT TARGET COMPILED/FLASHED/LIVE.
