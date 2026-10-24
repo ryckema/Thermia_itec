@@ -1,3 +1,9 @@
+# MAIN03-C1C2C3-LIVE-02-20261025 — CHRONOLOGY AMENDMENT / COMPLETE / POSITIVE
+
+**USER CORRECTION / source-of-truth for manual order (supersedes ambiguous older descriptions, not live frames):** START button pressed **BEFORE EACH** of two separate WP/controller restarts. FIRST: original Online/communication-module alarm visible at arrival -> S92 native manual START -> controller restart -> alarm gone, no DCM displayed on WP. SECOND: S92 native manual START pressed AGAIN -> controller restart -> logged qualified native cold-return (initial 32 config and CURRENT H/D/C/M 4/4, CM930 33/33, subsequent native read-only page service). Earlier hypothesis that only second restart had manual START is **DISPROVEN** by user's explicit account. Do not claim after-second DCM UI indication (not reported). First restart missing display DCM cannot alone identify missing/failed handshake; later log confirms previous retained attempt unqualified and successful new cold return. Scope remains COMPLETE / POSITIVE **for second user-initiated cold-return native session only**; automatic recovery, first-restart root cause, Online semantics and second full CURRENT snapshot unproven. Do not repeat restarts just to reproduce. ABORT / DE LOW and no parameter writes safeguards unchanged.
+
+---
+
 # MAIN03-C1C2C3-LIVE-02-20261025 — COMPLETE / POSITIVE
 
 **SCOPE:** user-controlled follow-on to MAIN03-C1C2C3-LIVE-01; positive verdict **only** for owned cold-return/full first CURRENT synchronization, not hot-rejoin or persistent refresh. **USER FACT:** real Online/communication-module alarm on the heat-pump display; user reports first WP restart followed by a **second** WP restart with manual S92 START armed before native session was accepted. Cause/code/alarm clearance UNKNOWN; do NOT ask repeat restarts.
