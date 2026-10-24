@@ -1,5 +1,14 @@
 # 2026-10-24 — EXP-FIX51-OEM-OPERATIONS-READONLY — PREPARED / NOT RUN
 
+## EXP87-FIX54-LIVE-2300-PASSIVE-SAFETY-20261024 — COMPLETE / INCONCLUSIVE
+**ID/HYPOTHESIS:** EXP87 (user-initiated FIX54 manual start after OTA): test that new S92 manual-epoch reset runs and no-owner healthy bus still fails closed; conditional hypothesis that such start may acquire owner/repeat FC03.
+**VERIFIED BASELINE:** FIX53 user LIVE EXP86 after OTA unowned stage40→60s DE LOW; FIX42 last user positive LIVE cold return first 4/4 CURRENT. FIX54 SOURCE/OFFLINE TESTED package SHA256 33a599beb5614d4031f44ce8eb5ecdf9d49895b93f19ca92892216ca94846016.
+**ONE CHANGE:** user flashed FIX54 and pressed the existing manual S92 START once at 23:01:58.692; ESPHome log 23:00:58–23:05:22. `Thermia Firmware Build=FIX54`; `MANUAL_START ... recoveryLatches=CLEARED NO_UNSOLICITED_TX DE_LOW`.
+**ACTUAL LIVE:** 85 controller FC16 captures under unowned stage40 (56 042E/15, 29 07D0/19). 0 valid FC03 or exact RX0708, 0 FC16ACK, 0 0708SERVED, 0 physicalTX, R1Sent=0, 04A6=0. `RETAINED_UNPROVEN_EXPIRED age=60008ms` exactly at 23:02:58.772; M6 SESSION_LOST GUARD STOP RX_ONLY and DE LOW. CRC_DIFF=0, SHAPE_OTHER=0, resync=0, bufferDrops=0; passive healthy bus after stop to 23:05:22. Build version and branch activity are LIVE; old 32 used-ACK-latches effectively clearing after previous owner is not LIVE demonstrated, because this boot had no earlier owned session.
+**ASSESSMENT:** COMPLETE / INCONCLUSIVE for hot-rejoin and M2 second controller poll (never qualified owner); POSITIVE for safety guard and read-only RX. Neither NO-ACK nor FC16 traffic is proof of semantic Online rejection/acceptance. Expected 60s stop observed. No new code change or fabricated physical bus write.
+**ABORT/ROLLBACK:** automatic safe stop already occurred, DE LOW, no external reset; rollback FIX42 remains last user-verified successful owned session. **ONE NEXT ACTION:** no repeat stage40 EXP86/EXP87; only source-backed integrated cold-start/recovery fix, or one separate bounded user-authorized true-controller cold-return opportunity. No HA parameter writes and do not disconnect room sensor.
+
+
 ## FIX54-M4-MANUAL-EPOCH-ACK-LATCH-RESET-20261024 — PREPARED / NOT RUN
 **ID/hypothesis:** FIX54/M4 manual new-epoch one-shot ACK latch reset. After one terminated native session, FIX53's 32 ordered FC16 ACK latches and their timestamp fields survive new manual START (unlike its controller-loss cold fallback), potentially vetoing a later legitimate cold bootstrap or bringing stale 06F4 full-export provenance into the next manual epoch.
 **VERIFIED BASELINE:** FIX42 FLASHED/LIVE/LOCALLY VERIFIED successful manual controller cold return/first H/D/C/M4/4. FIX53 SHA256 6ceb919399b3538c9a7c2bc0fd8e09750839c790ab524410c896844615e47f7c FLASHED/LIVE only for passive RX and EXP86 unowned 60s stop: 84 FC16 RX, FC03=RX0708=0, TX=0, guard timeout positive, hot rejoin INCONCLUSIVE.
