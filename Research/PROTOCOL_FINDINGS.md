@@ -1,3 +1,11 @@
+# 2026-10-24 — FIX42 XTR live R1/R2 first native FC03 synchronization
+
+**LOCAL XTR LIVE, not just source:** user flashed FIX42; manual S92 stage40 start at 11:23:14, genuine controller return yielded `CONFIG_SYNCED` at 11:23:39 with observed curve=36/min=20/max=40, and `RECOVERY_POSITIVE` 11:24:13. Native runtime success after cold-return followed. By 11:24:33, local ledger `session=RUNTIME config=SYNCED page=FRESH pages=4/4 H/D/C/M=1 FC03=4` and separate CM930 shadow `33/33 observed` (zero pending) at 11:24:32. These observations **STRONGLY SUPPORT** locally functioning source-observed first native CURRENT 4-page synchronization and unchanged authorized S92 cold start on FIX42. 69s old four-page cache remained FRESH 11:24:48. Do not infer complete 300s TTL transition, second refresh, semantic Online acceptance or post-ESP-only hot-rejoin. An old EXP378 diagnostic aborted independently at 11:24:25 while central M6 subsequently qualified; keep independent diagnostic outcomes distinct from session ownership/integrity evidence.
+
+**R2 remaining:** capture after 300s wall clock from latest stamped page; check proper FRESH -> STALE_OR_MISSING and whether existing central M6 native session remains active. A later **explicit user-arm** of read-only FC03 within currently qualified session may then test all-four receipt refresh. Same UART/DE/TX owner only; no invented frames and no autonomous TX. HA parameter writes ON HOLD.
+
+---
+
 # 2026-10-24 — FIX42 XTR CURRENT provenance and read-only timeout isolation (SOURCE)
 
 **SOURCE FIX41:** Central M6 local SYNCED used 4 post-ACK page stamps plus a separate legacy single-03E8 page-cache flag. The existing HA diagnostic similarly vetoed 4/4 if that separate flag was old, although H/D/C/M each have their own ACK-owner commit and 300s TTL. Furthermore, an otherwise healthy, explicitly user-authorized manual 4-CURRENT FC03 cycle which had exceeded 10s could abort at the RX-side next 0708 before the watchdog read timeout cancelled the request.
