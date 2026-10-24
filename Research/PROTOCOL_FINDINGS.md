@@ -1,3 +1,15 @@
+# 2026-10-24 — OEM Connect 2.1.105 930/2.4.2 alarm evidence on locally known 085F (FIX50 SOURCE ONLY)
+
+**Original private firmware SOURCE:** profile 930 version range 2.3.0–2.4.3 declares OEM alarm bit descriptors at decimal 2143 (0x085F), 2144 (0x0860), 2145 (0x0861) and a separate input at 2095. Bit 11 of register 2145 in original alarm profile is described as internet gateway communication error. This is a descriptor, not evidence of a physical hardware fault or complete locally verified alarm map. No original code, unlicensed algorithms, credentials or protected handshake disclosed here.
+
+**Existing real XTR receiver constraints (SOURCE, FIX49):** sole V5 CRC-checked FC16 0x085F/count5 context guard explicitly recognizes two local payloads only: 5 zero register words or the same with third word 0x0800 (0x0861/2145 bit11); unknown payloads are deliberately blocked from native ACK and fail-closed under the original handler. A recognized payload is itself only a valid observed frame, not an accepted owner or complete alarm state. This is why FIX50 exposes read-only information, not a generic alarm controller.
+
+**FIX50 integrated source delta:** at the existing CRC-validated RX ownership callback, record only a locally known 085F image with same active manually scoped owner epoch, 3 restore_value:no globals. Publish one read-only Home Assistant diagnostic only if original native accepted owner, matching epoch, profile242, config-sync and unchanged parser/drop/peer/unknown-shape guards qualify. Conservatively expire after 300s since this RX observation, a local presentation choice and NOT an OEM-polling protocol interval. Zero is labeled mapped bits clear in that OEM page only, with other alarm sources unknown; 0800 maps to OEM gateway-communication flag and does not imply thermal failure. Maintain original known/unknown 085F ACK policies and all TX/DE and frame geometry. No new FC03 request, HA setting write, second UART/parser or cloud connection.
+
+**Evidence labels:** parent FIX49 SOURCE/OFFLINE TESTED, user-LIVE last version FIX42. Complete private FIX50 ZIP SHA256 17760e65f31da18dad9efb8797e0b9dc52c046b80b4ad50d84b21f8f9e459030; YAML SHA256 b18e8485bd5b652866d2edf0a35ed8b93f08606a591730d5b6644d86f77e8683. YAML source/manifest integrity tested, all previously defined HA controls/entities and original physical TX/DE counts preserved. FIX50 **NOT TARGET COMPILED / NOT FLASHED / NOT LIVE**. M2 recurring controller-originated 0708 remains OPEN, unsolicited master TX still NO-GO.
+
+---
+
 # 2026-10-24 — OEM Connect 2.1.105 local CM930 information migration: FIX49 SOURCE
 
 **Original vendor SOURCE privately inspected:** profile930 firmware 2.4.2 info descriptor maps register decimal1337 (0x0539), named product_name_configured, to product codes 22=iTec XTR M 1N and 23=iTec XTR M 3N; register decimal2151 (0x0867) is observed as firmware242/2.4.2 by original single M6 controller RX context. These field interpretations come from OEM versioned profile data, not guesses; the full OEM source and protected handshake remain private.
