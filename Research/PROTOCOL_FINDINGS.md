@@ -1,3 +1,9 @@
+# 2026-10-24 — R2 source comparison outcome
+
+Original Connect 2.1.105 request flags mapped for profile 930 to W2 bit 0 (operation), W3 bits 0, 3 and 4 (settings). The existing FIX43 response already uses W2=0001 and W3=0019, with W0 and W1 zero. Original request setters update server registers; no source-grounded authority found for starting unsolicited XTR bus polling. Native refresh without a later controller-initiated 0708 remains NO-GO; retain user-live FIX42, no unsolicited TX or parameter writes. FIX43 is not flashed or live tested.
+
+---
+
 # 2026-10-24 — Connect original read flags versus XTR 0708 (FIX43 SOURCE)
 
 **ORIGINAL Connect source:** the supplied private `device_client/cm/modbus_server15.py` implements `request_read_all_registers()`, `set_register_read_request()`, and `_are_registers_requested()`; client-side commands set register-bank read-request bits, later Modbus read callbacks observe requests. This supports deferred read-request semantics only. It does NOT show an independently authorized XTR bus-slot/epoch or establish safe spontaneous TX for a new FC03 poll. No proprietary source reproduced publicly.
