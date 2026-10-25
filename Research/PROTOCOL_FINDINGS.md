@@ -1,3 +1,13 @@
+## 2026-10-25 — Native retained-entry source mismatch: OEM 0864→0870 vs C5AL fixed payload/duplicate (C5AP)
+
+**PROVEN genuine local XTR OEM DCM trace 2026-10-03:** first Modbus FC16 `0864/count4` receives immediate ACK (86.672/86.686s), then `0870/count17` receives immediate ACK (88.797/88.811s); subsequent controller FC03/0708 polls. All cited ADUs CRC-good. Older genuine Connect 2018 and gateway 2.1.105 start as a passive slave and handle ordinary FC16 on FIRST receipt; no independently evidenced outbound session-start initiator was found. The C5AL branch previously expected a fixed 0864 data payload **not matching the valid local XTR request**, a second identical 0864, manual prearm and previous 0708; all are code restrictions absent from OEM normal FC16 semantics. These are concrete SOURCE defects but live restoration remains unproven.
+
+**C5AP SOURCE/OFFLINE TESTED:** corrected first 0864 response via sole existing user-started guarded S92 TX owner (same session/CRC/DE/peer/collision/ABORT), with already implemented controller-offered 0870 and 0708 continuation. The 0864 receipt alone does not prove native ownership or enable HA setting writes. Offline genuine 0864/0870 request and response CRC PASS. New prearm button removed; controller 2.4.2 profile and production HA retained. No invented request/handshake/timeouts. Flash/live NOT DONE.
+
+**OPEN:** Controller might not re-offer 0864 on a running-controller orphan-059C attach; nothing currently proves a gateway-originated native resession request is legal or useful. Owner and freshness require controller-led semantics and complete current snapshot.
+
+---
+
 ## 2026-10-25 — First-059C transport response does not prove XTR 2.4.2 DCM re-entry
 
 **LOCAL C5AO LIVE:** on running-controller after ESP OTA, manual S92 stage40 got one config FC16 ACK, origin `059C` (strongly supported by firmware counters `initFC16=1 runtimeFC16ACK=1`, total physical TX=1 and provenance). Full request/ACK frame occurred before log collection, so exact ACK latency remains UNKNOWN. Controller did not offer 04A6, any other config export continuation, 085F or 0708/FC03 within 60s. No current snapshot; owner unqualified, DE LOW/RX-only expiry, CRC/resync/drop zero. Local `OEM_INTERNAL=ACCEPTED` is internal simulated flag from a config request, NOT observed XTR acceptance. SOURCE FIX to remove repeated-first-offer gates is not sufficient for a valid native session.
