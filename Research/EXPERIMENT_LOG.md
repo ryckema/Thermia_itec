@@ -1,3 +1,7 @@
+## 2026-10-25 C5AF — PREPARED / NOT RUN
+
+C5AE LIVE: only zero-payload FC16 085F/5 repeated, zero TX, zero parser-resync and CRC errors, no config first ACK. C5AF private complete ZIP prepared from C5AE with one guarded first 085F ACK after two matching frames <=5 s during existing stage40 initial 55s, through sole S92 owner, one attempt; no owner acceptance, cache or FC03 advancement and HA parameter writes ON HOLD. C5Y cold-start untouched. Offline YAML parser and ZIP CRC pass, not compiled/flashed/live. YAML SHA256 ce1dedafff7fd31b7c64cf13d9fa0d0a8cd91632418161a60d70320657ce7f15. ONE next action: user-initiated bounded C5AF first 085F test; ABORT and baseline C1C3 rollback included.
+
 
 ## 2026-10-25 — C5AD first 059C cold join — PREPARED / NOT RUN
 
