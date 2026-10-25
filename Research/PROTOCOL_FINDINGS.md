@@ -1,3 +1,13 @@
+## 2026-10-25 — OEM first-configuration FC16 service vs application accept: C5AO
+
+**PROVEN (local genuine XTR DCM 2026-10-03):** controller FC16 `0x0F:059C/count33` at 48.893s, matching OEM ACK at 48.907s, ~14ms; first `04A6/count13` at 38.419s and immediate normal FC16 ACK. CRC-valid request/ACK. No controller duplicate-059C prerequisite was observed. **LOCAL C5AN LIVE:** same `059C/count33` request at 17:15:58.285, repeated after ~787ms at 59.072, ACK 59.088 because a *local* second-offer rule required it, without subsequent DCM session acceptance. This proves the local duplicate gate is not an OEM protocol requirement; it does **not** prove it uniquely caused cold-join failure.
+
+**SOURCE / OFFLINE TESTED (private C5AO):** the first controller-offered 04A6/count13 or any of the *already locally known* 22 export-page address/count geometries follows normal one-offer Modbus FC16 ACK through the existing sole S92 UART/DE owner in one user-started experiment. C5AO initial and C5AC continuation use a common existing geometry table (no new addresses). Normal bus CRC/framing/DE/collision protection and separate session/owner/authentication stay in place; OEM internal acceptance and native controller semantic acceptance are separate from transport ACK. No physical TX/flash or controller acceptance yet. C5AN 085F first-offer semantics remain preserved and untested locally for the new path.
+
+**Versions:** `2.4.2` is the iTec XTR M controller profile in user installation; `2.1.105` is the original Connect gateway-image firmware used as behavioral reference. Cross-model ATEC/Eco observations do not override local XTR evidence.
+
+---
+
 ## 2026-10-25 — Native first config FC16 acknowledgement: C5AD vs genuine XTR OEM
 
 **LOCAL XTR LIVE C5AN:** During user-initiated S92 stage40 retained-unqualified cold join, controller produced two identical valid 0x0F FC16 059C/count33 ADUs separated by 787ms (17:15:58.285 and 17:15:59.072), both verified Modbus CRC-good. Existing C5AD source withheld response to first and ACKed second at 17:15:59.088 using one actual TX. The controller made no subsequent config/0708 offer in the bounded attempt; runtime owner remained unqualified. Native DCM cold join NOT achieved. C5AN 085F first-offer branch did NOT run because no alarm FC16 request occurred.
