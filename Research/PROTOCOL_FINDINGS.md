@@ -1,3 +1,12 @@
+## 2026-10-25 — C5AH live / C5AI consolidated OEM-equivalent lifecycle decision
+
+- **PROVEN local XTR:** C5AH after an ESP OTA reboot entered retained idle with no DCM requests within 60s (zero 0x0F FC16/FC03, zero TX, DE LOW), but other bus traffic remained healthy. Parser resync accumulated to 18 despite CRC_DIFF=0 and drops=0, cause OPEN.
+- **PROVEN local XTR independently:** C5Y cold controller-restart guarded first FC23/FC16 export and subsequent FC03 0708; this does not automatically prove a new retained-idle-to-C5Y transition.
+- **OEM source conclusion:** genuine Connect server services controller-driven Modbus slave requests. Internal FC16 acceptance logic and a valid ACK are not a spontaneous XTR handshake, nor a physical UART owner. No OEM trace in current evidence demonstrates an initiation on a fully silent retained session after ESP-only reboot.
+- **NO-GO** adding unsolicited first-session request/handshake or further single-page ACK microtests solely to generate activity on an idle controller. **GO — SOURCE ONLY** C5AI one-shot, explicitly enabled event bridge after observed >=5s bus outage: reuse complete existing S92 START resets and C5Y response guards, never create a new physical TX path. C5AI TARGET COMPILED/FLASHED/LIVE NOT RUN, no native hot-rejoin claim, HA writes ON HOLD.
+
+---
+
 ## 2026-10-25 — OEM parity reconciliation (C1C3 / C5Y / C5Z / C5AE / C5AF)
 
 - **PROVEN local XTR:** MAIN03-C1C3 user-initiated 0708 CURRENT read demand yielded controller-owned H/D/C/M FC16 4/4 and a new atomic snapshot generation in runtime; ordinary idle 0708 polls alone did not refresh CURRENT.
