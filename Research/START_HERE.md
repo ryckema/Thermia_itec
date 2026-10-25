@@ -1,3 +1,11 @@
+## 2026-10-25 — LATEST HANDOFF MAIN03-C5AO prepared for XTR 2.4.2
+
+**Current milestone C5.** User controller **2.4.2** (iTec XTR M, older/non-Genesis); Connect firmware **2.1.105** is gateway image, not controller version. C5AN user-flashed first-join attempt on still-running controller offered 059C twice, ACK sent on duplicate, no FC03/0708/CURRENT, owner not qualified and 60s RX-only rollback (COMPLETE / NEGATIVE full DCM; first-085F branch untriggered). Genuine OEM XTR 2026-10-03 answered first 059C immediately. **Private C5AO complete single-YAML ZIP SOURCE / OFFLINE TESTED / PREPARED / NOT RUN:** one integrated first-offer FC16 fix covers 04A6/count13 and existing 22 C5AC config geometries via same S92 UART/DE TX owner, preserves 2.4.2 profile fields, C5AN 085F, previous cold-start, hot-rejoin, native FC03/CURRENT, HA and real bus protection; no semantic session acceptance from mere ACK and HA writes HOLD. Full target compile/flash/live NOT done. GitHub docs only, never publish protected firmware code.
+
+**ONE NEXT ACTION:** user compiles/flashes private C5AO and runs one bounded manual S92 stage40 full cold-join on running controller (room sensor connected, no heat-pump restart), full log; assess real native RUNTIME + FRESH H/D/C/M 4/4 and safety/ABORT. Rollback to user's saved C5AN (not included in ZIP). Continue GO/FIX/NO-GO rather than extra speculative experiments.
+
+---
+
 ## 2026-10-25 — C5AN live result and next source FIX
 
 C5AN user-flashed and live. One S92 stage40 session on running controller captured CRC-valid 059C/count33 twice at 17:15:58.285/59.072 and one C5AD ACK at 17:15:59.088. No 04A6/085F/further export/0708/FC03 or 4/4; after 60s RX-only/DE LOW, zero CRC/resync/drops. Full native cold join COMPLETE / NEGATIVE; specific new first-085F path NOT TRIGGERED, retained as RUNNING / PARTIAL validation. New SOURCE discrepancy: existing C5AD needs duplicate 059C before first ACK; genuine local OEM Connect XTR 2026-10-03 ACKed its first 059C within ~14ms. Next FIX one integrated OEM first-config-offer responder through existing manually armed S92 UART/DE path and real guards, no old YAMLs in ZIP. Do not confuse ACK with owner; no WP restart, room sensor removal or HA setting writes. See latest top canonical Research entries.
