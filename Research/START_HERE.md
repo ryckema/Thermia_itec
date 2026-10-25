@@ -1,3 +1,9 @@
+## 2026-10-25 — CURRENT HANDOFF: MAIN03-C5AN prepared, not yet live
+
+**Milestone C5.** The exact complete private C5AM source ZIP is now supplied and its YAML hash matches previously recorded source. The source-availability blocker is therefore closed. Original Connect 2018/2.1.105 + genuine XTR DCM capture justify removing C5AM's extra PREARM/two-offer/POST0662 restriction for alarm FC16 transport. A complete private C5AN YAML ZIP has been prepared (SOURCE / OFFLINE TESTED, not target compiled/flashed/live). First exact known 085F response after a single user-initiated S92 stage40 start is bounded to one new unvalidated physical ACK; no session ACCEPTED/owner/write privilege inferred. Existing native/HA features, UART/DE safeguards, parser and rollback preserved. Early transport-only alarm ACK excluded from C5AB/C5AD/C5AL initial-entry config ACK counting. Prior C5AM-COLD-JOIN-01 is still RUNNING / PARTIAL (its specific gated branch never triggered); C5AN-OEM-085F-01 is PREPARED / NOT RUN. **ONE NEXT ACTION:** one complete user-initiated C5AN cold join test on running controller, with room sensor connected, no controller restart, no setting writes, S92 ABORT/rollback available. Only actual RUNTIME/SYNCED/FRESH CURRENT 4/4 counts positive.
+
+---
+
 ## 2026-10-25 — OFFLINE: OEM 085F first-offer ACK vs C5AM two-offer gate — SOURCE / OFFLINE TESTED
 
 **Evidence review (no live test, no new firmware, no TX):** Original Connect 2.1.105 appfs (`device_client/cm/modbus_server15.py`, version 0.2.8) exposes Modbus RTU server at the existing DCM slave address and receives FC16 through normal slave handler. `CM_Client_Constants.ALARM_START_ADDRESS=2143 (0x085F)`; `_on_function16` publishes every received register event, but *excludes ALARM_START_ADDRESS* from setting internal `HandshakeState.ACCEPTED`. Thus ordinary alarm FC16 transport response and acceptance are independent. Do not infer session/owner/semantic acceptance from ACK.
