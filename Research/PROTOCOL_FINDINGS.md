@@ -1,3 +1,9 @@
+## 2026-10-25 — C5AX corrected OEM first information-page request (SOURCE/OFFLINE TESTED)
+
+OEM Connect 2.1.105 info-2.4.2.json significant metadata and Modbus packet flags map to five already locally observed genuine XTR FC16 page geometries (identity, serial, three firmware groups). C5AW one-shot 0708 response actually requested SETTINGS, not CURRENT, and subsequent XTR 03E8 was consistent. C5AX first-attach requests the correct OEM INFO class after a genuine offered 0708, then can ACK each of the five exact newly requested known FC16 page geometries once using existing S92 guarded UART/DE path within same 55-second bounded manual epoch. Physical ACKs are recorded separately from native acceptedOwner/profile/fresh cache, with NO HA parameter writes. Initial successful C5AR cold-start path is preserved; protected OEM exact mask details remain only in user-private firmware package. Candidate PREPARED / NOT RUN, not compiled or live. No evidence yet that this can cause full controller-native session on already-running XTR.
+
+---
+
 ## 2026-10-25 — OEM late attach source result + C5AW request-type correction
 
 Genuine OEM 2018 and 2.1.105 CM930 device-client implements passive controller-polled Modbus RTU slave; ordinary incoming qualifying FC16 can change the OEM LOCAL handshake indicator without a preceding fresh FC23 and causes missing-device-INFO request flags while in info-waiting runtime phase. During operation, the gateway uses distinct operation-package requests. Missing data flags are visible only upon genuine controller FC03 reads; actual delivered FC16 packet clears its flag. Examined supervisor attempts gateway-side recovery/reboot for controller silence. No explicit unsolicited controller-running reinitialization command found in inspected code; that finding does not establish universal absence or XTR owner acceptance.
