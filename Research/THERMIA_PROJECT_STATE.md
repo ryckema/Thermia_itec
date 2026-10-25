@@ -1,3 +1,17 @@
+## 2026-10-25 — MAIN03-C5AN OEM first-offer 085F integrated — PREPARED / NOT RUN
+
+**SOURCE / OFFLINE TESTED; no target compile/flash/live result.** The user has now supplied the exact private C5AM ZIP previously marked inaccessible, and its C5AM YAML SHA256 matches the documented 2467d9d8334586e3da12f2d4bcf56859338927c50533fbb883ac7d25fe3a85c2. The source blocker is CLOSED for this local preparation; the private YAML remains outside the public repository.
+
+**One integrated C5AN correction:** remove the non-OEM C5AM additional POST0662 PREARM button, two-alarm-offer gate and 8s requirement; in ONE user-started guarded S92 stage40 native session answer the FIRST exact known controller-offered 085F/count5 FC16 using the existing sole TX/UART/DE owner, one new unvalidated response max per session. Retain all real bus/CRC/peer/epoch/ABORT guards, C5AK/C5AL paths, config FC16 sync, FC03 runtime/CURRENT and production HA. Initial C5AB/C5AD/C5AL entry treats this 085F transport ACK separately from actual configuration ACKs so early alarm service cannot block later legitimate offered joins. No independent responder and no session acceptance, owned runtime, FC03 authorization, cache validity or HA parameter write follows from this alarm ACK.
+
+**OEM/XTR basis:** Original Connect 2018 and 2.1.105 receive 085F FC16 normally but exclude alarm-start address from internal HandshakeState.ACCEPTED. Genuine XTR 2026-10-03 DCM capture: first 085F/count5 zero-payload FC16 at 61.529s and ACK at 61.542s; both CRC-validated. This supports correction of the non-OEM two-offer gate; it does NOT prove that one alarm ACK alone will establish cold join on an already-running XTR. Prior C5AM-COLD-JOIN-01 stays RUNNING / PARTIAL; its specific post-0662 code path was not exercised.
+
+**Prepared private deliverable:** THERMIA_MAIN03_C5AN_OEM_FIRST_085F_PRIVATE_20261025.zip contains complete C5AN YAML, exact C5AM/C5AL/C5AK/C1C3 rollback sources, narrow patch, manifest, build/ABORT instructions. Local YAML syntax, all 848 explicit IDs unique, no unresolved id refs/substitutions, preserved UART/HA entities, XTR alarm CRC, ZIP hashes and integrity verified. Full ESPHome target compile NOT performed. Nothing flashed or transmitted.
+
+**CURRENT MILESTONE:** C5 — OEM-equivalent native cold join on running controller. **REAL BLOCKER:** controller continuation to fully qualified native runtime and fresh H/D/C/M 4/4 after one first-offer alarm response remains LIVE UNVERIFIED. **ONE NEXT ACTION:** one USER-INITIATED, bounded complete C5AN-OEM-085F-01 end-to-end live validation with existing S92 ABORT/rollback and room sensor connected; no controller restart, no blind repeats, no HA setting writes.
+
+---
+
 ## 2026-10-25 — OFFLINE: OEM 085F first-offer ACK vs C5AM two-offer gate — SOURCE / OFFLINE TESTED
 
 **Evidence review (no live test, no new firmware, no TX):** Original Connect 2.1.105 appfs (`device_client/cm/modbus_server15.py`, version 0.2.8) exposes Modbus RTU server at the existing DCM slave address and receives FC16 through normal slave handler. `CM_Client_Constants.ALARM_START_ADDRESS=2143 (0x085F)`; `_on_function16` publishes every received register event, but *excludes ALARM_START_ADDRESS* from setting internal `HandshakeState.ACCEPTED`. Thus ordinary alarm FC16 transport response and acceptance are independent. Do not infer session/owner/semantic acceptance from ACK.
