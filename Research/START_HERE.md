@@ -1,3 +1,9 @@
+## 2026-10-25 — Latest HANDOFF: C5AR user LIVE, recovery one-shot ON at last log, no outage
+
+**Latest user FLASHED/LIVE** firmware **MAIN03-C5AR** (XTR controller 2.4.2), observed `Pasted text(20261025-183448).txt` at 19:32:02–19:34:39 after ESP OTA. Passive BOOT_RX_ONLY with ordinary controller/room/outdoor bus. User-initiated Cold Recovery ON **19:32:28**, OFF **19:32:59**, ON **19:34:30**, last seen ON at 19:34:39. C5AI switch operates; no physical TX, no 5s bus outage, no controller FC23/FC16/FC03, no native owner, current snapshot H/D/C/M 0/4. V5 parser has CRC_DIFF 0, RX drops 0, 11 parser resyncs **since boot but stable** during this recording. Source build label SOURCE PREPARED is not evidence state. **Boot/manual control COMPLETE / POSITIVE**; actual C5AR native cold-return **RUNNING / PARTIAL (external trigger unobserved)**. No reason for new YAML or forced pump/room sensor power cycling. Keep one S92 UART/DE owner, CRC and ABORT, user scoped authorization; HA writes HOLD. **ONE NEXT ACTION:** user determines whether to leave one-shot ON to permit later authentic controller outage/return; otherwise OFF, and provide full log only when a genuine return occurs, to decide GO/FIX/NO-GO.
+
+---
+
 ## 2026-10-25 — HANDOFF C5AR prepared: opt-in C5AK cold return from normal passive boot
 
 **User target:** Thermia iTec XTR M controller **2.4.2** (not gateway 2.1.105). **Last FLASHED/LIVE** firmware **C5AQ**: correct BOOT_RX_ONLY, manual S92 19:08:46.695, no 04A6/059C/085F/0864/0870/0708 native offers and no TX, RX-only expiry at 19:09:46.956, clean parser. Native hot-rejoin still unexercised and cannot be forced via unsupported Modbus initiation.
