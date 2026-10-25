@@ -1,3 +1,15 @@
+## 2026-10-25 21:02 — Hot rejoin priority, C5AS parked — C5AT-HOT-REJOIN-ESP-ONLY-01 PREPARED / NOT RUN
+
+User reports a currently running native DCM on last user-FLASHED/LIVE MAIN03-C5AR (XTR controller 2.4.2) and explicitly prioritizes a hot-rejoin test. C5AS 042E refresh source package stays PREPARED / NOT RUN and PARKED; do not flash it for this test. C5AR controller-cold-return FC23→FC16→FC03/0708 and first CURRENT H/D/C/M 4/4 was locally VERIFIED and is not being retested.
+
+Exact current private C5AR source review: a user press of `S92 Native DCM | Start Session Manually` after ESP-only reboot on a healthy RS485 bus creates a new bounded stage40 epoch (60 seconds), with no unsolicited TX. The existing sole UART/DE RX owner may respond to FIRST CRC-good controller-originated 0864/count4 and then 0870/count17 and genuine FC03/0708 in that epoch with existing CRC/peer/collision/ABORT guards. Earlier C5AK ESP-only OTA trace saw controller 0864 and 0708 offered without qualified owner; actual offers are NOT guaranteed. C5AQ manual start on unchanged running controller without a recent DCM session got no DCM offers. No new firmware is required.
+
+One user-initiated experiment: capture baseline status and logs while C5AR actually has RUNTIME/acceptedOwner and fresh 4/4; leave Cold Recovery one-shot OFF; continue capturing logs; restart the ESP32 ONLY (not heat-pump controller, room sensor, or wires; no C5AS flash); as soon as ESP API reconnects press S92 Start Session Manually ONE time; collect log through 60s expiry or verified qualification. Expected success requires real 0864→0870→0708, acceptedOwner, RUNTIME/SYNCED, fresh H/D/C/M 4/4 and clean CRC/DE. A transport ACK alone is NOT success. On controller alarms/collision/CRC faults use S92 ABORT; otherwise let bounded window fall back RX ONLY. Do NOT repeat idle S92 probes or invent a master session-init. HA parameter writes remain ON HOLD.
+
+**Important risk**: the ESP reboot irrevocably loses the currently accepted native epoch; if the still-running controller does not renew its session, currently working DCM can be LOST until a later legitimate controller restart. This is an intentional disruption; disclose before user acts. **Status PREPARED / NOT RUN** until actual user log. **CURRENT MILESTONE:** native ESP-only hot rejoin. **DELIVERABLE:** current C5AR with source-reviewed test plan, C5AS parked. **REAL BLOCKER:** genuine controller-reoffered 0864/0870/0708 after ESP reboot has not been confirmed. **ONE NEXT ACTION:** one user-authorized ESP-only hot-rejoin test with complete before/after log, GO/FIX/NO-GO.
+
+---
+
 ## 2026-10-25 — LATEST HANDOFF MAIN03-C5AS prepared; last user-LIVE and locally verified C5AR
 
 **Target Thermia iTec XTR M controller 2.4.2.** C5AR 2026-10-25 user-requested controller restart, one-shot recovery consumed switch OFF after >5s actual bus silence, genuine guarded FC23 / full controller FC16 config / four FC03 0708 replies, native acceptedOwner=1, SYNCED, fresh H/D/C/M 4/4 **COMPLETE / POSITIVE**. OEM full Online/cloud and future hot-rejoin not yet proven; HA parameter writes ON HOLD.
