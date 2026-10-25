@@ -1,3 +1,15 @@
+## 2026-10-25 — MAIN03-C5AN running-controller cold join — COMPLETE / NEGATIVE (native DCM); 085F subroute not triggered
+
+**Baseline / hypothesis:** C5AN private full YAML based on C5AM, with OEM first-offer 085F normal-FC16 response and no extra POST0662/two-offer gate. User flashed C5AN and manually started S92 stage40 on running controller, no controller restart or room-sensor removal. Expected genuine controller config follow-ons, FC03/0708 and fresh 4/4 for complete success. C5AN's NEW 085F branch can only be evaluated if actual known 085F/count5 frame is offered.
+
+**Observed (user log 20261025-161645, 963 lines):** 17:15:58.285 exact controller 059C/count33 request, CRC good; 17:15:59.072 exact duplicate CRC good; 17:15:59.088 `C5AD FIRST_059C_ACK_EXECUTED`, one actual guarded TX, DE LOW. No 085F request, 04A6 or further export, no 0708/FC03, no 4/4 snapshot. Internal `OEM_INTERNAL=ACCEPTED` after config receipt does not grant native owner. A second START at 17:16:13.982 was correctly `START_DENIED already active`. 17:16:24.632 exactly 60008ms expiry, `FC16ACK=1 physicalTX=1 FC03=0 DE LOW`; 17:16:25 RX ONLY. RX CRC_DIFF=0, resync=0, drops=0; no HA writes.
+
+**Outcome:** Cold join **COMPLETE / NEGATIVE**, safe expiry **COMPLETE / POSITIVE**. C5AN first-085F path **NOT TRIGGERED**; the branch's validation remains RUNNING / PARTIAL, not a failed 085F transaction. Exact source C5AD requires *two* 059C offers within 5s before first response, whereas genuine local XTR OEM DCM trace 20261003 has 059C at 48.893s and first ACK at 48.907s (14ms), both CRC-good, no repeat. That is a concrete extra non-OEM ACK-delay gate. Causation of no DCM is UNKNOWN because controller still did not continue after ACK.
+
+**ONE change / next source decision:** FIX the initial config first-offer semantics in ONE integrated future private C5AN successor; no extra 059C microtests, no new TX/HA writes now. Preserve genuine CRC/DE/collision/session bounds, ABORT/rollback and room sensor; firmware ZIP only latest YAML/dependencies, no old YAMLs.
+
+---
+
 ## 2026-10-25 — C5AN-OEM-085F-01 — PREPARED / NOT RUN
 
 **Hypothesis:** C5AM's extra two-offer/post-0662 manual prearm gate is stricter than original Connect behavior and can suppress a legitimate controller-offered alarm FC16 response during native first attach; servicing first known 085F/count5 transport request through the existing single S92 owner will preserve the opportunity for genuine XTR cold-join continuation.
