@@ -1,3 +1,11 @@
+## 2026-10-25 — C5AO FLASHED / LIVE, native DCM still not accepted; focus OEM entry
+
+**Controller:** user Thermia iTec XTR M 2.4.2. Private C5AO first config-ACK firmware (user flashed) now has one bounded S92 session with `initFC16=059C`, `runtimeFC16ACK=1`, physical TX 1, `OEM_INTERNAL=ACCEPTED` *only internal*, no 04A6, 085F, further config, FC03/0708 or fresh H/D/C/M 4/4. First request/ACK occurred before log started 17:42:28; exact first-offer timing not proven. At 17:43:25.806 unqualified 60.031s expiry, RX-only/DE LOW, CRC/resync/drop 0. Complete end-to-end native join **COMPLETE / NEGATIVE**, fail-safe **COMPLETE / POSITIVE**. Genuine OEM XTR full export had 04A6 BEFORE 059C; therefore C5AO's corrected first normal FC16 ACK by itself does not create a native attach.
+
+**NO-GO further ACK-gate microtests. ONE NEXT ACTION:** find and integrate the specific legitimate OEM native session-entry/re-entry behavior from original Connect (2018/2.1.105) vs C5AK locally verified cold-start, or explicit NO-GO if no supporting XTR evidence. Preserve sole UART/DE, room sensor, all production HA; controller restart NOT requested, HA parameter writes ON HOLD. Do not publish private OEM firmware/YAML.
+
+---
+
 ## 2026-10-25 — LATEST HANDOFF MAIN03-C5AO prepared for XTR 2.4.2
 
 **Current milestone C5.** User controller **2.4.2** (iTec XTR M, older/non-Genesis); Connect firmware **2.1.105** is gateway image, not controller version. C5AN user-flashed first-join attempt on still-running controller offered 059C twice, ACK sent on duplicate, no FC03/0708/CURRENT, owner not qualified and 60s RX-only rollback (COMPLETE / NEGATIVE full DCM; first-085F branch untriggered). Genuine OEM XTR 2026-10-03 answered first 059C immediately. **Private C5AO complete single-YAML ZIP SOURCE / OFFLINE TESTED / PREPARED / NOT RUN:** one integrated first-offer FC16 fix covers 04A6/count13 and existing 22 C5AC config geometries via same S92 UART/DE TX owner, preserves 2.4.2 profile fields, C5AN 085F, previous cold-start, hot-rejoin, native FC03/CURRENT, HA and real bus protection; no semantic session acceptance from mere ACK and HA writes HOLD. Full target compile/flash/live NOT done. GitHub docs only, never publish protected firmware code.
