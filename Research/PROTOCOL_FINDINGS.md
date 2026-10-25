@@ -1,3 +1,15 @@
+## 2026-10-26 — C5BA first manual live after DCM absence: COMPLETE / INCONCLUSIVE
+
+User confirmed the controller-display communication warning concerns loss of expected DCM responses. Treat as expected communication-context feedback, not an unrelated heat-pump fault or reason to invent new TX authorization. User explicitly requested continuation without treating this display error as an independent blocker; retain electrical, collision, protocol guards and HA writes HOLD.
+
+User C5BA LIVE at 00:31:10 manual S92 stage40: first received 085F/5 (one physical ACK) then genuine controller FC03 0708/6 at 00:31:13.765, explicitly FIX21 0708_UNQUALIFIED_NO_REPLY; zero qualifying normal FC16 042E/0442 prefix, no C5AZ INFO_FIRST read or C5BA INFO_PENDING continuation. Source C5BA follow-up requires previous genuinely served first read, c5ax_info_acked_mask nonzero and different from last mask, exact same-epoch c5az normal prefix anchor, and all original S92 guards. This run did not reach that branch, so C5BA new capability **COMPLETE / INCONCLUSIVE**, not protocol negative. Native owner unverified, H/D/C/M 0/4. Last fully LOCALLY VERIFIED session startup C5AR; C5AZ prior observed normal first prefix→0708→2/5 information pages, scoped COMPLETE / POSITIVE.
+
+**Decision:** do not remove FIX21, synthesize session owner, or turn a lone 085F alarm page into protocol authority. No extra ACK-only experiment. Next action: source-level identify original OEM handling of first FC03 after an alarm-only attach, compare with XTR controller offered actual frames, then IMPLEMENT smallest warranted normal protocol response in same S92 engine if evidence supports; otherwise explicit NO-GO and retain C5BA source. Existing controls keep user-initiated, bounded and parameter writes HOLD.
+
+CURRENT MILESTONE: C5 first native running-controller join. DELIVERABLE: C5BA live diagnosis with untriggered pending-info logic. REAL BLOCKER: controller gave no qualified config prefix before 0708; ownerless initial FC03 response rule not established. ONE NEXT ACTION: assess OEM alarm-first FC03 path against genuine XTR trace, then FIX or NO-GO; do not repeat untouched C5BA.
+
+---
+
 ## 2026-10-26 — C5AY first-page ordering assumption disproven in local LIVE run
 
 C5AY SOURCE assumes an ownerless first native config continuation must be anchored by a physical 042E/15 ACK. New local XTR M 2.4.2 LIVE: during one user-started 60.084s S92 attempt, controller instead presented native 0442/13 x56 as its first config page, and alarm 085F/5 x28, with no 042E, 0848 or FC03 0708. Only first alarm ACK sent; 0442 remained unacknowledged because 042E anchor absent, so new C5AY route never triggered. The controller was safely left RX_ONLY DE LOW, CRC/resync/drop healthy, owner unverified, H/D/C/M 0/4. This establishes a SOURCE/LIVE integration mismatch, not inability of XTR to accept 0442 ACK. Historic locally qualified XTR experiments already showed normal 0442 ACK in native synchronization.
