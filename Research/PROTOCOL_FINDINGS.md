@@ -1,3 +1,8 @@
+## 2026-10-25 — Distinguish forbidden boot-auto Start from explicit one-shot cold recovery
+
+SOURCE C5AQ: two ESPHome boot actions only (-100 cached HA publication, -200 RX-only/DE LOW/stage99/write_active=false); the inherited C5Y unconditional boot press and auto-07E4 arm were removed. One distinct C5AI `id(s92_manual_dcm_start).press()` still exists in the watchdog, but **only** after user enables `s92_retained_idle_cold_recovery_enable`, whose switch has `restore_mode: ALWAYS_OFF`, AND a later verified >=5s bus-loss/epoch/idle predicate, then it immediately consumes the one-shot switch. This is deliberately retained legacy controller cold-return recovery, not proof of a new OEM rejoin mechanism or permission for unvalidated unsolicited TX. Re-check is SOURCE / OFFLINE TESTED, not live.
+
+---
 ## 2026-10-25 — Boot-induced fake manual epoch is firmware state bug, not OEM controller rejoin
 
 **LOCAL XTR LIVE:** In user-flashed C5AO after OTA, a clean controller bus continued, but the firmware presented S92 `stage=40`, `RETAINED_CONTEXT_MANUAL`, with no button press. Zero physical TX, FC16ACK=0, no 0864/0870/0708 or CURRENT, and 60s stop to RX ONLY/DE LOW. Parser CRC_DIFF=0/drop=0 (6 parser resyncs occurred, unrelated to TX under this evidence). The running-controller did NOT offer a new DCM exchange. Thus there is no evidence of OEM auto attach.
