@@ -1,3 +1,15 @@
+## 2026-10-25 — C5AQ-MANUAL-BOOT-01 — PREPARED / NOT RUN; C5AP SUPERSEDED / NOT RUN
+
+**Hypothesis/fault evidence:** Log `Pasted text(20261025-172350).txt` from actual user-flashed MAIN03-C5AO after OTA: S92 entered `stage=40`/RETAINED_UNPROVEN without manual START, physicalTX=0, FC16ACK=0, no DCM controller offers, expired at 60.041s to RX ONLY/DE LOW. Code review found inherited `esphome.on_boot -210` executes `button.press: s92_manual_dcm_start` after 5s and conditionally autoarms legacy `07E4` responder; same source present in prepared (not flashed) C5AP. **No physical TX observed**, but the boot automation unacceptably granted the manual session scope. C5AP is **SUPERSEDED / NOT RUN** by C5AQ; do not flash old C5AP.
+
+**ONE integrated correction:** remove C5Y on_boot -210 action and boot 07E4 autoarm from complete C5AP, retain on_boot DE LOW/write inactive at -200. All user-initiated S92/ABORT, OEM first config+alarm+0864/0870, cold start, FC03, current freshness, full HA and guards unchanged. Change boot status/version text to clearly show manual START requirement.
+
+**Expected:** after reboot/OTA, C5AQ remains RX-only and stage99 WITHOUT silently pressing S92, no bus TX. When user explicitly STARTs one bounded native S92 experiment, all prior controller-offered reply paths remain, with true native RUNTIME/SYNCED+FRESH H/D/C/M 4/4 as the only end-to-end positive. **Actual:** NOT RUN for C5AQ; offline PyYAML parsed, 850 IDs unique, 798 id refs resolved, two remaining on_boot actions, no auto S92 start trigger, only one explicit assignment to write_active=true, preserved non-boot functional groups and ZIP PASS. Not target-compiled, flashed or live. **Abort/rollback:** S92 ABORT/DE LOW and user's saved last working firmware (not bundled), keep pump and room sensor connected; HA parameter writes HOLD.
+
+**ONE NEXT ACTION:** one user-initiated C5AQ OTA/boot + manual end-to-end S92 validation; decide GO/FIX/NO-GO; no separate 07E4 microtest.
+
+---
+
 ## 2026-10-25 — C5AP-OEM-NATIVE-REJOIN-01 — PREPARED / NOT RUN
 
 **Hypothesis:** Existing C5AL retained/rejoin handler in latest user-FLASHED C5AO imposes non-OEM requirements (separate PREARM, two identical `0864` polls, mismatching hard-coded version payload, previous `0708`, 12/15s protocol deadlines), withholding a correct first normal version-page FC16 ACK. Within one already user-initiated S92 native session, a first genuine CRC-valid controller `0864/count4` can be ACKed through the sole TX owner; a genuinely offered `0870/count17` can then follow and existing FC03/CURRENT functions may qualify only with actual controller continuation.
