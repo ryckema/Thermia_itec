@@ -1,3 +1,15 @@
+## 2026-10-25 — HANDOFF C5AR prepared: opt-in C5AK cold return from normal passive boot
+
+**User target:** Thermia iTec XTR M controller **2.4.2** (not gateway 2.1.105). **Last FLASHED/LIVE** firmware **C5AQ**: correct BOOT_RX_ONLY, manual S92 19:08:46.695, no 04A6/059C/085F/0864/0870/0708 native offers and no TX, RX-only expiry at 19:09:46.956, clean parser. Native hot-rejoin still unexercised and cannot be forced via unsupported Modbus initiation.
+
+**Next firmware PRIVATE MAIN03-C5AR** derives from exact live C5AQ. Found concrete local C5AI bug: opt-in one-shot cold recovery only eligible after failed retained 60s run (origin5/M6=7); a properly passive C5AQ boot is origin0/M6=0 and thus could never arm on a later actual controller outage from boot. Integrated **one predicate FIX**: allow both exact pairs, while requiring explicit user switch (ALWAYS_OFF on reboot), verified >=5s real bus silence, stage99, full existing dirty/refresh/accepted-owner guards and consume one-shot before same S92 START; then preserved C5AK/C5Y guarded controller-response path. All UART/DE, V5 CRC, FC23/FC16/FC03, 0864/0870, HA entities and ABORT unchanged. No automatic session start at boot and no new unsolicited TX.
+
+**STATUS C5AR:** SOURCE/OFFLINE TESTED, PREPARED / NOT RUN. One compact private ZIP `THERMIA_MAIN03_C5AR_OPTIN_COLD_RETURN_XTR_242_PRIVATE_20261025.zip` includes only full C5AR YAML+README+MANIFEST (no historical YAML); YAML SHA256 `ef50a552c1a737f88286fc9313a79d772cf891d8176a46349533985e5492e45b`; no target compilation, user flash, or live evidence. Existing C5AQ remains live verified.
+
+**ONE NEXT ACTION:** User compiles/flashes C5AR then confirms passive boot and default cold-recovery switch OFF. For one actual controller outage/restart, user may explicitly enable opt-in beforehand with logging and let the existing bounded C5AK engine await genuinely observed controller return (not artificially restart heat pump or disconnect room sensor). Log native qualification/fresh H/D/C/M 4/4; ABORT and restore saved C5AQ as necessary. HA parameter writes ON HOLD. Do not repeat empty S92 idle experiment.
+
+---
+
 ## 2026-10-25 — LATEST C5AQ LIVE handoff: real manual start, no native DCM controller offer
 
 **Source of truth:** user `Pasted text(20261025-181012).txt`; main target iTec XTR M controller 2.4.2. Firmware MAIN03-C5AQ **FLASHED/LIVE**, not merely source prepared; initial 19:08:03–19:08:46 OTA passive BOOT_RX_ONLY/TX LOCKED, proving unwanted C5Y boot auto-start fixed (**COMPLETE / POSITIVE**). The sole S92 event at **19:08:46.695 was triggered by the USER** (not automatically). Session lasted 60.247s, no controller DCM 04A6/059C/085F/0864/0870 offers, no FC03/0708, no ACK/TX and fresh CURRENT H/D/C/M 0/4. Automatic RX-only/DE LOW expiry at 19:09:46.956, CRC/resync/drops zero, ordinary controller/room/outdoor frames present. Native running-controller attach in this attempt COMPLETE / NEGATIVE; 0864/0870 implementation COMPLETE / INCONCLUSIVE (unexercised). C5AP remains superseded/unflashed; do not revert to it.
