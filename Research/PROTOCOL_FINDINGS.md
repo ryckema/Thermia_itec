@@ -1,3 +1,13 @@
+## 2026-10-25 — OEM parity reconciliation (C1C3 / C5Y / C5Z / C5AE / C5AF)
+
+- **PROVEN local XTR:** MAIN03-C1C3 user-initiated 0708 CURRENT read demand yielded controller-owned H/D/C/M FC16 4/4 and a new atomic snapshot generation in runtime; ordinary idle 0708 polls alone did not refresh CURRENT.
+- **PROVEN local XTR in scoped context:** C5Y automatic *controller cold-restart* recovered via guarded FC23, native FC16 export through 06F4 and runtime 0708; parser resync/secondary refresh caveat remains.
+- **COMPLETE / NEGATIVE local test:** C5Z ESP-only retained hot-rejoin: repeated 042E/080C, zero physical TX, no qualified runtime before expiry. No proof that OEM logical acceptance authorizes UART ownership.
+- **LIVE OBSERVED, unqualified:** C5AE received repeated zero-payload 085F/count5 with no ACK/TX; C5AF introduces a one-shot guarded first ACK response to this pattern. **C5AF PREPARED / NOT RUN**, not semantically proven.
+- **REAL BLOCKER:** ESP-only hot-rejoin plus parser-resync/refresh robustness, not basic RS485 framing or cold-start export. Preserve single physical owner and HA parameter-write hold.
+
+---
+
 ## 2026-10-25 — C5X OEM parity guarded owner cleanup — PREPARED / NOT RUN
 
 Private integrated source-only ZIP `THERMIA_MAIN03_C5X_OEM_PARITY_CLEANUP_PRIVATE_20261025.zip`, based on C5V source-only via latest locally LIVE C1C3 baseline. Concrete cross-guard consistency correction: when EXP315 handoff has actually sent a guarded 07E4 ACK it records `c5v_07e4_handoff_epoch`. RX-side FC03 export provenance already recognized that physical handoff, but the sole UART/DE writer FC03 owner and RX FC03 owner conditions depended on temporary `s92_rejoin_approved`; C5X also recognizes the existing current-session epoch at those checks. No way to create the epoch was added, no new physical TX, no frame changes, no bypass of CRC/peer/stage40/received FC16/collision precautions. Existing R4 and cold-start remain untouched. YAML parsed offline; ZIP CRC pass; 77 central TX owner references unchanged. SHA256 YAML 7c48ae3e91cd79fd3888c174544ee28e8e81948a2ce7c13acae07d763782dbe6. Not target compiled, not flashed, not live verified. This is a targeted correction, NOT a full firmware dead-code removal or automatic buttonless recovery release. Removing historical EXP handlers globally requires verified dependency analysis and target build to preserve production HA entities. Keep HA parameter writes ON HOLD. Next action: implement OEM-equivalent automatic two-route controller/ESP restart qualification under defined bounded user-initiated TX validation; no autonomous unvalidated TX.
