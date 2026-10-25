@@ -1,3 +1,17 @@
+## 2026-10-25 — C5AR-OPTIN-COLD-RETURN-01 — PREPARED / NOT RUN
+
+**Hypothesis:** C5AQ's existing user opt-in one-shot C5AI controller cold-recovery watchdog is artificially reachable only from `RETAINED_NO_DCM_OFFER` (origin5/M6=7); it cannot recover from proven normal `BOOT_RX_ONLY` origin0/M6=0 without a needless failed manual 60s S92 first. Accepting the untouched passive boot pair, while retaining every existing real guard, correctly hands an actual controller-bus outage into the validated C5AK/C5Y controller-return engine.
+
+**Baseline/previous evidence:** Complete C5AQ locally FLASHED/LIVE: user 2026-10-25 log shows normal passive boot and explicit manual stage40, 0 controller DCM offers, 0 TX, 60s RX-only expiry and stable controller/room/outdoor traffic. C5AK earlier cold start locally verified; genuine original Connect is slave; no outbound session-init TX validated.
+
+**ONE change:** C5AR private one existing watchdog predicate accepts (origin0/M6=0) BOOT_RX_ONLY OR existing (origin5/M6=7) retained idle, **only** if explicit one-shot switch ON (ALWAYS_OFF after ESP reboot), stage99, real >=5s bus silence, clean bus/owner/queues/refresh, and one-shot unused. Retains prior ABORT exclusions, consumes switch before shared START, transitions via original M6 event3 and unchanged CRC-good exact controller FC23 + A80E/A80F guards, C5AK initial FC16/FC03 runtime, 0864/0870, V5 parser, DE/UART and full production HA. No autonomous boot START, invented TX/epoch/auth or parameter writes.
+
+**Expected:** after flashing, normal passive boot and zero TX; switch OFF: no change. Explicitly opt in one time, then if actual future >=5s bus outage and genuine subsequent controller startup: C5AI transition from origin0/M6=0 -> C5Y stage1, first fresh ADU -> stage2, genuine qualified FC23 challenge -> existing normal native response. Positive end-to-end only with actual controller runtime + synced fresh H/D/C/M 4/4; mere trigger/transport ACK cannot count. **Actual:** NOT RUN. OFFLINE source/YAML/ID/ZIP checks pass; target compile/flash/live unverified. No live test instructed to force heat pump reboot; use natural event or appropriate separate user-controlled window. **ABORT/rollback:** switch OFF before consumed to cancel, S92 ABORT for active error, DE LOW/RX ONLY, restore saved C5AQ. No room-sensor disconnect; HA parameter writes HOLD.
+
+**Decision:** SOURCE FIX prepared. **ONE NEXT ACTION:** user flash C5AR and enable one-shot only if they wish to validate a naturally occurring controller return; log real event and decide GO/FIX/NO-GO, not another empty 60s S92 test.
+
+---
+
 ## 2026-10-25 — C5AQ-MANUAL-BOOT-01 LIVE: COMPLETE / POSITIVE boot; controller-offered native rejoin COMPLETE / INCONCLUSIVE
 
 **Baseline:** C5AQ private single full YAML, derived from C5AP; user flashed via ESPHome OTA, XTR M controller 2.4.2 still running, room sensor connected. Log `Pasted text(20261025-181012).txt`, 1610 lines.
