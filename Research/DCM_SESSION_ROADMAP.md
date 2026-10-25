@@ -1,3 +1,11 @@
+## 2026-10-25 — C5AT user LIVE hot rejoin is PARTIAL; retained runtime packets observed, owner not requalified
+
+After user ESP-only OTA reboot on MAIN03-C5AR, user pressed S92 at 21:25:55.782. XTR controller stayed operational and offered FC16 `042E/15` (one ACK), `0662/33` (one ACK), repeated `0848/23` (NO_ACK without owner), and 14 FC03 `0708` polls (withheld). Exactly TWO guarded physical TX, DE LOW, CRC_DIFF/resync/drops all zero. No controller 0864→0870 or full config pages; M6 acceptedOwner=0, config NOT_SYNCED, H/D/C/M 0/4. **Important:** C5AJ 0662 sets bounded 120s continuation window; uploaded recording ends 21:27:04 ~66s after ACK and **does not contain its final timeout**. C5AT experiment **RUNNING / PARTIAL**, no complete native hot rejoin in observed window. Do not repeat test or suggest a physical bus start frame, nor claim failed 0864 implementation where no 0864 was offered. `OEM_INTERNAL ACCEPTED` is local frame classification, not semantic acceptance. C5AR cold-start remains proven; C5AS refresh remains PARKED/PREPARED.
+
+**MILESTONE:** C5 retained-context hot rejoin before C5AS. **REAL BLOCKER:** safely binding ongoing controller-originated runtime `0848`/0708 to a fresh ESP session without independent OEM re-entry/owner evidence. **ONE NEXT ACTION:** inspect final 120s tail from same C5AT attempt if available, then choose one sourced existing-engine fix/NO-GO using OEM firmware and XTR captures, with HA writes HOLD.
+
+---
+
 ## 2026-10-25 21:02 — Hot rejoin priority, C5AS parked — C5AT-HOT-REJOIN-ESP-ONLY-01 PREPARED / NOT RUN
 
 User reports a currently running native DCM on last user-FLASHED/LIVE MAIN03-C5AR (XTR controller 2.4.2) and explicitly prioritizes a hot-rejoin test. C5AS 042E refresh source package stays PREPARED / NOT RUN and PARKED; do not flash it for this test. C5AR controller-cold-return FC23→FC16→FC03/0708 and first CURRENT H/D/C/M 4/4 was locally VERIFIED and is not being retested.
