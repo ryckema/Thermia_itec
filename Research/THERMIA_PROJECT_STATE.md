@@ -1,3 +1,15 @@
+## CURRENT — 2026-10-25 — C5AF prepared; C5Y cold recovery proven, ESP-only rejoin open
+
+**Evidence reconciliation (no new live test):** The uploaded `thermia-main03-c5af.yaml` SHA256 `ce1dedafff7fd31b7c64cf13d9fa0d0a8cd91632418161a60d70320657ce7f15` matches the existing C5AF experiment log. **C5AF PREPARED / NOT RUN**, source candidate only; not target compiled, flashed or XTR live verified. It adds one bounded guarded *first* zero-payload `0x0F FC16 085F/count5` ACK attempt under the existing S92 TX owner; neither ACK nor OEM internal state alone proves session ownership or semantic acceptance. Physical validation must be separately user-initiated with ABORT and rollback; HA parameter writes ON HOLD.
+
+**Latest locally verified functions:** MAIN03-C1C3: native cold/runtime and atomic CURRENT H/D/C/M 4/4 with controller-owned FC16 receipt; a user-initiated read-only refresh produced new generation 1→2 in normal runtime. MAIN03-C5Y: **COMPLETE / POSITIVE** for autonomous *controller-restart cold recovery*, with genuine FC23, ordered FC16 export through 06F4 and resumed 0708 runtime. Caveats: parser resync growth and secondary refresh abort; not full OEM parity. MAIN03-C5Z: **COMPLETE / NEGATIVE** for ESP-only retained hot-rejoin in the tested 60s window (repeated 042E/080C, zero TX, session expired). C5AE live evidence shows repeated zero 085F and zero TX; C5AF addresses that exact opportunity, but its result remains unknown.
+
+**REAL BLOCKER:** reliable automatic ESP-only retained-session reacquisition without confusing passive OEM-internal ACCEPTED with native TX authorization; additionally fix observed parser-resync/refresh abort. Preserve single UART/RX/DE/TX owner, CRC/collision safeguards, existing working HA monitoring, cold recovery and manual CURRENT refresh.
+
+**ONE NEXT ACTION:** user-initiated bounded C5AF exact 085F first-response validation with live logs and baseline C1C3 rollback; do not treat source preparation as live success. No new TX, flashing or live experiment was performed by this documentation update.
+
+---
+
 
 ## 2026-10-25 — C5AD first 059C cold join — PREPARED / NOT RUN
 
