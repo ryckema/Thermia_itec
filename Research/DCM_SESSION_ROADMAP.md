@@ -1,3 +1,11 @@
+## 2026-10-25 — C5AN OEM-equivalent first alarm response: PREPARED / NOT RUN
+
+Roadmap remains at **C5: cold join on already-running controller, then durable session/hot rejoin**. Genuine original Connect 2018/2.1.105 and local XTR 2026-10-03 DCM capture show first 085F FC16 normally ACKed without another prearm or two identical alarm offers; this ACK does not mean HandshakeState.ACCEPTED. The previously missing *exact* C5AM source ZIP is now available and byte-verified. One private full-YAML C5AN source candidate is integrated with first-offer known alarm ACK via existing S92 owner, normal CRC/DE/peer guards, one bounded NEW unvalidated alarm response, and initial cold/hot entry accounting that does not misclassify the alarm ACK as config export. Production HA, native cold start, C5AL hot rejoin, FC16 and FC03/C3 preserved. OFFLINE YAML/ID/CRC/ZIP PASS; target compile/flash/live NOT done. Old C5AM attempt remains RUNNING / PARTIAL; its gated subroute was never triggered.
+
+**NEXT:** one user-initiated complete bounded C5AN-OEM-085F-01 running-controller cold-join end-to-end validation; only full native RUNTIME+SYNCED+FRESH H/D/C/M 4/4 will count positive. No controller restart, room sensor stays connected, existing S92 ABORT/rollback, HA writes ON HOLD. If no genuine controller continuation, FIX or NO-GO, not another 085F microtest.
+
+---
+
 ## 2026-10-25 — C5AM first post-flash log review — RUNNING / PARTIAL; target post-0662 fix NOT exercised
 
 **LIVE device evidence:** User supplied `Pasted text(20261025-121309).txt` (1135 lines) and `Pasted text (2)(20261025-121546).txt` (3515 lines). The shorter file is an EXACT PREFIX of longer log; they are **one overlapping continuous capture**, not two independent runs. Firmware text sensor confirms `MAIN03-C5AM` actually FLASHED / LIVE (binary hash not proven) following an ESPHome OTA reset; source's self-label `SOURCE PREPARED` is embedded build name, not current evidence level. Controller stays active, room sensor attached, normal bus RX. HA parameter write queue 0.
