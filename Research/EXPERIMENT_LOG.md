@@ -1,3 +1,9 @@
+## 2026-10-25 — C5AU-RETAINED-OWNER-01 — PREPARED / NOT RUN
+
+**Hypothesis:** On XTR controller 2.4.2 after ESP-only boot, original Connect's slave-style retained handling can be approximated without fictitious new controller FC23/0864/0870 by responding to an exact controller 0848/23 in the same user-initiated S92 epoch after previous physically ACKed 042E/15 + 0662/33 and a real post-0662 0708 poll. A subsequent real controller 0708 then independently qualifies transport; fresh configuration/profile/current data is not assumed. **Baseline:** user-LIVE C5AR cold start COMPLETE / POSITIVE; C5AT ESP-only test 21:25:55–21:27:04 RUNNING / PARTIAL (final tail not captured), 2 native ACK, 14 withheld FC03 0708, repeated 0848. **ONE integrated change:** private C5AU source from exact C5AR, one existing S92 engine, one bounded retained transport candidate, existing 120s C5AJ budget/failback, original CRC/DE/ABORT and W0/W1=0, no second writer, no setting write, C5AS parked. **Expected:** actual guarded 0848 ACK, subsequent actual served 0708, new epoch transport qualification without false SYNC/FRESH; full success requires independent real config and H/D/C/M 4/4. **Actual:** not run; full YAML parsed, 852 IDs unique/800 resolved refs and ZIP CRC pass; no target compilation, user flash, bus TX or live validation. **ABORT:** S92 ABORT/DE LOW; rollback saved C5AR. **ONE NEXT ACTION:** user holds this private ZIP until a real DCM exists again; one user-initiated flash/ESP-only hot-rejoin validation with complete log. HA parameter writes HOLD.
+
+---
+
 ## 2026-10-25 — C5AT-HOT-REJOIN-ESP-ONLY-01 — RUNNING / PARTIAL (user ESP-only restart)
 
 **Baseline:** proven C5AR cold-start DCM native acceptance after controller reboot, controller XTR 2.4.2; C5AS 042E refresh parked. User restarted ESP ONLY, actual MAIN03-C5AR OTA-reset confirmed, pressed manual S92 **21:25:55.782**. Log `Pasted text(20261025-202729).txt` 21:25:51–21:27:04.
