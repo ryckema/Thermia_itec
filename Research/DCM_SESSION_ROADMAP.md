@@ -1,3 +1,13 @@
+## 2026-10-25 — correction: expected Online-module communication alarm after failed retained hot rejoin
+
+**USER CONFIRMED:** The Thermia display's error was explicitly a **communication problem with the Online module**, which the user expected once C5AK stopped answering all FC16/0708 after ESP reboot. User restarted the heat-pump controller, which now runs normally but has **no active DCM session**. The alarm is consistent with proven missing DCM responses; it is **not** standalone evidence of hardware damage or a separate unexpected controller fault. Causal timing for other faults not claimed.
+
+**Classification:** C5AK-HOT-OWNED-01 stays **COMPLETE / NEGATIVE** for hot rejoin, with clean RX and fail-closed DE LOW; the observed communication alarm is the expected functional consequence, not an additional independent research blocker. C5AL experimental retained-entry fix stays **PREPARED / NOT RUN**, SOURCE/OFFLINE only; **cannot classify a run without existing owned DCM session as hot rejoin**. Do not automatically flash/activate TX; restore qualified DCM session first only through previously validated, user-initiated guarded procedure if/when user chooses (no unnecessary controller restart, preserve room sensor), then bounded C5AL experiment. HA parameter writes remain ON HOLD.
+
+**CURRENT MILESTONE:** C5 hot rejoin. **DELIVERABLE:** expected alarm classified; C5AL remains private experimental candidate. **REAL BLOCKER:** absent owned DCM session and unvalidated 0864 retained continuation, not an unexplained hardware alarm. **ONE NEXT ACTION:** preserve normal heat-pump operation until a qualified native session is intentionally restored for one bounded C5AL test.
+
+---
+
 ## 2026-10-25 — C5AL guarded retained 0864 hot-rejoin integration — PREPARED / NOT RUN
 
 **Prior live evidence:** C5AK-HOT-OWNED-01 was COMPLETE / NEGATIVE: genuine healthy-session ESP-only reboot produced repeated controller-offered 0864/count4 FC16 and 0708/count6 FC03 without native owner; no TX, fail-safe RX-only after 60s. Original C5AK manual controller-cold-start and manual CURRENT 4/4 were locally positive.
