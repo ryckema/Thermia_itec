@@ -1,3 +1,15 @@
+## 2026-10-25 — C5AO-OEM-FIRST-FC16-01 live — COMPLETE / NEGATIVE (native DCM)
+
+**Baseline / one change:** Exact private C5AN => C5AO known-config first FC16 no duplicate-offer gate for `04A6/13` and 22 existing XTR pages; sole S92 UART/DE owner, controller 2.4.2, no HA writes. Prior C5AN isolated 059C duplicate ACK followed no session. OEM local successful XTR trace answers first 059C promptly *in an already-running export following 04A6*.
+
+**Observed:** User booted/OTA-flashed C5AO (build sensor 17:43:25.521), manually activated S92 stage40 at ~17:42:25.8, log starts 17:42:28.886 AFTER initial request/ACK. Firmware counters `initFC16=1 runtimeFC16ACK=1 physicalTXthisSession=1`, provenance `initFC16=059C`, `OEM_INTERNAL=ACCEPTED` local imitation only; `acceptedOwner=0`, no 04A6, no 085F, no FC03/0708, H/D/C/M 0/4. At 17:43:25.806 `RETAINED_UNPROVEN_EXPIRED age=60031ms FC16ACK=1 FC03SERVED=0 physicalTX=1 DE=LOW`, sensor `SESSION_LOST / GUARD STOP / RX ONLY`. CRC_DIFF=0, parser resync=0, RX drops=0 and pending HA writes=0. The precise first FC16/ACK frame and timing are absent: **cannot directly prove first-offer ACK latency from this file**. No extra live experiment is warranted to isolate that event.
+
+**Actual vs expected:** Config first-offer ACK strongly supported by compiled branch plus counters, but no subsequent controller-led initial export, semantic owner, FC03 or fresh 4/4. **Native DCM COMPLETE / NEGATIVE**; safe guard/rollback **COMPLETE / POSITIVE**; first-offer *timing* **COMPLETE / INCONCLUSIVE**. C5AO first-04A6 and first-085F paths **NOT TRIGGERED** in this session. No evidence that relaxing duplicate-offer guards alone can create controller session entry.
+
+**Decision:** NO-GO another blind FC16 microtest, fabricated startup TX or acceptance promotion. **ONE NEXT ACTION:** examine *genuine* Connect attach/session entry and locally verified C5AK native cold-start to identify whether legitimate running-controller re-entry can be implemented in the ONE existing native engine; integrate a proven FIX if supported, else explicit NO-GO. ABORT/rollback unchanged, room sensor stays connected, HA setting writes ON HOLD.
+
+---
+
 ## 2026-10-25 — C5AO-OEM-FIRST-FC16-01 — PREPARED / NOT RUN
 
 **Target:** local iTec XTR M controller software **2.4.2**; original Connect `2.1.105` is a separate gateway version.
