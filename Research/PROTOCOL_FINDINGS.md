@@ -1,3 +1,9 @@
+## 2026-10-25 — C5AR user LIVE confirms manual opt-in control, NOT a controller restart
+
+**LIVE:** user-flashed MAIN03-C5AR XTR 2.4.2 enters passive BOOT_RX_ONLY; 19:32:28 enable, 19:32:59 disable, 19:34:30 enable one-shot C5AI recovery switch; no evidence of >=5s bus silence, no controller-originated DCM FC23/FC16/FC03 request, no TX, no qualified owner. Controller 0x02/room 0x0A/outdoor 0x1E remain readable and periodic A80E/AFDC flag toggles cannot be reclassified as controller reset. CRC_DIFF=0 through 1103 checks; resync 11 since boot, stable; RX drops zero. The C5AR SOURCE FIX that expands eligible idle provenance from retained to passive BOOT has **NOT BEEN TRIGGERED LIVE**; no inference about full cold return success/failure. The ON control merely permits one later guarded recovery, it does not initiate or authenticate a running-controller session. HA parameter writes HOLD.
+
+---
+
 ## 2026-10-25 — C5AR provenance gate for user-opted controller cold return, not OEM session-start TX
 
 **SOURCE VERIFIED:** C5AQ C5AI watchdog only permits cold return from retained-no-offer origin5/M6=7 after a failed 60s manual S92. The freshly verified C5AQ boot after OTA is origin0/M6=0/stage99/DE LOW, so explicit one-shot cold return cannot react to a later real controller outage there. This is a local implementation restriction, NOT an observed OEM prerequisite. C5AR adds exactly the untouched boot pair as alternate opt-in entry to same shared state engine while excluding all aborted/unqualified unrelated states.
