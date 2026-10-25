@@ -1,3 +1,8 @@
+## 2026-10-25 — C5AQ-MANUAL-BOOT-01 consolidated source verification — PREPARED / NOT RUN (unchanged)
+
+Rechecked full distributed C5AQ ZIP without creating another version: valid ZIP CRC, single 1,072,583-byte full YAML plus README/manifest, exact SHA256 `6c0634e3c721f73a79928d5fdd86ee60a23b741a5784aa9c9dcc0c015a163e57`. `on_boot` only has priorities -100/-200; no `button.press: s92_manual_dcm_start`, boot sets `write_active=false`, `write_stage=99`, DE LOW. One **separate** conditional call to the S92 START handler remains for previously implemented C5AI controller-bus-loss recovery; opt-in switch is `restore_mode: ALWAYS_OFF` and must be explicitly enabled for a one-shot later detected >=5s outage. Its existence is intentional, distinct from the removed unconditional 5-second OTA boot trigger; do not strip it as a speculative restriction. No physical TX, target compile or flash in this review. Same one full user-initiated C5AQ live validation remains next; HA parameter writes HOLD.
+
+---
 ## 2026-10-25 — C5AQ-MANUAL-BOOT-01 — PREPARED / NOT RUN; C5AP SUPERSEDED / NOT RUN
 
 **Hypothesis/fault evidence:** Log `Pasted text(20261025-172350).txt` from actual user-flashed MAIN03-C5AO after OTA: S92 entered `stage=40`/RETAINED_UNPROVEN without manual START, physicalTX=0, FC16ACK=0, no DCM controller offers, expired at 60.041s to RX ONLY/DE LOW. Code review found inherited `esphome.on_boot -210` executes `button.press: s92_manual_dcm_start` after 5s and conditionally autoarms legacy `07E4` responder; same source present in prepared (not flashed) C5AP. **No physical TX observed**, but the boot automation unacceptably granted the manual session scope. C5AP is **SUPERSEDED / NOT RUN** by C5AQ; do not flash old C5AP.
