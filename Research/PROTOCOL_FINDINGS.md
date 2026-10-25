@@ -1,3 +1,11 @@
+## 2026-10-25 — LIVE C5AQ: manual S92 alone does not trigger DCM export from already-running XTR 2.4.2
+
+**LOCAL XTR LIVE (19:08:46.695–19:09:46.956):** One genuinely user-invoked S92 stage40 received ZERO known DCM FC16 offers, including 04A6/059C/085F/0864/0870, ZERO 0708/FC03, performed ZERO physical TX, and ended RX only/DE LOW at 60.247s. All normal controller/room/outdoor bus participants remained observable, parser CRC_DIFF/resync/drop zero, H/D/C/M 0/4. Main03-C5AQ build was user-flashed and verified by log. Prior 19:08:03–46 passive post-OTA period proves inherited boot-auto START was removed successfully. Source label `SOURCE PREPARED` in build text is not current evidence status.
+
+**CONCLUSION STRONGLY SUPPORTED:** Opening an authorized passive response interval on an already-running controller does not by itself cause a full controller-driven DCM session export. Because no 0864/0870 was offered, the new C5AP/C5AQ first-offer responder is still not semantically live tested; do not call this a failed 0864 ACK or invent unsolicited session-start TX. Genuine OEM local 2026-10-03 startup 04A6/config/0864/0870/0708 was **controller initiated**, and Connect server acted as slave. Real blocker is absence of controller-originated session-entry opportunity in retained-running-controller case, NOT CRC or extra FC16 holdoff in this trace.
+
+---
+
 ## 2026-10-25 — Distinguish forbidden boot-auto Start from explicit one-shot cold recovery
 
 SOURCE C5AQ: two ESPHome boot actions only (-100 cached HA publication, -200 RX-only/DE LOW/stage99/write_active=false); the inherited C5Y unconditional boot press and auto-07E4 arm were removed. One distinct C5AI `id(s92_manual_dcm_start).press()` still exists in the watchdog, but **only** after user enables `s92_retained_idle_cold_recovery_enable`, whose switch has `restore_mode: ALWAYS_OFF`, AND a later verified >=5s bus-loss/epoch/idle predicate, then it immediately consumes the one-shot switch. This is deliberately retained legacy controller cold-return recovery, not proof of a new OEM rejoin mechanism or permission for unvalidated unsolicited TX. Re-check is SOURCE / OFFLINE TESTED, not live.
