@@ -1,3 +1,13 @@
+## 2026-10-25 — C5AI XTR live, repeated 0662 withheld — RUNNING / PARTIAL
+
+**User evidence:** logged MAIN03-C5AI after OTA; retained manual stage40 sees 56 identical native slave 0x0F FC16 0662/count33 requests during initial 60-second window, CRC A0AB stable; OEM_INTERNAL=ACCEPTED on 0662; CRC_DIFF=0, parser resync=0, drops=0, no FC16 ACK/FC03/0708/physical TX, DE LOW. M6 event6 retained-unproven expires at 60007ms (M6=7, stage99). C5AI Enable One Retained-Idle Cold Recovery was enabled only after expiry (~08:52:36); no actual controller bus loss/restart is observed, so this part is NOT RUN, not a negative cold recovery result.
+
+**Implementation interpretation:** source S92 permits 0662 native ACK in qualified ordered export, and M7 optionally after separate short manual one-shot arm/3 repeated frames; EXP426 default is capture-only. Existing retained manual session does not itself exercise M7. The extra M7 button and hard 60s session timeout despite ongoing requests are candidate unjustified restrictions for normal OEM-style Modbus servicing. Do not infer device owner or semantic acceptance from OEM_INTERNAL=ACCEPTED or repeated packets. Preserve full electrical, parser, collision and HA write guards. Do not run a new single-page test; next change must consolidate native FC16 response + continuation and run one end-to-end user-initiated bounded trial.
+
+**Outcome:** live RX observation COMPLETE / POSITIVE for repeatable 0662 stimulus and guard diagnosis; C5AI retained-idle C5Y recovery remains RUNNING / PARTIAL (no qualifying controller outage yet). No new TX, no unverified compatibility claim.
+
+---
+
 ## 2026-10-25 — C5AI integrated retained-idle C5Y rearm — PREPARED / NOT RUN
 
 **Hypothesis:** Following C5AH passive retained-idle expiry, an independently observed later >=5s full valid-frame bus outage can safely enter the ALREADY proven C5Y controller cold-start engine, instead of remaining stuck at stage99. It cannot create an OEM ESP-only hot-rejoin when the controller offers no DCM frame.
