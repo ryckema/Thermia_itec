@@ -1,3 +1,11 @@
+## 2026-10-26 — C5AY live result; C5AZ source prepared
+
+C5AY was flashed and manually started at 23:57:48 on 2026-10-25. The controller offered native page 0442/count13 56 times and alarm 085F/count5 28 times; there was no 042E/count15 or 0708 offer. One first alarm response was sent, but the C5AY native continuation was not reached because its source requires a previous confirmed 042E packet. Safe RX-only session expiry occurred after 60.084s. CRC errors, parser resynchronizations and RX drops remained zero. Session ownership was unverified and H/D/C/M freshness 0/4. Classify the C5AY proposed continuation COMPLETE / INCONCLUSIVE (never triggered); this is not evidence that the 0442 response itself failed.
+
+C5AZ was prepared privately from full live C5AY source with one integrated correction: either known native 042E or 0442 can establish physical-response provenance in a user-started bounded session, with normal source validation and subsequent packet processing in the same engine. No HA setting writes or fake owner qualification. Full private firmware ZIP exists locally. SOURCE/OFFLINE TESTED only, PREPARED / NOT RUN: target compilation, flash and live behavior not verified. C5AR remains the last locally proven fully qualified controller cold-start baseline. Next action: one user-initiated bounded C5AZ test, with abort and C5AR rollback available.
+
+---
+
 ## 2026-10-25 — MAIN03-C5AX INFO-FIRST first-attach user FLASHED/LIVE: COMPLETE / INCONCLUSIVE (branch untriggered)
 
 **Observed:** 23:25:14.209 S92 manual START stage40 after OTA C5AX confirmed on build sensor. Native controller FC16 requests 84 in 60.202s: 042E/15 x2; 085F/5 x28 (first nonzero alarm payload, remaining zero); 0442/13 x54 (repeated bit-identical). C5AA guarded second 042E ACK physically sent 23:25:15.683; C5AN first 085F ACK physically sent 23:25:15.729. Two physical TX total, NO 0848/23, NO FC03 0708/6, NO C5AX INFO request, NO info page ACK. S92 expired 23:26:14.414, M6 SESSION_LOST RX ONLY/DE LOW; PROFILE UNVERIFIED, native owner unknown, config NOT_SYNCED, H/D/C/M 0/4, CRC_DIFF=0 and no new per-session parser resync/drops, no HA writes. **Experiment COMPLETE / INCONCLUSIVE for C5AX INFO hypothesis (trigger absent)**; scoped prior 042E and 085F transport ACKs and timeout COMPLETE / POSITIVE. Do not mistake absence of INFO branch for failed info negotiation.
