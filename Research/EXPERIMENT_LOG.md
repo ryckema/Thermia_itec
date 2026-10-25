@@ -1,3 +1,21 @@
+## 2026-10-25 — C5AI integrated retained-idle C5Y rearm — PREPARED / NOT RUN
+
+**Hypothesis:** Following C5AH passive retained-idle expiry, an independently observed later >=5s full valid-frame bus outage can safely enter the ALREADY proven C5Y controller cold-start engine, instead of remaining stuck at stage99. It cannot create an OEM ESP-only hot-rejoin when the controller offers no DCM frame.
+
+**Baseline:** user-live C5AH (02:52:32–02:53:32, M6=7 RETAINED_NO_DCM_OFFER, 0 FC16, 0 FC03, 0 TX, DE LOW; 18 parser resync, 0 CRC diff/drop) + separately live-verified C5Y full cold recovery. OEM Connect serves controller-driven requests and does not prove spontaneous DCM initiation on XTR.
+
+**ONE integrated change:** private C5AI complete YAML reuses the exact S92 Manual START session reset from the existing 250ms watchdog only with explicit volatile one-shot Configuration opt-in, retained idle M6=7 and a later >=5s bus silence; follows the SAME M6 event3 and C5Y cold return; new wait expires after 120s with no returned valid frame. Owner and TX guards unchanged, no new frames, no HA parameter writes. Explicit ABORT disarms opt-in and drives DE LOW. Existing HA entities preserved (255 named). YAML SHA256 `230ac3deec69ed1a1d63cffd0aa598f661afad34c596c4a7b2c545a8a9de8fdc`.
+
+**Expected:** when enabled by user and a genuine later controller restart occurs, one log `C5AI RETAINED_IDLE_TO_C5Y_COLD_WAIT`, then existing BOOT_RETURN and exact validated challenge/FC16/FC03 path. Normal ESP-only reboot/085F/idle must not trigger. Successful ACK is not semantic acceptance; full native runtime evidence required.
+
+**Actual:** SOURCE / OFFLINE TESTED: YAML parse PASS, patch retained, all existing 255 HA names preserved, unchanged S92 TX call-site count and ZIP CRC PASS. Target compile, flash, physical TX and XTR live: NOT RUN. No live experiment concluded from offline results.
+
+**ABORT/rollback:** HA S92 Native DCM | ABORT Session, verify DE LOW; rollback bundled locally proven C1C3 YAML. No room sensor unplug. Do not activate physical test autonomously.
+
+**Decision:** GO for prepared integrated cold recovery only; NO-GO for ungrounded ESP-only silent hot rejoin; next one full end-to-end user-controlled experiment if elected.
+
+---
+
 ## 2026-10-25 C5AH XTR LIVE — COMPLETE / POSITIVE (retained-idle classification)
 
 User log 02:52:32–02:53:32 reports ESP OTA restart, retained manual M6=2 and zero DCM FC16 requests, zero FC16 ACK, zero FC03/0708, zero physical TX, DE LOW. At 02:53:29 age=60004ms C5AH emits `RETAINED_NO_DCM_OFFER 60s RX_ONLY no fake controller reset DE=LOW`, closes stage 99, and M6 subsequently reports `RETAINED_IDLE / NO DCM OFFER / RX ONLY / DE LOW`; provenance updates to `RETAINED_NO_DCM_OFFER / M6=7`. This confirms C5AH's bounded classification but does NOT prove successful hot rejoin or full DCM session. At least 18 parser resyncs were observed by ~02:52:54 versus CRC_DIFF=0 and drops=0; their cause and impact remain OPEN; no ungrounded parser fix. Existing C5Y controller cold-start remains last separately live-positive recovery. Next engineering action: integrate event-based transition from retained idle to a genuinely controller-offered native initiation via existing S92, without invented controller reset, new TX owner, or HA writes. Status: C5AH classification COMPLETE / POSITIVE, native hot-rejoin COMPLETE / INCONCLUSIVE.
