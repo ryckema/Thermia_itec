@@ -1,3 +1,13 @@
+## 2026-10-25 — OEM alarm FC16 servicing and semantic acceptance (C5AN) — SOURCE / OFFLINE TESTED
+
+**OEM-derived:** In genuine Connect CM930 implementations 2018 and 2.1.105 the regular Modbus FC16 slave callback accepts an incoming alarm-page write at 0x085F normally; the code explicitly does NOT count alarm-start-address FC16 as HandshakeState.ACCEPTED. Thus **transport ACK and session acceptance are distinct**. No special second 085F offer, post-0662 deadline or additional alarm PREARM is an OEM protocol requirement based on these implementations.
+
+**XTR local genuine DCM capture:** 2026-10-03 61.529s first 085F/count5 five-zero-word write, 61.542s first matching ACK, each valid CRC16; second alarm not until 84.572s. Earlier config export included 04A6, 0662, 0683, 06F4; this first-alarm evidence does NOT independently establish a successful running-controller cold join after sparse 0662.
+
+**Corrected integration hypothesis:** C5AM's two-offer/post0662-only predicate is a non-OEM application restriction and can withhold legitimate transport service. C5AN prepared a bounded first-offer response from the existing S92 TX owner during a user-initiated unqualified session. The change is SOURCE/OFFLINE only and its controller-side outcome remains OPEN. An early 085F ACK is not a configuration-page ACK; initial join accounting must distinguish them. Retain CRC, framing, collision and true controller safeguards rather than adding hypothetical additional gates. No HA parameter writes.
+
+---
+
 ## 2026-10-25 — OFFLINE: OEM 085F first-offer ACK vs C5AM two-offer gate — SOURCE / OFFLINE TESTED
 
 **Evidence review (no live test, no new firmware, no TX):** Original Connect 2.1.105 appfs (`device_client/cm/modbus_server15.py`, version 0.2.8) exposes Modbus RTU server at the existing DCM slave address and receives FC16 through normal slave handler. `CM_Client_Constants.ALARM_START_ADDRESS=2143 (0x085F)`; `_on_function16` publishes every received register event, but *excludes ALARM_START_ADDRESS* from setting internal `HandshakeState.ACCEPTED`. Thus ordinary alarm FC16 transport response and acceptance are independent. Do not infer session/owner/semantic acceptance from ACK.
