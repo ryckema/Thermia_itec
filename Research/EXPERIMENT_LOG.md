@@ -1,3 +1,15 @@
+## 2026-10-25 — C5AN-OEM-085F-01 — PREPARED / NOT RUN
+
+**Hypothesis:** C5AM's extra two-offer/post-0662 manual prearm gate is stricter than original Connect behavior and can suppress a legitimate controller-offered alarm FC16 response during native first attach; servicing first known 085F/count5 transport request through the existing single S92 owner will preserve the opportunity for genuine XTR cold-join continuation.
+
+**Baseline:** User-supplied exact full C5AM private YAML (SHA256 2467d9d8334586e3da12f2d4bcf56859338927c50533fbb883ac7d25fe3a85c2), previously FLASHED/LIVE as identified by sensor but no binary hash. Earlier C5AL cold join: 04A6/04BA/059C/05FF/0662 ACKs followed by recurring zero 085F with no continuation; complete native join NEGATIVE and safe fall-back POSITIVE. C5AM run remains RUNNING / PARTIAL with new gated path NOT TRIGGERED. Genuine OEM XTR 2026-10-03 first 085F request/ACK timestamps 61.529/61.542s (CRC-good); Connect 2018/2.1.105 excludes 085F from handshake acceptance.
+
+**ONE integrated change:** Private MAIN03-C5AN answers first CRC-valid known controller 085F/count5 within one user-started stage40 native session, without extra PREARM or duplicate requirement; bounded to one newly-unvalidated alarm TX per session; existing UART/DE/CRC/peer/epoch guards, ABORT/rollback, native export, hot rejoin, FC03 refresh and production HA preserved. Cold/hot initial-entry ledger subtracts this transport-only alarm ACK from prior config-ACK qualification; it never grants owner, ACCEPTED, SYNCED, fresh cache, read authorization or HA writes.
+
+**Expected:** legitimate 085F first-offer ACK actually executed (or clearly withheld for a genuine failed guard), then controller's own offered FC16 export and FC03/0708 with qualified RUNTIME/SYNCED/FRESH H/D/C/M 4/4 if compatibility is achieved. ACK alone is never positive. **Actual:** NOT RUN; source YAML/reference/IDs/hashes/ZIP offline verification PASS, target compilation NOT performed, no flash, no physical TX. **Abort:** Online alarm, collisions, CRC/resync/drop growth, invalid DE or controller behavior -> S92 ABORT RX-only/DE LOW, rollback to known source. No room sensor disconnection or heat-pump restart. **NEXT ACTION:** one full user-initiated bounded C5AN live attempt, then GO/FIX/NO-GO; no standalone 085F microtest.
+
+---
+
 ## 2026-10-25 — OFFLINE: OEM 085F first-offer ACK vs C5AM two-offer gate — SOURCE / OFFLINE TESTED
 
 **Evidence review (no live test, no new firmware, no TX):** Original Connect 2.1.105 appfs (`device_client/cm/modbus_server15.py`, version 0.2.8) exposes Modbus RTU server at the existing DCM slave address and receives FC16 through normal slave handler. `CM_Client_Constants.ALARM_START_ADDRESS=2143 (0x085F)`; `_on_function16` publishes every received register event, but *excludes ALARM_START_ADDRESS* from setting internal `HandshakeState.ACCEPTED`. Thus ordinary alarm FC16 transport response and acceptance are independent. Do not infer session/owner/semantic acceptance from ACK.
