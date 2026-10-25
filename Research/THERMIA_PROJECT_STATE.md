@@ -1,3 +1,9 @@
+## 2026-10-25 — C5AK manual CURRENT cache refresh LIVE — COMPLETE / POSITIVE
+
+User 11:18–11:22 log: existing session maintained runtime throughout. User pressed the existing four-page CURRENT refresh once at 11:22:03, complete four controller pages received by 11:22:08. At 11:22:14 session RUNTIME, config SYNCED, page FRESH, diag FRESH, receiptPages 4/4, snapshot generation 2. Receiver integrity healthy and no HA parameter writes. No ESP reboot in this log. Hot rejoin experiment remains PREPARED / NOT RUN. Next action: the one bounded user-initiated ESP-only reboot with continuous logging, starting from fresh synced session. Preserve abort/rollback and HOLD on HA writes.
+
+---
+
 ## 2026-10-25 — C5AK-HOT-OWNED-01 uploaded baseline, NO ESP reboot in window — PREPARED / NOT RUN
 
 **OBSERVED FACTS / LIVE log:** user supplied `Pasted text(20261025-100308).txt`, 4,999 lines, 10:58:46.167–11:03:02.825, on device MAIN03-C5AK. ESP uptime progressed **5281 s at 10:59:14 → 5491 s at 11:02:44**; no ESP reboot/boot marker, no controller restart, counters never reset. Native transport from the earlier C5AK manual/controller restart is still live: runtime FC16 ACKs **875→982**, FC03/0708 replies **484→543**, with DE LOW, CRC_DIFF=0, parser resync=0, RX buffer drops=0, no HA write queue. Existing display repeatedly says `FRESH_BOOT_RUNTIME_QUALIFIED` / `fresh-boot session resume QUALIFIED` but this is an existing qualified-session status repeated every poll, NOT evidence of a new reboot or hot rejoin. Provenance still `CONTROLLER_RESTART_OBSERVED_C5Y`, owner `EXISTING_MANUAL_SESSION`.
