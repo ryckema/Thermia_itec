@@ -1,3 +1,15 @@
+## 2026-10-26 — C5BB OEM alarm-first FC03 read correction — PREPARED / NOT RUN
+
+OBSERVED FACTS (XTR C5BA user LIVE): controller offered alarm FC16 085F/5 and genuine FC03 0708/6 after first 085F ACK; no qualifying ordinary 042E/0442 config-prefix and existing FIX21 withheld the 0708 response. C5BA INFO_PENDING branch was never entered. C5AZ previously yielded qualified normal FC16 prefix, 0708 and two received INFO pages (2/5). User states display communication warning derives from missing DCM, not a separate heating failure; user wishes project to continue. C5AR remains last locally verified full controller-cold-start native baseline.
+
+OEM SOURCE 2018/2.1.105 review: original Connect Modbus RTU slave allows ordinary FC03 reads independently of internal handshake flag. Alarm page 085F alone is excluded from normal handshake acceptance and cannot source missing-INFO request flags. Native read register initialization is empty; normal qualification requires later controller evidence. OEM source does NOT prove XTR accepts a zero read at this specific ownerless entry point.
+
+ONE integrated PRIVATE C5BB SOURCE fix from exact C5BA: after user-started stage40 S92 session and physically ACKed single known 085F, if controller really offers an exact CRC-good 0708/6 without normal config prefix, issue at most ONE OEM-aligned six-word empty FC03 response; no pending request flags, no invented handshake, no assumed owner. The same sole S92 UART/DE writer, CRC, peer/collision, dirty, epoch, 55s window, 60s failback, abort/rollback and HA parameter-write HOLD remain. The TX success path explicitly excludes this alarm-only transport response from native M6 session promotion or H/D/C/M freshness. Existing C5AZ normal prefix and C5BA information followup are preserved. PRIVATE ZIP `THERMIA_MAIN03_C5BB_OEM_ALARM_FIRST_PRIVATE_20261026.zip` (SHA256 37683314163db7902d9cf7db4805ffe1ec8df1455bcd32788ca82943473d3934), full YAML SHA256 ec373ba040573e8ab3b804c8fe8bb1b06341b2bcf7a188dcfc9352d3c8f7830a; README, manifest, source. YAML syntax parsed, ID uniqueness and sole UART write_array checked, archive integrity verified. SOURCE / OFFLINE TESTED, **PREPARED / NOT RUN**: not target compiled, user flashed or LIVE.
+
+CURRENT MILESTONE: C5 native first join on already-running XTR. DELIVERABLE: OEM/XTR compared and one C5BB private full firmware ZIP prepared. REAL BLOCKER: no verified semantic native owner/profile/4/4 on running XTR; alarm-only 0708 read response is not XTR live validated. ONE NEXT ACTION: user executes one bounded manual S92 C5BB trial with complete log and ABORT/rollback C5AR; classify GO/FIX/NO-GO from controller continuation. C5AU/C5AS parked.
+
+---
+
 ## 2026-10-26 — C5BA first manual live after DCM absence: COMPLETE / INCONCLUSIVE
 
 User confirmed the controller-display communication warning concerns loss of expected DCM responses. Treat as expected communication-context feedback, not an unrelated heat-pump fault or reason to invent new TX authorization. User explicitly requested continuation without treating this display error as an independent blocker; retain electrical, collision, protocol guards and HA writes HOLD.
