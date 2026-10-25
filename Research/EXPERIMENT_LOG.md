@@ -1,3 +1,17 @@
+## 2026-10-25 — C5AQ-MANUAL-BOOT-01 LIVE: COMPLETE / POSITIVE boot; controller-offered native rejoin COMPLETE / INCONCLUSIVE
+
+**Baseline:** C5AQ private single full YAML, derived from C5AP; user flashed via ESPHome OTA, XTR M controller 2.4.2 still running, room sensor connected. Log `Pasted text(20261025-181012).txt`, 1610 lines.
+
+**EXPECTED:** no automatic S92 stage40 after OTA; manual button arms sole bounded UART/DE session; controller genuinely offers known FC16 0864→0870 and FC03/0708 for complete DCM, or safely expires RX only if no controller offer. HA setting writes remain ON HOLD.
+
+**ACTUAL / OBSERVED:** MAIN03-C5AQ firmware text, OTA reset; 19:08:03–19:08:46 passive `BOOT_RX_ONLY / OWNER NOT INHERITED / TX LOCKED`, native ACK/TX=0. 19:08:46.695 explicit `S92-FIX MANUAL_START stage=40`. S92 engine active through 19:09:46, with no known 0x0F config FC16 requests (04A6/059C/085F/0864/0870), no 0708/FC03, no current H/D/C/M, no accepted owner. 19:09:46.956 guard expiry age 60.247 s: `FC16ACK=0 FC03SERVED=0 physicalTXthisSession=0 physicalTXtotal=0 DE=LOW`, state returns RX_ONLY/stage99. V5 CRC_DIFF=0, parser resyncs=0, buffer drops=0. Ordinary 02/0A/1E bus present, no settings queued, no controller restart observed.
+
+**RESULT:** BOOT manual-only fix **COMPLETE / POSITIVE** (also safe bounded expiry COMPLETE / POSITIVE). `C5AP-OEM-NATIVE-REJOIN-01` functionality inherited into C5AQ **COMPLETE / INCONCLUSIVE** because controller did not offer 0864 or 0870; running-controller native attach in this attempt **COMPLETE / NEGATIVE**. This does not establish any 0864 responder bug and does not justify another FC16 gate fix.
+
+**ONE NEXT ACTION:** NO-GO repeat empty ESP-only attach tests. Qualify C5AQ native responder when the controller *actually* starts an OEM config/export sequence via already proven C5AK startup path (manual bounded activation at an actual controller-start event); preserve room sensor, ABORT/DE/rollback and no HA parameter writes. No new file/flash required at this point.
+
+---
+
 ## 2026-10-25 — C5AQ-MANUAL-BOOT-01 consolidated source verification — PREPARED / NOT RUN (unchanged)
 
 Rechecked full distributed C5AQ ZIP without creating another version: valid ZIP CRC, single 1,072,583-byte full YAML plus README/manifest, exact SHA256 `6c0634e3c721f73a79928d5fdd86ee60a23b741a5784aa9c9dcc0c015a163e57`. `on_boot` only has priorities -100/-200; no `button.press: s92_manual_dcm_start`, boot sets `write_active=false`, `write_stage=99`, DE LOW. One **separate** conditional call to the S92 START handler remains for previously implemented C5AI controller-bus-loss recovery; opt-in switch is `restore_mode: ALWAYS_OFF` and must be explicitly enabled for a one-shot later detected >=5s outage. Its existence is intentional, distinct from the removed unconditional 5-second OTA boot trigger; do not strip it as a speculative restriction. No physical TX, target compile or flash in this review. Same one full user-initiated C5AQ live validation remains next; HA parameter writes HOLD.
