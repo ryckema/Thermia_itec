@@ -174,6 +174,8 @@ The reverse-engineering history is maintained separately from the runtime builds
 
 Evidence is separated into locally confirmed XTR M behavior, genuine Online/DCM capture evidence, firmware-derived evidence, cross-model evidence and hypotheses.
 
+> **25 October 2026 native MAIN03 update:** Live XTR evidence now confirms C5Y **autonomous controller cold-restart recovery** (guarded FC23 → FC16 export through 06F4 → runtime 0708) and C1C3 **user-requested runtime CURRENT H/D/C/M refresh 4/4**. ESP-only retained hot-rejoin remains a **REAL BLOCKER**: C5Z failed in its bounded 60-second test without TX; C5AE observed repeating zero 085F with no TX; C5AF is **PREPARED / NOT RUN** for one guarded 085F response, not target compiled/flashed/live verified. Parser-resync-induced secondary refresh abort also remains open. These private source candidates are separate from the public Write Beta and RX-only builds. **HA parameter writes remain ON HOLD for MAIN03.** Refer to the newest top entries of [project state](Research/THERMIA_PROJECT_STATE.md) and [experiment log](Research/EXPERIMENT_LOG.md); historical 18 October snapshot below is not the current live milestone.
+
 ## Current project status
 
 _Snapshot: 18 October 2026. This is a project-level overview, not a per-experiment status log. For the current evidence and verified baseline, consult [Research/THERMIA_PROJECT_STATE.md](Research/THERMIA_PROJECT_STATE.md), [Research/EXPERIMENT_LOG.md](Research/EXPERIMENT_LOG.md), and [Research/PROTOCOL_FINDINGS.md](Research/PROTOCOL_FINDINGS.md)._
