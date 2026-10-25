@@ -1,3 +1,11 @@
+## 2026-10-25 — Boot-induced fake manual epoch is firmware state bug, not OEM controller rejoin
+
+**LOCAL XTR LIVE:** In user-flashed C5AO after OTA, a clean controller bus continued, but the firmware presented S92 `stage=40`, `RETAINED_CONTEXT_MANUAL`, with no button press. Zero physical TX, FC16ACK=0, no 0864/0870/0708 or CURRENT, and 60s stop to RX ONLY/DE LOW. Parser CRC_DIFF=0/drop=0 (6 parser resyncs occurred, unrelated to TX under this evidence). The running-controller did NOT offer a new DCM exchange. Thus there is no evidence of OEM auto attach.
+
+**SOURCE CAUSE:** An inherited C5Y ESPHome `on_boot` action executed the HA manual S92 START button programmatically 5s after boot and could additionally arm legacy EXP315 07E4. This incorrectly fabricated a *manual* authority epoch during normal reboot and persisted through last prepared C5AP source. It was not controller proof or OEM-equivalent behavior. C5AQ removes boot trigger entirely; boot remains passive RX-only/DE LOW. User-initiated S92 still services guarded native controller-offered FC16/FC03 through sole UART/DE owner. This is an authorization defect fix, not an extra OEM protocol gate; locally compiled/live behavior remains UNVERIFIED until user flash.
+
+---
+
 ## 2026-10-25 — Native retained-entry source mismatch: OEM 0864→0870 vs C5AL fixed payload/duplicate (C5AP)
 
 **PROVEN genuine local XTR OEM DCM trace 2026-10-03:** first Modbus FC16 `0864/count4` receives immediate ACK (86.672/86.686s), then `0870/count17` receives immediate ACK (88.797/88.811s); subsequent controller FC03/0708 polls. All cited ADUs CRC-good. Older genuine Connect 2018 and gateway 2.1.105 start as a passive slave and handle ordinary FC16 on FIRST receipt; no independently evidenced outbound session-start initiator was found. The C5AL branch previously expected a fixed 0864 data payload **not matching the valid local XTR request**, a second identical 0864, manual prearm and previous 0708; all are code restrictions absent from OEM normal FC16 semantics. These are concrete SOURCE defects but live restoration remains unproven.
