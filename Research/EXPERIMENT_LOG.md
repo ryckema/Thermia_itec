@@ -1,3 +1,15 @@
+## 2026-10-25 — C5AT-HOT-REJOIN-ESP-ONLY-01 — RUNNING / PARTIAL (user ESP-only restart)
+
+**Baseline:** proven C5AR cold-start DCM native acceptance after controller reboot, controller XTR 2.4.2; C5AS 042E refresh parked. User restarted ESP ONLY, actual MAIN03-C5AR OTA-reset confirmed, pressed manual S92 **21:25:55.782**. Log `Pasted text(20261025-202729).txt` 21:25:51–21:27:04.
+
+**Actual:** CRC-good native controller FC16 `042E/15` first at 21:25:56.506, repeat at 57.996 ACK physically sent 21:25:58.012; `0662/33` offered 58.636 ACK physically sent 58.656 (2 physical TX total, DE LOW), no 0683–06F4 tail. Controller continues periodic `0848/23` unowned (normal ACK denied), and 14 FC03 `0708/6` controller polls withheld by guard. No 0864 or 0870 rejoin offer, no 04A6/full config, no runtime qualification, M6 state3, owner0, config NOT_SYNCED, fresh 0/4, diagnostic WAIT_VERSION. CRC_DIFF0, resync0, RX drops0, no HA writes; controller/room/outdoor traffic active. The `OEM_INTERNAL ACCEPTED` label is local classification only.
+
+**Observed end 21:27:04:** S92 stage40 still active. SOURCE C5AJ 0662 tail extends fail-close from 60 to up to 120s since 21:25:58.656; the provided log stops ~66s into this 120s tail. **Final timeout not observed; DO NOT CLOSE experiment yet.** Expected actual hot rejoin requires new native accepted owner, FC03 service and H/D/C/M 4/4: absent so far. Transport ACKs are not semantic progress. **STATUS RUNNING / PARTIAL**. C5AR known cold-start remains COMPLETE/POSITIVE; C5AS stays PREPARED/NOT RUN parked.
+
+**ABORT/rollback:** upon CRC/DE/collision/controller fault use existing S92 ABORT; no evidence of faults this trace. Do not repeat ESP reset or click S92 again to generate empty results; could have lost working DCM until future controller start. **ONE NEXT ACTION:** obtain remainder of THIS experiment near 21:27:59 if logged to determine safe expiry/final outcome, then fix only legitimate retained-session owner/continuation path grounded in OEM and local XTR captures. HA parameter writes HOLD.
+
+---
+
 ## 2026-10-25 21:02 — Hot rejoin priority, C5AS parked — C5AT-HOT-REJOIN-ESP-ONLY-01 PREPARED / NOT RUN
 
 User reports a currently running native DCM on last user-FLASHED/LIVE MAIN03-C5AR (XTR controller 2.4.2) and explicitly prioritizes a hot-rejoin test. C5AS 042E refresh source package stays PREPARED / NOT RUN and PARKED; do not flash it for this test. C5AR controller-cold-return FC23→FC16→FC03/0708 and first CURRENT H/D/C/M 4/4 was locally VERIFIED and is not being retested.
