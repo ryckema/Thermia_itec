@@ -1,3 +1,11 @@
+## 2026-10-25 — C5AP integrated OEM native 0864→0870 rejoin candidate: PREPARED / NOT RUN
+
+**C5 / SOURCE FIX delivered privately:** Last user LIVE C5AO had only isolated `059C` ACK and no controller DCM qualification, so do not repeat ACK-only tests. Original Connect 2018/2.1.105 is a passive Modbus slave; no proven legitimate unsolicited DCM start was found. Genuine local XTR 2026-10-03 successful OEM capture includes first `0864/count4` ACK, then `0870/count17` ACK, then FC03/0708. Existing C5AL source demanded a second identical 0864, extra 12s manual PREARM, prior FC03 and fixed data payload conflicting with genuine XTR. **Private C5AP** integrates first valid controller-offered 0864 through the SINGLE already user-started S92 60s engine and same physical UART/DE owner, then existing 0870/0708/current follow-up if the controller really offers it; no ACK alone grants owner. Extra prearm UI removed; other production HA, V5 protections, C5AK cold-start and C3 CURRENT preserved. Full target compilation/flash/LIVE not performed, SOURCE/OFFLINE TESTED only; small full ZIP with latest one YAML, manifest and instructions, no prior YAMLs. No private code publicly pushed.
+
+**REAL BLOCKER:** legitimate DCM re-entry on already-running XTR controller still needs controller-originated native continuation; no OEM proof of proactive master startup from Connect. **ONE NEXT ACTION:** one bounded USER-INITIATED C5AP complete native session with existing S92 ABORT and rollback, log capture before start, heat pump and room sensor running; assess RUNTIME+SYNCED+fresh H/D/C/M 4/4 to decide GO/FIX/NO-GO. No HA setting writes.
+
+---
+
 ## 2026-10-25 — C5AO user LIVE: first configuration ACK insufficient, change focus to OEM session entry
 
 **C5AO-OEM-FIRST-FC16-01:** COMPLETE / NEGATIVE full native DCM on running XTR controller 2.4.2. User firmware confirms C5AO FLASHED/LIVE. In one manually started S92 stage40 attempt, `059C` originated first ACK, ACK count and physical TX=1, but first few seconds/event not in log, so response latency not directly proven. No 04A6, 085F, FC03/0708, H/D/C/M 4/4 or qualified controller owner. Timed out at 60.031s to RX only/DE LOW without CRC, resync, drops or HA writes. OEM capture 2026-10-03 shows 059C occurs within larger initial export AFTER 04A6. Single isolated 059C ACK is not proof of a native attach.
