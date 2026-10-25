@@ -1,3 +1,13 @@
+## 2026-10-25 — First-059C transport response does not prove XTR 2.4.2 DCM re-entry
+
+**LOCAL C5AO LIVE:** on running-controller after ESP OTA, manual S92 stage40 got one config FC16 ACK, origin `059C` (strongly supported by firmware counters `initFC16=1 runtimeFC16ACK=1`, total physical TX=1 and provenance). Full request/ACK frame occurred before log collection, so exact ACK latency remains UNKNOWN. Controller did not offer 04A6, any other config export continuation, 085F or 0708/FC03 within 60s. No current snapshot; owner unqualified, DE LOW/RX-only expiry, CRC/resync/drop zero. Local `OEM_INTERNAL=ACCEPTED` is internal simulated flag from a config request, NOT observed XTR acceptance. SOURCE FIX to remove repeated-first-offer gates is not sufficient for a valid native session.
+
+**GENUINE LOCAL XTR OEM successful DCM capture 2026-10-03:** `04A6/13` offered and acknowledged at +38.419/+38.433s, then `059C/33` later at +48.893/+48.907s, then export through 0662/0683/06F4 and runtime. Thus first-059C normal ACK in successful OEM capture cannot be equated to accepting an isolated 059C on a controller that is already running without session context. Follow normal FC16 ACK behavior in an authorized context, but do not infer native controller session from it.
+
+**NEXT protocol decision:** investigate existing genuine OEM attach/initiator roles and XTR-controller epoch/entry conditions, using C5AK verified cold-start and only local capture-confirmed frames. Avoid inventing stage/timeout/command/authentication, bypassing physical bus protection, or looping more ACK probes.
+
+---
+
 ## 2026-10-25 — OEM first-configuration FC16 service vs application accept: C5AO
 
 **PROVEN (local genuine XTR DCM 2026-10-03):** controller FC16 `0x0F:059C/count33` at 48.893s, matching OEM ACK at 48.907s, ~14ms; first `04A6/count13` at 38.419s and immediate normal FC16 ACK. CRC-valid request/ACK. No controller duplicate-059C prerequisite was observed. **LOCAL C5AN LIVE:** same `059C/count33` request at 17:15:58.285, repeated after ~787ms at 59.072, ACK 59.088 because a *local* second-offer rule required it, without subsequent DCM session acceptance. This proves the local duplicate gate is not an OEM protocol requirement; it does **not** prove it uniquely caused cold-join failure.
