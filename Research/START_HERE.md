@@ -1,3 +1,11 @@
+## 2026-10-25 — CURRENT HANDOFF: C5AT ESP-only hot rejoin partial, native running context not requalified
+
+Latest user live: `Pasted text(20261025-202729).txt` 21:25:51–21:27:04, real MAIN03-C5AR firmware after ESP-only OTA, manual S92 21:25:55.782. Controller XTR 2.4.2 remains running. Genuine FC16 `042E/15` ACK once + `0662/33` ACK once (2 physical TX/DE LOW), repeated `0848/23` NO_ACK because new epoch unowned, FC03 `0708/6` 14 received/withheld. No native 0864/0870, no new 04A6/0683–06F4 full config. State remains M6 RESPONSE_SENT/WAIT ACCEPTANCE, owner0, SYNCED false, H/D/C/M 0/4. V5 CRC_DIFF0/resync0/drops0, no HA writes. `OEM_INTERNAL=ACCEPTED` only local classification.
+
+**C5AJ source** sets a 120-second bounded tail on ACKed 0662; upload stops before timeout, so new experiment `C5AT-HOT-REJOIN-ESP-ONLY-01` is **RUNNING / PARTIAL**, not COMPLETE/NEGATIVE; native hot rejoin not yet achieved in observed 68s. C5AR controller-cold-start previously COMPLETE/POSITIVE. C5AS refresh fix private SOURCE/OFFLINE TESTED PREPARED/NOT RUN and PARKED by user's request. **ONE NEXT ACTION:** examine remaining SAME run after 21:27:04 through 120s window, preferably until ~21:27:59, to confirm final fail-close; then grounded OEM retained-session fix in ONE existing S92 engine, not blind ACK/owner promotion. No repeated identical live test, extra UART writers, fake session init, controller reset, room sensor disconnect or HA parameter writes.
+
+---
+
 ## 2026-10-25 21:02 — Hot rejoin priority, C5AS parked — C5AT-HOT-REJOIN-ESP-ONLY-01 PREPARED / NOT RUN
 
 User reports a currently running native DCM on last user-FLASHED/LIVE MAIN03-C5AR (XTR controller 2.4.2) and explicitly prioritizes a hot-rejoin test. C5AS 042E refresh source package stays PREPARED / NOT RUN and PARKED; do not flash it for this test. C5AR controller-cold-return FC23→FC16→FC03/0708 and first CURRENT H/D/C/M 4/4 was locally VERIFIED and is not being retested.
