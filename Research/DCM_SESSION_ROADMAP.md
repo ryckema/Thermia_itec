@@ -1,3 +1,11 @@
+## 2026-10-25 — C5AO user LIVE: first configuration ACK insufficient, change focus to OEM session entry
+
+**C5AO-OEM-FIRST-FC16-01:** COMPLETE / NEGATIVE full native DCM on running XTR controller 2.4.2. User firmware confirms C5AO FLASHED/LIVE. In one manually started S92 stage40 attempt, `059C` originated first ACK, ACK count and physical TX=1, but first few seconds/event not in log, so response latency not directly proven. No 04A6, 085F, FC03/0708, H/D/C/M 4/4 or qualified controller owner. Timed out at 60.031s to RX only/DE LOW without CRC, resync, drops or HA writes. OEM capture 2026-10-03 shows 059C occurs within larger initial export AFTER 04A6. Single isolated 059C ACK is not proof of a native attach.
+
+**Decision NO-GO:** do not do another duplicate-offer tweak or microtest; no autonomous starting frames guessed. **REAL BLOCKER:** missing verified session-entry/recognition pathway for an *already running* controller, not merely inability to respond to FC16. **ONE NEXT ACTION:** single consolidated OEM session-initiator/attach source alignment using genuine 2018/2.1.105 Connect implementation and C5AK verified controller-startup path, then implement ONE justified existing-engine integration correction if evidence exists; otherwise explicit NO-GO. Continue to preserve verified cold-start, hot-rejoin, FC03/CURRENT, one UART/DE, room sensor and HA writes HOLD. No new firmware this result turn.
+
+---
+
 ## 2026-10-25 — C5AO source fix ready: native OEM first FC16, XTR controller 2.4.2
 
 **Roadmap C5 remains active.** The XTR 2.4.2 controller is the target; Connect gateway firmware 2.1.105 is reference, not controller version. Genuine local OEM XTR 2026-10-03 first `059C/33` gets immediate ACK; user C5AN 2026-10-25 duplicated 059C before ACK, no DCM runtime. One private **MAIN03-C5AO** integrated source fix removes invented double-offer requirements for initial `04A6/13` and 22 known config FC16 geometries. It reuses the existing sole S92 UART/DE TX owner, common C5AC 22-page table, usual CRC/collision/ABORT and 60s user-started scope, with no acceptance/cache/HA write privileges inferred. Preserve full cold-start, hot-rejoin, native runtime/refresh and HA. No further restrictive hypothetical protocol stages.
