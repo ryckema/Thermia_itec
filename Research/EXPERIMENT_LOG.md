@@ -1,3 +1,7 @@
+## 2026-10-25 C5AG lifecycle provenance — PREPARED / NOT RUN
+
+C5AF LIVE: exactly one guarded 085F ACK; no follow-up FC16/FC23/FC03, no session acceptance; clean RX and DE LOW. C5AG private integrated ZIP is based on flashed C5AF and adds source-only provenance classification in the one existing M6 lifecycle: ESP unknown; manual retained context; observed controller loss/restart C5Y; first ACKed 059C offered initialization; standalone successfully sent 085F ACK. Neither OEM internal acceptance nor transport ACK grants session ownership. No new TX sites, existing C5Y and HA entities preserved. Generic YAML parse and ZIP CRC PASS, target compile and live flash NOT RUN. HA writes ON HOLD. SHA256 f65d6d37e805ce58e31631175df8ac2236e2275ccca0d68978a0b5850e3869c7.
+
 ## 2026-10-25 C5AF — PREPARED / NOT RUN
 
 C5AE LIVE: only zero-payload FC16 085F/5 repeated, zero TX, zero parser-resync and CRC errors, no config first ACK. C5AF private complete ZIP prepared from C5AE with one guarded first 085F ACK after two matching frames <=5 s during existing stage40 initial 55s, through sole S92 owner, one attempt; no owner acceptance, cache or FC03 advancement and HA parameter writes ON HOLD. C5Y cold-start untouched. Offline YAML parser and ZIP CRC pass, not compiled/flashed/live. YAML SHA256 ce1dedafff7fd31b7c64cf13d9fa0d0a8cd91632418161a60d70320657ce7f15. ONE next action: user-initiated bounded C5AF first 085F test; ABORT and baseline C1C3 rollback included.
