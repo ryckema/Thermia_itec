@@ -1,3 +1,19 @@
+## 2026-10-25 — C5AO-OEM-FIRST-FC16-01 — PREPARED / NOT RUN
+
+**Target:** local iTec XTR M controller software **2.4.2**; original Connect `2.1.105` is a separate gateway version.
+
+**Hypothesis:** C5AN's custom first-configuration duplicate-poll requirements delay/withhold normal OEM first FC16 ACK and may prevent controller-led cold join without controller restart. A normal first ACK for exact locally known configuration geometry, in the existing one explicitly user-started 60s S92 engine, can allow (not guarantee) normal controller continuation.
+
+**Baseline / prior evidence:** complete locally flashed C5AN source. C5AN 17:15 attempt: `059C/33` twice at 17:15:58.285/59.072, one delayed ACK at 59.088, zero FC03/0708 and 0/4 CURRENT, unqualified owner, safe expiry. Genuine XTR DCM 2026-10-03: first `059C` at 48.893s, ACK 48.907s; first `04A6` at 38.419s and OEM ACK. CRC checks positive. C5AN first-085F branch NOT TRIGGERED in previous run (no 085F request).
+
+**ONE integrated implementation change:** private C5AO removes only first-offer duplicates for `04A6/count13` and each of the **same 22 locally known XTR config geometries** used by existing C5AC follow-on responder. One shared geometry table; first request ACK through the sole S92 UART/RX/DE owner within manually initiated stage40, physical CRC/peer/collision checks and normal abort/60s expiration. Keep existing later session, hot-rejoin, native FC03/current read and HA entities. `085F` transport ACK does not count as config or owner. No new semantic register write or parameter write; HA writes ON HOLD. Controller-version-specific 2.4.2 fields unchanged.
+
+**Expected for POSITIVE:** controller itself offers normal FC16 config continuation, FC03 0708, truly qualified RUNTIME+SYNCED, fresh CURRENT H/D/C/M 4/4 and normal HA/RX integrity; mere ACK negative as proof. **Actual:** NOT RUN; YAML syntax, 851 unique IDs, 799 references, private ZIP CRC/hash, source diff, genuine XTR CRC offline PASS. No full target compilation, flashing or physical TX. **ABORT/rollback:** user presses existing S92 ABORT on alarm/CRC/collision/DE/control issue; verify RX ONLY/DE LOW and restore saved C5AN firmware (not bundled); keep controller running and room sensor connected. No blind repeats or microtests.
+
+**ONE NEXT ACTION:** one bounded complete user-driven C5AO first-attach session and full log; decide GO/FIX/NO-GO before other work.
+
+---
+
 ## 2026-10-25 — MAIN03-C5AN running-controller cold join — COMPLETE / NEGATIVE (native DCM); 085F subroute not triggered
 
 **Baseline / hypothesis:** C5AN private full YAML based on C5AM, with OEM first-offer 085F normal-FC16 response and no extra POST0662/two-offer gate. User flashed C5AN and manually started S92 stage40 on running controller, no controller restart or room-sensor removal. Expected genuine controller config follow-ons, FC03/0708 and fresh 4/4 for complete success. C5AN's NEW 085F branch can only be evaluated if actual known 085F/count5 frame is offered.
