@@ -1,3 +1,15 @@
+## 2026-10-26 — C5BB alarm-first OEM idle FC03 user LIVE — COMPLETE / INCONCLUSIVE (full native join)
+
+OBSERVED FACTS: complete user C5BB log 00:46:00.702 manual S92 start; first actual controller 085F/5 ACK at 00:46:02.542; first genuinely offered FC03 0708/6 served by C5BB one-shot OEM empty read at 00:46:04.115. Subsequent controller behavior remained alarm-only: 28 total FC16 085F/5 (one first ACK and 27 zero-valued repeats no ACK), 14 genuine 0708 polls total, first answered and 13 blocked by FIX21. There was no 042E/0442 config prefix, no requested native INFO pages or H/D/C/M refresh. Exactly two physical TX, expiry after 60064ms at 00:47:00.775, SESSION_LOST / RX ONLY / DE LOW; CRC_DIFF=0, in-run resync=0 and RX drops=0. Native OEM_INTERNAL NOT_ACCEPTED, profile/owner UNPROVEN, H/D/C/M 0/4, HA parameter writes HOLD. C5BB scoped FC03 idle-read send and safe expiry COMPLETE / POSITIVE, session progression after empty read COMPLETE / INCONCLUSIVE (no continuation).
+
+STRONG CONCLUSION: ordinary alarm-first controller FC03 can be physically serviced with OEM-aligned blank response, but first blank response alone does not lead to normal configuration flow. Original OEM slave read being available without handshake does not prove 2.4.2 owner qualification from such a read. Unlike C5AZ (real first normal config prefix, OEM info request, 2/5 info receipts), C5BB produces no information progress and FIX21 blocks remaining read polls. A single 085F packet must NOT grant owner or justify unbounded TX. The user's confirmed DCM-missing communication alarm is not treated as an independent blocker; still retain real bus protections. Full prior verified native cold-start rollback = C5AR.
+
+DECISION: do NOT repeat isolated ACK/blank poll microtest; investigate this exact interrupted/alarm-only controller state against locally captured genuine DCM and OEM request-cycle sequencing, then one integrated evidence-backed normal protocol/lifecycle fix or explicit NO-GO. Do not invent controller epoch, authentication, unsolicited master TX or parameter writes.
+
+CURRENT MILESTONE: C5 running-controller first native join. DELIVERABLE: C5BB LIVE result assessed, no new firmware yet. REAL BLOCKER: alarm-only poll sequence cannot reach qualifying real configuration/identity data. ONE NEXT ACTION: reconcile OEM recurring idle FC03 handling with genuine XTR running-controller captures and route in one native engine; implement only evidenced single integrated correction, with ABORT/rollback.
+
+---
+
 ## 2026-10-26 — C5BB OEM alarm-first FC03 read correction — PREPARED / NOT RUN
 
 OBSERVED FACTS (XTR C5BA user LIVE): controller offered alarm FC16 085F/5 and genuine FC03 0708/6 after first 085F ACK; no qualifying ordinary 042E/0442 config-prefix and existing FIX21 withheld the 0708 response. C5BA INFO_PENDING branch was never entered. C5AZ previously yielded qualified normal FC16 prefix, 0708 and two received INFO pages (2/5). User states display communication warning derives from missing DCM, not a separate heating failure; user wishes project to continue. C5AR remains last locally verified full controller-cold-start native baseline.
