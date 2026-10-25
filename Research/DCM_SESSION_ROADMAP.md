@@ -1,3 +1,13 @@
+## 2026-10-25 — C5AN LIVE cold join outcome: no DCM; FIX initial config first-offer ACK
+
+**Observed:** User flashed C5AN, one S92 stage40 manual run on continuously running controller. Two controller FC16 059C/count33 requests at 17:15:58.285 and 17:15:59.072, one existing C5AD physical ACK at 17:15:59.088; no subsequent configuration pages, FC03/0708 or CURRENT 4/4. Controller owner not qualified, 60s fail-closed RX ONLY / DE LOW. Parser CRC_DIFF/resync/drop zero. Second START pressed while active was DENIED. Full DCM join **COMPLETE / NEGATIVE**; C5AN new 085F responder **NOT TRIGGERED** because no 085F offered; C5AN-OEM-085F-01 remains **RUNNING / PARTIAL** for that branch.
+
+**One source discrepancy justifying FIX:** Existing C5AD demands repeat of 059C before first ACK; genuine local XTR OEM DCM sends single 059C/count33 at 48.893s and Connect ACKs immediately at 48.907s. This is a concrete stricter-than-OEM condition; controller continuation after fixing it is not guaranteed. Do not re-run the same physical 085F experiment, reboot WP, remove room sensor or authorize parameter writes. Maintain single UART/DE and transport ACK distinct from owner.
+
+**ONE NEXT ACTION:** integrate OEM first-offer normal FC16 for qualified known controller-offered config-page first entries in private C5AN successor, preserve S92 bounded explicit user start and all actual collision/CRC/DE safeguards, then one full end-to-end user-initiated live validation. ONE small ZIP with latest complete YAML and necessary dependencies/instructions only, without older YAMLs.
+
+---
+
 ## 2026-10-25 — C5AN OEM-equivalent first alarm response: PREPARED / NOT RUN
 
 Roadmap remains at **C5: cold join on already-running controller, then durable session/hot rejoin**. Genuine original Connect 2018/2.1.105 and local XTR 2026-10-03 DCM capture show first 085F FC16 normally ACKed without another prearm or two identical alarm offers; this ACK does not mean HandshakeState.ACCEPTED. The previously missing *exact* C5AM source ZIP is now available and byte-verified. One private full-YAML C5AN source candidate is integrated with first-offer known alarm ACK via existing S92 owner, normal CRC/DE/peer guards, one bounded NEW unvalidated alarm response, and initial cold/hot entry accounting that does not misclassify the alarm ACK as config export. Production HA, native cold start, C5AL hot rejoin, FC16 and FC03/C3 preserved. OFFLINE YAML/ID/CRC/ZIP PASS; target compile/flash/live NOT done. Old C5AM attempt remains RUNNING / PARTIAL; its gated subroute was never triggered.
