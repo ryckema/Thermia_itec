@@ -1,3 +1,17 @@
+## 2026-10-25 — C5AJ unified bounded 0662→tail S92 responder — PREPARED / NOT RUN
+
+**OBSERVED (XTR LIVE C5AI baseline):** 56 repeated CRC-valid 0F FC16 0662/count33 in 60s; OEM internal ACCEPTED is not physical owner; zero TX/FC03, CRC_DIFF=0, resync=0, drops=0 and stage40 session expired. Source confirms additional M7 12s arm + three-retry condition withheld a known native request. Genuine C5Y controller restart cold join separately live-positive. The C5AI optional bus-loss one-shot path was not activated by a real controller interruption in the supplied live log.
+
+**INTEGRATED C5AJ deliverable:** private complete firmware ZIP `THERMIA_MAIN03_C5AJ_INTEGRATED_FC16_CONTINUATION_PRIVATE_20261025.zip`, YAML SHA256 `3e2b6420c14200c3328e487af6184e7c937f08424aad2da6395b6193f2b7526a`. Starts with full user-live C5AI YAML. During a single explicit S92 manual START in retained stage40, exact CRC-validated 0662/count33 may be answered ONCE without a second M7 button or 3 duplicates, if all other existing semantic-idle, peer, RX baseline, CRC/shape, single S92 TX/DE owner and collision guards hold. It then uses the existing guarded ordered 0683..06F4 continuation, with up to 120s bounded tail instead of interrupting it at absolute 60s. No new frame, UART writer, HA parameter-write permission or owner promotion by transport ACK; original C5Y and C5AI cold-return retained. The legacy M7 button remains as backwards-compatible entity but is not needed for the new single manual native session.
+
+**Validation:** SOURCE / OFFLINE TESTED: YAML parse PASS with custom ESPHome !secret tag treatment, identical HA names, one S92 owner and unchanged call-site count (79), 0662 ACK bytes unchanged, ZIP CRC PASS. ESPHome target compiler, flashing and XTR LIVE are NOT RUN. Explicit bounded physical experiment, ABORT and bundled C1C3 rollback included. This is ONE integrated iteration, not multiple single-frame mini-tests. C5AJ may advance only on controller-observed native continuation plus FC03/cache semantics; ACK alone insufficient.
+
+**REAL BLOCKER:** C5AJ response-to-native-controller offer requires live end-to-end observation; silent ESP-only hot-rejoin without any controller DCM requests remains unsupported.
+
+**ONE NEXT ACTION:** user-controlled single C5AJ end-to-end FC16 0662→tail→FC03 test and GO/FIX/NO-GO, without new diagnostic-only microtests.
+
+---
+
 ## 2026-10-25 — C5AI new XTR live log: OVERSTRICT RETAINED 0662 SERVICE — RUNNING / PARTIAL
 
 User-supplied live log ~08:51:01–08:53:25 confirms MAIN03-C5AI FLASHED/LIVE. A current manually armed stage40 retained context receives at least 56 repeated, identical CRC-valid native slave-0x0F FC16 requests at 0x0662/count33 in the first 60 s. EXP426 records repeats with stable wire CRC A0AB; RX CRC_DIFF=0, parser resync=0, drops=0, peer/unknown=0, DE LOW, physical TX=0 and config remains NOT_SYNCED. OEM internal state reports ACCEPTED on 0662 (not physical/session-owner proof). At age 60007ms the code expires the session although controller requests are ongoing. Later C5AI one-shot cold-rearm was enabled (~08:52:36), but no genuine 5s bus outage or controller return occurred in this log, so retained-idle→C5Y transition is **NOT RUN** here (neither confirmed nor failed).
