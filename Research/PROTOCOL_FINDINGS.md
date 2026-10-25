@@ -1,3 +1,13 @@
+## 2026-10-25 — C5AI XTR repeated 0662 reveals excess owner gates
+
+- User XTR LIVE: at least 56 identical controller-origin 0x0F FC16 0662/count33 requests in ~60s, CRC A0AB consistent, CRC_DIFF=0, RX drops/resync=0, zero TX. OEM_INTERNAL=ACCEPTED following matching FC16 is internal local state only, not physical TX owner.
+- Code source: EXP426 repeat detector logs but never sends; M7 one-shot 0662 branch requires separate manual 12s arm and 3 matching frames. Regular ordered C5Y stage29 also ACKs exact 0662, but a retained stage40 never enters it. This creates a concrete normal-request servicing gap; a 60s session expiry occurs with known requests still incoming.
+- OEM device_client CM930 server: normal generic FC16 Modbus register handling via slave processing, internal handshake ACCEPTED state handled separately from physical Modbus reply. No genuine OEM evidence supports requiring a *separate manual button per normal known page* in a currently scoped session.
+- Engineering decision: retain CRC, exact address/shape, single S92 DE/UART, collision/peer checks, bounded TX and rollback; review/remove duplicated OEM-unmatched manual M7/retry/counter thresholds and session timeout as **candidate unjustified restrictions**, not by granting owner from ACK or blindly activating autonomous TX. HA parameter writes remain ON HOLD.
+- No validated ESP-only silent warm-session initiation. Integrate bounded known FC16 handling as one engine before a single end-to-end controlled test.
+
+---
+
 ## 2026-10-25 — C5AH live / C5AI consolidated OEM-equivalent lifecycle decision
 
 - **PROVEN local XTR:** C5AH after an ESP OTA reboot entered retained idle with no DCM requests within 60s (zero 0x0F FC16/FC03, zero TX, DE LOW), but other bus traffic remained healthy. Parser resync accumulated to 18 despite CRC_DIFF=0 and drops=0, cause OPEN.
