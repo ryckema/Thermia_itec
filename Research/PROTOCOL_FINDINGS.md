@@ -1,3 +1,13 @@
+## 2026-10-25 — C5AR provenance gate for user-opted controller cold return, not OEM session-start TX
+
+**SOURCE VERIFIED:** C5AQ C5AI watchdog only permits cold return from retained-no-offer origin5/M6=7 after a failed 60s manual S92. The freshly verified C5AQ boot after OTA is origin0/M6=0/stage99/DE LOW, so explicit one-shot cold return cannot react to a later real controller outage there. This is a local implementation restriction, NOT an observed OEM prerequisite. C5AR adds exactly the untouched boot pair as alternate opt-in entry to same shared state engine while excluding all aborted/unqualified unrelated states.
+
+**Protocol remains unchanged:** Genuine Connect gateway functions as slave. Original already verified controller cold startup uses controller-originated exact FC23 request/response and original A80E/A80F guard; subsequent controller-originated FC16 export and FC03 runtime. No new frame/address/challenge/CRC/poll or autonomous TX. 5s all-bus silence alone is NOT authentication, session acceptance, or transmission: one-shot user enable, returned valid frame, exact native challenge, A80E/A80F guard, owner/DE still required. This mechanism cannot cause already-running XTR controller to initiate DCM export.
+
+**Validation:** SOURCE/OFFLINE TESTED only; C5AR NOT FLASHED/LIVE. Last locally verified C5AQ live boot fix remains positive; no data proving cold-return or hot-rejoin at runtime yet. HA writes remain HOLD.
+
+---
+
 ## 2026-10-25 — LIVE C5AQ: manual S92 alone does not trigger DCM export from already-running XTR 2.4.2
 
 **LOCAL XTR LIVE (19:08:46.695–19:09:46.956):** One genuinely user-invoked S92 stage40 received ZERO known DCM FC16 offers, including 04A6/059C/085F/0864/0870, ZERO 0708/FC03, performed ZERO physical TX, and ended RX only/DE LOW at 60.247s. All normal controller/room/outdoor bus participants remained observable, parser CRC_DIFF/resync/drop zero, H/D/C/M 0/4. Main03-C5AQ build was user-flashed and verified by log. Prior 19:08:03–46 passive post-OTA period proves inherited boot-auto START was removed successfully. Source label `SOURCE PREPARED` in build text is not current evidence status.
