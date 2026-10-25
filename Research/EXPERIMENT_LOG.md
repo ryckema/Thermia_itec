@@ -1,3 +1,13 @@
+## 2026-10-25 — C5AR-OPTIN-COLD-RETURN-01 USER LIVE — RUNNING / PARTIAL
+
+**Firmware/baseline:** MAIN03-C5AR user-FLASHED/LIVE on XTR M 2.4.2, compile implicitly proven by live boot but not separately inspected. Log `Pasted text(20261025-183448).txt` shows ~19:32:02–19:34:39 after OTA; controller 0x02, room 0x0A, outside 0x1E continue with regular frames. **User-initiated one-shot enable** 19:32:28.304; explicit OFF 19:32:59.627; user ON again 19:34:30.062 and still ON when log stops. C5AI activation/disable logs each say **NO_TX DE_LOW**. M6 stays BOOT_RX_ONLY/owner unknown/TX locked; no observed >=5s bus loss, so no C5AI stage1, no real controller cold-return, no FC23/FC16/FC03 0708, no synced/fresh H/D/C/M (0/4), physical TX zero. CRC_DIFF=0 with 1103 checks, RX drops=0; parser resync counter=11 since boot throughout measured 19:32:26–19:34:26, with no new increments. HA parameter-write queues zero.
+
+**Expected vs actual:** Passive boot, opt-in switch toggle and no unsolicited bus TX **COMPLETE / POSITIVE**. Actual opt-in recovery **RUNNING / PARTIAL**: real external trigger did not occur, thus neither acceptance nor responder behavior can be assessed. Previous first ON interval cancelled by OFF; second ON interval open at log end. ON authorizes ONE existing guarded attempt on later real >=5s bus silence; user can turn OFF before trigger or use ABORT if actively in recovery. Do not falsely claim a negative controller restart or runtime session. No new code/test justified by this idle trace.
+
+**ONE NEXT ACTION:** capture naturally occurring genuine controller outage/return if/when observed with switch explicitly enabled; else switch OFF if no future auto-trigger desired. Do not cycle S92 or demand heating-controller/room-sensor disconnection. HA setting writes ON HOLD.
+
+---
+
 ## 2026-10-25 — C5AR-OPTIN-COLD-RETURN-01 — PREPARED / NOT RUN
 
 **Hypothesis:** C5AQ's existing user opt-in one-shot C5AI controller cold-recovery watchdog is artificially reachable only from `RETAINED_NO_DCM_OFFER` (origin5/M6=7); it cannot recover from proven normal `BOOT_RX_ONLY` origin0/M6=0 without a needless failed manual 60s S92 first. Accepting the untouched passive boot pair, while retaining every existing real guard, correctly hands an actual controller-bus outage into the validated C5AK/C5Y controller-return engine.
