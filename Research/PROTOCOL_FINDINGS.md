@@ -1,3 +1,11 @@
+## 2026-10-26 — C5AY first-page ordering assumption disproven in local LIVE run
+
+C5AY SOURCE assumes an ownerless first native config continuation must be anchored by a physical 042E/15 ACK. New local XTR M 2.4.2 LIVE: during one user-started 60.084s S92 attempt, controller instead presented native 0442/13 x56 as its first config page, and alarm 085F/5 x28, with no 042E, 0848 or FC03 0708. Only first alarm ACK sent; 0442 remained unacknowledged because 042E anchor absent, so new C5AY route never triggered. The controller was safely left RX_ONLY DE LOW, CRC/resync/drop healthy, owner unverified, H/D/C/M 0/4. This establishes a SOURCE/LIVE integration mismatch, not inability of XTR to accept 0442 ACK. Historic locally qualified XTR experiments already showed normal 0442 ACK in native synchronization.
+
+C5AZ PRIVATE SOURCE/OFFLINE correction generalizes first-page provenance from 042E-only to first genuinely offered known 042E OR 0442 through the original single S92 UART/DE engine and manual bounds. Existing C5AX subsequent OEM information request still requires an actual controller 0708 poll. Physical ACK never grants controller semantic acceptance. HA parameter writes HOLD. C5AZ PREPARED / NOT RUN; no new live TX, user compiles/flashes if chosen. Full native controller cold start C5AR remains locally verified rollback.
+
+---
+
 ## 2026-10-25 — C5AX ownerless FC16 0442/13 retry bottleneck (LOCAL LIVE + SOURCE)
 
 C5AX user LIVE on running XTR M 2.4.2 23:25:14–23:26:14: after one physically ACKed controller 042E/15 and one first nonzero 085F/5 ACK, controller offered **54 identical 0442/13 FC16 frames** and 27 more 085F/5 zeros, with no controller-offered 0848/23 or 0708/6. INFO_FIRST branch not reached. Two TX/DE LOW, safe 60.202s expiry, CRC_DIFF=0, unchanged in-session resync/drop, owner/profile not qualified H/D/C/M 0/4. C5AX INFO-first proposed protocol cannot be assessed: COMPLETE / INCONCLUSIVE, not disproof of OEM flag method.
