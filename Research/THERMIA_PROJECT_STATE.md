@@ -1,3 +1,13 @@
+## 2026-10-25 — C5AJ LIVE → C5AK competing timer fix — PREPARED / NOT RUN
+
+**Observed XTR:** C5AJ user flash and manual retained S92 START led to one normal 0662/count33 response, M6 2→3 RESPONSE_SENT, physicalTX=1, DE LOW and no CRC/resync/drop fault. In the log no subsequent ordered FC16 0683..06F4, FC03 or 0708 appeared, no fresh cache/accepted owner; at 60s old 04A6 timer printed EXPORT_RESUME_NEGATIVE despite 04A6_SEEN=0; retained scope terminated at 121254ms. Transport ACK positive, full session outcome negative within this window.
+
+**Concrete integrated fix C5AK:** full private ZIP `THERMIA_MAIN03_C5AK_RET_EXPIRE_FIX_PRIVATE_20261025.zip` based strictly on user-live C5AJ. The legacy 04A6 export-resume 60s timer no longer executes on manually triggered 0662 tail; existing 120s bounded S92 retained expiry becomes sole result owner and explicitly describes no 0683..06F4 continuation. No new TX, frame, UART/RX/DE owner, session qualification, or HA parameter-write authorization; all genuine bus, CRC and collision guards preserved, C5Y unchanged. YAML SHA256 `2dcf4254219461d009f82bd7c8b25c7d581f82d2aeb2fe5fdf8fe9fcc788d77f`. Offline generic YAML parse/ZIP integrity PASS; target compile/flash/live NOT RUN. The fix avoids a deceptive 60s negative status but does not imply controller will continue after single 0662 ACK.
+
+**Decision:** FIX source timer overlap; NO-GO speculative unsolicited hot-rejoin frames or a new single-page TX microtest. ONE NEXT ACTION: reconcile XTR/OEM controller-offered continuation against implemented S92 sequence, then integrate only a concrete evidence-backed fix if found; otherwise NO-GO hot rejoin.
+
+---
+
 ## 2026-10-25 — C5AJ unified bounded 0662→tail S92 responder — PREPARED / NOT RUN
 
 **OBSERVED (XTR LIVE C5AI baseline):** 56 repeated CRC-valid 0F FC16 0662/count33 in 60s; OEM internal ACCEPTED is not physical owner; zero TX/FC03, CRC_DIFF=0, resync=0, drops=0 and stage40 session expired. Source confirms additional M7 12s arm + three-retry condition withheld a known native request. Genuine C5Y controller restart cold join separately live-positive. The C5AI optional bus-loss one-shot path was not activated by a real controller interruption in the supplied live log.
