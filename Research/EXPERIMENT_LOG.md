@@ -1,3 +1,17 @@
+## 2026-10-25 — C5AP-OEM-NATIVE-REJOIN-01 — PREPARED / NOT RUN
+
+**Hypothesis:** Existing C5AL retained/rejoin handler in latest user-FLASHED C5AO imposes non-OEM requirements (separate PREARM, two identical `0864` polls, mismatching hard-coded version payload, previous `0708`, 12/15s protocol deadlines), withholding a correct first normal version-page FC16 ACK. Within one already user-initiated S92 native session, a first genuine CRC-valid controller `0864/count4` can be ACKed through the sole TX owner; a genuinely offered `0870/count17` can then follow and existing FC03/CURRENT functions may qualify only with actual controller continuation.
+
+**Baseline/evidence:** XTR M controller 2.4.2; C5AO last FLASHED/LIVE negative full cold join after isolated 059C transport ACK; C5AK locally verified controller restart/FC23 config runtime previously. Genuine OEM XTR DCM 2026-10-03 `0864/count4` at 86.672 and ACK 86.686, `0870/count17` at 88.797 and ACK 88.811, followed by repeated controller FC03/0708. Original Connect 2018/2.1.105 starts Modbus slave, not unproven unsolicited session master.
+
+**ONE integrated change:** private MAIN03-C5AP removes C5AL's extra version-page prearm/two-offer/payload conditions, responds once on first V5 CRC-good 0864 in same manually started bounded S92 stage40 with existing real DE/CRC/source/peer/collision guards; uses in-session 0870 continuation rather than unsupported additional 12/15s timeouts; deletes obsolete C5AL Arm button, no second UART writer. Preserve C5AO known first config and alarm FC16, C5AK cold start, C5AL existing downstream 0870/0708, C3 CURRENT, all HA and no HA writes.
+
+**Expected POSITIVE:** actual first 0864 ACK, then actual controller-offered 0870 and FC03/0708, native RUNTIME/SYNCED and fresh CURRENT H/D/C/M 4/4 plus clean bus. **Actual:** NOT RUN; source YAML parse/unique IDs/refs/CRC/ZIP checks PASS; target compile NOT done, no device flash, TX or user test. **ABORT:** S92 ABORT if heating controller alarm, UART collision, CRC errors/drops/DE fault; return RX ONLY/DE LOW and restore saved C5AO firmware; no heat pump reboot or room sensor disconnect. **LIMIT:** If controller only offers sparse 059C, lack of live 0864 is not a 0864 implementation failure. No speculative unsolicited FC23 or other data TX.
+
+**ONE NEXT ACTION:** one user-initiated bounded complete C5AP session after logging begins; GO/FIX/NO-GO on full native acceptance, not isolated ACK success.
+
+---
+
 ## 2026-10-25 — C5AO-OEM-FIRST-FC16-01 live — COMPLETE / NEGATIVE (native DCM)
 
 **Baseline / one change:** Exact private C5AN => C5AO known-config first FC16 no duplicate-offer gate for `04A6/13` and 22 existing XTR pages; sole S92 UART/DE owner, controller 2.4.2, no HA writes. Prior C5AN isolated 059C duplicate ACK followed no session. OEM local successful XTR trace answers first 059C promptly *in an already-running export following 04A6*.
