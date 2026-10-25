@@ -1,3 +1,13 @@
+## 2026-10-25 — Native first config FC16 acknowledgement: C5AD vs genuine XTR OEM
+
+**LOCAL XTR LIVE C5AN:** During user-initiated S92 stage40 retained-unqualified cold join, controller produced two identical valid 0x0F FC16 059C/count33 ADUs separated by 787ms (17:15:58.285 and 17:15:59.072), both verified Modbus CRC-good. Existing C5AD source withheld response to first and ACKed second at 17:15:59.088 using one actual TX. The controller made no subsequent config/0708 offer in the bounded attempt; runtime owner remained unqualified. Native DCM cold join NOT achieved. C5AN 085F first-offer branch did NOT run because no alarm FC16 request occurred.
+
+**GENUINE LOCAL XTR DCM capture 2026-10-03:** first 059C/count33 at +48.893s, ACK at +48.907s (~14ms), each CRC-good. Original Connect normal FC16 slave path processes config writes as received, distinct from internal handshake acceptance. There is no OEM second identical 059C prerequisite in this verified trace. Current C5AD first-entry repeat predicate is thus a concrete difference from the OEM. This establishes need for SOURCE FIX within guarded manually authorized initial-entry context, not proof that acknowledging first 059C alone will establish XTR cold join.
+
+**Boundaries:** Single legitimate FC16 transport ACK must not confer session ownership, fresh data, HA write permission, or arbitrary future TX. Do not infer DCM semantic acceptance from CM930 `OEM_INTERNAL=ACCEPTED` text in user log. Physical DE/CRC safeguards remain. Next integrated correction should reconcile first-offer handling across existing native entry paths, not create new responders or a microtest loop.
+
+---
+
 ## 2026-10-25 — OEM alarm FC16 servicing and semantic acceptance (C5AN) — SOURCE / OFFLINE TESTED
 
 **OEM-derived:** In genuine Connect CM930 implementations 2018 and 2.1.105 the regular Modbus FC16 slave callback accepts an incoming alarm-page write at 0x085F normally; the code explicitly does NOT count alarm-start-address FC16 as HandshakeState.ACCEPTED. Thus **transport ACK and session acceptance are distinct**. No special second 085F offer, post-0662 deadline or additional alarm PREARM is an OEM protocol requirement based on these implementations.
