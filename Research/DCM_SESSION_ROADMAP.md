@@ -1,3 +1,11 @@
+## 2026-10-25 — C5AO source fix ready: native OEM first FC16, XTR controller 2.4.2
+
+**Roadmap C5 remains active.** The XTR 2.4.2 controller is the target; Connect gateway firmware 2.1.105 is reference, not controller version. Genuine local OEM XTR 2026-10-03 first `059C/33` gets immediate ACK; user C5AN 2026-10-25 duplicated 059C before ACK, no DCM runtime. One private **MAIN03-C5AO** integrated source fix removes invented double-offer requirements for initial `04A6/13` and 22 known config FC16 geometries. It reuses the existing sole S92 UART/DE TX owner, common C5AC 22-page table, usual CRC/collision/ABORT and 60s user-started scope, with no acceptance/cache/HA write privileges inferred. Preserve full cold-start, hot-rejoin, native runtime/refresh and HA. No further restrictive hypothetical protocol stages.
+
+**DELIVERABLE:** compact PRIVATE C5AO ZIP with one complete YAML, manifest, build/ABORT/rollback instructions; no historical YAMLs. YAML and source checks offline PASS, ESPHome compile/flash/LIVE NOT done. SHA256 YAML `0c81e396b05706ed0281a0e60fedf0b61410fd3cb7eaee94d944347f014c50a2`. Prior C5AN no-DCM join COMPLETE / NEGATIVE; C5AN new first-085F route untriggered. **ONE NEXT ACTION:** one user-initiated complete end-to-end C5AO cold-join experiment on healthy still-running heat pump, room sensor connected, HA parameter writes HOLD. Success only real native RUNTIME/SYNCED plus fresh H/D/C/M 4/4, otherwise evidence-based FIX/NO-GO, not more microtests.
+
+---
+
 ## 2026-10-25 — C5AN LIVE cold join outcome: no DCM; FIX initial config first-offer ACK
 
 **Observed:** User flashed C5AN, one S92 stage40 manual run on continuously running controller. Two controller FC16 059C/count33 requests at 17:15:58.285 and 17:15:59.072, one existing C5AD physical ACK at 17:15:59.088; no subsequent configuration pages, FC03/0708 or CURRENT 4/4. Controller owner not qualified, 60s fail-closed RX ONLY / DE LOW. Parser CRC_DIFF/resync/drop zero. Second START pressed while active was DENIED. Full DCM join **COMPLETE / NEGATIVE**; C5AN new 085F responder **NOT TRIGGERED** because no 085F offered; C5AN-OEM-085F-01 remains **RUNNING / PARTIAL** for that branch.
