@@ -1,3 +1,9 @@
+## 2026-10-26 — Next step: C5BQ one-shot OTA validation
+
+C5BQ private full ZIP derives from C5BP and adds a non-transmitting 120s automatic post-boot test observer (begins at 5s uptime). User OTA-flashes ONE time after verifying existing native 0x0F FC16 controller offers; controller and room sensor remain powered; do not manually S92 START. Observe postboot C5BQ BUILD and final `AUTO_TEST_FINAL` to decide GO/FIX/NO-GO. Status SOURCE/OFFLINE TESTED PREPARED / NOT RUN, no target compile or LIVE. C5BN locally verified rollback; ABORT on unexpected TX or bus errors; no repeat blind resets. No HA parameter writes. Next only if retained controller offers exist. Persistent FC03 refresh follows successful hot rejoin.
+
+---
+
 ## 2026-10-26 — C5BO automatic ESP-only OTA hot rejoin — PREPARED / NOT RUN
 
 OBSERVED: C5BN locally verified full automatic WP restart, FC23/FC16 and H/D/C/M 4/4; C5AR verified fallback. ATEC V3 supports short ESP-only OTA rejoin if controller keeps polling. XTR no independently verified unattended ESP-OTA rejoin. Cold join without controller restart remains outside scope.
