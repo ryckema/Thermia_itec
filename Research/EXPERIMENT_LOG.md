@@ -1,3 +1,16 @@
+## 2026-10-26 — C5CU automatic one-shot CURRENT after every qualified join (PREPARED / NOT RUN)
+
+OBSERVED FACTS: User MAIN03-C5CT ESP-only OTA live log confirmed M6=4, genuine controller FC16 ACK and FC03 0708, and XTR M 3N / controller 2.4.2 observed. Subsequent user-initiated four-page read (separate supplied extended log) attained 4/4 H/D/C/M, ackMask=0F and fresh snapshot generation 1. This is LIVE proof for that user-triggered refresh, NOT automatic refresh after each session.
+
+IMPLEMENTED: PRIVATE MAIN03-C5CU full C5CT-derived YAML (sha256 af77d960ee1e43faeba2a51611d353ace6016b0b340b1c679b4f50e5f879aaad) adds exactly one session-epoch-bound automatic arm for the existing OEM-grounded four-page CURRENT read once an M6=4/5 native owner and observed 2.4.2 profile, real prior FC16 ACK and 0708, and existing integrity/idle guards are satisfied. This applies equally to cold start, ESP-only hot-rejoin and independently qualified recovery; fresh 4/4 or an existing outstanding arm suppress duplicates. No auto retry within same epoch even on timeout/denial; only next genuine FC03 0708 request triggers the unchanged single physical TX owner. Manual one-shot remains as optional recovery. No new UART/DE owner, frame, unsolicited poll or HA setting writes. Source and YAML offline checks passed (658 globals, 8 interval blocks, unique explicit IDs, ZIP CRC), no ESPHome target compile/flash/live test. Experiment C5CU-AUTO-CURRENT-01 PREPARED / NOT RUN. Do not restart controller merely to test cold route.
+
+CURRENT MILESTONE: automatic join lifecycle + current cache 4/4 for cold and retained sessions.
+DELIVERABLE: C5CU one complete private firmware ZIP SOURCE/OFFLINE TESTED.
+REAL BLOCKER: C5CU automatic per-join arm and physical read not yet XTR live validated; post-join 0708 and true 4/4 reception remain required.
+ONE NEXT ACTION: user compile C5CU and, only after explicit user-initiated bounded OTA, check C5CU AUTO_ARM, future genuine 0708, physical CURRENT request, 4/4/0F, DE LOW; ABORT/rollback on anomaly. Parameter writes ON HOLD.
+
+---
+
 ## 2026-10-26 — C5CQ-SYNC-01 PREPARED / NOT RUN; C5CP-R1 OTA LIVE transport
 
 Hypothesis: after independently qualified retained M6 transport, a genuine owner-ACKed four-page read-only snapshot can be displayed without requiring a separate cold-start config export. Baseline: 2026-10-26 user XTR ESPHome log shows build MAIN03-C5CP-R1 and reset reason esphome.ota. Retained native auto-entry at 22:40:56, controller-owned FC16 and FC03 0708 responses, 0884/60 physical ACK and M6 event 4 to state 4 around 22:41:15; continues in stage 40. At same time CURRENT H/D/C/M 0/4, snapGen=0, NaN sensors, cache report session=NOT_QUALIFIED config=NOT_SYNCED. No HA parameter writes. Transport live positive; 4/4 data sync NOT verified. Internal MANUAL_START log is not proof of user button press.
