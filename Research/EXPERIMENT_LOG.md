@@ -1,3 +1,11 @@
+## 2026-10-26 — C5BX user reports valid DCM after restart (RUNNING / PARTIAL pending evidence)
+
+USER REPORT: C5BX flashed, DCM valid following restart. Positive user-observed recovery outcome, but restart actor (ESP vs controller) and exact native owner, FC16/FC03, H/D/C/M freshness evidence not supplied in this message. Do not mark LOCALLY VERIFIED or infer cold-start/hot-rejoin specific success without controller-facing log. No further restart needed; request existing success trace/status snapshot only. HA parameter writes remain HOLD; C5BN remains last independently locally verified baseline until evidence qualified.
+
+CURRENT MILESTONE: integrated C5BX automatic phase-qualified recovery. DELIVERABLE: user-reported positive DCM restoration after restart. REAL BLOCKER: distinguishing controller vs ESP restart path and independent native session/cache freshness evidence. ONE NEXT ACTION: review the already captured successful C5BX log and classify recovery route and acceptance, without re-running restart.
+
+---
+
 ## 2026-10-26 — C5BW OTA LIVE misclassified new config export; C5BX phase fix — PREPARED / NOT RUN
 
 OBSERVED: User 16:15:18 C5BW OTA auto hot-rejoin armed from passive 15/3 known-FC16 classifier; the controller then offered 04A6/13, 085F/5, 04BA/22, 059C/33, 05FF/33, 0662/33 (real physical FC16 ACKs, OEM page export), zero FC03 0708 polls; after 60.011s M6 SESSION_LOST, FC16ACK=5 0708SERVED=0 physicalTX=6, no semantic ownership, H/D/C/M 0/4, DE LOW, CRC_DIFF=0/parser resync=0. A valid FC16 count is insufficient to classify retained runtime. C5BW OTA session COMPLETE / NEGATIVE, but controller restart not tested.
