@@ -1,3 +1,11 @@
+## 2026-10-26 — HANDOFF: reviewed C5CP-R1 private source PREPARED / NOT RUN
+
+2026-10-26 MAIN03-C5CP-R1 review: SOURCE / OFFLINE TESTED; PREPARED / NOT RUN. Replaces earlier unreviewed private C5CP ZIP (DO NOT FLASH it). Complete private C5CO-derived YAML SHA256 7720439872ce5681c4d9e7d46c26515dac449fa803e94b982f9d1c35504be1fa. The consolidated review found/fixed misleading C5CO build label, first FC03 INFO-receipt mask loss, retained-vs-cold isolation, peer/setup/parser checks and old per-page fallback bypassing a denied same-session lease. Shared bounded transport-only scope is used for exact known controller FC16 and initial FC03; the prior verified C5BX cold/recovery path, single UART/RX/DE owner, S92 ABORT and HA parameter-write HOLD are preserved. The C5CP transport FC03 alone must not mark runtime/M6 accepted. YAML/entities/globals/ZIP checked and extracted predicate compiled/executed C++17 offline; NO ESPHome TARGET COMPILE, FLASH, XTR LIVE or semantic acceptance proof. One next action: user target compiles C5CP-R1 (no flash on failure), then ONE expressly user-initiated bounded ESP-only OTA with controller and room sensor running, ABORT/rollback C5BX on errors. No repeated page-by-page hotfix tests.
+
+Use current roadmap and Research state; earlier C5CP design and C5CO LIVE NEGATIVE remain historical and must not override C5CP-R1 review. Do not expose private firmware/source in GitHub.
+
+---
+
 ## 2026-10-26 — C5CE LIVE 07D0/0708 deadlock, OEM source reviewed, C5CF private FIX PREPARED / NOT RUN
 
 OBSERVED XTR C5CE ESP-only OTA 19:50–19:51: compiled/flashed MAIN03-C5CE build confirmed. After stage40 M6 RETAINED_UNPROVEN (2), one physical native FC16 ACK, repeated exact controller FC16 07D0/19 (~2s), and 14 actual FC03 0708/6 polls with 0 replies. 60.008s bounded session expires M6 SESSION_LOST (7), DE LOW. FC16 ACK 1, physicalTX 1, H/D/C/M 0/4, config unsynced; CRC difference 0, RX drops 0, session-relative parser resync/drops 0. OEM_INTERNAL=ACCEPTED / FC16=042E is internal observation, does not identify the actual first physically ACKed frame unambiguously: 042E first anchor is a STRONGLY SUPPORTED HYPOTHESIS, not PROVEN in clipped C5CE trace. C5CE's earlier 0884 transport fix was NOT reached because no 0708 reply or info pages; do not call 0884 fix disproven.
