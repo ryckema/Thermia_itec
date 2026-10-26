@@ -1,3 +1,16 @@
+## 2026-10-26 — C5BJ-FIRST-ATTACH-MANUAL-01 — COMPLETE / INCONCLUSIVE (user FLASHED / LIVE)
+
+OBSERVED FACTS: User-provided ESPHome log identifies running firmware Thermia MAIN03-C5BJ at 09:16:46.054, reboot cause ESPHome OTA. One user-manually started S92 window 09:16:15.895–09:17:15.990, duration 60.095 s, stage 40 then stage 99 retained idle RX ONLY; DE LOW. No native first-attach controller offers or proven FC16 04A6/04BA/085F, zero native FC23 challenges, zero FC03/0708, zero physical TX (session and total), FC16_ACK=0, first-attach origin/proven owner=0, no accepted owner, config NOT_SYNCED, fresh H/D/C/M 0/4. Observed 678 valid frames since ESP boot by 09:17:17.612; V5 CRC_DIFF=0, RX drops=0, parser resyncs=0, ambiguous frames=0. Usual controller 0x02, room 0x0A and outdoor 0x1E traffic continued. Online 0x06 poll age cycled but this alone cannot claim DCM semantic session. Controller status A80E observed 0000→0020 at 09:16:39.953 and back 0000 at 09:16:57.102, A80F stayed 004B; no genuine DCM offer followed. Periodic log STATE_GUARD bootAge=0ms means controller boot provenance unproven, not evidence of a reboot or blocker causing this no-offer. The user-visible C5BJ build label says SOURCE PREPARED but runtime log confirms C5BJ is actually FLASHED/LIVE; embedded string is artifact build label, not experiment status.
+
+CONCLUSIONS: C5BJ removed extra 12-second subwindows and unified RX/TX 04A6 predicate in SOURCE. Neither of these changes was exercised on bus because there was no controller 0x0F FC16/FC23/0708; this run does NOT establish effectiveness or failure of guards. Bus integrity and bounded fail-closed behavior VERIFIED LIVE for this no-offer test only. First attach to running XTR without prior DCM remains UNPROVEN. Do NOT repeat another blind S92 wait, loosen CRC/collision protections, fabricate unsolicited TX, or misread A80E 0020 as a validated trigger. HA parameter writes ON HOLD; no autonomous flash; C5BC cold controller start LOCALLY VERIFIED and C5AR rollback known.
+
+CURRENT MILESTONE: OEM-equivalent first native DCM attach on already running XTR with no preceding DCM since reboot.
+DELIVERABLE: C5BJ user FLASHED/LIVE, one bounded first-attach test COMPLETE / INCONCLUSIVE; no physical TX and no bus fault.
+REAL BLOCKER: controller did not offer first native 0x0F FC16/FC23/0708 during S92; triggering condition OPEN.
+ONE NEXT ACTION: obtain verifiable XTR-specific controller pairing/discovery context or a genuine passively captured pre-04A6 bus sequence before any next physical first-attach TX experiment; then implement one targeted native-engine correction only if supported.
+
+---
+
 ## 2026-10-26 — MAIN03-C5BJ unified OEM first-attach guard simplification — PREPARED / NOT RUN
 
 OBSERVED FACTS: User FLASHED/LIVE MAIN03-C5BI twice, each 60s no controller 0x0F FC16/FC23/0708 offer; physical TX 0 and DE LOW. Earlier user-LIVE C5BE physically ACKed actual 04A6/13, 04BA/22, 085F/5 and then saw 14 genuine controller FC23. C5BC controller-cold-start LOCALLY VERIFIED RUNTIME/SYNCED and fresh H/D/C/M 4/4. OEM Connect 2018/2.1.105 behaves as a controller-polled Modbus slave. No OEM/XTR evidence demands extra 12s timing after physically ACKed 085F within a separately bounded manual session.
