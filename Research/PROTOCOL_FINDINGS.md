@@ -1,3 +1,13 @@
+## 2026-10-26 — C5BC live repeated empty reads: COMPLETE / NEGATIVE for session advancement
+
+USER FLASHED/LIVE C5BC on running XTR. S92 manual START 00:59:30.096; real 085F/5 ACK 00:59:32.063; initial alarm-only empty FC03 reply 00:59:35.755; 11 genuine repeated controller 0708 polls received and empty responses sent 00:59:40.037–01:00:22.956. Controller offered 14 total 0708 requests, 12 served, two withheld (one early before 085F response provenance and one later). 28 observed 085F FC16 packets, first ACKed and subsequent zeros left unanswered. Exactly 13 physical TX (one FC16 ACK + 12 FC03 responses), no normal qualifying 042E/0442/0546/0662 pages, no identity INFO receipts, no native owner/profile/accepted session and H/D/C/M 0/4, CONFIG NOT_SYNCED. Existing safe timeout 01:00:30.228 age60064ms RX_ONLY and DE LOW. CRC_DIFF0, resync0, drops0. `C5BC repeated-empty-read advances alarm-first controller session` is COMPLETE / NEGATIVE; bounded real-FC03 physical response and safe expiry COMPLETE / POSITIVE. Do not continue microtests for identical idle responses. C5AZ previous first config→info 2/5 remains strongest running-controller LIVE. C5AR last fully LOCALLY VERIFIED cold-start; no HA setting writes.
+
+CONCLUSION: normal OEM repeated empty FC03 servicing alone does not progress current XTR alarm-first state. This is not proof of failed bus transport or disproval of normal 0708 read response. Need one evidence-backed consolidated source correction for distinguishing controller's accepted protocol/normal config-first versus alarm-only state, or explicit NO-GO if OEM and genuine captures do not support trigger. Do not invent owner, handshake, controller epoch, unsolicited startup or stricter hypothetical lockouts.
+
+CURRENT MILESTONE: C5 running-controller native first join. DELIVERABLE: C5BC live result COMPLETE / NEGATIVE for empty-poll progression, SOURCE now user LIVE. REAL BLOCKER: controller stays alarm-only despite 12 genuine 0708 responses; no qualifying native config or INFO. ONE NEXT ACTION: revisit original OEM/controller DCM sequencing vs known successful C5AZ route to choose one integrated change or NO-GO. C5AU/C5AS parked; HA parameter writes HOLD.
+
+---
+
 ## 2026-10-26 — C5BA first manual live after DCM absence: COMPLETE / INCONCLUSIVE
 
 User confirmed the controller-display communication warning concerns loss of expected DCM responses. Treat as expected communication-context feedback, not an unrelated heat-pump fault or reason to invent new TX authorization. User explicitly requested continuation without treating this display error as an independent blocker; retain electrical, collision, protocol guards and HA writes HOLD.
