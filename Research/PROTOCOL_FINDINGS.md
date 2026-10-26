@@ -1,3 +1,20 @@
+## 2026-10-26 — MILESTONE CORRECTION: true COLD JOIN without controller restart
+
+**OBSERVED FACTS:** C5AR proves native full cold start on controller reboot (LOCALLY VERIFIED H/D/C/M 4/4), not a no-reboot cold join. C5AZ proves scoped running-controller partial first attach after real controller-originated 0x0F config/mailbox offers (LIVE INFO 2/5), not the missing way to make a completely non-offering XTR discover the ESP. C5BM user FLASHED/LIVE produced NO 0x0F offer in a bounded 60.225s manual S92 window (COMPLETE / INCONCLUSIVE for its untriggered FC16/INFO code). The original Connect and ATEC V3 implementations act as addressed slaves and respond AFTER controller requests; their normal FC16 ACK, persistent INFO and 0708 replies do not cause silent controller discovery.
+
+**CORRECTED MILESTONE (NO-REBOOT COLD JOIN):** XTR already operating, no qualified active DCM session, ESP newly attached/booted, controller and room sensor never restarted/disconnected. Establish which controller-side state or documented local pairing/accessory setting starts native 0x0F initiation and how the controller acknowledges the new gateway. Then, and only then, validate FC23/FC16/INFO, acceptance and fresh H/D/C/M in the same native engine. This is distinct from controller power-on cold-start and from hot rejoin of an existing native polling session.
+
+**PRIORITY DECISION:** PAUSE downstream retry/INFO 5/5 optimizations and idle S92 experiments; do not treat 'wait until controller naturally offers a poll' as a solution to no-reboot cold join. Do not invent unauthorized master TX or bypass CRC/DE/collision/owner safeguards. Actual no-reboot trigger remains OPEN. Existing current C5BM remains passively receiving; HA setting/parameter writes ON HOLD, C5AR rollback preserved.
+
+**ONE NEXT ACTION:** Obtain one independent controller-side discovery datum, without changing settings: inspect the iTec XTR physical display for the official **DCM ACCESSORY INSTALLED** indication with C5BM RX_ONLY, record **ONLINE CONNECTION** independently (Internet state is different). This discriminates 'controller still knows gateway' from 'controller reports no accessory' at no TX cost and determines whether subsequent engineering should target retained-owner recognition vs first-ever no-reboot discovery. No claim that this display alone proves a TX right or a specific register.
+
+**CURRENT MILESTONE:** TRUE XTR no-controller-restart COLD JOIN (new DCM discovery and semantic first attach on already-running controller).
+**DELIVERABLE:** Roadmap priority restored; prior C5BM/C5AZ/C5AR evidence preserved, no new firmware.
+**REAL BLOCKER:** Controller-side condition enabling first 0x0F offer from a previously silent running XTR not yet established.
+**ONE NEXT ACTION:** Check and report physical controller DCM accessory-installed indication with ESP C5BM passive; distinguish Online/internet indicator.
+
+---
+
 ## 2026-10-26 — XTR 2026-09-25 09:05:50 capture: 0x0F repeatedly offered before late gateway response — SOURCE/CAPTURE ANALYSIS ONLY
 
 **OBSERVED FACTS (genuine historical XTR wire capture `thermia_capture_20260925_090550.log`):** The first *visible* 0x0F message is controller FC03 `0708/count6` at t=0.987s, preceding first visible FC16 `0870/count17` t=1.702s. Seventeen genuine 0708 polls occur t=0.987 through t=68.210 with no preceding visible 0708 response. Controller also repeats that FC16 `0870/count17` request **32 times** t=1.702–66.843 before the first visible FC16 ACK t=66.860. The first 0708 slave answer follows the controller's next poll at t=68.235. At t=68.304 a new `03E8/count13` FC16 config frame follows. This shows a real XTR controller can keep OFFERING multiple 0x0F requests for >60s while a gateway is not replying, then continue config when replies appear. The recording started mid-traffic; its true physical cold-first-attach/session history is UNKNOWN. No pre-first-ACK mailbox RESPONSE is proven: first actual response t=68.235 is AFTER the actual t=66.860 FC16 ACK.
