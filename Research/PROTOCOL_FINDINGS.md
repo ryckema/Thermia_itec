@@ -1,3 +1,22 @@
+## 2026-10-26 — FOCUS BESLUIT: vier native sessionroutes (geen nieuwe cold join)
+
+**USER PRIORITY / CURRENT MILESTONE:** Focus uitsluitend op (1) controller+ESP **cold start**, (2) **hot start** na uitsluitend ESP-reboot terwijl een reeds erkende controller blijft pollen, (3) **hot rejoin** na korte sessieonderbreking met daadwerkelijke controllerpolls en verse configuratiecache, en (4) **controller-only restart** waarbij de ESP blijft draaien en een nieuw controller-startverloop kan beantwoorden. Eén bestaande native UART/RX/DE-sessionengine; geen parallelle responder.
+
+**EVIDENCE:** (1) XTR C5AR **LOCALLY VERIFIED**, H/D/C/M fresh 4/4 en native runtime — behouden als regressiebasis; (2) korte ATEC V3 OTA-heropname **LIVE cross-model**, XTR C5AT slechts **RUNNING / PARTIAL** en XTR automatische hot-start **OPEN**; (3) ATEC V3 herstart van oorspronkelijke gateway met volledige resync **LIVE cross-model**, maar XTR hot-rejoin+fresh 4/4 **OPEN**; (4) ATEC V3 beantwoordt controller-aanbod volgens SOURCE, XTR controller-only restart (ESP blijft aan) **OPEN**, niet gelijkstellen aan C5AR controller+ESP-start.
+
+**ROUTE-GEDRAG:** Bestaande polling opnieuw beantwoorden is geen nieuwe cold join. Zonder werkelijke 0x0F-controllerrequest geen slave-TX. Hot start en hot rejoin herkwalificeren controller/semantic owner en verse cache; oude ESP-ownerstatus of Modbus ACK volstaat niet. Een echte controllerrestart vergt nieuwe sessiescheiding via daadwerkelijk waargenomen startup/handshake/config-data, geen verzonnen epoch. ATEC V3 auto-arm/resync-timing is cross-model inspiratie, geen XTR-timeout of TX-autoriteit.
+
+**UIT SCOPE:** Eerste ontdekking van nooit-erkende ESP terwijl XTR ononderbroken draait en geen native requests aanbiedt; vroegere eerste-offer/DCM-icon/no-offer onderzoeken blijven historisch bewaard, **SUPERSEDED / NOT RUN** als actieve roadmap-gate (niet de afgesloten experimentresultaten).
+
+**DECISION:** GO vier-route consolidatie; cold-start niet opnieuw testen zonder tegensprekend bewijs, geen speculatieve microtests. Exact C5AR locally verified YAML als functionele basis, C5BM laatste user-FLASHED/LIVE vergelijken voor relevante bestaande lifecycle-fixes; slechts één fysieke UART/DE owner. Behoud V5 parser/CRC, B11C/B11D, valid-frame counters, watchdog, ABORT, rollback, roomsensor en productie-HA. HA setting/parameter writes **ON HOLD**. Alleen USER-INITIATED begrensde nieuwe/unvalidated bus TX; geen auto-flash.
+
+**CURRENT MILESTONE:** OEM-equivalente native cold-start behouden; automatische ESP-only hot start → hot rejoin/cache freshness → controller-only restart in één engine.
+**DELIVERABLE:** Vier-route scope en acceptatiecriteria vastgelegd; geen firmware/TX/live test.
+**REAL BLOCKER:** XTR-automatische hot start/rejoin en semantisch verse H/D/C/M 4/4 zijn nog niet LIVE geverifieerd; exact C5AR/C5BM source reconciliation nodig alvorens code.
+**ONE NEXT ACTION:** Vergelijk byte-exacte C5BM sessielifecycle/FC03-route met LOCALLY VERIFIED C5AR, implementeer uitsluitend de concrete geïntegreerde ESP-only hot-start/rejoin fix die daaruit volgt, of expliciet GO/FIX/NO-GO als geen defect aantoonbaar is. Niet terugkeren naar cold-join discovery.
+
+---
+
 ## 2026-10-26 — SCOPE DECISION: no-controller-restart cold join REMOVED from active roadmap
 
 **USER DECISION:** Stop the no-controller-restart *cold join* investigation. Do not resume the first-discovery/first 0x0F offer/first DCM icon search, active-discovery hypothesis, installation capture hunt, sideband trigger analysis, no-offer S92 experiments or unsolicited bus TX as an active workstream. Mark the previously proposed next-action/gate for this track **SUPERSEDED / NOT RUN** as a roadmap item only; retain the experiment history and all observed statuses unchanged.
