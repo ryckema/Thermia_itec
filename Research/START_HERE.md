@@ -10,6 +10,9 @@
 
 ---
 
+**2026-10-26 XTR historical-offer distinction (NEW local capture evidence):** In `thermia_capture_20260925_090550.log`, actual controller 0x0F `0708/count6` was already offered at t=0.987; 17 such polls and 32 repeated `0870/count17` configuration FC16 requests were offered without any observed corresponding gateway responses until first FC16 ACK t=66.860 and first mailbox response t=68.235; `03E8/count13` followed t=68.304. Historical A80E was 0000 while actively offering, so A80E=0000 also occurs in later no-offer and is NOT a recognition criterion. **Response only after first ACK**: no evidence for 0708 TX before locally proven FC16. By contrast user-C5BM saw NO first 0x0F FC16/0708, no physical TX. This strengthens the distinction between `OFFER PRESENT / NO RESPONSE` and `NO OFFER`; changing FC16 retry or 0708 response guards will not create an offer. Next ONE action remains controller-side native first-offer activation/retention evidence, not more blind S92/firmware variants. See latest Research files.
+
+
 
 ## 2026-10-26 — PRIORITY RECOVERY C5AZ running-controller INFO progression + C5BK RX parity FIX — PREPARED / NOT RUN
 
