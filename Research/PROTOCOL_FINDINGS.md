@@ -1,3 +1,15 @@
+## 2026-10-26 — C5BF user LIVE retained-idle first-join — COMPLETE / INCONCLUSIVE
+
+OBSERVED FACTS: user flashed MAIN03-C5BF (build label confirmed at 01:51:37). ESP OTA boot RX_ONLY; S92 manual START at 01:51:29.447, stage40. Throughout bounded 60.215-second session, no offered 04A6 or any FC16 page, no FC23 challenge, zero physical TX, zero 0708 served, no owner/profile/snapshot qualification. The telemetry showed FC16ACK=0, challenges=0, initFC16=0, DE=LOW; expiry RETAINED_UNPROVEN_EXPIRED 01:52:29.651. Ordinary bus RX remained live with CRC_DIFF=0, resync=0 and drops=0. Controller A80E cycled 0020/0000, A80F stayed 0032; neither alone proves cold-start. This differs from C5BE user-LIVE configuration-entry sequence (04A6/04BA/085F then repeated FC23) and does not exercise C5BF new guard.
+
+STRONG CONCLUSION: This run validates C5BF boot/passive listen/manual idle timeout safety only; C5BF FC23 first-join fix efficacy remains OPEN/NOT EXERCISED. No new firmware fix is supported by this log. Do not repeat alarm-only idle manual START cycles in a test loop or grant TX ownership based on status-bit changes.
+
+EXPERIMENT STATUS: C5BF retained-idle run COMPLETE / INCONCLUSIVE for native first-join; expected event absent. SOURCE build flashed and LIVE idle guard expiry; cold-start behavior of C5BF not locally verified. HA writes remain ON HOLD. Prior C5BC cold-start positive and C5AR locally verified rollback unchanged.
+
+CURRENT MILESTONE: C5 native first-join/hot-rejoin and FC03 freshness. DELIVERABLE: C5BF actual live no-offer result documented; no new firmware. REAL BLOCKER: controller offers no eligible native config/challenge entry in the retained-idle trial. ONE NEXT ACTION: use the next genuine naturally occurring controller 04A6/04BA/085F→FC23 sequence to assess C5BF guard, otherwise maintain RX_ONLY; no duplicate idle retries.
+
+---
+
 ## 2026-10-26 — MAIN03-C5BF manual first-join FC23 guard — PREPARED / NOT RUN
 
 OBSERVED FACTS (C5BE user LIVE 01:39:35–01:40:35): S92 manually started with controller already running and no native DCM owner. Exact controller FC16 04A6/13 was ACKed, then 04BA/22 and 085F/5; subsequently exact native FC23 challenges were offered but all blocked by the cold-start-only A80E=0000/A80F=0005 predicate. Observed A80E=0028/0008, A80F=0032. Other sparse valid configuration frames were ACKed; no FC23 response, 0708 reply, qualified owner/profile or H/D/C/M 4/4. User log confirms 60s safe expiry / RX_ONLY / DE_LOW. C5BE scoped first join: COMPLETE / INCONCLUSIVE (not FC03-refresh test). C5BC controller-cold-start: COMPLETE / POSITIVE (unchanged); C5AR prior verified rollback.
