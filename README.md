@@ -1,3 +1,14 @@
+## 2026-10-26 — C5BQ automated one-shot hot-rejoin observer (SOURCE / OFFLINE TESTED; PREPARED / NOT RUN)
+
+User requested automation of the test, NOT autonomous OTA flashing. PRIVATE C5BQ complete firmware derives from prepared C5BP; no change to C5BP bus TX/DE/session guards. After user-initiated OTA it automatically starts a read-only 120-second observation at uptime 5s and emits exactly one result (`POSITIVE_RUNTIME_SYNC`, `PARTIAL_RUNTIME_CACHE_NOT_FRESH`, `FIX_NO_AUTO_ARM`, `FIX_NO_RUNTIME_OWNER`, `FIX_BUS_INTEGRITY`, or `INCONCLUSIVE_NO_NATIVE_FC16`) with FC16 offers, physical FC16 ACK/0708 counts, accepted native owner, basic sync and integrity evidence. Observer adds NO TX, no reboot, no extra UART owner and no HA parameter writes. Offline YAML syntax/638 unique globals and ZIP integrity checked; target compile/flash/LIVE NOT verified. C5BN remains latest LOCALLY VERIFIED, C5AR fallback. Private firmware not committed. Experiment C5BQ-AUTO-OTA-01 PREPARED / NOT RUN. One user-initiated OTA only with controller already offering native 0x0F FC16; ABORT on unexpected TX/errors, rollback C5BN. No repeated blind OTA or WP restarts. Positive runtime result does NOT prove persistent H/D/C/M freshness.
+
+CURRENT MILESTONE: automatic ESP-only retained-session OTA hot rejoin.
+DELIVERABLE: C5BQ complete private firmware ZIP, one-shot automated validation observer, SOURCE/OFFLINE TESTED.
+REAL BLOCKER: actual XTR automatic post-OTA owner recovery still not LIVE/LOCALLY VERIFIED.
+ONE NEXT ACTION: one bounded C5BQ user-initiated OTA and inspect its postboot build label plus AUTO_TEST_FINAL; GO/FIX/NO-GO.
+
+---
+
 ## 2026-10-26 — C5BO-AUTO-OTA-01 user LIVE: no automatic rejoin; C5BP targeted source fix PREPARED / NOT RUN
 
 OBSERVED FACTS: User 13:19:09–13:20:45 OTA log. Prior to OTA live C5BN stage40 had ~760 physical runtime FC16 ACKs and ~420 0708 replies, healthy CRC. OTA API disconnect then reconnect at 13:20:10. Thereafter M6 BOOT_RX_ONLY OWNER NOT INHERITED TX LOCKED, S92 passive observation, runtime replies reset 0 and page cache stale. Actual post-OTA C5BO BUILD text is NOT present in clipped 35s post-OTA excerpt; last build explicitly seen is C5BN BEFORE OTA. Therefore failed functional rejoin OBSERVED, but whether C5BO truly flashed is not independently confirmed by a postboot build label. No user S92 start evidenced.
