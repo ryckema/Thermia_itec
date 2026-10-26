@@ -1,3 +1,16 @@
+## 2026-10-26 — C5CI LIVE 0848 continuation; C5CJ scoped fix PREPARED / NOT RUN
+
+OBSERVED C5CI real XTR OTA 20:51:40–20:52:40: exact FC16 07D0/19 first physical ACK, genuine FC03 0708/6 replied, five INFO physical receipts mask 1F/1F, 07F8/17 ACK, 0820/18 ACK; seven physical FC16 ACK plus one FC03 TX = 8. Next controller-owned exact 0848/23 repeatedly offered, no ACK [FIX39] NO_OWNER, while repeated 0708 requests refused. At 60.154s M6 RETAINED_UNPROVEN -> SESSION_LOST, physicalTX 8, FC03 withheld 13, cache H/D/C/M 0/4. CRC_DIFF=0, RX drops=0, parser resync=0; DE LOW. C5CI entire hot-rejoin COMPLETE / NEGATIVE, earlier INFO/0820 transport steps LIVE confirmed positive. Transport ACK is not controller application acceptance.
+
+ONE C5CJ SOURCE FIX: full C5CI-derived private firmware. In existing CRC/geometry/session-guarded native INFO FC16 handler add exact controller 0848/23 only after INFO mask 1F/1F and previous actual 0820/18 ACK in same write_arm_ms; permit actual retransmissions after first 0848. Reuse sole S92 physical writer, no new UART/DE owner. Do not count runtime 0848 as INFO receipt; preserve existing original 55s guard, peer/parser/drop/CRC, pending/dirty queues, S92 ABORT, existing cold/manual and HA. HA writes HOLD. C5BX last LOCALLY VERIFIED cold rollback. YAML parsed and unique global ids; S92 writer calls and physical UART call counts unchanged, ZIP hash/integrity verified. Not target compiled, flashed, or live. C5CJ-OTA-01 PREPARED / NOT RUN. M6 still demands distinct retained 0884 evidence; full M6/FC03/cache continuation is OPEN and not fixed/claimed here.
+
+CURRENT MILESTONE: automatic ESP-only retained native rejoin, then FC03/cache 4/4.
+DELIVERABLE: C5CJ complete private integrated firmware SOURCE / OFFLINE TESTED.
+REAL BLOCKER: 0848 continuation needs live validation, plus remaining M6/FC03 owner transition.
+ONE NEXT ACTION: user target compile C5CJ and perform ONE bounded ESP-only OTA; observe actual 0848 ACK and downstream controller response, maintain existing S92 ABORT and C5BX rollback.
+
+---
+
 ## 2026-10-26 — C5CI retained first-0884 INFO continuation — PREPARED / NOT RUN
 
 OBSERVED XTR: C5CH OTA first real 0884/60 FC16 physically ACKed; real FC03 0708 served; repeated 0532/18 plus 07D0/19 after OEM INFO request were not ACKed. 60.092-second timeout: FC16ACK=1, FC03SERVED=1, physicalTX=2, M6 SESSION_LOST and H/D/C/M=0/4; CRC_DIFF, drops and resync 0. C5CH full hot-rejoin COMPLETE / NEGATIVE. No support for declaring owner accepted.
