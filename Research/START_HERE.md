@@ -1,3 +1,20 @@
+## 2026-10-26 — USER PRIORITY CHANGE: OTA hot rejoin BEFORE FC03 refresh
+
+**USER INTENT:** Prioritize automatic hot rejoin when ESP32 is OTA-flashed/reboots, with the XTR controller continuously running. Objective: restore existing DCM session without manually pressing S92 START or rebooting the WP. Cold join to a never-recognized DCM on an already-running WP REMAINS OUT OF SCOPE; normal transient ESP downtime during flashing cannot be zero, but should recover when controller keeps polling.
+
+**OBSERVED FACTS:** C5BN LOCALLY VERIFIED one automatic controller cold-start with fresh H/D/C/M 4/4. The subsequent user C5BN runtime log shows 0x0F controller-led FC16 ACKs and 0708 replies continuing with NO new R1, CRC_DIFF=0, resync=0, RX drops=0, DE LOW. However the lifecycle text states 'EXISTING_MANUAL_SESSION' and 'MANUAL SESSION', so this does NOT prove autonomous takeover immediately after an ESP-only OTA restart; it establishes useful runtime protocol evidence only. ATEC V3's retained-session short ESP reboot does show controller continued polling, but cross-model support is not XTR live proof.
+
+**DECISION:** MOVE automatic ESP-only OTA hot-rejoin / retained-session recovery AHEAD of automatic FC03 refresh on active roadmap. Retain C5BN as the latest LOCALLY VERIFIED baseline and C5AR rollback. One integrated C5BN-derived hot-rejoin change only if needed: passive observe retained controller 0x0F FC16/0708, auto-qualify the existing native session through real controller-authored requests and existing physical TX, parser/DE/collision/ABORT guards (no artificial epoch, fake FC16 ACK, unsolicited master frames, or parallel UART owner). Do not label transport ACK as full semantic cache validity; after rejoin mark H/D/C/M stale until refreshed. HA parameter writes remain ON HOLD.
+
+**TEST GATE:** Prepare ONE complete private firmware ZIP then user compiles/flashes OTA and records ONE bounded ESP-only reboot; WP and room sensor stay powered. On controller still polling, expect auto owner recovery and guarded FC16/0708 responses without S92 user click, and clearly mark cache freshness separately. If controller stops polling, do not claim hot rejoin success or re-open cold join; no blind repeated resets. ABORT and C5AR rollback preserved.
+
+**CURRENT MILESTONE:** Automatic ESP-only OTA hot rejoin to already recognized, polling XTR native DCM session.
+**DELIVERABLE:** Roadmap reordered, no firmware change or physical TX in this priority decision.
+**REAL BLOCKER:** C5BN hot-rejoin after real ESP-only OTA reboot is not yet locally verified; existing MANUAL SESSION label and boot RX_ONLY owner guard require targeted source reconciliation.
+**ONE NEXT ACTION:** Compare C5BN's ESP reboot/retained-session RX handling and owner guards with the real runtime trace, then implement one integrated automatic hot-rejoin fix where proven necessary; FC03 refresh follows.
+
+---
+
 ## 2026-10-26 CONTINUITY — C5BN automatic WP (re)start is now LOCALLY VERIFIED (C5BN-AUTO-COLD-01 COMPLETE / POSITIVE)
 
 **User LIVE result:** C5BN identified on ESP; controller `0x02` previously seen followed by 5078ms whole-bus loss => `[C5BN] AUTO_CONTROLLER_COLD_WAIT` at 12:49:09.989, `BOOT_RETURN` at 12:49:14.919, genuine guarded native FC23 at 12:49:16.247, 35 initial FC16, then runtime FC16 ACK and 0708 => `RECOVERY_POSITIVE success=1 ... recoveryRearmed=1 DE=LOW` at 12:49:50.401. At 12:50:06.565 `session=RUNTIME config=SYNCED page=FRESH H=1 D=1 C=1 M=1 receiptPages=4/4 snapGen=1 FC03=4 RX0708=4`; 12:50:08 M6 entered current-fresh owner=accepted and 12:50:09 `M6 / TRANSPORT QUALIFIED / CURRENT FRESH (NOT ONLINE PROOF)`. CRC_DIFF=0, SHAPE_OTHER=0, RX drops=0, parser resync=0 in sampled log; no HA setting writes (`semanticSettingTX=DISABLED`). The `[S92-FIX] MANUAL_START` log is emitted by the *internally invoked existing S92 start handler* in the C5BN auto branch and DOES NOT imply a user HA click.
