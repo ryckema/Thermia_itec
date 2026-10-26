@@ -1,3 +1,16 @@
+## 2026-10-27 — Same-epoch INFO FC16 must not invalidate retained setup guard (SOURCE PROVEN)
+
+New C5CV XTR LIVE post-OTA: retained runtime route (no export experiment), first native FC16 0870/17 physically ACKed, controller FC03 0708/6 served INFO-FIRST, next actual 0532/18 FC16 repeatedly rejected by c5cp retained scope. 0x0884/60 also denied; M6=2 expires to 7 RX-only with clean V5 CRC/resync/drop/peer counters and 2 guarded physical TX. C5CV parser added 0532/18 and 06F1/3 to OEM CONFIG EXPORT counter (C5CU previously did not). Because c5cp_retained_transport_scope compares c5bx_setup_fc16_seen to c5cl_setup_entry_baseline or a pre-entry mixed-phase token, incrementing CONFIG on expected post-INFO 0532 causes instant scope denial. That is the exact source regression; OEM internal accepted flag does not grant session owner.
+
+C5CW SOURCE targeted fix: only after genuine same-active-epoch sent INFO-FIRST read, classify 0532 and 06F1 receipts as INFO (not newly-started export), leaving genuine early export phase and other exact page shapes unchanged. No changes to V5 CRC/peer/deadline/physical TX owner or FC23 cold-start protection. Experimental OEM export responder remains opt-in disabled by default, is not tested by the C5CV retained-route run. No parameter writes. C5CW private zip built; SOURCE/OFFLINE TESTED PREPARED / NOT RUN. C5CT previous full native transport and manual CURRENT 4/4 remained live positive.
+
+CURRENT MILESTONE: one native lifecycle, retained resume and cold/retained same-epoch automatic CURRENT.
+DELIVERABLE: C5CW same-epoch INFO correction.
+REAL BLOCKER: physical re-test needed to prove controller INFO progression and 4/4, not another source whitelist.
+ONE NEXT ACTION: user target-compile then one bounded explicitly user-initiated OTA with rollback and STOP/RX ONLY on faults.
+
+---
+
 ## 2026-10-26 — C5CV export lifecycle/source reconciliation
 
 Genuine DCM captures show a multi-page sequential configuration export phase before initial runtime read; normal-page repetition within a 30-second detector window is not a universal phase boundary. Original Connect separates transport processing from application acceptance. C5CU's retained runtime path and its windowed normal-page path used incompatible temporal criteria. Source-proven design fix prepared privately in C5CV: accumulate passive export phase across observer windows, keep repeat evidence bounded to an active clean window, and route any EXPERIMENTALLY enabled exact OEM-supported response through the existing sole guarded native TX owner. Cold authentication path and genuine electrical/CRC protections remain unchanged. Phase observation is NOT session ownership; ACK is NOT application or cache acceptance. No physical XTR live qualification yet; experimental export TX OFF by default. No HA parameter writes. C5CV-AUTO-EXPORT-01 PREPARED / NOT RUN.
