@@ -1,3 +1,18 @@
+## 2026-10-26 — C5BM no-offer user LIVE: no evidence for XTR wake-up or duplicate INFO path — COMPLETE / INCONCLUSIVE
+
+**OBSERVED FACTS:** Exact user C5BM device build/OTA runtime log shows a normal 60.225s user S92 manual stage40, no native controller 0x0F FC16 or 0708 offer, FC16 known shapes 0, FC16ACK 0, FC03SERVED 0, INFO 0/5 and fresh H/D/C/M 0/4; actual physical TX 0, DE LOW, V5 CRC_DIFF0/SHAPE_OTHER0, parser resync0, RX drops0. The controller/room/outdoor bus and 0x06 slot remained active. A80E periodic 0000/0020 and A80F=004B are context-only; they never establish owner or native discovery. Manual state `OWNER=EXISTING_MANUAL_SESSION` is NOT OEM protocol ACCEPTED or physical owner; OEM_INTERNAL=NOT_ACCEPTED.
+
+**STRONG CONCLUSION:** The underlying OEM/V3-predicted duplicate FC16 ACK behavior in C5BM is structurally corrected in source but cannot affect the entirely absent first native DCM poll, and it was not tested on a real repeated INFO write. C5BL persistent INFO request replies are likewise untriggered. ATEC V3 short OTA retained-session resync only worked with pre-existing controller polls and does not supply a proven unsolicited XTR wake-up. The user LIVE C5BM result is COMPLETE / INCONCLUSIVE, NOT proof of INFO 5/5, owner semantics, or refresh.
+
+**OPEN / NO-GO:** Still no XTR-specific first-offer recovery evidence. Do not create spontaneous TX, infer controller acceptance from valid CRC or periodic A80E/AFDC or 0x06, or relax collision/DE/session guards. Preserve C5AR LOCALLY VERIFIED cold-start and C5AZ scoped running-controller INFO 2/5 COMPLETE / POSITIVE. HA parameter writes HOLD.
+
+**CURRENT MILESTONE:** Native running-controller first attach and INFO 5/5 with semantically qualified fresh H/D/C/M 4/4.
+**DELIVERABLE:** Updated observed no-offer protocol finding for user FLASHED/LIVE C5BM.
+**REAL BLOCKER:** Native controller 0x0F first request not observed in this run.
+**ONE NEXT ACTION:** Assess existing C5BM INFO paths only at a real controller-offered 0x0F configuration/mailbox opportunity, one bounded user-authorized session, otherwise no repeat.
+
+---
+
 ## 2026-10-26 — MAIN03-C5BM OEM/V3 repeated INFO FC16 ACK parity — PREPARED / NOT RUN
 
 OBSERVED FACTS / SOURCE: Complete private C5BL YAML as user FLASHED/LIVE in a no-offer trial processes five exact INFO FC16 page geometries. After successfully acknowledging a group once, its C5AX branch explicitly logged `INFO_PAGE_REPEAT_NOT_REACKED` for any later valid FC16 of that same page within the eligible S92 epoch, leaving the controller without its normal Modbus FC16 ACK. Genuine original Thermia Connect CM930 Python slave passes every FC16 request to the Modbus write handler and publishes receipt (no first-group ACK suppression). Independently ATEC V3 gateway_responder.h builds an ACK on each valid addressed FC16 write. The V3 evidence corroborates the generic Modbus requirement; XTR has NOT live demonstrated such duplicate as the cause of C5AZ's 2/5 INFO stall.
