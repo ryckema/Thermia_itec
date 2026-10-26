@@ -1,3 +1,19 @@
+## 2026-10-26 — SCOPE DECISION: no-controller-restart cold join REMOVED from active roadmap
+
+**USER DECISION:** Stop the no-controller-restart *cold join* investigation. Do not resume the first-discovery/first 0x0F offer/first DCM icon search, active-discovery hypothesis, installation capture hunt, sideband trigger analysis, no-offer S92 experiments or unsolicited bus TX as an active workstream. Mark the previously proposed next-action/gate for this track **SUPERSEDED / NOT RUN** as a roadmap item only; retain the experiment history and all observed statuses unchanged.
+
+**Scope clarified:** 'Cold join' here means inserting/booting a *new, unrecognized* ESP/DCM while the XTR has remained running with no accepted DCM session. This DOES NOT remove the LOCALLY VERIFIED C5AR controller-power-on **cold start**, nor future normal validated **hot rejoin/session maintenance after ESP reboot**, FC16 sync, FC03 refresh/cache freshness, passive monitoring, Home Assistant production integration, electrical protections or ABORT/rollback. Room sensor stays installed. Do not introduce controller restart as an automatic workaround; user performs all flashing and any physical interventions. **HA parameter writes remain ON HOLD.**
+
+**Retained evidence:** C5AR LOCALLY VERIFIED full controller cold-start and fresh H/D/C/M 4/4 rollback; C5AZ user LIVE partial first attach INFO 2/5 scoped COMPLETE / POSITIVE; C5BM latest user FLASHED/LIVE tested a bounded 60.225 s no-offer window with TX0, DE LOW, COMPLETE / INCONCLUSIVE for untriggered INFO/FC16 fixes. The previous cold-join discovery blocker is **out of scope**, not solved and no longer a prerequisite to other milestones. Earlier analysis remains archived to preserve source history; it must not supersede this decision.
+
+**NEW ACTIVE MILESTONE:** Consolidate OEM-equivalent native session recovery for already-recognized/valid controller-start sessions in the *single existing* ESPHome UART/RX/DE engine, then FC03 refresh/synchronization and reliable HA monitoring. No repeated research-only studies or speculative new tests; retain C5AR baseline and use existing C5BM source only where it preserves the verified cold-start path.
+
+**DELIVERABLE:** Active roadmap scope changed; NO firmware, physical bus TX or HA write produced.
+**REAL BLOCKER:** No current user-LIVE validation yet of automatic hot-rejoin/recovery and FC03 freshness in a controller-established native session, while preserving the verified C5AR cold-start baseline.
+**ONE NEXT ACTION:** Reconcile current C5BM native session lifecycle and FC03 refresh against the C5AR verified cold-start path, then implement ONE concrete integrated defect fix if demonstrated; otherwise choose explicit GO/FIX/NO-GO without adding a cold-join experiment.
+
+---
+
 ## 2026-10-26 — XTR DCM icon absent; reassess active initiation without invented TX — SOURCE REVIEW / PREPARED / NOT RUN
 
 **USER OBSERVED FACT:** Physical XTR display currently shows NO 'DCM ACCESSORY INSTALLED' symbol while C5BM operates passively. No separate ONLINE icon claim implied. Coupled with C5BM user FLASHED/LIVE 60.225s S92 no-offer (0x0F requests 0, physical TX 0, DE LOW), this supports 'no controller-recognized native DCM accessory now' (STRONGLY SUPPORTED; display alone does not prove protocol mechanism).
