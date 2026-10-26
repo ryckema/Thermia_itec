@@ -1,3 +1,19 @@
+## 2026-10-26 — C5CP one-engine consolidation design decision (PREPARED / NOT RUN)
+
+OBSERVED FACTS: Late C5CO XTR LIVE auto arm reached stage 40, but its first valid native runtime FC16 was a different known page than prior live runs; 0 physical TX, FC03 requests withheld and bounded retained M6 expired. Earlier C5CN LIVE served a different first runtime page plus INFO/identity, but a separate experiment-specific continuation token blocked a later valid runtime page. No CRC differences, RX buffer drops or parser resync observed in those bounded excerpts. Cold-start automation remains locally verified in C5BN/C5BX, not superseded by failed retained trials. C5CO full retained hot-rejoin COMPLETE / NEGATIVE; previous fix route not exercised. ACKs alone are never semantic acceptance.
+
+STRONG CONCLUSION: multiple competing first-page, INFO, experiment-token, session, FC03 and M6 predicates produce order-dependent deadlocks. GO decision for ONE unified existing S92 request classifier + reply authorization + post-TX receipts + independent M6/refresh reconciliation; NO-GO for further single-page whitelist changes. No new TX/RX/UART/DE engine or OEM-unproven credentials/frames. Do not equate passive observation with authority, preserve peer/collision/CRC/watchdog/deadline/ABORT and verified cold fallback. HA parameter writes remain ON HOLD. New first-page physical TX only in explicit bounded USER-INITIATED experiment after code review and offline regression against existing captures. OEM secrets and private source remain out of GitHub. The complete C5CP blueprint is distributed as a PRIVATE conversation attachment, not committed.
+
+HYPOTHESIS: one bounded, owner-qualified runtime response lease avoids ordering deadlocks while M6 proof and cache H/D/C/M remain separate.
+OPEN: native semantic acceptance, sustained refresh and 4/4 freshness after ESP-only OTA.
+
+CURRENT MILESTONE: automatic ESP-only retained native hot-rejoin then FC03/cache 4/4.
+DELIVERABLE: complete private C5CP architectural design, decision GO FOR IMPLEMENTATION; no source modification / no flashing or new live TX.
+REAL BLOCKER: fragmented source predicates still await consolidation and target compile.
+ONE NEXT ACTION: implement complete integrated C5CP from C5CO and preserve locally verified cold paths, run ONE offline regression gate, then ONE user-authorized bounded OTA.
+
+---
+
 ## 2026-10-26 — C5CJ alternate 042E-first XTR order; C5CK scoped 0820 fix — PREPARED / NOT RUN
 
 OBSERVED FACTS: C5CJ ESP-only OTA 21:08:22–21:09:22 started normal C5AZ auto route. Actual FC16 042E/15 physically ACKed; FC03 0708/6 served; 0532/18, 06F1/3, 080C/18 physically ACKed INFO mask 13/1F. 07D0 and 07E4 were NOT offered in this run. Actual 0820/18 repeatedly offered 20+ times without ACK while 12 real FC03 0708 reads answered with pending bitmap 0C. 60.029s expiration M6(2)->SESSION_LOST(7), FC16 ACK=4, FC03 served=12, TX total=16, H/D/C/M=0/4, CRC_DIFF=0 RX drop=0. Parser resync total 28 since boot, session delta=0 in heartbeats. C5CJ-OTA-01 COMPLETE / NEGATIVE for full rejoin; its 0848 continuation not exercised. Transport receipts not semantic acceptance.
