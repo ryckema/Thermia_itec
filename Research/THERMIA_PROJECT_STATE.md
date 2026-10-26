@@ -1,3 +1,14 @@
+## 2026-10-26 — C5CP-R1 reviewed integrated native session firmware — PREPARED / NOT RUN
+
+2026-10-26 MAIN03-C5CP-R1 review: SOURCE / OFFLINE TESTED; PREPARED / NOT RUN. Replaces earlier unreviewed private C5CP ZIP (DO NOT FLASH it). Complete private C5CO-derived YAML SHA256 7720439872ce5681c4d9e7d46c26515dac449fa803e94b982f9d1c35504be1fa. The consolidated review found/fixed misleading C5CO build label, first FC03 INFO-receipt mask loss, retained-vs-cold isolation, peer/setup/parser checks and old per-page fallback bypassing a denied same-session lease. Shared bounded transport-only scope is used for exact known controller FC16 and initial FC03; the prior verified C5BX cold/recovery path, single UART/RX/DE owner, S92 ABORT and HA parameter-write HOLD are preserved. The C5CP transport FC03 alone must not mark runtime/M6 accepted. YAML/entities/globals/ZIP checked and extracted predicate compiled/executed C++17 offline; NO ESPHome TARGET COMPILE, FLASH, XTR LIVE or semantic acceptance proof. One next action: user target compiles C5CP-R1 (no flash on failure), then ONE expressly user-initiated bounded ESP-only OTA with controller and room sensor running, ABORT/rollback C5BX on errors. No repeated page-by-page hotfix tests.
+
+CURRENT MILESTONE: ESP-only retained native rejoin, then FC03/cache freshness.
+DELIVERABLE: private C5CP-R1 complete ZIP, not yet compiled/flashed.
+REAL BLOCKER: ESPHome target compile and physical/semantic rejoin unproven.
+ONE NEXT ACTION: user target compiles C5CP-R1 before ONE bounded OTA.
+
+---
+
 ## 2026-10-26 — C5CP one-engine consolidation design decision (PREPARED / NOT RUN)
 
 OBSERVED FACTS: Late C5CO XTR LIVE auto arm reached stage 40, but its first valid native runtime FC16 was a different known page than prior live runs; 0 physical TX, FC03 requests withheld and bounded retained M6 expired. Earlier C5CN LIVE served a different first runtime page plus INFO/identity, but a separate experiment-specific continuation token blocked a later valid runtime page. No CRC differences, RX buffer drops or parser resync observed in those bounded excerpts. Cold-start automation remains locally verified in C5BN/C5BX, not superseded by failed retained trials. C5CO full retained hot-rejoin COMPLETE / NEGATIVE; previous fix route not exercised. ACKs alone are never semantic acceptance.
