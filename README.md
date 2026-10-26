@@ -1,12 +1,12 @@
-## CONTINUITY GATE — mandatory before C5 firmware or TX tests (2026-10-26, C5BL)
+## CONTINUITY GATE — 2026-10-26 C5BL USER-LIVE no-offer outcome
 
-Independent evidence levels — do NOT interchange:
-- **Verified operating rollback:** C5AR — locally verified native full cold-start and fresh synchronized H/D/C/M 4/4.
-- **Best running-controller first attach:** C5AZ — user LIVE controller FC16 ACK, genuine 0x0F FC03/0708 served and 2/5 OEM INFO groups physically ACKed; full semantic native session OPEN.
-- **Last user-confirmed flashed candidate:** C5BK — FLASHED/LIVE but its 60s manual trial received NO initial native 0x0F FC16/FC03 offer and sent NO physical TX (COMPLETE / INCONCLUSIVE for its untriggered INFO path).
-- **Latest engineering candidate:** C5BL — complete PRIVATE C5BK-derived source, SOURCE/OFFLINE TESTED, PREPARED / NOT RUN, not compiled/flashed/live. OEM Connect keeps INFO request flags set until matching controller FC16 receipt; C5BK additionally required mask progress and allowed only two follow-up replies. C5BL lets missing INFO flags persist through actual controller-offered FC03/0708 polls, still bounded to 12 followup replies and the existing 55s manual session eligibility / 60s hard expiry. No autonomous TX, new owner, HA writes, or invented XTR resync trigger. See canonical Research files. Private ZIP is delivered through conversation, NEVER publish firmware secrets/code.
+Keep distinct evidence:
+- **C5AR** — LOCALLY VERIFIED full native controller cold-start, fresh synchronized H/D/C/M 4/4, operating rollback.
+- **C5AZ** — best user-LIVE running-controller first attach, genuine FC16/0708 and 2/5 INFO receipts; scoped COMPLETE / POSITIVE, full semantic join still OPEN.
+- **C5BL** — complete private C5BK-derived OEM persistent INFO-followup SOURCE/OFFLINE TESTED, now USER FLASHED and LIVE. One user-initiated 60.036s S92 manual stage40 trial at 10:41:04.546–10:42:04.581 had ZERO new 0x0F FC16/FC03/0708 offers, ZERO physical TX, DE LOW, CRC_DIFF0, resync0/drops0. Final COMPLETE / INCONCLUSIVE **for the untriggered INFO continuation**. Do not present this as INFO 5/5 validation or regress earlier C5AZ progress.
+- Previously C5BK no-offer trial likewise did not exercise its corrected INFO route. The source difference in C5BL remains unproven on XTR LIVE.
 
-Next GO criterion: user-initiated ONE bounded C5BL trial in a genuine controller-config/0708 opportunity, observing all INFO receipts and real guarded responses. If no initial controller request, classify COMPLETE / INCONCLUSIVE and do not repeat blind idle S92 or reboot controller. This cannot solve first-offer absence. Preserve single V5 RX/UART/DE, framing/CRC, C5AR cold-start, session guards, FC03 freshness, H/D/C/M, HA and ABORT. **HA parameter writes remain ON HOLD**. Distinguish SOURCE/OFFLINE, TARGET COMPILED, FLASHED, LIVE, LOCALLY VERIFIED.
+**Current milestone:** native running-controller first attach + INFO 5/5 + semantic fresh H/D/C/M 4/4. **Real blocker:** intermittent missing initial controller 0x0F configuration/0708 first offer; C5BL follow-up cannot act without a real poll. **ONE next action:** only evaluate a naturally offered, genuinely qualified controller config/0708 opportunity in one scoped authorized validation; do not repeat blind idle S92, force reset or invent wake-up TX. **HA parameter writes HOLD**. No proprietary mailbox source/logs in GitHub. Keep one UART/DE owner, CRC, guards, C5AR rollback and ABORT. State levels SOURCE/OFFLINE/TARGET COMPILED/FLASHED/LIVE/LOCALLY VERIFIED accurately.
 
 ---
 
