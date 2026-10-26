@@ -1,3 +1,16 @@
+## 2026-10-27 — C5CY focused OEM comparison of first-0884 → INFO → M6 → CURRENT (SOURCE REVIEW ONLY)
+
+OBSERVED FACTS / OEM SOURCE: Genuine Connect 2.1.105 modbus_server15.py uses Modbus slave FC16 handling independently of application-level semantic acceptance. Genuine 2026-10-03 DCM trace has 0532/18 before first 0708 and ordinary repeated 0884/60 FC16 with FC16 ACK after runtime polling. OEM 930 modbus-flags.json W2=0x4000, W3=0x8000 and W4=0x000B select the five same INFO groups, but its 1803 bit15 nominal *register mapping span* for 0532 is **20 addresses**, while actual genuine DCM wire FC16 frame is **0532/18**; distinguish source range from physical wire geometry. C5CY intentionally matches the observed 18-register FC16; no fabricated 20-register ACK shape. First 0884 after ESP-only OTA is supported by user's C5CW XTR LIVE log, not separately by OEM cold-start capture.
+
+C5CY SOURCE TRACE: After first physical 0884/60 ACK, current-epoch token c5cg_first_0884_ack_epoch authorizes only existing next controller-0708 first INFO request; all five INFO pages were XTR LIVE ACKed in C5CW. On later exact 0884/60, C5CY outer branch, inner c5ce_retained_0884 boolean and M6 event4 retained_transport predicate all accept that same existing physically established 0884-first token or older c5aw first token. Second 0884 credit occurs after sole guarded S92 TX, then queued M6 event4 checks active/epoch, parser/peer integrity, real FC16+0708 counters, INFO>=03 and physical followup epoch; only then M6=4 and independent accepted transport epoch. OEM application semantic owner is NOT proven by these transport events. C5CU automatic CURRENT arm still additionally requires observed version242 profile and clean qualified epoch and waits for future real 0708; fresh CURRENT requires physical H/D/C/M 4/4. New OEM review found no further demonstrable predicate mismatch within this path, but offline reachability is NOT XTR live or target compile. ZIP YAML SHA256 b61d82edc9832d1c61fba5ff6358a58f1baa7bc99efd9af5fe019933d4cb3f32 verified; ZIP CRC passed; no firmware changed or physical TX performed in this review. C5CX SUPERSEDED / NOT RUN; C5CY PREPARED / NOT RUN. HA parameter writes ON HOLD.
+
+CURRENT MILESTONE: reliable native retained join and automatic per-session CURRENT 4/4 while preserving locally verified cold path.
+DELIVERABLE: C5CY OEM/source peer-review complete; unchanged private firmware ZIP.
+REAL BLOCKER: C5CY 0884-followup/M6=4/auto CURRENT 4/4 not yet compiled and LIVE validated on XTR.
+ONE NEXT ACTION: if user chooses, target compile unchanged C5CY and user-initiate one bounded ESP-only OTA with experimental EXPORT TX false, S92 STOP/RX ONLY and C5BN/C5CT rollback ready.
+
+---
+
 ## 2026-10-27 — OEM review found C5CX third missed retained 0884 gate; C5CY prepared (NO-GO C5CX)
 
 OBSERVED FACTS: C5CW user XTR LIVE ESP-only OTA began with physical FC16 ACK for 0884/60, then genuine 0708 INFO-FIRST, all 5 OEM 930/2.4.2 INFO pages physically ACKed (0532,06F1,07D0,07E4,080C infoMask=1F), subsequent 07F8,0820,0848,0864 (observed 2.4.2),0870 also physical ACK, then controller 0884/60 repeats unACKed. M6=2 ->7 RX_ONLY after 60.223s, no CURRENT 4/4, CRC/parser/peer clean, DE LOW. These C5CW live observations validate INFO page response progress only, NOT semantic owner or XTR cold equivalence.
