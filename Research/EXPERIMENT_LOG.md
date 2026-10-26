@@ -1,3 +1,9 @@
+## 2026-10-26 — C5BQ-AUTO-OTA-01 — PREPARED / NOT RUN
+
+Hypothesis: post-OTA C5BP retained-session recognition and automatic takeover can be classified from actual native 0x0F traffic, without manual S92 start or additional experimental TX. Baseline: C5BN latest LOCALLY VERIFIED cold-controller restart, C5BO post-OTA non-rejoin observed, C5BP source fix only PREPARED. ONE change: C5BQ appends a passive 120s one-shot test observer and a single terminal diagnostic; controller-native TX path unchanged. Expected: controller-originated FC16 offers, C5BP auto-arm, guarded native FC16+0708, accepted owner; cache freshness independently tracked. Actual: NOT RUN, no user-flashed C5BQ evidence. Abort: S92 Native DCM ABORT on unexpected TX, bus integrity or alarms; rollback C5BN. Source firmware stays PRIVATE; no HA setting writes.
+
+---
+
 ## 2026-10-26 — C5BO-AUTO-OTA-01 user LIVE: no automatic rejoin; C5BP targeted source fix PREPARED / NOT RUN
 
 OBSERVED FACTS: User 13:19:09–13:20:45 OTA log. Prior to OTA live C5BN stage40 had ~760 physical runtime FC16 ACKs and ~420 0708 replies, healthy CRC. OTA API disconnect then reconnect at 13:20:10. Thereafter M6 BOOT_RX_ONLY OWNER NOT INHERITED TX LOCKED, S92 passive observation, runtime replies reset 0 and page cache stale. Actual post-OTA C5BO BUILD text is NOT present in clipped 35s post-OTA excerpt; last build explicitly seen is C5BN BEFORE OTA. Therefore failed functional rejoin OBSERVED, but whether C5BO truly flashed is not independently confirmed by a postboot build label. No user S92 start evidenced.
