@@ -1,3 +1,9 @@
+## 2026-10-26 — C5BR target compile failed; C5BS correction PREPARED / NOT RUN
+
+User ESPHome 2026.9.0 compilation failed at YAML 17454: malformed diagnostic result nested ternary, expected `)` before `;`. C5BR therefore TARGET COMPILE NEGATIVE, NOT flashed. Private C5BS full ZIP fixes this exact source error by semantically equivalent if/else result classifier, changes only `[C5BR]` log tag to `[C5BS]`; native TX engine unaffected. Offline YAML parsed, 643 globals unique, diff constrained, ZIP validated. C5BS NOT target compiled, FLASHED or LIVE; C5BN still locally verified. No HA writes. C5BS-AUTO-OTA-01 PREPARED / NOT RUN. Next action: user compilation and one bounded user OTA; collect actual build label and AUTO_TEST_FINAL, ABORT/rollback on problems.
+
+---
+
 ## 2026-10-26 — C5BQ review correction: C5BR replaces unflashed C5BQ (PREPARED / NOT RUN)
 
 Double-check of complete C5BQ against C5BP identified two **test-reporter defects** (not evidence of native TX failure): `FIX_BUS_INTEGRITY` was subordinate to arm/owner failures, potentially masking an integrity event; RX/parser/CRC/peer counters were boot-absolute, not measured as deltas within the 120-second test window. C5BR corrects classification priority and records 5 test-window baseline/deltas including malformed FC16 shapes. Native C5BP hot-rejoin activation and physical UART/DE/CRC guards are untouched, no additional TX or HA parameter writes. Full private ZIP validated offline (YAML parse, 643 unique globals, DE-high count parity with C5BP, ZIP integrity); NOT target compiled/FLASHED/LIVE. C5BN remains last LOCALLY VERIFIED. C5BQ superseded as prospective deliverable, do not flash; C5BR-AUTO-OTA-01 PREPARED / NOT RUN. Single user-initiated bounded OTA only where native controller offers already exist; observe BUILD and final report, ABORT on errors, rollback C5BN. Long-term FC03/cache remains OPEN.
