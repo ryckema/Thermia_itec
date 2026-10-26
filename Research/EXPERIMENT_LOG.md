@@ -1,3 +1,11 @@
+## 2026-10-26 — C5BQ review correction: C5BR replaces unflashed C5BQ (PREPARED / NOT RUN)
+
+Double-check of complete C5BQ against C5BP identified two **test-reporter defects** (not evidence of native TX failure): `FIX_BUS_INTEGRITY` was subordinate to arm/owner failures, potentially masking an integrity event; RX/parser/CRC/peer counters were boot-absolute, not measured as deltas within the 120-second test window. C5BR corrects classification priority and records 5 test-window baseline/deltas including malformed FC16 shapes. Native C5BP hot-rejoin activation and physical UART/DE/CRC guards are untouched, no additional TX or HA parameter writes. Full private ZIP validated offline (YAML parse, 643 unique globals, DE-high count parity with C5BP, ZIP integrity); NOT target compiled/FLASHED/LIVE. C5BN remains last LOCALLY VERIFIED. C5BQ superseded as prospective deliverable, do not flash; C5BR-AUTO-OTA-01 PREPARED / NOT RUN. Single user-initiated bounded OTA only where native controller offers already exist; observe BUILD and final report, ABORT on errors, rollback C5BN. Long-term FC03/cache remains OPEN.
+
+CURRENT MILESTONE: ESP-only OTA hot rejoin. DELIVERABLE: C5BR private full ZIP source/offline checked. REAL BLOCKER: no user live C5BR outcome. ONE NEXT ACTION: one user-initiated C5BR OTA and evaluate native offers/accepted owner/freshness.
+
+---
+
 ## 2026-10-26 — C5BQ-AUTO-OTA-01 — PREPARED / NOT RUN
 
 Hypothesis: post-OTA C5BP retained-session recognition and automatic takeover can be classified from actual native 0x0F traffic, without manual S92 start or additional experimental TX. Baseline: C5BN latest LOCALLY VERIFIED cold-controller restart, C5BO post-OTA non-rejoin observed, C5BP source fix only PREPARED. ONE change: C5BQ appends a passive 120s one-shot test observer and a single terminal diagnostic; controller-native TX path unchanged. Expected: controller-originated FC16 offers, C5BP auto-arm, guarded native FC16+0708, accepted owner; cache freshness independently tracked. Actual: NOT RUN, no user-flashed C5BQ evidence. Abort: S92 Native DCM ABORT on unexpected TX, bus integrity or alarms; rollback C5BN. Source firmware stays PRIVATE; no HA setting writes.
