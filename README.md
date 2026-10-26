@@ -443,6 +443,18 @@ _Snapshot: 18 October 2026. This is a project-level overview, not a per-experime
 
 **Primary objective:** reproduce the native **Thermia/Danfoss Online / Connect / DCM** integration on the iTec XTR M with ESP32/ESPHome and Home Assistant. Preserve proven monitoring and existing safe control while moving from passive protocol evidence to a controller-recognized, recoverable implementation. Progress is evidence-gated rather than tied to a fixed date or experiment number.
 
+#### Actieve vier-routescope en volgorde — 2026-10-26
+
+| Route | Controller | ESP | Benodigde native actie | XTR-evidence en doel |
+|---|---|---|---|---|
+| **1. Cold start (regressiebasis)** | Reboot | Reboot | Echte controller-FC23, FC16-synchronisatie en FC03/cache | **C5AR LOCALLY VERIFIED**, fresh H/D/C/M 4/4; behouden, niet opnieuw microtesten |
+| **2. Hot start (eerst implementeren)** | Blijft draaien en biedt verzoeken | Reboot/OTA | Bestaande polling hervatten; sessie/owner betrouwbaar herkwalificeren | ATEC korte OTA LIVE; XTR automatische hervatting **OPEN** |
+| **3. Hot rejoin** | Blijft draaien en biedt verzoeken | Kort onderbroken | Gecontroleerd herstel en volledige/gerichte native read-only resync, cache opnieuw vers | ATEC LIVE cross-model; XTR **OPEN** |
+| **4. Controller-only restart** | Reboot | Blijft draaien | Verse controller-native handshake/FC16 accepteren, voorgaande cache/sessie ongeldig maken | SOURCE-/cross-modelvoorbeeld; XTR afzonderlijke route **OPEN** |
+
+**Geen fifth track:** nieuwe eerste DCM-discovery/cold join op stille doorlopende XTR blijft buiten scope. Herstel wordt één engine met precies één UART/RX/DE owner, V5/CRC/ABORT en controller-confirmed semantic owner. Ack/polling alleen is nooit session success. HA setting/parameter writes ON HOLD. De eerstvolgende implementatiebeslissing betreft **ESP-only hot start**, met C5AR als regressiebasis en exact user-LIVE C5BM als te vergelijken bron; hot rejoin, controller-only restart en FC03-freshness worden geïntegreerd zonder parallel architectuur.
+
+
 ### Critical path — native Online / Connect / DCM
 
 **Definition:** Cold start with controller boot remains supported; hot rejoin resumes an already-established native session; **cold join without controller restart is removed from active scope**. The historical no-offer C5BM research is archived, not an open prerequisite.
