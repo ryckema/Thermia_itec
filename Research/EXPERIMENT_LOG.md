@@ -1,3 +1,16 @@
+## 2026-10-26 — C5CV-AUTO-EXPORT-01 — PREPARED / NOT RUN
+
+Hypothesis: retained-session controller can resume a legitimate already-offered configuration-export phase when native response permission and observed phase are carried by the same existing S92 owner, rather than requiring repeated normal-page votes or a prior runtime poll. Baseline: C5CU failed auto ownership in the provided partial OTA log; C5CT prior hot-rejoin and user-initiated four-page CURRENT were LIVE positive. Prior evidence: genuine OEM export sequence with ACKs, controller first runtime poll only after export.
+
+ONE integrated change: private C5CV unified passive export phase + compile-time-gated bounded experimental existing-owner response, with C5CU one-shot CURRENT unchanged. Experimental new TX OFF by default. Source/YAML/offline structural checked, NO target compilation or live run. Expected if test authorized: post-OTA exact controller-authored export offer, one bounded native lease, observed acknowledgement/continuation, M6 transport qualification and independent 4/4 CURRENT (not inferred from ACK). ABORT: unexpected TX/peer/CRC/parser/conflict -> S92 STOP/RX ONLY; rollback prior C5CT working firmware or C5BN locally verified cold baseline. Actual outcome: NOT RUN. No user log yet. HA setting writes ON HOLD. OEM firmware-derived source and emulation details remain private.
+
+CURRENT MILESTONE: one native lifecycle with reliable hot rejoin and read-only automatic CURRENT.
+DELIVERABLE: private C5CV SOURCE/OFFLINE TESTED prepared package.
+REAL BLOCKER: unvalidated physical response in retained export phase.
+ONE NEXT ACTION: one deliberately enabled user-initiated bounded XTR OTA, with ABORT and rollback.
+
+---
+
 ## 2026-10-26 — Deeper OEM versus C5CU join-phase mismatch (research decision, no new TX)
 
 OBSERVED FACTS: In genuine 2026-10-03 DCM capture, native 0x0F FC23 precedes 33 distinct controller FC16 requests (first 03E8/13 at t=29.262s), each with corresponding FC16 ACK; first 0708/6 is at t=64.923s, 35.661s after first FC16. Within that span 042E/15 and 0442/13 each occur only once (t=32.119,33.408); 0641/33 and 0662/33 each receive genuine ACK. Independent 2026-09-25 090209 DCM trace again shows a single 042E and 0442 then forward progression. C5CU has 30s passive-window rollover and requires three 042E/0442 normal-entry votes within CURRENT window, while its retained route demands prior 0708 and >=3 runtime FC16. Its observer recognizes only 2 normal and 7 setup shapes from these 33 OEM pre-0708 requests; the remaining 24 are not classified in that specific join-phase switch, although its general RX parser knows many of their geometries. This is a SOURCE-PROVEN mismatch; it does NOT prove the exact FC16 pages in the user's 23:38 failed OTA (log has no per-page RX capture). C5CU M6=0, RX0708=0, no physical TX, CRC diff=0; the partial user log ends ~23:39:07, so later recovery not ruled out.
