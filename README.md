@@ -1,3 +1,12 @@
+## 2026-10-26 PRIORITY CORRECTION — true COLD JOIN with XTR running, NO controller restart
+
+**TARGET:** XTR operating normally with no qualified active native DCM session; ESP32 starts/connects and the XTR recognizes/starts a native first attach *without a controller reboot or disconnecting the room sensor*. This is NOT controller-cold-start (C5AR) and NOT retained-session hot-rejoin (ATEC V3 short-OTA). C5AZ shows only a partial user-LIVE first attach (INFO 2/5) AFTER native controller requests were already offered; it does not establish their trigger. Most recent user-LIVE C5BM has 60.225s zero 0x0F first offers, physicalTX=0, DE LOW — COMPLETE / INCONCLUSIVE for the untriggered INFO/FC16 retry logic.
+
+**MANDATORY ORDER:** (1) establish XTR-side new gateway recognition / first native 0x0F-offer trigger while controller remains ON; (2) complete handshake/FC16/INFO and semantic H/D/C/M 4/4; (3) prove automatic hot rejoin and refresh. STOP spending milestones on FC16 duplicate ACK and INFO follow-ups until step 1 is solved. 'Wait for a naturally offered request' is a safe response policy, not a *cold-join mechanism*. ATEC V3 OEM slave/resync does not demonstrate a silent-controller wake-up. No invented bus TX, removal of DE/CRC collision guards, blind S92 loops, controller reboot as join method or HA parameter writes.
+
+**ONE NEXT ACTION:** With C5BM running RX_ONLY, check on the physical XTR controller display whether **DCM ACCESSORY INSTALLED** is shown; record **ONLINE CONNECTION** separately. This is an independent controller-side recognition indication, not TX permission. Depending on that ONE datum, pursue retained accessory recognition vs never-discovered accessory from documented XTR native commissioning, rather than changing response retries. Preserve C5AR LOCALLY VERIFIED rollback, C5AZ scoped LIVE positive and current C5BM user FLASHED/LIVE with no-offer test COMPLETE / INCONCLUSIVE. Full evidence in Research canonical files.
+
+---
 ## CONTINUITY GATE — 2026-10-26 C5BM USER FLASHED/LIVE no-offer result
 
 **Evidence distinctions:**
@@ -426,6 +435,8 @@ _Snapshot: 18 October 2026. This is a project-level overview, not a per-experime
 **Primary objective:** reproduce the native **Thermia/Danfoss Online / Connect / DCM** integration on the iTec XTR M with ESP32/ESPHome and Home Assistant. Preserve proven monitoring and existing safe control while moving from passive protocol evidence to a controller-recognized, recoverable implementation. Progress is evidence-gated rather than tied to a fixed date or experiment number.
 
 ### Critical path — native Online / Connect / DCM
+
+**Current blocker first:** Demonstrate a NEW native DCM attachment to an **already-running XTR controller** that is presently silent to address 0x0F, without restarting it. Establish controller-side recognition/first-offer trigger BEFORE further handshake/FC16/INFO retry optimization. Do not confuse controller power-on cold-start, retained hot-rejoin, and no-reboot cold join. The next evidence action is the XTR DCM accessory-installed display indication while C5BM remains passive; downstream steps 1–5 apply after this gate is resolved.
 
 1. **Re-establish the exact deployed baseline and provenance.** Obtain a byte-verifiable copy/hash of the currently flashed V5 RX-only YAML/component set; confirm the single existing UART/CRC frame callback and preserve the known-good image and rollback. Do not substitute a newer draft or the simplified public research bridge for the flashed baseline.
 2. **Complete the passive native session/lifecycle model.** Correlate genuine XTR bus evidence, historical DCM/collaborator captures and Connect firmware. Separate cold startup, retained session, reconnection and controller restart. Establish independent evidence for current controller epoch, physical response owner and legal response slot; a CRC-valid frame, page sequence, ACK or internal firmware acceptance is insufficient by itself.
