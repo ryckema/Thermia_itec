@@ -1,3 +1,18 @@
+## 2026-10-26 — C5CC native RX/session-core refactor — PREPARED / NOT RUN
+
+OBSERVED FACTS: C5BX controller-only restart/cold recovery remains COMPLETE / POSITIVE and LOCALLY VERIFIED. C5BY ESP-only rejoin failed to arm in last live trace with known FC16 (0442) but no native 0708; no conclusion that retained runtime was offered then. C5BZ had a target compiler parentheses defect; C5CA corrected syntax at source level; C5CB predicate refactor still not target compiled or live tested.
+
+INTEGRATED PRIVATE C5CC SOURCE: full C5CB YAML refactored in two native-core areas. The single V5 RX owner now uses ONE switch for 7 setup/export and 9 runtime exact page/count pairs, plus the pre-existing 12-page known-shape diagnostic scope (06F4 remains diagnostic only); no authorization from the classifier. The passive rolling native FC16 15/3, >=3-second candidate detector now has ONE equivalent window reset on stale RX, changed parser integrity, malformed known shape, competing native slave reply or 30s rollover. Auto OTA phase, lifecycle and integrity predicates are named but logically unchanged; still needs actual runtime 0708 + runtime FC16 and zero setup pages; delegates to existing S92 engine. Existing first-0870-ACK, FC03, controller-cold-recovery, DE/CRC/peer/ABORT and HA entity behavior retained. HA parameter writes ON HOLD. No public proprietary source/handshake details.
+
+VERIFICATION: full YAML parser pass, 649 unique IDs, same physical TX-owner call sites (89) and write_array call sites (2), complete ZIP CRC verified, offline exact classifier equivalence for 1,048,576 address/count combinations and 128 passive reset-state cases. No ESPHome target build here; status SOURCE / OFFLINE TESTED, NOT TARGET COMPILED, NOT FLASHED, NOT LIVE. One complete private C5CC ZIP available to user; C5BX remains latest locally verified controller-recovery rollback. C5CC-REFACTOR-01 PREPARED / NOT RUN.
+
+CURRENT MILESTONE: consolidate one native RX/session engine while advancing ESP-only automatic retained rejoin.
+DELIVERABLE: C5CC integrated full private YAML ZIP plus manifest, private patch, activation/ABORT/rollback.
+REAL BLOCKER: C5CC target compilation and ESP-only semantic rejoin not yet validated; last user live trace offered no 0708.
+ONE NEXT ACTION: user target-compiles C5CC; if successful, one bounded user-initiated OTA to observe genuine controller runtime requests and fresh H/D/C/M. Never repeat verified controller cold-start experiment.
+
+---
+
 ## 2026-10-26 — C5BX ESP-only OTA negative; C5BY guarded first 0870 ACK PREPARED / NOT RUN
 
 C5BX user-LIVE ESP-only OTA: CRC-clean controller FC16 0870/count17 repeats every ~2s; valid FC03 0708/count6 14 times; M6 RETAINED_UNPROVEN and `EXP418_0870_NO_TOKEN` suppress all TX, FC16 ACK 0, FC03 served 0, H/D/C/M 0/4; timeout 60.075s, DE LOW, CRC/parser/drop counters zero. C5BX controller-restart cold recovery remains COMPLETE/POSITIVE LOCALLY VERIFIED; never retest it without contrary evidence.
