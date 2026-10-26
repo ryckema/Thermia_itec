@@ -1,13 +1,12 @@
-## CONTINUITY GATE — mandatory before any next C5 firmware or test (2026-10-26)
+## CONTINUITY GATE — mandatory before C5 firmware or TX tests (2026-10-26, C5BL)
 
-Three separate references (NEVER overwrite one with another):
-- **Verified operating rollback:** C5AR — locally verified full controller-cold-start/native session, synchronized fresh H/D/C/M 4/4. Any later locally verified full cold-start supersedes this ONLY with actual user LIVE evidence.
-- **Highest proven running-controller first-attach milestone:** C5AZ — USER LIVE genuine FC16 acknowledgements, genuine controller FC03 0708 served with OEM INFO-FIRST, 2 of 5 information groups received, scoped COMPLETE / POSITIVE; FULL semantic native join still OPEN. No-offer runs do not negate this milestone.
-- **Latest candidate:** C5BK — complete integrated PRIVATE source, OFFLINE TESTED only, PREPARED / NOT RUN; corrects RX-vs-TX INFO follow-up eligibility. Latest actual user FLASHED/LIVE candidate was C5BJ, no-offer COMPLETE / INCONCLUSIVE. NEVER call a prepared version live.
+Independent evidence levels — do NOT interchange:
+- **Verified operating rollback:** C5AR — locally verified native full cold-start and fresh synchronized H/D/C/M 4/4.
+- **Best running-controller first attach:** C5AZ — user LIVE controller FC16 ACK, genuine 0x0F FC03/0708 served and 2/5 OEM INFO groups physically ACKed; full semantic native session OPEN.
+- **Last user-confirmed flashed candidate:** C5BK — FLASHED/LIVE but its 60s manual trial received NO initial native 0x0F FC16/FC03 offer and sent NO physical TX (COMPLETE / INCONCLUSIVE for its untriggered INFO path).
+- **Latest engineering candidate:** C5BL — complete PRIVATE C5BK-derived source, SOURCE/OFFLINE TESTED, PREPARED / NOT RUN, not compiled/flashed/live. OEM Connect keeps INFO request flags set until matching controller FC16 receipt; C5BK additionally required mask progress and allowed only two follow-up replies. C5BL lets missing INFO flags persist through actual controller-offered FC03/0708 polls, still bounded to 12 followup replies and the existing 55s manual session eligibility / 60s hard expiry. No autonomous TX, new owner, HA writes, or invented XTR resync trigger. See canonical Research files. Private ZIP is delivered through conversation, NEVER publish firmware secrets/code.
 
-Mandatory decision sequence: (1) read README Roadmap, current STATE, LOG, FINDINGS and exact baseline YAML; (2) name the specific highest proven function and candidate source; (3) define ONE observable defect, expected improvement and exact evidence; (4) confirm source/delta preserves previously verified controller cold-start, 0442 alternate entry, 0708 INFO-FIRST, receipt masks, ongoing INFO requests, FC23, FC03 freshness, production HA and sole UART/DE/CRC/framing/ABORT; (5) distinguish source/offline/compiled/flashed/live/locally verified; (6) update this handoff plus canonical Research files after a material outcome. A no-offer trial is INCONCLUSIVE for untriggered branches; never downgrade positive earlier branch, trigger microtests, or silently rebaseline. User-initiated bounded TX ONLY; HA parameter writes HOLD. No proprietary payload/source in public GitHub.
-
-**Current milestone:** Complete native first attach on running controller. **Real blocker:** 3/5 INFO groups and semantic owned synchronized fresh H/D/C/M 4/4 not yet proven; controller first offer intermittent. **One next action:** validate existing C5BK RX/TX INFO-followup parity in ONE bounded, genuine controller-config/0708 opportunity; if no offers, do not repeat idle S92.
+Next GO criterion: user-initiated ONE bounded C5BL trial in a genuine controller-config/0708 opportunity, observing all INFO receipts and real guarded responses. If no initial controller request, classify COMPLETE / INCONCLUSIVE and do not repeat blind idle S92 or reboot controller. This cannot solve first-offer absence. Preserve single V5 RX/UART/DE, framing/CRC, C5AR cold-start, session guards, FC03 freshness, H/D/C/M, HA and ABORT. **HA parameter writes remain ON HOLD**. Distinguish SOURCE/OFFLINE, TARGET COMPILED, FLASHED, LIVE, LOCALLY VERIFIED.
 
 ---
 
