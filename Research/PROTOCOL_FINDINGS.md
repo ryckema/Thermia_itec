@@ -1,3 +1,20 @@
+## 2026-10-26 — C5BI integrated first-attach partial-04A6/0708 parity — PREPARED / NOT RUN
+
+OBSERVED FACTS: User C5BH FLASHED/LIVE manual S92 no-offer 60.071s, zero physical TX/FC16/FC23/0708, safe DE LOW, COMPLETE / INCONCLUSIVE. User C5BE LIVE previously physically ACKed controller 04A6/13 -> 04BA/22 -> 085F/5 then received native FC23. C5BC real controller cold-start remains COMPLETE / POSITIVE with RUNTIME/SYNCED and fresh H/D/C/M 4/4.
+
+ONE SOURCE FIX: Complete private MAIN03-C5BI integrates the C5AV INFO-first FC03 0708 gate for physically ACKed partial 04A6 then 04BA first attach in same manually authorized S92 epoch. Both existing RX selector and sole physical S92 TX-owner require confirmed native resume-start, physically recorded 04BA/22 bitmap, valid manual epoch, active stage40, 55s within 60s total, existing CRC/peer/framing/collision/dirty protections and real future controller 0708/6. No new UART writer, synthetic unsolicited slave TX, invented frames, semantic owner promotion, HA parameter writes, cold-start or FC23 modifications. Retain all guards and ABORT; previous C5AR locally verified rollback.
+
+PRIVATE artifact THERMIA_MAIN03_C5BI_FIRST_ATTACH_FC03_PARITY_PRIVATE_20261026.zip. YAML SHA256 7c39386bc68a44e80154b7e36e6559517dcab98c971e769a3b38b1de136087e9; ZIP SHA256 aeb48c981fe2f18b23feb60dcd0c5f0bc5691299481fe0406693cdc856d49c71. Offline parse, unique IDs, source diff, eleven source-condition cases, unchanged physical TX owner and ZIP integrity PASS. SOURCE / OFFLINE TESTED only; NOT TARGET COMPILED, FLASHED or LIVE. No OEM protected code or private responder payload published.
+
+STRONG CONCLUSION: genuine SOURCE gap corrected for a possible later 0708 after partial 04A6/04BA. Controller initial offer trigger remains OPEN: no solution to absent offers is claimed. Do not repeat idle S92 microtests; transport ACK never equals semantic acceptance. User-initiated one bounded trial only when meaningful controller offer is present.
+
+CURRENT MILESTONE: first native DCM attach on already-running XTR without previous session since controller boot.
+DELIVERABLE: one full private integrated C5BI firmware ZIP PREPARED / NOT RUN.
+REAL BLOCKER: controller may offer no initial DCM FC16/FC23 to gateway.
+ONE NEXT ACTION: user-initiated bounded C5BI test only during real first-attach offer, then assess FC03/FC23 controller semantic progression; abort faults, rollback C5AR.
+
+---
+
 ## 2026-10-26 — First attach offline five-in-one: 04A6 read-gate gap
 
 C5BE LIVE offered and ACKed exact 04A6/13, 04BA/22, 085F/5 in a manual S92 epoch, followed by 14 native FC23 offers. All six captured known FC16 page frames passed offline CRC16/length geometry. C5BH LIVE same user intent got zero DCM offers/FC03 and zero physical TX within 60.071s; CRC_DIFF0, drops0, one parser resync. A80E bit 0008 was observed in C5BE but not C5BH; EXP94 proves that bit alone cannot be called an initiation trigger; A80F=0032 in both runs. C5BE pre-START NATIVE FC16 OBSERVED is a latched passive status, not an individually timestamped 04A6 at that log line.
