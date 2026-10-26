@@ -1,3 +1,22 @@
+## 2026-10-26 — XTR DCM icon absent; reassess active initiation without invented TX — SOURCE REVIEW / PREPARED / NOT RUN
+
+**USER OBSERVED FACT:** Physical XTR display currently shows NO 'DCM ACCESSORY INSTALLED' symbol while C5BM operates passively. No separate ONLINE icon claim implied. Coupled with C5BM user FLASHED/LIVE 60.225s S92 no-offer (0x0F requests 0, physical TX 0, DE LOW), this supports 'no controller-recognized native DCM accessory now' (STRONGLY SUPPORTED; display alone does not prove protocol mechanism).
+
+**USER HYPOTHESIS:** A new DCM may need gateway-initiated activity. Treat as a legitimate hypothesis for a bounded USER-INITIATED experiment, not as permission to invent an arbitrary Modbus request or to transmit autonomously.
+
+**ONE CONSOLIDATED REVIEW:** Exact 2018 CM930 Connect `device_client/cm/modbus_server15.py` starts an RTU SLAVE server at address 0x0F and responds to controller FC16/FC23/FC03; no master/proactive Modbus discovery startup call was found. Original Connect installation guide 2024 asks for serial-number verification and restarts the CONNECT accessory during onboarding, not expressly the heat pump; digital pairing is not proof of on-wire unsolicited TX. ATEC V3 restores sessions only after controller polls and has no validated silent-controller wake-up. Across five genuine XTR `thermia_capture_*.log` files, 0x0F FC16/FC03/FC23 slave responses were all preceded in the respective capture by a corresponding controller request; no convincing standalone 0x0F gateway-initiated command class was identified. All captures may start after an earlier undisplayed detection step, so inability to observe an unsolicited command is NOT PROOF that no other signalling is possible. The current XTR A80E/AFDC status flips and 0x06 polls are known non-proof and must not be replayed or reclassified (EXP95 already closed).
+
+**DECISION:** GO to consider *active discovery as a testable hypothesis*, NO-GO to an unvalidated physical TX right now: no grounded destination/function/payload/response semantics that could legitimately create a first offer, and sending an arbitrary slave reply or a new master FC03 would introduce an unsupported bus role and collision risk. No firmware, physical experiment, flashing, or HA parameter writes were performed. Preserve the sole UART/RX/DE owner, CRC, ABORT, C5AR locally verified rollback and C5AZ partial-positive evidence; C5BM remains PASSIVE RX_ONLY.
+
+**REAL NEXT EVIDENCE GATE:** Obtain a genuine first-install/first-join on-wire capture from actual Thermia Connect/DCM attaching to an already-running controller (or exact OEM hardware evidence of a discrete presence/enable signal). Identify ONE concrete gateway-originated electrical/protocol action, if any, before preparing a bounded user-initiated active experiment. The official Connect installation guide's accessory restart after serial-number pairing offers a scenario to target without requiring a controller restart; it does not itself define an RS485 probe.
+
+**CURRENT MILESTONE:** XTR cold join with controller remaining ON, newly recognized DCM icon and native initialization.
+**DELIVERABLE:** User's no-icon observation and active-initiation feasibility decision grounded against original Connect/V3/five XTR captures; no new firmware.
+**REAL BLOCKER:** No verified gateway-originated startup action, discovery frame or sideband trigger; XTR does not offer 0x0F requests while unrecognized.
+**ONE NEXT ACTION:** Ground the native *first-recognition* trigger from genuine Connect-on-running-XTR commissioning capture or exact OEM electrical presence/enable evidence, then prepare a single bounded user-started TX experiment if it actually shows active signalling.
+
+---
+
 ## 2026-10-26 — MILESTONE CORRECTION: true COLD JOIN without controller restart
 
 **OBSERVED FACTS:** C5AR proves native full cold start on controller reboot (LOCALLY VERIFIED H/D/C/M 4/4), not a no-reboot cold join. C5AZ proves scoped running-controller partial first attach after real controller-originated 0x0F config/mailbox offers (LIVE INFO 2/5), not the missing way to make a completely non-offering XTR discover the ESP. C5BM user FLASHED/LIVE produced NO 0x0F offer in a bounded 60.225s manual S92 window (COMPLETE / INCONCLUSIVE for its untriggered FC16/INFO code). The original Connect and ATEC V3 implementations act as addressed slaves and respond AFTER controller requests; their normal FC16 ACK, persistent INFO and 0708 replies do not cause silent controller discovery.
