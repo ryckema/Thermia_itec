@@ -1,3 +1,22 @@
+## 2026-10-26 — C5AZ vs C5BE and C5BI/BJ/BK controller-first-offer chronology — COMPLETE / INCONCLUSIVE for causal trigger
+
+OBSERVED: C5AZ user-LIVE described in original EXPERIMENT_LOG: manual 00:13:39.795, FIRST offered 0442/13 physically ACKed 00:13:41.511, 085F/5, 0546/20, 0662/33 ACKed, controller 0708 served OEM INFO_FIRST 00:13:45.366, 0532/18 and 06F1/3 real info ACKed => 2/5. Full RAW C5AZ logfile is NOT among currently accessible local attachments; do not invent C5AZ pre-0442 status/uptime/raw frame values. Scope COMPLETE/POSITIVE for real controller-driven continuation; semantic session not accepted and H/D/C/M not 4/4.
+
+Independent exact C5BE LIVE full raw log (Pasted text 20261026-004049): user S92 START 01:39:35.534 at ESP boot age ~121s; A80E=0028,A80F=0032 logged 01:39:36.036, BEFORE physical controller FC16 04A6/13 01:39:36.663, then 04BA/22,085F/5, and genuine FC23 after. A80E bit 0008 presence preceded real offered config, but earlier local EXP94 found that bit in a cold-boot context lacking DCM: correlation, NOT verified trigger or authorization; do NOT gate new TX on A80E bit or infer controller reboot. C5BE physical TX before first 04A6 = 0 (slave did not spontaneously bootstrap).
+
+Independently from user live full log files, no-offer runs: C5BI ESP-only OTA epoch manual S92 START 08:25:59.044 ESP age 653s and 0 native config/FC03; C5BJ 09:16:15.895 age 534s no native; C5BK 09:44:16.949 ESP age 40s no native. A80E typical 0000/0020, A80F=004B for BI/BJ/BK, A80F=0032 on earlier BE-era no-offers. Other regular 02/0A/1E traffic and 06 slot polling, CRC_DIFF0/RX drops0, no evidence of whole bus failure. ESP restart proximity is NOT sufficient: C5BK tested manual 40s after boot yet zero offers, while BE at 121s got offers. No positive evidence that pressing S92 START causes controller to offer frames: S92 only arms slave responses. A80F=0032 vs 004B may be cycle/sequence value; no supported causal semantic meaning. Need actual XTR controller-side pairing/discovery event evidence, especially C5AZ preceding 0442, not an invented wake-up TX or another identical no-offer S92.
+
+STRONG CONCLUSION: conditional controller CONFIG-FIRST phase (0442 or 04A6 and continuation) is the discriminator between meaningful C5AZ/BE protocol progress and ownerless no-offer BI/BJ/BK; exact causal hardware/software condition remains OPEN / unknown. Avoid implying other states like alarm-only FC03 imply full config. C5AZ scoped positive remains milestone. C5AR locally verified full cold controller-start rollback. C5BK latest USER FLASHED/LIVE but INFO followup not exercised.
+
+EXPERIMENT STATUS: COMPLETE / INCONCLUSIVE for identification of precise controller-first-offer trigger; no physical experiment initiated, comparison of existing evidence only. SOURCE/USER LIVE labels retained per original individual trials. No new firmware; HA writes HOLD.
+
+CURRENT MILESTONE: XTR running-controller OEM-equivalent native first attach with followup INFO and semantic accepted RUNTIME/FRESH H/D/C/M 4/4.
+DELIVERABLE: evidence-based positive/no-offer comparison with C5BE pre-offer A80E=0028 timestamp and explicit C5AZ raw-log access limitation.
+REAL BLOCKER: precise XTR controller condition preceding first offered 0442/04A6 not identified from available evidence.
+ONE NEXT ACTION: recover original full C5AZ pre-first-0442 raw logfile/capture (not only summary) for passive timeline/status/controller sequence comparison; if unavailable, treat trigger OPEN and do not repeat idle S92 or invent TX.
+
+---
+
 ## 2026-10-26 — C5BK-S92-LIVE-01 — COMPLETE / INCONCLUSIVE; C5AZ scoped milestone preserved
 
 OBSERVED FACTS (user ESPHome actual log 09:42:02–09:46:27): MAIN03-C5BK build sensor confirmed 09:42:56; user-initiated S92 MANUAL_START 09:44:16.949, bounded expiry 09:45:17.025 after 60081ms. During entire same manual epoch: FC16 ACK=0, FC03 offered/served/withheld=0, 0708 RX=0, total physical TX=0, startup R1=0, accepted owner=0, cache NOT_SYNCED, FRESH H/D/C/M 0/4. Timeout reported RETAINED_NO_DCM_OFFER, RX_ONLY, DE=LOW, no fake restart. V5 parser observed >700 good normal frames, CRC_DIFF=0, drops=0, parser resync=0; controller/room/outdoor traffic and 0x06 polls continue. A80E cycles 0000/0020; A80F fixed 004B; no evidenced causal trigger. ESPHome API 'Buffer full, ping queued' near timeout is API/logger flow warning, not established physical UART collision. Config writes remain ON HOLD.
