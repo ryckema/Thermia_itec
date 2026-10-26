@@ -1,3 +1,14 @@
+## 2026-10-27 — C5CW independent OEM 2.1.105 / 2.4.2 source reconciliation (no new firmware)
+
+OBSERVED FACTS: Original Connect 2.1.105 930 modbus-flags.json confirms first INFO read W2=4000, W3=8000, W4=000B selects exactly 06F1/3, 0532/18, 07D0/19, 07E4/17, 080C/18. OEM cold-start DCM traces receive 0532 and 06F1 before first 0708; user retained C5CV LIVE received 0532 after physical INFO_FIRST_READ_SENT on 0708, and C5CV incorrectly counted it as newly entered export, blocking ACK. C5CW privately corrects phase classification only when first INFO 0708 was physically sent in same current auto-retained epoch; before that 0532/06F1 remain eligible for genuine OEM export classification. Source review confirms shared CRC-validated FC16 ACK router sends through single existing S92 physical TX owner, credits INFO bitmap only after actual TX success, then 0884 and M6 have independent same-epoch gates; automatic CURRENT still waits for M6-qualified owner and observed 2.4.2 profile. Cold FC23/authentication and HA parameter-write HOLD preserved. Full C5CW YAML hashes to 78401e57287c958b53a7d81d36a5769ecd6a11dd80c2b42d5af7745e10db7ca4 and matches ZIP, archive CRC healthy, only two UART write_array sites; no new build in this review. OEM slave processing is supporting architecture, not proof of ESP ownership. C5CV retained run COMPLETE / NEGATIVE; C5CW PREPARED / NOT RUN, SOURCE / OFFLINE TESTED; XTR result still unknown.
+
+CURRENT MILESTONE: native cold/retained session and automatic same-epoch H/D/C/M 4/4.
+DELIVERABLE: OEM-grounded C5CW review complete, previous C5CW private ZIP unchanged.
+REAL BLOCKER: C5CW not target compiled/flashed/LIVE, downstream controller INFO ACKs + 0884/M6 + automatic CURRENT not yet evidenced.
+ONE NEXT ACTION: user first target compile unchanged C5CW with experimental export TX false, then one explicitly user-started bounded ESP-only OTA with S92 STOP and verified rollback ready.
+
+---
+
 ## 2026-10-27 — Same-epoch INFO FC16 must not invalidate retained setup guard (SOURCE PROVEN)
 
 New C5CV XTR LIVE post-OTA: retained runtime route (no export experiment), first native FC16 0870/17 physically ACKed, controller FC03 0708/6 served INFO-FIRST, next actual 0532/18 FC16 repeatedly rejected by c5cp retained scope. 0x0884/60 also denied; M6=2 expires to 7 RX-only with clean V5 CRC/resync/drop/peer counters and 2 guarded physical TX. C5CV parser added 0532/18 and 06F1/3 to OEM CONFIG EXPORT counter (C5CU previously did not). Because c5cp_retained_transport_scope compares c5bx_setup_fc16_seen to c5cl_setup_entry_baseline or a pre-entry mixed-phase token, incrementing CONFIG on expected post-INFO 0532 causes instant scope denial. That is the exact source regression; OEM internal accepted flag does not grant session owner.
