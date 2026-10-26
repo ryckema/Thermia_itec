@@ -1,3 +1,18 @@
+## 2026-10-26 — C5BI-FIRST-ATTACH-0708-PARITY-01 — COMPLETE / INCONCLUSIVE (USER LIVE)
+
+OBSERVED FACTS: User flashed MAIN03-C5BI (Firmware Build in actual ESPHome log), S92 manual START 08:14:02.548, 60.190 s bounded expiry 08:15:02.738-746. Manual stage40 received no newly observed 04A6, 04BA, 085F, FC23 challenge, or native FC03/0708; FC16ACK=0, FC03SERVED=0, FC03WITHHELD=0, physicalTXthisSession=0. Accepted owner=0, profile=0, fresh=0, H/D/C/M=0/4, result RETAINED_UNPROVEN_EXPIRED, DE LOW, RX ONLY. Read bus continued normally with CRC_DIFF=0 and RX buffer drops=0; parser resyncs since boot=30 at 08:09:57 and remained 30 in run (not 0 since boot). Controller A80E cycled 0000/0020 and A80F=004B in manual window; no supported semantic causal interpretation. BEFORE the 08:14:02 manual run totalPhysicalTX was already 2, known-shapes counter 349, cumulative initFC16=2 and rt04A6=1. These were unchanged during manual 60 s; capture starts 08:09:34 at ESP uptime ~601s, thus earlier TX/provenance falls BEFORE this log and cannot be reclassified as successful C5BI first-attach or attributed to current run. Both 2 earlier TX and their reason are OPEN pending earlier timestamped evidence. Logged pre-run FC03 cache snapshot briefly showed physicalTXthisSession=2 but manual START resets it, and session expiry unequivocally reports 0 TX this run.
+
+STRONG CONCLUSION: C5BI 04A6/04BA partial-resume FC03 parity SOURCE fix was never exercised live because real controller inputs were absent. It is neither confirmed nor disproven. No controller semantic session; no bus safety failure evidenced. Do not repeat identical idle S92 trials, invent unsolicited TX, or claim STATUS 04A6 from a latched boot counter as a frame in current epoch. Source remains complete C5BI user FLASHED / LIVE for idle fail-closed only; no fresh firmware.
+
+EXPERIMENT STATUS: COMPLETE / INCONCLUSIVE. HA parameter writes ON HOLD. C5BC controller-cold-start remains locally proven; C5AR known verified rollback. No live restart required.
+
+CURRENT MILESTONE: first DCM attach to already running controller without any current DCM.
+DELIVERABLE: actual C5BI user LIVE no-offer run analyzed, safe fail-closed verified, new read gate not exercised.
+REAL BLOCKER: missing controller first offer in manual window; root of pre-log TX=2 and 04A6 historical counter unknown.
+ONE NEXT ACTION: reconstruct PRE-08:09:34 source of those two earlier responses/first 04A6 event using available retained startup logs/captures; seek controller-side trigger before any new flash or TX trial.
+
+---
+
 ## 2026-10-26 — C5BI integrated first-attach partial-04A6/0708 parity — PREPARED / NOT RUN
 
 OBSERVED FACTS: User C5BH FLASHED/LIVE manual S92 no-offer 60.071s, zero physical TX/FC16/FC23/0708, safe DE LOW, COMPLETE / INCONCLUSIVE. User C5BE LIVE previously physically ACKed controller 04A6/13 -> 04BA/22 -> 085F/5 then received native FC23. C5BC real controller cold-start remains COMPLETE / POSITIVE with RUNTIME/SYNCED and fresh H/D/C/M 4/4.
