@@ -1,3 +1,18 @@
+## 2026-10-26 — C5CJ alternate 042E-first XTR order; C5CK scoped 0820 fix — PREPARED / NOT RUN
+
+OBSERVED FACTS: C5CJ ESP-only OTA 21:08:22–21:09:22 started normal C5AZ auto route. Actual FC16 042E/15 physically ACKed; FC03 0708/6 served; 0532/18, 06F1/3, 080C/18 physically ACKed INFO mask 13/1F. 07D0 and 07E4 were NOT offered in this run. Actual 0820/18 repeatedly offered 20+ times without ACK while 12 real FC03 0708 reads answered with pending bitmap 0C. 60.029s expiration M6(2)->SESSION_LOST(7), FC16 ACK=4, FC03 served=12, TX total=16, H/D/C/M=0/4, CRC_DIFF=0 RX drop=0. Parser resync total 28 since boot, session delta=0 in heartbeats. C5CJ-OTA-01 COMPLETE / NEGATIVE for full rejoin; its 0848 continuation not exercised. Transport receipts not semantic acceptance.
+
+ONE INTEGRATED SOURCE FIX C5CK: complete C5CJ YAML, existing single S92 guarded FC16 responder: exact 0820/18 accepted in 042E-first session only after real physically sent first 042E ACK in current write_arm_ms epoch plus real 080C INFO bit 0x10 and last ACK 080C/0820. All other stage40, bounded 55s, CRC, peer/collision, parser/drop, no pending/dirty writes, abort and single DE/UART owner guards preserved. Missing 07D0/07E4 stay missing; INFO bitmap remains 13/1F, no invented page or authentication/M6 acceptance; C5CJ 0848 path unchanged. HA writes ON HOLD, room sensor remains attached.
+
+OFFLINE: full YAML parsed, 571 unique globals, S92 owner send calls=90 unchanged, write_array calls=2 unchanged, ZIP CRC/embedded files SHA verified. Full private ZIP with YAML, diff, manifest, build/OTA and rollback instructions. SOURCE / OFFLINE TESTED, NOT TARGET COMPILED/FLASHED/LIVE. C5CK-OTA-01 PREPARED / NOT RUN. C5BX latest LOCALLY VERIFIED controller-cold rollback.
+
+CURRENT MILESTONE: automatic ESP-only retained hot-rejoin and FC03/cache freshness.
+DELIVERABLE: C5CK full private firmware ZIP, SOURCE / OFFLINE TESTED.
+REAL BLOCKER: 042E-first 0820 continuation has not been live observed, M6 semantic owner and H/D/C/M 4/4 still open.
+ONE NEXT ACTION: user compile C5CK and run ONE bounded ESP-only OTA; inspect first ACK, 080C->0820 and actual next page; ABORT/rollback C5BX if abnormal.
+
+---
+
 ## 2026-10-26 — C5CI LIVE 0848 continuation; C5CJ scoped fix PREPARED / NOT RUN
 
 OBSERVED C5CI real XTR OTA 20:51:40–20:52:40: exact FC16 07D0/19 first physical ACK, genuine FC03 0708/6 replied, five INFO physical receipts mask 1F/1F, 07F8/17 ACK, 0820/18 ACK; seven physical FC16 ACK plus one FC03 TX = 8. Next controller-owned exact 0848/23 repeatedly offered, no ACK [FIX39] NO_OWNER, while repeated 0708 requests refused. At 60.154s M6 RETAINED_UNPROVEN -> SESSION_LOST, physicalTX 8, FC03 withheld 13, cache H/D/C/M 0/4. CRC_DIFF=0, RX drops=0, parser resync=0; DE LOW. C5CI entire hot-rejoin COMPLETE / NEGATIVE, earlier INFO/0820 transport steps LIVE confirmed positive. Transport ACK is not controller application acceptance.
