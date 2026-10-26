@@ -1,3 +1,16 @@
+## 2026-10-26 — C5CF user LIVE: 0884-first retained-runtime deadlock — COMPLETE / NEGATIVE
+
+User ESP-only OTA confirms MAIN03-C5CF FLASHED/LIVE. [C5CF] AUTO_NATIVE_ENTRY_ARMED at 20:12:02 route RETAINED_RUNTIME, runtimeFC16=5, RX0708=2; first in-session known page 0884/60; genuine controller polls 0708/6. No physical TX (FC16ACK=0 FC03SERVED=0); 14 0708 withheld, 27 0884 FC16 observed, M6 RETAINED_UNPROVEN(2) to SESSION_LOST(7) at 60.106s. CRC differences and RX drops zero, session-relative parser resync zero, DE LOW, H/D/C/M 0/4. One-shot observer FIX_NO_RUNTIME_OWNER. C5CF-OTA-01 COMPLETE / NEGATIVE. 042E ACK credit branch never reached; C5CF change not causally tested, do not label disproven.
+
+Exact C5CF SOURCE: 0884 handler at approx YAML 9197 requires 3 prior physical FC16 ACKs and 1 prior physical 0708 reply; retained variant additionally requires 0870 ACK, 0708 and two physical INFO ACKs in same epoch. This guards 0884-first despite controller offering exactly that page; circular dependency OBSERVED, not CRC problem. The previous OEM architectural review favors separating addressed transport slave response from later application/session/data freshness, but does NOT independently establish XTR-first-0884 TX authority. Next decision FIX existing native first-response qualification using genuine OEM/XTR evidence, same sole TX owner and bounded user-initiated activation, with peer/CRC/collision/ABORT/rollback, no fabricated session acceptance and HA parameter writes HOLD. Do not blindly bypass 0884 guard. C5BX remains LOCALLY VERIFIED controller cold recovery; no repeated cold test.
+
+CURRENT MILESTONE: automatic ESP-only native retained rejoin and FC03 refresh.
+DELIVERABLE: C5CF LIVE result and exact 0884-first circular predicate root cause.
+REAL BLOCKER: first controller-offered 0884/60 lacks a validated initial native response path; no semantic session or H/D/C/M proof.
+ONE NEXT ACTION: integrated narrow first-0884 response/FC03 continuation source fix after checking evidence and guard scope, then one bounded user-initiated OTA.
+
+---
+
 ## 2026-10-26 — C5CE LIVE 07D0/0708 deadlock, OEM source reviewed, C5CF private FIX PREPARED / NOT RUN
 
 OBSERVED XTR C5CE ESP-only OTA 19:50–19:51: compiled/flashed MAIN03-C5CE build confirmed. After stage40 M6 RETAINED_UNPROVEN (2), one physical native FC16 ACK, repeated exact controller FC16 07D0/19 (~2s), and 14 actual FC03 0708/6 polls with 0 replies. 60.008s bounded session expires M6 SESSION_LOST (7), DE LOW. FC16 ACK 1, physicalTX 1, H/D/C/M 0/4, config unsynced; CRC difference 0, RX drops 0, session-relative parser resync/drops 0. OEM_INTERNAL=ACCEPTED / FC16=042E is internal observation, does not identify the actual first physically ACKed frame unambiguously: 042E first anchor is a STRONGLY SUPPORTED HYPOTHESIS, not PROVEN in clipped C5CE trace. C5CE's earlier 0884 transport fix was NOT reached because no 0708 reply or info pages; do not call 0884 fix disproven.
