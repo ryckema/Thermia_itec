@@ -1,3 +1,18 @@
+## 2026-10-27 — C5CV LIVE retained failure isolated; C5CW exact INFO phase fix SOURCE / OFFLINE TESTED
+
+OBSERVED FACTS: User supplied C5CV post-OTA XTR LIVE log 00:06:09–00:07:16 with build MAIN03-C5CV confirmed. Auto native S92 stage40 entry was route RETAINED_RUNTIME (NOT the experimental EXPORT route), physical FC16 0870/17 ACK, then first controller FC03 0708/6 served INFO-FIRST 5 requests; actual 0532/18 controller INFO frame then repeated many times with NATIVE_FC16_SCOPE_DENIED, followed by repeated denied runtime 0884/60. M6 remained 2 RETAINED_UNPROVEN and expired at 60.234s to M6=7 RX ONLY; only two physical TX (FC16 ACK and FC03 reply), no CURRENT receipts (0/4, mask00), profile owner UNPROVEN. CRC_DIFF=0, parser resync=0, RX drops=0, peer=0, DE LOW. This is C5CV retained join COMPLETE / NEGATIVE on this live episode. Experimental EXPORT-route authorization was NOT exercised: do not count as successful/failed validation of that new TX path.
+
+SOURCE ROOT CAUSE (PROVEN): C5CV newly classified genuine OEM 0532/18 and 06F1/3 as CONFIG EXPORT in the common passive RX phase counter. After the owner physically sent the INFO-FIRST response to 0708, the first 0532 increased c5bx_setup_fc16_seen beyond the preserved c5cl_setup_entry_baseline. Existing c5cp_retained_transport_scope() treated that drift as new setup and denied the INFO response, deadlocking controller INFO progression. This is an accidental cross-phase counter regression, not a missing FC16 whitelist shape or bad CRC.
+
+FIX: one private complete C5CV-derived C5CW YAML, SHA256 78401e57287c958b53a7d81d36a5769ecd6a11dd80c2b42d5af7745e10db7ca4. After PHYSICALLY SENT first INFO 0708 response in the same active native retained epoch, 0532/18 and 06F1/3 are INFO and do not increase the export/setup counter or passive export ledger. Before INFO response they retain captured export role. No new frame, UART/DE TX owner, bypass of FC23, removal of CRC/peer/ABORT safeguards or HA setting writes. C5CV experimental export TX still OFF by default. One offline consolidated YAML/entity/ID/writer and ZIP regression PASS. C5CW SOURCE / OFFLINE TESTED; PREPARED / NOT RUN; not target compiled/flashed/LIVE.
+
+CURRENT MILESTONE: stable native retained lifecycle plus automatic CURRENT 4/4 after cold/hot joins.
+DELIVERABLE: user LIVE root-cause proof and C5CW complete private firmware targeted phase correction.
+REAL BLOCKER: C5CW post-fix XTR live 0532 INFO ACK → later INFO/M6=4 and automatic 4/4 not yet proven.
+ONE NEXT ACTION: user target compile C5CW with C5CV experimental export TX FALSE and one explicitly user-initiated bounded ESP-only OTA; inspect first 0532 INFO ACK, M6 transport status, real H/D/C/M freshness; ABORT/rollback if anomaly.
+
+---
+
 ## 2026-10-26 — C5CV unified native export/retained lifecycle prepared (PREPARED / NOT RUN)
 
 OBSERVED FACTS: user C5CT ESP-only hot-rejoin LIVE reached transport-qualified M6=4, and user-initiated CURRENT H/D/C/M refresh achieved 4/4/FRESH. User C5CU new OTA log shows RX-only / owner unknown with configuration traffic; no physical TX or FC03 in the supplied excerpt. OEM source and genuine capture show sequential configuration export preceding runtime poll; earlier 3x same-category entry vote in 30s is not appropriate for this evidence.
