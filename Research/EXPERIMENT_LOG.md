@@ -1,3 +1,13 @@
+## 2026-10-26 — C5BX ESP-only OTA negative; C5BY guarded first 0870 ACK PREPARED / NOT RUN
+
+C5BX user-LIVE ESP-only OTA: CRC-clean controller FC16 0870/count17 repeats every ~2s; valid FC03 0708/count6 14 times; M6 RETAINED_UNPROVEN and `EXP418_0870_NO_TOKEN` suppress all TX, FC16 ACK 0, FC03 served 0, H/D/C/M 0/4; timeout 60.075s, DE LOW, CRC/parser/drop counters zero. C5BX controller-restart cold recovery remains COMPLETE/POSITIVE LOCALLY VERIFIED; never retest it without contrary evidence.
+
+C5BY complete private firmware based on C5BX: ONE change to existing stage40 C5AW/C5BT one-shot first native FC16 response branch, adding exact controller-offered 0870/count17, byteCount34 frameLen43 when auto OTA attempted and genuine runtime phase proved (>=1 0708 poll, >=3 runtime FC16, zero config/export offers). Prior 0848/23 and 07D0/19 still use original single owner, 55s epoch/approval, no peer reply, parser CRC freshness, queue/DE/ABORT protections. Physical 0870 ACK does not invent EXP418 token or semantic accepted owner; subsequent real 0708 may use existing one-real-ACK qualify path and cache is stale until verified fresh. HA parameter writes HOLD. YAML syntax parsed, 647 unique globals, single TX writer count unchanged, ZIP CRC verified, source-only NOT target compiled or flashed. C5BY-OTA-01 PREPARED / NOT RUN; rollback C5BX (latest locally verified cold controller route), C5BN older fallback. User triggers one OTA while controller and room sensor remain connected; examine first ACK, FC03 reply, semantic session and cache, abort on real bus errors.
+
+CURRENT MILESTONE: native ESP-only retained hot rejoin. DELIVERABLE: C5BY integrated complete private ZIP SOURCE/OFFLINE TESTED. REAL BLOCKER: no live semantic acceptance after first 0870 ACK. ONE NEXT ACTION: one user-initiated bounded C5BY OTA test and review resulting first ACK/0708 owner/cache status.
+
+---
+
 ## 2026-10-26 — C5BX user reports valid DCM after restart (RUNNING / PARTIAL pending evidence)
 
 USER REPORT: C5BX flashed, DCM valid following restart. Positive user-observed recovery outcome, but restart actor (ESP vs controller) and exact native owner, FC16/FC03, H/D/C/M freshness evidence not supplied in this message. Do not mark LOCALLY VERIFIED or infer cold-start/hot-rejoin specific success without controller-facing log. No further restart needed; request existing success trace/status snapshot only. HA parameter writes remain HOLD; C5BN remains last independently locally verified baseline until evidence qualified.
