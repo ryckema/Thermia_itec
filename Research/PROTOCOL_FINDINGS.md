@@ -1,3 +1,15 @@
+## 2026-10-26 — MAIN03-C5BG single-engine first-join handoff defect fix — PREPARED / NOT RUN
+
+OBSERVED FACTS: user C5BC controller cold-start previously COMPLETE / POSITIVE (native FC23, full FC16, RUNTIME/SYNCED, H/D/C/M 4/4); user C5BE manually armed first join received 04A6 ACK, 04BA ACK, 085F ACK, then genuine FC23 challenge but no answer due cold-start-only state guard. C5BF SOURCE FC23 manual guard checked last_ack_start==04BA even though its real successful 085F handler necessarily overwrites last_ack_start=085F before FC23. This made the new C5BF eligibility predicate impossible for the observed sequence. C5BF user-LIVE retained idle trial saw no native controller offer and did not exercise guard.
+
+IMPLEMENTED: PRIVATE C5BG complete YAML, based on user-flashed C5BF, fixes only that integration defect. Successful native 085F TX records a same-manual-epoch physically confirmed 04BA->085F handoff while retaining last_ack=085F. The existing S92 FC23 handler consumes this evidence with existing exact challenge geometry, <=12s manual budget, integrity/peer/dirty checks, cold-start predicate alternative, sole TX/DE owner, 60s expiry and ABORT. On manual new epoch and stop/abort the handoff is revoked. No new writer, unsolicited TX, invented frames, owner promotion or HA parameter writes. Full private ZIP THERMIA_MAIN03_C5BG_UNIFIED_NATIVE_SESSION_PRIVATE_20261026.zip, YAML SHA256 5ea76691c5456226c06d3961fadec59ff40524d6905fd46c84e9e6ff99eda27f. Offline YAML parse, global 567 IDs unique and ZIP CRC pass. SOURCE / OFFLINE TESTED, not target compiled, flashed or LIVE. Prior C5BC cold-start proven behavior preserved in source, not retested.
+
+HYPOTHESIS: handling controller-offered FC23 after normal configuration first-join might allow genuine later controller export; semantic owner/runtime/cache fresh 4/4 remains unproven. Do not repeat manual starts with no controller offer.
+
+CURRENT MILESTONE: C5 unified native first join and hot rejoin, then FC03 freshness. DELIVERABLE: C5BG integrated complete PRIVATE ZIP PREPARED / NOT RUN. REAL BLOCKER: no controller-offered native sequence to validate this exact corrected handoff. ONE NEXT ACTION: one USER-INITIATED bounded C5BG manual first-join when a real controller config entry is available, evaluate native acceptance; otherwise RX ONLY.
+
+---
+
 ## 2026-10-26 — C5BF user LIVE retained-idle first-join — COMPLETE / INCONCLUSIVE
 
 OBSERVED FACTS: user flashed MAIN03-C5BF (build label confirmed at 01:51:37). ESP OTA boot RX_ONLY; S92 manual START at 01:51:29.447, stage40. Throughout bounded 60.215-second session, no offered 04A6 or any FC16 page, no FC23 challenge, zero physical TX, zero 0708 served, no owner/profile/snapshot qualification. The telemetry showed FC16ACK=0, challenges=0, initFC16=0, DE=LOW; expiry RETAINED_UNPROVEN_EXPIRED 01:52:29.651. Ordinary bus RX remained live with CRC_DIFF=0, resync=0 and drops=0. Controller A80E cycled 0020/0000, A80F stayed 0032; neither alone proves cold-start. This differs from C5BE user-LIVE configuration-entry sequence (04A6/04BA/085F then repeated FC23) and does not exercise C5BF new guard.
