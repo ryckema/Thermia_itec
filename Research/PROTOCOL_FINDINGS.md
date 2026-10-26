@@ -1,3 +1,20 @@
+## 2026-10-26 — XTR 2026-09-25 09:05:50 capture: 0x0F repeatedly offered before late gateway response — SOURCE/CAPTURE ANALYSIS ONLY
+
+**OBSERVED FACTS (genuine historical XTR wire capture `thermia_capture_20260925_090550.log`):** The first *visible* 0x0F message is controller FC03 `0708/count6` at t=0.987s, preceding first visible FC16 `0870/count17` t=1.702s. Seventeen genuine 0708 polls occur t=0.987 through t=68.210 with no preceding visible 0708 response. Controller also repeats that FC16 `0870/count17` request **32 times** t=1.702–66.843 before the first visible FC16 ACK t=66.860. The first 0708 slave answer follows the controller's next poll at t=68.235. At t=68.304 a new `03E8/count13` FC16 config frame follows. This shows a real XTR controller can keep OFFERING multiple 0x0F requests for >60s while a gateway is not replying, then continue config when replies appear. The recording started mid-traffic; its true physical cold-first-attach/session history is UNKNOWN. No pre-first-ACK mailbox RESPONSE is proven: first actual response t=68.235 is AFTER the actual t=66.860 FC16 ACK.
+
+**Source cross-check:** Full existing C5BM UART RX StreamParser recognizes slave 0x0F and FC03/FC16/FC23; the passive OEM internal acceptance witness marks ordinary controller FC16 such as 0870 independently of S92 physical TX, while known-shape counter tracks only selected pages (not 0870). Current user C5BM log showed no such acceptance, no FC16 ACK, no 0708 receive, zero physical TX. ATEC V3 auto-resync likewise cannot reply absent controller polling. This historical repeated-offer trace is **NOT** the same as present C5BM total no-offer; the latter cannot be cured by longer retries, allowing repeated INFO-FC16 ACKs or using V3 resync flags.
+
+**STRONG CONCLUSION:** We must distinguish OFFER ABSENT from OFFER PRESENT / RESPONSE WITHHELD. Current C5BM user 60.225s result is COMPLETE / INCONCLUSIVE for the untriggered INFO paths. Historical XTR capture supports the existing requirement that any mailbox reply be controller-requested; it provides no evidence to remove native session guards or accept an FC03 reply before a locally qualified ACK.
+
+**DECISION:** NO additional C5BN firmware, no change to physical TX owner/DE guards, no blind S92 or controller reboot just to provoke an offer. Preserve C5AR locally verified rollback, C5AZ running controller scoped positive INFO 2/5 and C5BM as user-FLASHED/LIVE source with untriggered INFO fixes. Keep secrets private and HA parameter writes on hold.
+
+**CURRENT MILESTONE:** OEM-equivalent running-XTR attach, INFO 5/5 and semantic fresh H/D/C/M 4/4.
+**DELIVERABLE:** Historical XTR controller retry-versus-actual no-offer distinction with quantified controller FC16/mailbox evidence; no firmware changes.
+**REAL BLOCKER:** Controller offers no 0x0F requests in latest C5BM session, unlike 2026-09-25; first-offer activation/retention is not determined.
+**ONE NEXT ACTION:** Target the controller-side condition which made XTR start or keep 0x0F polling (compare observed physical configuration-entry history with XTR settings/accessory behaviour), rather than changing the slave's replies or repeating idle S92. Only a genuinely offered native request can authorize a future bounded user-initiated C5BM response trial.
+
+---
+
 ## 2026-10-26 — C5BM no-offer user LIVE: no evidence for XTR wake-up or duplicate INFO path — COMPLETE / INCONCLUSIVE
 
 **OBSERVED FACTS:** Exact user C5BM device build/OTA runtime log shows a normal 60.225s user S92 manual stage40, no native controller 0x0F FC16 or 0708 offer, FC16 known shapes 0, FC16ACK 0, FC03SERVED 0, INFO 0/5 and fresh H/D/C/M 0/4; actual physical TX 0, DE LOW, V5 CRC_DIFF0/SHAPE_OTHER0, parser resync0, RX drops0. The controller/room/outdoor bus and 0x06 slot remained active. A80E periodic 0000/0020 and A80F=004B are context-only; they never establish owner or native discovery. Manual state `OWNER=EXISTING_MANUAL_SESSION` is NOT OEM protocol ACCEPTED or physical owner; OEM_INTERNAL=NOT_ACCEPTED.
