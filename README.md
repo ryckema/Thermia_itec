@@ -1,3 +1,16 @@
+## 2026-10-26 CONTINUITY — C5BN AUTO WP START (PRIVATE, PREPARED / NOT RUN)
+
+Current target: native DCM on each REAL WP power-on/reboot without requiring the S92 manual START/one-shot recovery switch. The discontinued no-controller-restart COLD JOIN is NOT reopened. C5AR remains LOCALLY VERIFIED full controller-cold-start native FC23 + FC16 + H/D/C/M 4/4 rollback. C5BM is last user FLASHED/LIVE; its no-offer trial COMPLETE / INCONCLUSIVE. New complete C5BM-derived C5BN SOURCE/OFFLINE TESTED, PREPARED / NOT RUN: automatic recovery arms the SAME original C5AR/C5Y stage1 ONLY when actual valid controller 0x02 traffic was observed in this ESP boot followed by >=5s complete valid-bus silence. Normal ESP boot on healthy running WP stays RX_ONLY. No new on-wire payload, owner or HA writes; C5BM single UART/DE, cold FC23 safety guard, FC16/FC03, CRC, room sensor, ABORT and rollback preserved. Manual S92 START+ABORT remain under Configuration; obsolete one-time enable switch removed. After physically qualified recovery the latch re-arms for next restart; ABORT blocks until intentional ESP reboot. ESP boot before WP with NO previously seen controller 0x02 is outside this narrowly validated detector (fail passive). No flash/target compile/live C5BN result claimed.
+
+PRIVATE artifact: THERMIA_MAIN03_C5BN_AUTO_WP_COLD_START_PRIVATE_20261026.zip in conversation only; do not commit protected code. C5BN-AUTO-COLD-01 PREPARED / NOT RUN. User selects and flashes ONE bounded validation during genuine controller restart with ESP powered and previously seeing 0x02. Abort on bus/CRC/frame or unexpected TX; restore C5AR. HA parameter/setting writes ON HOLD.
+
+CURRENT MILESTONE: Automatic qualified DCM startup after real controller cold boot/reboot; then session recovery, FC03 refresh and fresh Home Assistant data.
+DELIVERABLE: One full integrated C5BN private ZIP; SOURCE / OFFLINE TESTED only.
+REAL BLOCKER: Automatic trigger and semantic H/D/C/M 4/4 after C5BN cold restart not user LIVE validated.
+ONE NEXT ACTION: One user-initiated bounded C5BN validation at a real WP reboot, then decide GO/FIX/NO-GO from controller log, without reintroducing cold join.
+
+---
+
 ## 2026-10-26 — SCOPE DECISION: no-controller-restart cold join REMOVED from active roadmap
 
 **USER DECISION:** Stop the no-controller-restart *cold join* investigation. Do not resume the first-discovery/first 0x0F offer/first DCM icon search, active-discovery hypothesis, installation capture hunt, sideband trigger analysis, no-offer S92 experiments or unsolicited bus TX as an active workstream. Mark the previously proposed next-action/gate for this track **SUPERSEDED / NOT RUN** as a roadmap item only; retain the experiment history and all observed statuses unchanged.
@@ -456,6 +469,8 @@ _Snapshot: 18 October 2026. This is a project-level overview, not a per-experime
 
 
 ### Critical path — native Online / Connect / DCM
+
+**Immediate active step (C5BN):** Validate the complete private C5BM-derived firmware that automatically enters the previously verified C5AR/C5Y cold-start on an OBSERVED controller 0x02 -> >=5s whole-bus-loss event. NO manual S92 activation, no cold join. Until physical C5BN qualification, status is SOURCE/OFFLINE TESTED / PREPARED / NOT RUN; no claim of TARGET COMPILED/FLASHED/LIVE. On success continue with runtime session maintenance, FC03 refresh and semantic freshness. HA setting writes HOLD.
 
 **Definition:** Cold start with controller boot remains supported; hot rejoin resumes an already-established native session; **cold join without controller restart is removed from active scope**. The historical no-offer C5BM research is archived, not an open prerequisite.
 
