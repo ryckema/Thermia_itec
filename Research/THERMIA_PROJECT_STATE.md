@@ -1,3 +1,11 @@
+## 2026-10-26 — C5BX controller restart automatic cold recovery LOCALLY VERIFIED — COMPLETE / POSITIVE
+
+USER LIVE 16:40–16:44 shows C5BX BUILD and CONFIG_EXPORT_OBSERVED/HOT_REJOIN_NOT_AUTHORIZED while passive RX_ONLY, followed by actual controller-0x02 gap automatic cold start at 16:40:38 (CONTROLLER_02_GAP_COLD_WAIT and C5BN AUTO_CONTROLLER_COLD_WAIT), controller return 16:40:44, guarded initial R1 and native FC16 03E8 onward. 16:41:20 RECOVERY_POSITIVE success=1 r1Used=1 idle0708=1; runtime fresh confirmed repeatedly through 16:44:23: session=RUNTIME config=SYNCED page=FRESH receiptPages=4/4 H=1 D=1 C=1 M=1 FC03=43 RX0708=43 withheld=0 blocked=0. M6 TRANSPORT QUALIFIED / CURRENT FRESH (NOT ONLINE PROOF). RX parser CRC_DIFF=0 in sample, no persistent drop. User physically flashed C5BX and locally verified this *controller-restart* recovery once. Controller-restart mode C5BX COMPLETE / POSITIVE; ESP-only hot-rejoin mode remains NOT independently live verified, long-term automatic proactive FC03 refresh remains OPEN; native local acceptance is NOT cloud acceptance. Do not repeat this verified controller-start test. C5BX is now latest locally verified for controller auto-recovery; HA setting writes HOLD, room sensor remains connected.
+
+CURRENT MILESTONE: automatic ESP-only retained-session hot rejoin and persistent FC03 refresh after proven controller cold recovery. DELIVERABLE: C5BX LOCALLY VERIFIED controller-restart cold engine full H/D/C/M 4/4. REAL BLOCKER: distinct ESP-only retained-run hot-rejoin and sustained autonomous FC03 refresh still unverified. ONE NEXT ACTION: assess existing ESP-only logs and exact C5BX runtime/refresh code for one actual fix, no repeat of proven cold-start.
+
+---
+
 ## 2026-10-26 — C5BX user reports valid DCM after restart (RUNNING / PARTIAL pending evidence)
 
 USER REPORT: C5BX flashed, DCM valid following restart. Positive user-observed recovery outcome, but restart actor (ESP vs controller) and exact native owner, FC16/FC03, H/D/C/M freshness evidence not supplied in this message. Do not mark LOCALLY VERIFIED or infer cold-start/hot-rejoin specific success without controller-facing log. No further restart needed; request existing success trace/status snapshot only. HA parameter writes remain HOLD; C5BN remains last independently locally verified baseline until evidence qualified.
