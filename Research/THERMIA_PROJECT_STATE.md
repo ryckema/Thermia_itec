@@ -1,3 +1,11 @@
+## 2026-10-26 — C5BY ESP-only auto rejoin not armed; C5BZ FIX23 latch correction PREPARED / NOT RUN
+
+User LIVE OTA C5BY 17:04–17:05 confirms ESPHome OTA reboot, M6 BOOT_RX_ONLY and passive FC16 observed (internal FC16=0442), 0 CRC_DIFF, parser resync/drop=0, RX0708=0, native cache 0/4 and no automatic stage40. Unlike previous C5BX 0870+0708 trace, this excerpt does not prove retained runtime phase; absence of 0708 alone correctly blocks TX. SOURCE defect in C5BY: FIX23 `if (s92_rejoin_candidate) return;` means once generic 15/3 known FC16 candidate becomes true, runtime-phase conditions are never re-evaluated on later 1s ticks. C5BZ fixes exactly this latch ordering in single existing observer; candidate qualified once per valid rolling window, runtime phase re-evaluated each tick while candidate, original ≥1 0708 and ≥3 runtime FC16 with zero setup FC16 held. No generic-only auto TX or expansion to FC16 0442. C5BY first guarded 0870 ACK remains. C5BX controller cold recovery remains LOCALLY VERIFIED; no retest. SOURCE/OFFLINE TESTED only: YAML parsed; 647 unique globals; same s92_tx_owner_send / UART write call counts; ZIP CRC. C5BZ-OTA-01 PREPARED / NOT RUN; HA writes ON HOLD, user controls OTA, ABORT rollback C5BX. Runtime rejoin acceptance and cache still OPEN.
+
+CURRENT MILESTONE: automatic ESP-only runtime hot rejoin. DELIVERABLE: C5BZ integrated complete PRIVATE firmware ZIP, fixed passive-candidate early-return. REAL BLOCKER: latest controller traffic is FC16 0442 with zero 0708 and no proven retained runtime phase; no live proof of C5BZ entry or acceptance. ONE NEXT ACTION: single user-initiated bounded C5BZ OTA observation; do not override unknown-phase safeguard, collect actual runtime 0708/FC16 and results.
+
+---
+
 ## 2026-10-26 — C5BX ESP-only OTA negative; C5BY guarded first 0870 ACK PREPARED / NOT RUN
 
 C5BX user-LIVE ESP-only OTA: CRC-clean controller FC16 0870/count17 repeats every ~2s; valid FC03 0708/count6 14 times; M6 RETAINED_UNPROVEN and `EXP418_0870_NO_TOKEN` suppress all TX, FC16 ACK 0, FC03 served 0, H/D/C/M 0/4; timeout 60.075s, DE LOW, CRC/parser/drop counters zero. C5BX controller-restart cold recovery remains COMPLETE/POSITIVE LOCALLY VERIFIED; never retest it without contrary evidence.
