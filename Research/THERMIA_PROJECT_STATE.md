@@ -1,3 +1,17 @@
+## 2026-10-26 — Five consolidated FIRST-ATTACH offline investigations — COMPLETE / POSITIVE (source gap), controller trigger OPEN
+
+Scope: user-requested OFFLINE research ONLY, no flash or physical TX. Compared actual C5BE first-attach LIVE log and C5BH no-offer LIVE log, OEM CM930 2018/2.1.105 source, existing C5BH C5AV RX/TX FC03 conditions, parser counters and earlier EXP94-96. The standalone private C5AV ZIP was unavailable, so a byte-identical C5AV diff was not claimed; current C5BH contains C5AV-labelled engine path.
+
+Observed C5BE after S92 START 01:39:35.534: 04A6/13 01:39:36.663, 04BA/22, 085F/5 ACKed and genuine first FC23 01:39:38.954; six FC16 captures passed CRC16 and geometry checks; fourteen FC23 offers. C5BH S92 02:16:49.459–02:17:49.526: zero native offers, zero physical TX, safe DE LOW; CRC_DIFF=0, drops=0, one parser resync. A80E values 0028/0008 versus 0020/0000 (bit 0008 distinguishes this observation only; prior EXP94 cautions against treating as trigger). A80F 0032 both.
+
+OEM source: original Connect is Modbus slave waiting on controller requests; INFO request bits are internal slave register state and only communicated on later controller polls; no proven spontaneous master initiation.
+
+Concrete SOURCE FIX decision: existing C5BH C5AV first-read eligible predicates at RX selector and physical S92 TX-owner accept C5AD sparse/C5AW runtime/C5AZ prefix but do not explicitly admit a same-manual-epoch partially ACKed 04A6 resume path. C5BE was exactly that separate 04A6 resume path. If a future real 0708/6 follows before the full 22-page export, it may be denied despite valid physical 04A6/04BA. Merge one narrow 04A6 partial-resume eligibility in both existing gates, preserving all epoch, CRC/peer, DE, dirty, abort, bounded manual authorization and HA-write HOLD; do not claim semantic acceptance from transport ACK. This source gap was not exercised by C5BH (no controller offers). Current C5BH R1 handoff is structurally source-reachable after actual 04A6->04BA->085F followed by controller FC23, but not live validated.
+
+CURRENT MILESTONE: FIRST ATTACH on already-running XTR without previous DCM since boot. DELIVERABLE: five offline investigations and one concrete source FIX decision. REAL BLOCKER: missing controller first offers in current live context and unknown initiation trigger. ONE NEXT ACTION: implement ONE integrated RX+sole-TX FC03 partial-04A6 parity fix; no blind repeated idle tests or invented startup TX.
+
+---
+
 ## 2026-10-26 — C5BH bounded first-attach handoff timing correction — PREPARED / NOT RUN
 
 OBSERVED FACTS: running XTR M, no DCM since controller reboot. User MAIN03-C5BG FLASHED/LIVE manual S92 found zero controller-offered DCM FC16 and FC23, physicalTX=0, safe RX_ONLY and DE LOW. Earlier C5BE manually armed first-attach LIVE did ACK 04A6/04BA/085F then genuine controller FC23; C5BC cold controller boot remains COMPLETE / POSITIVE with native runtime, FC16 sync and fresh H/D/C/M 4/4. C5BG source had c5bg_age <=12 s measured from manual START instead of physical 085F handoff, artificially shortening the actual FC23 entry window when OEM pages are delayed.
