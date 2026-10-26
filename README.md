@@ -1,3 +1,18 @@
+## 2026-10-26 — C5BO-AUTO-OTA-01 user LIVE: no automatic rejoin; C5BP targeted source fix PREPARED / NOT RUN
+
+OBSERVED FACTS: User 13:19:09–13:20:45 OTA log. Prior to OTA live C5BN stage40 had ~760 physical runtime FC16 ACKs and ~420 0708 replies, healthy CRC. OTA API disconnect then reconnect at 13:20:10. Thereafter M6 BOOT_RX_ONLY OWNER NOT INHERITED TX LOCKED, S92 passive observation, runtime replies reset 0 and page cache stale. Actual post-OTA C5BO BUILD text is NOT present in clipped 35s post-OTA excerpt; last build explicitly seen is C5BN BEFORE OTA. Therefore failed functional rejoin OBSERVED, but whether C5BO truly flashed is not independently confirmed by a postboot build label. No user S92 start evidenced.
+
+CONCRETE C5BO SOURCE DEFECTS FOUND: auto-arm required write_stage==99 although global write_stage initializes to 0 on ESP reboot, making its transition unreachable directly out of BOOT_RX_ONLY. Passive 15/3 known FC16 classifier counted only 04A6/085F/06F4 setup/service pages, not the actual normal runtime FC16 pages documented in user's live trace; user postboot count stays zero. Both are relevant mechanical blockers, not reason to invent TX.
+
+ONE INTEGRATED FIX: PRIVATE MAIN03-C5BP derived from C5BO allows idle stage 0 or 99 (never active stage); extends known FC16 shape counting ONLY to explicit genuine runtime page/count pairs observed in same user's 13:19 LIVE trace, while rejecting malformed shapes. Retains one native engine, same physical TX and DE owner, all CRC/peer/ABORT/FC16 and 0708 safeguards. No unsolicited TX, no active discovery, no controller reboot, HA parameter writes HOLD. C5BN remains LOCALLY VERIFIED baseline; C5BP offline YAML syntax and 635 globals plus sole physical UART/DE writer and ZIP integrity checked. No target compile, flash or LIVE proof. C5BP-AUTO-OTA-01 PREPARED / NOT RUN, one bounded user OTA run only if existing native controller polls are present; if controller has stopped its 0x0F offering, this firmware cannot recreate a retained session. Do not create repeated blind OTA resets or revive abandoned cold join.
+
+CURRENT MILESTONE: ESP-only OTA hot rejoin with recognized already-polling XTR controller.
+DELIVERABLE: C5BO failed-to-qualify user log; complete C5BP PRIVATE source fix zip SOURCE/OFFLINE TESTED PREPARED / NOT RUN.
+REAL BLOCKER: Whether any 0x0F native controller requests still arrive after OTA; C5BP user LIVE qualification pending.
+ONE NEXT ACTION: Confirm controller native offers and actual post-OTA build identity; only if retained controller requests exist, one bounded C5BP user-initiated OTA with ABORT and rollback to locally verified C5BN.
+
+---
+
 ## 2026-10-26 — USER PRIORITY CHANGE: OTA hot rejoin BEFORE FC03 refresh
 
 **USER INTENT:** Prioritize automatic hot rejoin when ESP32 is OTA-flashed/reboots, with the XTR controller continuously running. Objective: restore existing DCM session without manually pressing S92 START or rebooting the WP. Cold join to a never-recognized DCM on an already-running WP REMAINS OUT OF SCOPE; normal transient ESP downtime during flashing cannot be zero, but should recover when controller keeps polling.
