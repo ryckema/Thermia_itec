@@ -1,3 +1,17 @@
+## 2026-10-26 — MAIN03-C5BF manual first-join FC23 guard — PREPARED / NOT RUN
+
+OBSERVED FACTS (C5BE user LIVE 01:39:35–01:40:35): S92 manually started with controller already running and no native DCM owner. Exact controller FC16 04A6/13 was ACKed, then 04BA/22 and 085F/5; subsequently exact native FC23 challenges were offered but all blocked by the cold-start-only A80E=0000/A80F=0005 predicate. Observed A80E=0028/0008, A80F=0032. Other sparse valid configuration frames were ACKed; no FC23 response, 0708 reply, qualified owner/profile or H/D/C/M 4/4. User log confirms 60s safe expiry / RX_ONLY / DE_LOW. C5BE scoped first join: COMPLETE / INCONCLUSIVE (not FC03-refresh test). C5BC controller-cold-start: COMPLETE / POSITIVE (unchanged); C5AR prior verified rollback.
+
+FIX: New PRIVATE integrated MAIN03-C5BF from user's installed exact C5BE source adds one strictly manual first-join FC23 entry branch only after same-epoch physically ACKed 04A6 and 04BA plus genuine first 085F, with clean parser/peer/dirty checks, exact challenge geometry and <=12s since manual start; original cold-start A80E/A80F guard retained. One existing authenticated FC23 response within sole UART/DE owner; on physical send, supersede pending R4 resume to avoid parallel handler states. No unsolicited TX, new reader/writer, frame type, controller-epoch invention, HA parameter writes or added retries; S92 ABORT and 60s overall expiry retained. This is a bounded USER-INITIATED experiment, not approval for autonomous first-join TX. No success from ACK alone.
+
+PRIVATE artifact: THERMIA_MAIN03_C5BF_MANUAL_FIRST_JOIN_FC23_PRIVATE_20261026.zip (not committed); YAML SHA256 e79a77eeece4b5d70a78cb864d6c33b1f8c019e88564264b5ec8379c756dc087. Offline YAML parse, declared global IDs uniqueness, single physical writer, ZIP CRC: PASS. SOURCE / OFFLINE TESTED; NOT TARGET COMPILED, NOT FLASHED, NOT LIVE. HA writes ON HOLD.
+
+HYPOTHESIS: controller first-join FC23 at the observed position is an OEM challenge that may initiate native 03E8 and config progression when serviced within the existing manual engine; genuine acceptance/refresh remains OPEN. ABORT on abnormal bus, CRC, or controller behavior; rollback C5AR/C5BE.
+
+CURRENT MILESTONE: C5 native first join / hot-rejoin consolidation. DELIVERABLE: C5BF full private integrated ZIP, PREPARED / NOT RUN. REAL BLOCKER: no user-LIVE confirmation of first-join FC23 response and subsequent accepted controller progression. ONE NEXT ACTION: user compiles/flashes C5BF and initiates ONE bounded manual S92 first join with full log, then decide GO/FIX/NO-GO.
+
+---
+
 ## 2026-10-26 — C5BE targeted retained hot-rejoin lifecycle fix — PREPARED / NOT RUN
 
 C5BD user LIVE after ESPHome OTA reboot (controller did not restart) manually S92-armed at 01:20:16. Controller offered genuine FC16 0864/4 at 01:20:17, 0870/17 at 01:20:19 and subsequently 0884/60, 07D0/19, 07E4/17, 07F8/17, 080C/18, 0820/18 by 01:20:34. All eight were physically ACKed; no owner/profile, zero FC03 replies, H/D/C/M 0/4. The old C5AL 15s expiry since 0870 fired at 01:20:34 even as controller offered new pages: real EARLY STOP lifecycle defect. OEM 0870 was genuinely ACKed; misleading got0870=0 came from m6_revoke_stop() clearing c5al_followup_0870_ms before logging. C5BD result COMPLETE / INCONCLUSIVE for actual hot-rejoin, but exposed two SOURCE-corroborated defects.
