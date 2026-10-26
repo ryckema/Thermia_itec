@@ -1,3 +1,9 @@
+## 2026-10-26 — C5CP-R1 source engineering refinement (NOT new protocol proof)
+
+C5CO retained LIVE first-page order varied. The C5CP-R1 private source review corrected a split FC16/FC03 authorization path by centralizing same-epoch bounded transport guards and keeping physically sent INFO receipts separate from M6 transport qualification and H/D/C/M freshness. Old mask-reset on first read and legacy fallback bypass were implementation defects, not discovered wire-level registers. NO new XTR frame semantics, OEM secret, authentication, session acceptance or live protocol evidence is claimed. Next live gate remains a single user-initiated bounded OTA after target compile; HA parameter writes HOLD.
+
+---
+
 ## 2026-10-26 — C5CP one-engine consolidation design decision (PREPARED / NOT RUN)
 
 OBSERVED FACTS: Late C5CO XTR LIVE auto arm reached stage 40, but its first valid native runtime FC16 was a different known page than prior live runs; 0 physical TX, FC03 requests withheld and bounded retained M6 expired. Earlier C5CN LIVE served a different first runtime page plus INFO/identity, but a separate experiment-specific continuation token blocked a later valid runtime page. No CRC differences, RX buffer drops or parser resync observed in those bounded excerpts. Cold-start automation remains locally verified in C5BN/C5BX, not superseded by failed retained trials. C5CO full retained hot-rejoin COMPLETE / NEGATIVE; previous fix route not exercised. ACKs alone are never semantic acceptance.
