@@ -1,3 +1,13 @@
+## 2026-10-26 — First attach offline five-in-one: 04A6 read-gate gap
+
+C5BE LIVE offered and ACKed exact 04A6/13, 04BA/22, 085F/5 in a manual S92 epoch, followed by 14 native FC23 offers. All six captured known FC16 page frames passed offline CRC16/length geometry. C5BH LIVE same user intent got zero DCM offers/FC03 and zero physical TX within 60.071s; CRC_DIFF0, drops0, one parser resync. A80E bit 0008 was observed in C5BE but not C5BH; EXP94 proves that bit alone cannot be called an initiation trigger; A80F=0032 in both runs. C5BE pre-START NATIVE FC16 OBSERVED is a latched passive status, not an individually timestamped 04A6 at that log line.
+
+OEM CM930 Python for 2018 and 2.1.105 opens Modbus slave, changes local handshake state in response to received controller FC16/FC23, and queues INFO-request bits for later controller reads. No proven unsolicited gateway initiation. Current C5BH SOURCE RX and sole S92 TX-owner FC03/0708 eligibility includes C5AD, C5AW, C5AZ first-attach tokens but lacks explicit same-epoch partial 04A6->04BA resume token until complete export; this is an actual source-gap, not tested by the no-offer C5BH live run. Fix both existing guards only, after genuine controller FC03 in manually authorized clean session, without changing electrical guard, ownership or HA write policy. The source handoff after 085F for existing FC23 appears reachable; full native semantic acceptance remains unproven.
+
+Standalone private C5AV ZIP unavailable for direct diff; exact current C5BH source was read. No new live TX. NEXT ACTION: integrated C5AV 04A6-partial-resume parity FIX, no invented start frame.
+
+---
+
 ## 2026-10-26 — MAIN03-C5BG single-engine first-join handoff defect fix — PREPARED / NOT RUN
 
 OBSERVED FACTS: user C5BC controller cold-start previously COMPLETE / POSITIVE (native FC23, full FC16, RUNTIME/SYNCED, H/D/C/M 4/4); user C5BE manually armed first join received 04A6 ACK, 04BA ACK, 085F ACK, then genuine FC23 challenge but no answer due cold-start-only state guard. C5BF SOURCE FC23 manual guard checked last_ack_start==04BA even though its real successful 085F handler necessarily overwrites last_ack_start=085F before FC23. This made the new C5BF eligibility predicate impossible for the observed sequence. C5BF user-LIVE retained idle trial saw no native controller offer and did not exercise guard.
