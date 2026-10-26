@@ -7,6 +7,9 @@
 **ONE NEXT ACTION:** With C5BM running RX_ONLY, check on the physical XTR controller display whether **DCM ACCESSORY INSTALLED** is shown; record **ONLINE CONNECTION** separately. This is an independent controller-side recognition indication, not TX permission. Depending on that ONE datum, pursue retained accessory recognition vs never-discovered accessory from documented XTR native commissioning, rather than changing response retries. Preserve C5AR LOCALLY VERIFIED rollback, C5AZ scoped LIVE positive and current C5BM user FLASHED/LIVE with no-offer test COMPLETE / INCONCLUSIVE. Full evidence in Research canonical files.
 
 ---
+
+**2026-10-26 DISCOVERY-TX HYPOTHESIS UPDATE:** User checked physical XTR display: NO DCM accessory icon. C5BM native offer 0 and TX 0. Active gateway initiation is NOW an explicit hypothesis worth testing when evidence exists, not excluded by policy; however genuine CM930 2018 is Modbus-slave 0x0F, V3's resync needs existing polls, and all five captured XTR 0x0F slave replies followed real controller requests. No identifiable validated unsolicited discovery frame, electrical trigger or safe target yet. OEM installation guide reboots Connect accessory after serial-number pairing, not expressly controller. **NO-GO to an arbitrary new physical TX frame** (unvalidated bus role/collision), but **GO to source a genuine Connect/DCM *first-install on already-running XTR* capture or OEM sideband-detection proof**. If it shows a concrete gateway-originated action, prepare ONE manual bounded TX experiment, ABORT + C5AR rollback. Keep C5BM RX_ONLY, room sensor installed, HA parameter writes HOLD. This closes the previous "check DCM icon" next action with a user-observed absence, without pretending to solve first-offer.
+
 ## CONTINUITY GATE — 2026-10-26 C5BM USER FLASHED/LIVE no-offer result
 
 **Evidence distinctions:**
