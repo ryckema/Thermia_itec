@@ -1,3 +1,22 @@
+## 2026-10-26 — MAIN03-C5BL OEM persistent INFO follow-up — SOURCE/OFFLINE TESTED, PREPARED / NOT RUN
+
+OBSERVED FACTS: Original PRIVATE Thermia Connect source retains pending information read-request flags until the corresponding controller FC16 block is received; it clears each on actual receipt. Exact user-supplied C5BK YAML had TWO matching RX and TX predicates that required changed INFO receipt mask since last response and stopped after 2 follow-up replies. That is stricter than the observed OEM read-request lifetime and can suppress legitimate later 0x0F FC03/0708 responses with missing INFO groups. C5AZ user LIVE first attach had 2/5 info receipts; later C5BK no-offer LIVE never triggered this follow-up branch.
+
+ONE INTEGRATED CHANGE: Private full C5BK-derived MAIN03-C5BL source retains outstanding INFO flags in response to each genuine later controller 0708 poll, without a new receipt prerequisite (including 0/5), until individually ACKed FC16 receipts or the existing 55s armed window expires. Same RX and sole-TX predicate; bounded at 12 follow-up replies (existing alarm-idle bound reused) with pre-existing 60s hard stop. No unsolicited TX, new UART/DE owner, controller identity assumption, owner promotion, CRC/peer-safety weakening, FC23/FC16 frame changes, cold-start/FC03/current cache changes, HA entity or HA parameter write. Private algorithm/payload source stays outside public GitHub.
+
+OFFLINE TESTED: PyYAML parse with existing secret placeholders PASS, all 632 original globals preserved, substitutions unchanged, both RX/TX predicates and single writer/DE parity checked, complete private ZIP hashes/integrity PASS. NOT TARGET COMPILED, NOT FLASHED, NOT LIVE. Full private package: THERMIA_MAIN03_C5BL_OEM_PENDING_INFO_PRIVATE_20261026.zip (delivered in conversation only). C5AR still locally verified operating rollback. C5AZ still scoped COMPLETE / POSITIVE for running-controller INFO 2/5, full semantic session OPEN. C5BK was user FLASHED/LIVE but its no-first-offer experiment was COMPLETE / INCONCLUSIVE for INFO followup.
+
+HYPOTHESIS: On a genuine controller configuration/0708 opportunity, persistent pending flags may allow the missing INFO groups to complete. This does NOT wake a silent 0x0F controller, establish owner/session semantics, or prove fresh H/D/C/M 4/4.
+
+EXPERIMENT: C5BL-INFO-PERSIST-01 — PREPARED / NOT RUN. ONE bounded user-initiated manual S92 activation with genuine controller first offer, 12 INFO follow-up replies/55s and existing 60s hard expiry, ABORT and saved C5AR rollback. No no-offer test loops and no controller reboot to provoke traffic. HA setting writes ON HOLD.
+
+CURRENT MILESTONE: Running-controller first attach, INFO 5/5 and full native synchronized fresh H/D/C/M 4/4.
+DELIVERABLE: Complete integrated PRIVATE C5BL firmware ZIP, SOURCE/OFFLINE TESTED, PREPARED / NOT RUN.
+REAL BLOCKER: Initial 0x0F first offer is intermittent and C5BL follow-up not user LIVE validated.
+ONE NEXT ACTION: ONE C5BL bounded user-initiated session in a genuine normal FC16/0708 opportunity; if no offer, COMPLETE / INCONCLUSIVE and no blind repeat.
+
+---
+
 ## 2026-10-26 — OEM CM930 / ATEC V3 / XTR native resync cross-check — COMPLETE / INCONCLUSIVE for XTR cold first attach
 
 OBSERVED: Private original Connect CM930 SOURCE operates Modbus slave 0x0F and sets *local* requested-data flags in existing slave response storage, acted on by controller reads. No evidence OEM sends unsolicited master TX. ATEC V3 2026-10-20 confirms controller-polled full-resync after gateway-only reboot on its different unit, cross-model evidence only. Genuine XTR raw 2026-10-03 capture has controller native config FC16 already before first visible 0x0F FC03 0708/count6 (t64.923), real slave reply t64.948, later new FC16 t65.664, recurring polls ~4.2s, i.e. normal controller-polled mailbox exchange. C5AZ original raw confirmed native FC16 observed before manual S92 START and progressed 2/5 after first INFO. C5BK actual user LIVE: neither native FC16 nor 0708 ever offered in bounded manual window; zero physical TX. 0x06 Online polls cannot substitute 0x0F DCM polls. DO NOT copy V3 private bit values or infer a mailbox reply can awaken XTR when NO controller 0x0F read arrived. Distinguish (A) first request absent from (B) C5AZ later INFO replies withheld. A80E/A80F not causal proofs. No firmware built, no TX, HA parameter writes HOLD. Evidence/source-only review; user LIVE C5BK remains COMPLETE / INCONCLUSIVE, C5AZ scoped positive and C5AR rollback preserved.
