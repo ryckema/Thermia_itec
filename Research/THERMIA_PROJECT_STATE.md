@@ -1,3 +1,19 @@
+## 2026-10-26 — C5CP one-engine consolidation design decision (PREPARED / NOT RUN)
+
+OBSERVED FACTS: Late C5CO XTR LIVE auto arm reached stage 40, but its first valid native runtime FC16 was a different known page than prior live runs; 0 physical TX, FC03 requests withheld and bounded retained M6 expired. Earlier C5CN LIVE served a different first runtime page plus INFO/identity, but a separate experiment-specific continuation token blocked a later valid runtime page. No CRC differences, RX buffer drops or parser resync observed in those bounded excerpts. Cold-start automation remains locally verified in C5BN/C5BX, not superseded by failed retained trials. C5CO full retained hot-rejoin COMPLETE / NEGATIVE; previous fix route not exercised. ACKs alone are never semantic acceptance.
+
+STRONG CONCLUSION: multiple competing first-page, INFO, experiment-token, session, FC03 and M6 predicates produce order-dependent deadlocks. GO decision for ONE unified existing S92 request classifier + reply authorization + post-TX receipts + independent M6/refresh reconciliation; NO-GO for further single-page whitelist changes. No new TX/RX/UART/DE engine or OEM-unproven credentials/frames. Do not equate passive observation with authority, preserve peer/collision/CRC/watchdog/deadline/ABORT and verified cold fallback. HA parameter writes remain ON HOLD. New first-page physical TX only in explicit bounded USER-INITIATED experiment after code review and offline regression against existing captures. OEM secrets and private source remain out of GitHub. The complete C5CP blueprint is distributed as a PRIVATE conversation attachment, not committed.
+
+HYPOTHESIS: one bounded, owner-qualified runtime response lease avoids ordering deadlocks while M6 proof and cache H/D/C/M remain separate.
+OPEN: native semantic acceptance, sustained refresh and 4/4 freshness after ESP-only OTA.
+
+CURRENT MILESTONE: automatic ESP-only retained native hot-rejoin then FC03/cache 4/4.
+DELIVERABLE: complete private C5CP architectural design, decision GO FOR IMPLEMENTATION; no source modification / no flashing or new live TX.
+REAL BLOCKER: fragmented source predicates still await consolidation and target compile.
+ONE NEXT ACTION: implement complete integrated C5CP from C5CO and preserve locally verified cold paths, run ONE offline regression gate, then ONE user-authorized bounded OTA.
+
+---
+
 ## 2026-10-26 — C5CN S92 responder consolidation — PREPARED / NOT RUN
 
 C5CM LIVE: physical 0848/23 first ACK, real FC03 0708 served, physical 0532/18 and 06F1/3 ACKs; exact 0864/4 identity offered repeatedly without ACK, M6 timeout (owner unproven), 3 FC16 ACK + 1 FC03 TX, cache H/D/C/M 0/4, CRC_DIFF=0 and no drops/resync. C5CM rejoin COMPLETE / NEGATIVE.
