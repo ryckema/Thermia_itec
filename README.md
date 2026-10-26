@@ -1,3 +1,16 @@
+## 2026-10-26 CONTINUITY — C5BN automatic WP (re)start is now LOCALLY VERIFIED (C5BN-AUTO-COLD-01 COMPLETE / POSITIVE)
+
+**User LIVE result:** C5BN identified on ESP; controller `0x02` previously seen followed by 5078ms whole-bus loss => `[C5BN] AUTO_CONTROLLER_COLD_WAIT` at 12:49:09.989, `BOOT_RETURN` at 12:49:14.919, genuine guarded native FC23 at 12:49:16.247, 35 initial FC16, then runtime FC16 ACK and 0708 => `RECOVERY_POSITIVE success=1 ... recoveryRearmed=1 DE=LOW` at 12:49:50.401. At 12:50:06.565 `session=RUNTIME config=SYNCED page=FRESH H=1 D=1 C=1 M=1 receiptPages=4/4 snapGen=1 FC03=4 RX0708=4`; 12:50:08 M6 entered current-fresh owner=accepted and 12:50:09 `M6 / TRANSPORT QUALIFIED / CURRENT FRESH (NOT ONLINE PROOF)`. CRC_DIFF=0, SHAPE_OTHER=0, RX drops=0, parser resync=0 in sampled log; no HA setting writes (`semanticSettingTX=DISABLED`). The `[S92-FIX] MANUAL_START` log is emitted by the *internally invoked existing S92 start handler* in the C5BN auto branch and DOES NOT imply a user HA click.
+
+**STATUS:** C5BN-AUTO-COLD-01 **COMPLETE / POSITIVE**, C5BN **USER FLASHED / LIVE / LOCALLY VERIFIED** for ONE automatic controller-only cold-start/restart with ESP already seeing controller 0x02 (not previously marked verified; update latest working firmware baseline to C5BN). C5AR remains proven safety rollback. `recoveryRearmed=1` is source/state proof, not repeated-live-restarter proof. Long-term native FC03 freshness/runtime remains OPEN. No-controller-restart cold join is explicitly OUT OF SCOPE. No further blind reboots or new TX. HA parameter writes remain ON HOLD. Preserve UART/DE owner, CRC, ABORT, room sensor.
+
+**CURRENT MILESTONE:** Persistent FC03 refresh/cache freshness and native runtime session upkeep after the proven C5BN automatic WP restart.
+**DELIVERABLE:** One actual full automatic WP restart with FC23, native FC16/0708, H/D/C/M 4/4 and clean parser, locally verified.
+**REAL BLOCKER:** Sustained FC03 freshness/runtime maintenance beyond startup not yet locally verified.
+**ONE NEXT ACTION:** Review actual C5BN source runtime refresh/cache-freshness against new LIVE owner/acceptance evidence and integrate one concrete defect fix if found. Do not reopen cold join, repeat startup or change HA write hold.
+
+---
+
 ## 2026-10-26 CONTINUITY — C5BN AUTO WP START (PRIVATE, PREPARED / NOT RUN)
 
 Current target: native DCM on each REAL WP power-on/reboot without requiring the S92 manual START/one-shot recovery switch. The discontinued no-controller-restart COLD JOIN is NOT reopened. C5AR remains LOCALLY VERIFIED full controller-cold-start native FC23 + FC16 + H/D/C/M 4/4 rollback. C5BM is last user FLASHED/LIVE; its no-offer trial COMPLETE / INCONCLUSIVE. New complete C5BM-derived C5BN SOURCE/OFFLINE TESTED, PREPARED / NOT RUN: automatic recovery arms the SAME original C5AR/C5Y stage1 ONLY when actual valid controller 0x02 traffic was observed in this ESP boot followed by >=5s complete valid-bus silence. Normal ESP boot on healthy running WP stays RX_ONLY. No new on-wire payload, owner or HA writes; C5BM single UART/DE, cold FC23 safety guard, FC16/FC03, CRC, room sensor, ABORT and rollback preserved. Manual S92 START+ABORT remain under Configuration; obsolete one-time enable switch removed. After physically qualified recovery the latch re-arms for next restart; ABORT blocks until intentional ESP reboot. ESP boot before WP with NO previously seen controller 0x02 is outside this narrowly validated detector (fail passive). No flash/target compile/live C5BN result claimed.
@@ -469,6 +482,8 @@ _Snapshot: 18 October 2026. This is a project-level overview, not a per-experime
 
 
 ### Critical path — native Online / Connect / DCM
+
+**CURRENT VERIFIED BASELINE (2026-10-26): C5BN, locally verified ONE automatic controller-restart cold start + native runtime H/D/C/M 4/4, no HA settings TX. This milestone is COMPLETE / POSITIVE. Next active milestone: persistent FC03 runtime refresh/cache freshness and session upkeep; cold join without controller restart remains retired. C5AR retained as rollback.**
 
 **Immediate active step (C5BN):** Validate the complete private C5BM-derived firmware that automatically enters the previously verified C5AR/C5Y cold-start on an OBSERVED controller 0x02 -> >=5s whole-bus-loss event. NO manual S92 activation, no cold join. Until physical C5BN qualification, status is SOURCE/OFFLINE TESTED / PREPARED / NOT RUN; no claim of TARGET COMPILED/FLASHED/LIVE. On success continue with runtime session maintenance, FC03 refresh and semantic freshness. HA setting writes HOLD.
 
