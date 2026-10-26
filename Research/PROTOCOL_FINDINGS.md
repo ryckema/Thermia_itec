@@ -1,3 +1,26 @@
+## 2026-10-26 — C5BO automatic ESP-only OTA hot rejoin — PREPARED / NOT RUN
+
+OBSERVED: C5BN locally verified full automatic WP restart, FC23/FC16 and H/D/C/M 4/4; C5AR verified fallback. ATEC V3 supports short ESP-only OTA rejoin if controller keeps polling. XTR no independently verified unattended ESP-OTA rejoin. Cold join without controller restart remains outside scope.
+
+ONE CHANGE: Complete PRIVATE C5BN-derived C5BO automatically invokes existing S92 stage40 initialization at most ONCE per ESP boot after >=15 CRC-valid bus frames and >=3 controller-originated known-shape 0x0F FC16 requests in an unambiguous clean >=3s rolling window (ESP uptime>=5s), with no observed competing 0x0F FC16 or FC03 slave responses since ESP boot, no dirty HA queues, no active session, no parser/CRC integrity faults and no ABORT lockout. Auto-arm itself sends NO bytes; only later real requests can be answered through the one original UART/DE TX owner and original physical guards. Same manual START/ABORT controls remain. No semantic accepted owner or fresh H/D/C/M inherited across boot, no new unsolicited master TX, HA writes ON HOLD.
+
+LIMIT: When controller sends only 0708 or nothing after OTA, no auto-arm; remains RX_ONLY rather than invent a poll. Does not solve silent-controller cold join. One bounded user-initiated OTA trial, not autonomous flashing.
+
+OFFLINE TESTED: Complete ESPHome YAML parsed with !secret placeholders; 635 global IDs (632 baseline + 3), single physical UART writer and DE-high owner; ZIP CRC/integrity passed. YAML SHA256 627c00d919ad50a877d8108bd16fdc38205f88284ff926572233ca5102cb922c; archive THERMIA_MAIN03_C5BO_AUTO_OTA_HOT_REJOIN_PRIVATE_20261026.zip SHA256 14dec9b0be5adf61c46faf1ee9e6e5f86533459601b4baf081c58b761cf53a0b. Not TARGET COMPILED, FLASHED, LIVE, LOCALLY VERIFIED. PRIVATE firmware stays out of public repository.
+
+EXPERIMENT C5BO-AUTO-OTA-01 PREPARED / NOT RUN: User OTA-flashes once while XTR and room sensor remain powered, no manual S92 START. Observe passive FC16 qualification, AUTO_OTA_REJOIN_ARMED, real FC16 ACK and 0708, independent owner and fresh cache. If no FC16 offer: COMPLETE / INCONCLUSIVE, no TX; do not repeat blind experiments or WP restart. Abort on collision, unexpected TX, integrity faults and rollback to C5BN verified baseline.
+
+CURRENT MILESTONE: Automatic ESP-only retained-session OTA hot rejoin.
+
+DELIVERABLE: One complete C5BO PRIVATE firmware ZIP SOURCE/OFFLINE TESTED PREPARED / NOT RUN.
+
+REAL BLOCKER: XTR live post-OTA controller FC16 offering and semantic unattended rejoin not yet proven.
+
+ONE NEXT ACTION: User-initiated bounded one-time C5BO OTA live validation and GO/FIX/NO-GO.
+
+---
+
+
 ## 2026-10-26 — USER PRIORITY CHANGE: OTA hot rejoin BEFORE FC03 refresh
 
 **USER INTENT:** Prioritize automatic hot rejoin when ESP32 is OTA-flashed/reboots, with the XTR controller continuously running. Objective: restore existing DCM session without manually pressing S92 START or rebooting the WP. Cold join to a never-recognized DCM on an already-running WP REMAINS OUT OF SCOPE; normal transient ESP downtime during flashing cannot be zero, but should recover when controller keeps polling.
