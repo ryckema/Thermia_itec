@@ -1,3 +1,16 @@
+## 2026-10-27 — C5CV-RETAINED-OTA-01 COMPLETE / NEGATIVE; C5CW-INFO-PHASE-01 PREPARED / NOT RUN
+
+Hypothesis: unified C5CV native lifecycle resumes retained XTR session through FC16/0708/INFO, then M6 and CURRENT. Baseline: prior C5CT retained M6=4 and separately user-initiated 4/4 CURRENT live positive; C5CV private SOURCE candidate. User LIVE C5CV observed: route=RETAINED_RUNTIME, S92 stage40 armed 00:06:12, 0870/17 FC16 physically ACKed at 00:06:14, genuine FC03 0708 INFO-FIRST served at 00:06:18, immediate 0532/18 repeatedly denied while 0884/60 later denied, M6 remained2 then M6=7 expiration after 60.234s, total physical TX=2, H/D/C/M 0/4, CRC_DIFF/resync/drops/peer all zero in sample, DE LOW. Actual != expected: COMPLETE / NEGATIVE for this retained episode. New EXPORT_REJOIN_EXPERIMENT_ARMED path was NOT reached, so original export-path experiment execution remains unproven.
+
+ONE target fix in C5CW: remove the false export-phase vote only for valid 0532/18 and 06F1/3 AFTER same-epoch physical INFO-FIRST 0708 response, preserving export classification before INFO and every other auth/physical bus guard. C5CW private full YAML SHA256 78401e57287c958b53a7d81d36a5769ecd6a11dd80c2b42d5af7745e10db7ca4; source/offline YAML/entities/IDs/TX owner call parity/ZIP PASS; no ESPHome compile or LIVE. C5CW-INFO-PHASE-01 PREPARED / NOT RUN. Expected: 0532 physically ACKed and INFO progression after future genuine controller request, followed by independently confirmed M6 and 4/4 CURRENT; transport alone is not semantic proof. ABORT: S92 STOP/RX ONLY on anomalies, rollback C5CT or locally verified C5BN. HA parameter writes ON HOLD. Do not autonomously flash or repeat blind experiments.
+
+CURRENT MILESTONE: robust one-engine retained join and cache freshness.
+DELIVERABLE: C5CW private complete targeted fix.
+REAL BLOCKER: no post-fix live confirmation yet.
+ONE NEXT ACTION: one user-initiated ESP-only OTA with C5CV experimental export TX disabled, check 0532→INFO→M6→4/4 with guards.
+
+---
+
 ## 2026-10-26 — C5CV-AUTO-EXPORT-01 — PREPARED / NOT RUN
 
 Hypothesis: retained-session controller can resume a legitimate already-offered configuration-export phase when native response permission and observed phase are carried by the same existing S92 owner, rather than requiring repeated normal-page votes or a prior runtime poll. Baseline: C5CU failed auto ownership in the provided partial OTA log; C5CT prior hot-rejoin and user-initiated four-page CURRENT were LIVE positive. Prior evidence: genuine OEM export sequence with ACKs, controller first runtime poll only after export.
