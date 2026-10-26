@@ -1,3 +1,18 @@
+## 2026-10-26 — MAIN03-C5BL one bounded user LIVE no-offer run — COMPLETE / INCONCLUSIVE
+
+**OBSERVED FACTS (user ESPHome log 10:37:31–10:42:09, device uptime after OTA):** Build entity confirms MAIN03-C5BL running on ESP32; reset reason is "Reboot request from esphome.ota". User S92 MANUAL_START at 10:41:04.546, stage40 and DE LOW, manually armed epoch after approximately 108s since boot. Expired at 10:42:04.581 after 60036ms (60.036s). The firmware reported FC16ACK=0, FC03SERVED=0, FC03_WITHHELD=0, 04A6_SEEN=0, 0708_SERVED=0, physicalTXthisSession=0, physicalTXtotal=0, startupR1Sent=0, DE=LOW, acceptedOwner=0. No qualifying controller 0x0F native config/0708 request was offered; INFO 0/5 and H/D/C/M 0/4, snapGen=0, cache NOT_SYNCED/STALE. Final MAIN01 status "COMPLETE / INCONCLUSIVE / controller offered no DCM init; RX only", M6 RETAINED_IDLE. At the log tail V5 parser CRC_CHECK=2051 CRC_DIFF=0 SHAPE_OTHER=0; reported resync=0 and RX drops=0. Non-DCM 0x02/0x0A/0x1E/0x06 traffic remained visible. A80E 0↔0x20 and A80F=0x0050 do not prove pairing or owned session.
+
+**VALIDATION LEVEL:** User FLASHED and LIVE for C5BL identified by device build entity, but its changed OEM-persistent INFO follow-up branch was NOT TRIGGERED. No evidence in this log of successful full ESPHome compile validation (ESPHome connected with previously validated config cache). Thus C5BL-INFO-PERSIST-01 is **COMPLETE / INCONCLUSIVE**, not POSITIVE or NEGATIVE for INFO 5/5. C5AZ remains scoped LIVE 2/5 success, C5AR remains LOCALLY VERIFIED operating cold-start rollback. Do not downgrade either.
+
+**DECISION:** NO-GO to further identical idle S92 trials, new wake-up TX or controller/ESP resets solely to force an offer. Preserve C5BL source as prepared candidate (its live branch unvalidated). HA parameter writes ON HOLD. No physical bus TX occurred in this bounded experiment. No user report here confirming or denying an external Online alarm, so no alarm conclusion.
+
+**CURRENT MILESTONE:** Running-controller native first attach, complete INFO 5/5 and semantic fresh owned H/D/C/M 4/4.
+**DELIVERABLE:** User-live C5BL no-offer result classified COMPLETE / INCONCLUSIVE, no code change.
+**REAL BLOCKER:** XTR controller does not reliably offer first 0x0F config/0708; INFO followup remains untested in genuine offer conditions.
+**ONE NEXT ACTION:** Only proceed on actual fresh controller-offered native 0x0F configuration plus 0708 opportunity; then inspect INFO-follow-up receipt progress in a single bounded authorized trial. Do not repeat blind no-offer S92.
+
+---
+
 ## 2026-10-26 — MAIN03-C5BL OEM persistent INFO follow-up — SOURCE/OFFLINE TESTED, PREPARED / NOT RUN
 
 OBSERVED FACTS: Original PRIVATE Thermia Connect source retains pending information read-request flags until the corresponding controller FC16 block is received; it clears each on actual receipt. Exact user-supplied C5BK YAML had TWO matching RX and TX predicates that required changed INFO receipt mask since last response and stopped after 2 follow-up replies. That is stricter than the observed OEM read-request lifetime and can suppress legitimate later 0x0F FC03/0708 responses with missing INFO groups. C5AZ user LIVE first attach had 2/5 info receipts; later C5BK no-offer LIVE never triggered this follow-up branch.
