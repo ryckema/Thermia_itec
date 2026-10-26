@@ -1,3 +1,20 @@
+## 2026-10-26 — C5CC user ESP-only rejoin not observed; C5CD source fix PREPARED / NOT RUN
+
+OBSERVED FACTS: The user reports no automatic rejoin on C5CC. Shared excerpt 17:41:44–17:41:49 shows M6 BOOT_RX_ONLY, passive FC16 internal acceptance (042E), ongoing controller and room sensor frames, H/D/C/M not fresh. This short excerpt does NOT confirm the C5CC build label, exact FC16 word count, complete 30s observer outcome, or actual controller 0708 polling. Do not claim independent live failure beyond the user report.
+
+SOURCE DEFECT: C5CC passive auto-entry credits only runtime 07D0+ shaped FC16 with prior 0708, despite the existing S92 C5AZ/C5AA first-normal-ACK path already recognizing locally evidenced 042E/15 and 0442/13. Therefore this normal entry phase cannot trigger the one existing S92 responder. The old requirement risks waiting for a 0708 read that the controller may not send until earlier native FC16 has been answered.
+
+ONE INTEGRATED CHANGE: Private C5CD extends the existing sole RX classifier to credit ONLY exact CRC-valid 042E/15 and 0442/13 as normal-entry evidence. Three matching frames within the guarded passive window permit automatic S92 stage40 before 0708 (the prior separate runtime+0708 path remains). The existing C5AA/C5AZ single first-ACK handler may now respond once to an exact real controller request after auto-entry, without a redundant same-page repeat; manual-start behavior remains unchanged. New current-session epoch gate prevents that auto authorization leaking to later manual starts. All original DE/UART, CRC, shape, peer, ABORT, cold-start and HA-write HOLD safeguards remain. ACK does NOT prove semantic acceptance or fresh config. No new autonomous discovery/TX writer.
+
+VERIFICATION: YAML parsing, 650 unique globals, 89 s92_tx_owner_send calls and 2 UART write_array calls unchanged; 11 branch scenarios and isolated C++17 expression syntax passed; ZIP integrity and identical embedded YAML verified. This is SOURCE / OFFLINE TESTED, NOT target compiled, NOT flashed/LIVE. C5BX controller-restart cold recovery remains last locally verified baseline. Experiment C5CD-OTA-NORMAL-ENTRY-01 PREPARED / NOT RUN; user-initiated one bounded OTA, ABORT and rollback C5BX.
+
+CURRENT MILESTONE: OEM-equivalent native ESP-only retained-session reconnect in one existing engine.
+DELIVERABLE: C5CD full private firmware ZIP with normal-FC16 first-entry fix.
+REAL BLOCKER: XTR live automatic post-OTA acceptance/H-D-C-M freshness still unverified; short new excerpt lacks exact frame geometry.
+ONE NEXT ACTION: user target-compiles C5CD; if successful, one user-initiated bounded ESP-only OTA and inspect first real native ACK, subsequent 0708, semantic session/cache.
+
+---
+
 ## 2026-10-26 — C5CC native RX/session-core refactor — PREPARED / NOT RUN
 
 OBSERVED FACTS: C5BX controller-only restart/cold recovery remains COMPLETE / POSITIVE and LOCALLY VERIFIED. C5BY ESP-only rejoin failed to arm in last live trace with known FC16 (0442) but no native 0708; no conclusion that retained runtime was offered then. C5BZ had a target compiler parentheses defect; C5CA corrected syntax at source level; C5CB predicate refactor still not target compiled or live tested.
