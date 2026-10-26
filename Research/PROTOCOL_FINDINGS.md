@@ -1,3 +1,15 @@
+## 2026-10-26 — ATEC V3 / genuine Connect vs XTR C5BR hot-rejoin owner gate — SOURCE REVIEW
+
+Observed XTR C5BR post-OTA: controller repeatedly emits genuine 0x0F FC16 start 07D0/count19 and FC03 0708; AUTO_OTA_REJOIN_ARMED enters stage40; no ACK because s92_runtime_fc16_owner requires s92_runtime_full_export or existing 07E4 handoff, both absent on fresh ESP epoch. FC16 ACK 0, FC03 served 0, physical TX 0, DE LOW, 60.199s expires. CRC/resync/drop clear. The auto detector is not the blocker.
+
+ATEC V3 source `thermia_sniffer.cpp`: boots RX_ONLY/DE LOW; auto_takeover_tick_ watches for competing gateway and self-arms after listen interval only if no replies; maybe_respond_ responds only to actual addressed controller queries after armed with bus idle check, disarms on competing reply; optional request_full_resync only after actual gateway-addressed polling, store unseeded and armed. No full table export prerequisite to the first response. CROSS-MODEL only.
+
+Original Connect recovered `device_client/cm/modbus_server15.py`: starts internal Modbus RTU slave with register banks, sets HandshakeState.NOT_ACCEPTED and runtime WAITING_FOR_DEVICE_INFO; request callback processes FC16 and FC23; qualifying controller FC16 participates in transition to handshake ACCEPTED while publishing data. Physical slave handling does not depend on an already complete settings table. OEM source supports separation of responder readiness, handshake/application acceptance and later data synchronization but does not prove first XTR 07D0 ACK alone is semantic acceptance. Do NOT disclose proprietary handshake details.
+
+ENGINEERING DECISION: consider existing guarded 07D0/count19 first response only in bounded retained already-polling OTA-rejoin context with no competing gateway and with original single UART/DE, CRC/frame, bus idle, abort, epoch and rollback. Separate REJOIN_RESPONDING (transport) from RUNTIME_ACCEPTED (semantic/fresh), avoid inherited owner or automatic HA setting writes. One targeted integrated source change next, one user-initiated validation, no unsolicited frames or repeated blind tests. Classification: OEM/V3 architecture STRONGLY SUPPORTED; first XTR post-OTA 07D0 acceptance OPEN.
+
+---
+
 ## 2026-10-26 — C5BO automatic ESP-only OTA hot rejoin — PREPARED / NOT RUN
 
 OBSERVED: C5BN locally verified full automatic WP restart, FC23/FC16 and H/D/C/M 4/4; C5AR verified fallback. ATEC V3 supports short ESP-only OTA rejoin if controller keeps polling. XTR no independently verified unattended ESP-OTA rejoin. Cold join without controller restart remains outside scope.
