@@ -1,3 +1,15 @@
+## 2026-10-26 — C5CI retained first-0884 INFO continuation — PREPARED / NOT RUN
+
+OBSERVED XTR: C5CH OTA first real 0884/60 FC16 physically ACKed; real FC03 0708 served; repeated 0532/18 plus 07D0/19 after OEM INFO request were not ACKed. 60.092-second timeout: FC16ACK=1, FC03SERVED=1, physicalTX=2, M6 SESSION_LOST and H/D/C/M=0/4; CRC_DIFF, drops and resync 0. C5CH full hot-rejoin COMPLETE / NEGATIVE. No support for declaring owner accepted.
+
+C5CI PRIVATE SOURCE FIX: full C5CH baseline. INFO-page FC16 handler gate now recognizes prior physically transmitted first-0884 ACK receipt in current write_arm_ms epoch with auto-rejoin and no setup-export, alongside original 0870 and normal FC16 first-ACK anchors. This aligns responder with existing FC03 and sole central S92 owner; same exact page/word/byte count, RX integrity, collision/peer, dirty, session stage/epoch, 55s, approval and ABORT constraints. No new TX role, unsolicited request, profile/owner acceptance, HA writes or artificial freshness. Preserves prior 07D0 receipt and 0820 handler.
+
+OFFLINE: complete YAML parsed (secret tags), unique 654 global IDs, same 90 S92 TX-owner call sites, same 2 UART write_array sites, patch/manifest/readme and ZIP SHA/CRC verified. SOURCE / OFFLINE TESTED; not TARGET COMPILED, FLASHED or LIVE. Experiment C5CI-OTA-01 PREPARED / NOT RUN. C5BX remains latest LOCALLY VERIFIED cold-recovery rollback. Keep room sensor attached.
+
+CURRENT MILESTONE: automatic ESP-only retained native rejoin with FC03 and fresh cache. DELIVERABLE: C5CI full private integrated firmware. REAL BLOCKER: physical INFO ACK sequence and M6/cache qualification not yet live validated. ONE NEXT ACTION: target compile C5CI, then one bounded user-initiated ESP-only OTA, ABORT and C5BX rollback on anomalies.
+
+---
+
 ## 2026-10-26 — C5CF user LIVE: 0884-first retained-runtime deadlock — COMPLETE / NEGATIVE
 
 User ESP-only OTA confirms MAIN03-C5CF FLASHED/LIVE. [C5CF] AUTO_NATIVE_ENTRY_ARMED at 20:12:02 route RETAINED_RUNTIME, runtimeFC16=5, RX0708=2; first in-session known page 0884/60; genuine controller polls 0708/6. No physical TX (FC16ACK=0 FC03SERVED=0); 14 0708 withheld, 27 0884 FC16 observed, M6 RETAINED_UNPROVEN(2) to SESSION_LOST(7) at 60.106s. CRC differences and RX drops zero, session-relative parser resync zero, DE LOW, H/D/C/M 0/4. One-shot observer FIX_NO_RUNTIME_OWNER. C5CF-OTA-01 COMPLETE / NEGATIVE. 042E ACK credit branch never reached; C5CF change not causally tested, do not label disproven.
