@@ -1,3 +1,15 @@
+## 2026-10-26 — C5BH bounded first-attach handoff timing correction — PREPARED / NOT RUN
+
+OBSERVED FACTS: running XTR M, no DCM since controller reboot. User MAIN03-C5BG FLASHED/LIVE manual S92 found zero controller-offered DCM FC16 and FC23, physicalTX=0, safe RX_ONLY and DE LOW. Earlier C5BE manually armed first-attach LIVE did ACK 04A6/04BA/085F then genuine controller FC23; C5BC cold controller boot remains COMPLETE / POSITIVE with native runtime, FC16 sync and fresh H/D/C/M 4/4. C5BG source had c5bg_age <=12 s measured from manual START instead of physical 085F handoff, artificially shortening the actual FC23 entry window when OEM pages are delayed.
+
+IMPLEMENTED: PRIVATE full integrated MAIN03-C5BH from user FLASHED C5BG changes only FC23 guard window to <=12 s after physically ACKed 085F in same manual epoch. Existing 04A6->04BA->085F evidence, genuine controller FC23, sole physical UART/DE owner, 60 s manual cap, ABORT, V5 CRC/parser/peer/collision/dirty guards, cold-start, FC16/FC03 and HA parameter-write HOLD remain. No invented TX, unconditional owner promotion, new protocol command or automatic first-attach. One complete private ZIP THERMIA_MAIN03_C5BH_FIRST_ATTACH_HANDOFF_PRIVATE_20261026.zip; YAML SHA256 8c579d6813aaf8f549a185b3eb0526239ce198b4dfe1a4f028ff03b74f9f2e91. YAML safe parse and global-ID uniqueness, ZIP CRC pass. SOURCE / OFFLINE TESTED, NOT TARGET COMPILED, NOT FLASHED, NOT LIVE.
+
+STRONG CONCLUSION: fixes actual source timing defect but cannot by itself induce controller offers absent on the live bus. One bounded user-initiated S92 experiment only; do not repeat idle microtests. Controller semantic owner and H/D/C/M freshness required for success; transport ACK alone insufficient.
+
+CURRENT MILESTONE: first native DCM attach on already-running controller with no prior session. DELIVERABLE: C5BH complete private firmware ZIP PREPARED / NOT RUN. REAL BLOCKER: first-attach controller offer/semantic acceptance not yet proven with C5BH. ONE NEXT ACTION: user compiles/flashes C5BH and conducts ONE bounded manual S92 first-attach; report actual controller offers, physical frames and semantic qualification; ABORT on faults, rollback C5AR.
+
+---
+
 ## 2026-10-26 — MAIN03-C5BG single-engine first-join handoff defect fix — PREPARED / NOT RUN
 
 OBSERVED FACTS: user C5BC controller cold-start previously COMPLETE / POSITIVE (native FC23, full FC16, RUNTIME/SYNCED, H/D/C/M 4/4); user C5BE manually armed first join received 04A6 ACK, 04BA ACK, 085F ACK, then genuine FC23 challenge but no answer due cold-start-only state guard. C5BF SOURCE FC23 manual guard checked last_ack_start==04BA even though its real successful 085F handler necessarily overwrites last_ack_start=085F before FC23. This made the new C5BF eligibility predicate impossible for the observed sequence. C5BF user-LIVE retained idle trial saw no native controller offer and did not exercise guard.
