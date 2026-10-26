@@ -1,3 +1,17 @@
+## 2026-10-26 — C5BH FIRST-ATTACH-01 — COMPLETE / INCONCLUSIVE
+
+OBSERVED FACTS: User flashed MAIN03-C5BH (build shown 02:17:18), armed S92 at 02:16:49.459. During one full 60.071 s first-attach window on already-running controller with no prior DCM since its restart: no incoming DCM FC16 (initFC16=0), no 04A6/085F, no native FC23 challenges, no FC03 or 0708, no physical TX (DE LOW throughout), no semantic owner, no H/D/C/M pages. Session safely expired 02:17:49.526 to RETAINED_NO_DCM_OFFER and RX_ONLY; log states COMPLETE / INCONCLUSIVE. CRC_DIFF=0; RX drops=0; parser resyncs=1 (not zero). Normal controller, room sensor and outdoor frames continued. Controller accessory state A80E toggled 0000/0020, A80F remained 0032; not proof of cold start or controller offer.
+
+STRONG CONCLUSIONS: C5BH repaired same-manual-epoch 085F-to-FC23 timing only in SOURCE; observed run never exercised it. No negative evidence against response to a real native FC23 offer. Existing C5BC controller-cold-start remains locally proven. Avoid repeating identical S92 idle probes.
+
+HYPOTHESES / OPEN: First attach after a running controller has seen no DCM may require a different OEM/controller-triggered initiation route; precise verified OEM/XTR triggering remains open. Do not invent unsolicited slave TX or claim transport ACK = controller session acceptance.
+
+NEXT ACTION: inspect existing original OEM startup + earlier C5AV first-attach evidence to identify ONE real protocol implementation difference before any further firmware or physical TX; preserve successful C5BC cold-start. HA writes stay ON HOLD; ABORT/DE safeguards unchanged.
+
+CURRENT MILESTONE: First native DCM attach on already-running controller. DELIVERABLE: C5BH user FLASHED/LIVE, experiment COMPLETE / INCONCLUSIVE. REAL BLOCKER: no controller-offered initialization in this run. ONE NEXT ACTION: evidence-based OEM first-attach implementation gap, not another blind idle S92 test.
+
+---
+
 ## 2026-10-26 — C5BH bounded first-attach handoff timing correction — PREPARED / NOT RUN
 
 OBSERVED FACTS: running XTR M, no DCM since controller reboot. User MAIN03-C5BG FLASHED/LIVE manual S92 found zero controller-offered DCM FC16 and FC23, physicalTX=0, safe RX_ONLY and DE LOW. Earlier C5BE manually armed first-attach LIVE did ACK 04A6/04BA/085F then genuine controller FC23; C5BC cold controller boot remains COMPLETE / POSITIVE with native runtime, FC16 sync and fresh H/D/C/M 4/4. C5BG source had c5bg_age <=12 s measured from manual START instead of physical 085F handoff, artificially shortening the actual FC23 entry window when OEM pages are delayed.
