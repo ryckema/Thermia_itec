@@ -1,3 +1,13 @@
+## 2026-10-26 — C5CN S92 responder consolidation — PREPARED / NOT RUN
+
+C5CM LIVE: physical 0848/23 first ACK, real FC03 0708 served, physical 0532/18 and 06F1/3 ACKs; exact 0864/4 identity offered repeatedly without ACK, M6 timeout (owner unproven), 3 FC16 ACK + 1 FC03 TX, cache H/D/C/M 0/4, CRC_DIFF=0 and no drops/resync. C5CM rejoin COMPLETE / NEGATIVE.
+
+C5CN: private complete C5CM-derived YAML consolidates exact five INFO group shapes with receipt-mask credit only after physical S92 ACK and pre-existing 07F8/0820/0848 continuation predicates. Adds guarded 0864/4 identity ACK only after actual first runtime ACK + 0708 response + physically ACKed 0532 and 06F1 same session. Does not credit identity as INFO/freshness or owner. No new UART/DE writer, HA parameter writes ON HOLD. Offline YAML parse, 571 unique IDs, owner TX call sites 90 unchanged and UART write_array sites 2 unchanged, ZIP CRC validated. NOT target compiled/flashed/live. C5CN-OTA-01 PREPARED / NOT RUN. Maintain locally verified C5BN cold-recovery baseline.
+
+CURRENT MILESTONE: automatic ESP-only retained hot-rejoin and FC03/cache sync. DELIVERABLE: C5CN private integrated firmware. REAL BLOCKER: 0864 ACK and real downstream M6/cache acceptance not live confirmed. ONE NEXT ACTION: one user-initiated ESP-only OTA with ABORT and C5BN rollback available.
+
+---
+
 ## 2026-10-26 — C5CJ alternate 042E-first XTR order; C5CK scoped 0820 fix — PREPARED / NOT RUN
 
 OBSERVED FACTS: C5CJ ESP-only OTA 21:08:22–21:09:22 started normal C5AZ auto route. Actual FC16 042E/15 physically ACKed; FC03 0708/6 served; 0532/18, 06F1/3, 080C/18 physically ACKed INFO mask 13/1F. 07D0 and 07E4 were NOT offered in this run. Actual 0820/18 repeatedly offered 20+ times without ACK while 12 real FC03 0708 reads answered with pending bitmap 0C. 60.029s expiration M6(2)->SESSION_LOST(7), FC16 ACK=4, FC03 served=12, TX total=16, H/D/C/M=0/4, CRC_DIFF=0 RX drop=0. Parser resync total 28 since boot, session delta=0 in heartbeats. C5CJ-OTA-01 COMPLETE / NEGATIVE for full rejoin; its 0848 continuation not exercised. Transport receipts not semantic acceptance.
