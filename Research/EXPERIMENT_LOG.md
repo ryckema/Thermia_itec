@@ -1,3 +1,13 @@
+## 2026-10-26 — OFFLINE-FIRST-ATTACH-5-IN-1 — COMPLETE / POSITIVE (one SOURCE defect), other questions OPEN
+
+Hypothesis: distinguish controller-offer trigger, OEM gateway role, parser loss, native FC23 handoff and C5AV FC03 gaps using only existing evidence. Baseline: C5BE true controller 04A6/04BA/085F/FC23 offers vs C5BH 60.071s no offers; C5BC cold-start proven. Change: offline trace/review only; physical TX=0, no flash. Five determinations: (1) observed A80E bit 0008 only in C5BE (not proven causal), A80F 0032 both; (2) original 2018/2.1.105 CM930 slave boots without proven unsolicited bus TX, request bits respond to controller reads; (3) all six C5BE FC16 RAWs pass RTU CRC and geometry, C5BH parser received no known DCM shapes; cannot prove wire-level absence without raw capture (one parser resync); (4) existing C5BH 04BA->085F handoff can satisfy first FC23 SOURCE guard (not LIVE); (5) missing C5AV path for partial physically ACKed 04A6 first attach is a specific source parity defect at both RX/physical-TX 0708 gates. C5BE saw no FC03 following the offered partial prefix; source gap impact live not yet verified.
+
+Outcome: FIX one existing engine 0708 parity condition; NO-GO unsolicited start frames. No public OEM source, secrets, challenge payload, private YAML or 0708 mailbox bytes. Failure/abort not applicable offline; future bounded live activation uses existing S92 ABORT and C5AR rollback; HA parameter writes still HOLD. Standalone original C5AV ZIP not accessible (current C5BH labels C5AV branches).
+
+CURRENT MILESTONE: first attach without controller restart. DELIVERABLE: completed five-in-one offline evaluation. REAL BLOCKER: real controller offer not guaranteed. ONE NEXT ACTION: single integrated 04A6 partial-resume C5AV 0708 parity fix before another live experiment.
+
+---
+
 ## 2026-10-26 — C5BH FIRST-ATTACH-01 — COMPLETE / INCONCLUSIVE
 
 OBSERVED FACTS: User flashed MAIN03-C5BH (build shown 02:17:18), armed S92 at 02:16:49.459. During one full 60.071 s first-attach window on already-running controller with no prior DCM since its restart: no incoming DCM FC16 (initFC16=0), no 04A6/085F, no native FC23 challenges, no FC03 or 0708, no physical TX (DE LOW throughout), no semantic owner, no H/D/C/M pages. Session safely expired 02:17:49.526 to RETAINED_NO_DCM_OFFER and RX_ONLY; log states COMPLETE / INCONCLUSIVE. CRC_DIFF=0; RX drops=0; parser resyncs=1 (not zero). Normal controller, room sensor and outdoor frames continued. Controller accessory state A80E toggled 0000/0020, A80F remained 0032; not proof of cold start or controller offer.
