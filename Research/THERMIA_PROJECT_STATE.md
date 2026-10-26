@@ -1,3 +1,20 @@
+## 2026-10-26 — MAIN03-C5BM user LIVE no-offer 60.225 s — COMPLETE / INCONCLUSIVE
+
+**OBSERVED FACTS:** User ESPHome API log shows firmware build `Thermia MAIN03-C5BM | OEM FC16 INFO RETRY ACK FIX / XTR 2.4.2` and ESP OTA reset reason. User S92 MANUAL_START stage40 at 11:24:51.094. Controller state immediately A80E=0000/A80F=004B (subsequent A80E periodically 0020, no proven pairing semantics). At 11:25:51.304–11:25:51.413, stage expired after 60225ms with `RETAINED_NO_DCM_OFFER`, `FC16ACK=0 FC03SERVED=0 FC03_WITHHELD=0 physicalTXthisSession=0 physicalTXtotal=0 startupR1Sent=0 DE=LOW`. Within the entire provided 11:23:54–11:25:55 clip, no qualified native controller 0x0F first offer is shown. `S92 V5 FC16 Known Shapes Seen=0`, `RX0708=0`, INFO=0/5, H/D/C/M fresh 0/4, snapGen=0, cache NOT_SYNCED/STALE. Near finish V5 `CRC_CHECK=887 CRC_DIFF=0 SHAPE_OTHER=0`, parser resync=0 and RX buffer drops=0. Other controller/room/outdoor bus traffic remains live. `OWNER=EXISTING_MANUAL_SESSION` is an internal label for manual context and is NOT controller-accepted ownership (`acceptedOwner=0` and `OEM_INTERNAL=NOT_ACCEPTED`).
+
+**VALIDATION CLASSIFICATION:** C5BM is now user FLASHED and LIVE, but duplicate-INFO-FC16 re-ACK and persistent pending INFO follow-ups received no first controller request and were NOT exercised. C5BM-FC16-DUPACK-01 = **COMPLETE / INCONCLUSIVE** for this one bounded user-initiated run. Do not call source embedded `SOURCE PREPARED` label evidence that firmware was not flashed; user LIVE build entity takes precedence. ESPHome console reported `Loaded validated config cache ... skipping validation`; that is not independent target compile verification. Do not claim INFO 5/5 or semantic native acceptance.
+
+**STRONG CONCLUSIONS:** Physical TX collision guards stayed closed; bus RX healthy; no native DCM session initiated in this window. C5BL and C5BM no-offer runs cannot assess their followup/retry fixes. A80E 0/0020 and A80F=004B do not independently authorize TX.
+
+**DECISION:** No C5BN/no new code and no further identical blind idle S92 experiment; no controller reboot solely to provoke DCM offers. Preserve C5AR as LOCALLY VERIFIED cold-start/H/D/C/M 4/4 rollback, C5AZ as scoped user LIVE running-controller first attach INFO 2/5 COMPLETE / POSITIVE. Parameter writes ON HOLD; no room-sensor disconnection; ABORT and single UART/DE ownership intact.
+
+**CURRENT MILESTONE:** Genuine running-controller first attach, INFO 5/5, semantically accepted fresh H/D/C/M 4/4.
+**DELIVERABLE:** One C5BM physical no-offer run classified user FLASHED/LIVE COMPLETE / INCONCLUSIVE; existing source retained; no new code.
+**REAL BLOCKER:** Controller emits no native 0x0F offer in observed window; XTR discovery/recovery from no-offer remains OPEN.
+**ONE NEXT ACTION:** When a genuine controller-offered 0x0F FC16/0708 naturally occurs, use one bounded authorized validation to evaluate existing C5BM responses; never infer offer from recurring 0x06 polls.
+
+---
+
 ## 2026-10-26 — MAIN03-C5BM OEM/V3 repeated INFO FC16 ACK parity — PREPARED / NOT RUN
 
 OBSERVED FACTS / SOURCE: Complete private C5BL YAML as user FLASHED/LIVE in a no-offer trial processes five exact INFO FC16 page geometries. After successfully acknowledging a group once, its C5AX branch explicitly logged `INFO_PAGE_REPEAT_NOT_REACKED` for any later valid FC16 of that same page within the eligible S92 epoch, leaving the controller without its normal Modbus FC16 ACK. Genuine original Thermia Connect CM930 Python slave passes every FC16 request to the Modbus write handler and publishes receipt (no first-group ACK suppression). Independently ATEC V3 gateway_responder.h builds an ACK on each valid addressed FC16 write. The V3 evidence corroborates the generic Modbus requirement; XTR has NOT live demonstrated such duplicate as the cause of C5AZ's 2/5 INFO stall.
