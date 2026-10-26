@@ -1,3 +1,11 @@
+## 2026-10-26 — C5BQ review correction: C5BR replaces unflashed C5BQ (PREPARED / NOT RUN)
+
+Double-check of complete C5BQ against C5BP identified two **test-reporter defects** (not evidence of native TX failure): `FIX_BUS_INTEGRITY` was subordinate to arm/owner failures, potentially masking an integrity event; RX/parser/CRC/peer counters were boot-absolute, not measured as deltas within the 120-second test window. C5BR corrects classification priority and records 5 test-window baseline/deltas including malformed FC16 shapes. Native C5BP hot-rejoin activation and physical UART/DE/CRC guards are untouched, no additional TX or HA parameter writes. Full private ZIP validated offline (YAML parse, 643 unique globals, DE-high count parity with C5BP, ZIP integrity); NOT target compiled/FLASHED/LIVE. C5BN remains last LOCALLY VERIFIED. C5BQ superseded as prospective deliverable, do not flash; C5BR-AUTO-OTA-01 PREPARED / NOT RUN. Single user-initiated bounded OTA only where native controller offers already exist; observe BUILD and final report, ABORT on errors, rollback C5BN. Long-term FC03/cache remains OPEN.
+
+CURRENT MILESTONE: ESP-only OTA hot rejoin. DELIVERABLE: C5BR private full ZIP source/offline checked. REAL BLOCKER: no user live C5BR outcome. ONE NEXT ACTION: one user-initiated C5BR OTA and evaluate native offers/accepted owner/freshness.
+
+---
+
 ## 2026-10-26 — Next step: C5BQ one-shot OTA validation
 
 C5BQ private full ZIP derives from C5BP and adds a non-transmitting 120s automatic post-boot test observer (begins at 5s uptime). User OTA-flashes ONE time after verifying existing native 0x0F FC16 controller offers; controller and room sensor remain powered; do not manually S92 START. Observe postboot C5BQ BUILD and final `AUTO_TEST_FINAL` to decide GO/FIX/NO-GO. Status SOURCE/OFFLINE TESTED PREPARED / NOT RUN, no target compile or LIVE. C5BN locally verified rollback; ABORT on unexpected TX or bus errors; no repeat blind resets. No HA parameter writes. Next only if retained controller offers exist. Persistent FC03 refresh follows successful hot rejoin.
