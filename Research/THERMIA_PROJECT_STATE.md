@@ -1,3 +1,16 @@
+## 2026-10-27 — MAIN04-D STANDALONE XTR LIVE native 4/4 re-refresh POSITIVE; calendar validation OPEN
+
+OBSERVED FACTS (user-uploaded 5,000-line 14:33:10–14:37:37 log): four MAIN04-D build markers prove standalone firmware FLASHED/LIVE on XTR. 152->362 seconds ESP uptime in sampled portion without visible reset. Native retained manual owner M6=5/stage40; FC16 ACK counter 52->168, controller-offered idle 0708 replies 26->88, no observed collisions/peer, RX drops, parser resync, or CRC_DIFF (CRC_CHECK reaches 2967). Actual controller-led read-only CURRENT TX 14:35:57.434 followed by four physically owner-ACKed pages 03E8/14, 042E/15, 0442/13 and 0546/20 completed by 14:36:00.275; M6 mask0F confirmation at 14:36:00.269; snapGen 1->2, refreshReq=2 and refreshOK=2; none were HA parameter writes. This is LOCALLY VERIFIED scoped MAIN04-D runtime and native FC03 refresh, **COMPLETE / POSITIVE** for the second CURRENT snapshot. Overall MAIN04-D is **RUNNING / PARTIAL**, not 24h production validated.
+
+OPEN: 33-page app ledger remains 12/33 observed with 27 pending; calendar summaries are unavailable/stale, but no scoped calendar read activation or late-page receipt was observed in this excerpt, so calendar MAIN04-D fix remains PREPARED / NOT RUN as a separate test. Alarm 085F current receipt remains UNKNOWN, counter0. Rejoin context is retained MANUAL and no controller/ESP restart happens in this sample, so automatic recovery is not proven by this record. Prior project state indicating MAIN04-D not FLASHED is superseded for this specific user build only; historical prior tests stay unchanged. No writes authorized, original S92 ABORT and room sensor unchanged.
+
+CURRENT MILESTONE: MAIN04-D live CURRENT functional; calendar receipt-credit integration pending.
+DELIVERABLE: locally verified XTR 4/4 native second refresh on standalone MAIN04-D, SOURCE -> FLASHED/LIVE scoped.
+REAL BLOCKER: new 120s calendar owned receipt and second authorized calendar cycle not verified; longer single-image session durability still OPEN.
+ONE NEXT ACTION: preserve running MAIN04-D and trigger the ALREADY EXISTING bounded manual scoped calendar one-shot once, then read existing ordinary receipt logs through 120s; no repeat microtests, no new physical TX class.
+
+---
+
 ## 2026-10-27 — MAIN04-D standalone single YAML PREPARED / NOT RUN
 
 User requested no separate header files. Derived a full single ESPHome YAML from private MAIN04-D: removed the four `esphome.includes` header references and mechanically embedded all original pure helper predicates as local C++ functions in their eight original lambda blocks. All other YAML node configuration unchanged; no new UART/DE/TX, no frames or parameter writes. Offline YAML parity/syntax, helper C++ syntax and ZIP checks passed. SOURCE/OFFLINE TESTED only, NOT target compiled, flashed or XTR live. This supersedes only the packaging of the five-file MAIN04-D bundle, not its engineering claims. CURRENT MILESTONE: MAIN04-D receipt integration. DELIVERABLE: one private standalone YAML and optional single-file ZIP package with manifest/instructions. REAL BLOCKER: missing ESPHome target compile and user XTR live validation. ONE NEXT ACTION: user compiles the standalone YAML with their existing secrets, before any user-initiated bounded OTA.
