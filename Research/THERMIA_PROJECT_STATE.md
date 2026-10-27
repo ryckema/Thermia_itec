@@ -1,3 +1,14 @@
+## 2026-10-27 — MAIN04-D PREPARED / NOT RUN
+
+The private MAIN04-D package builds on MAIN04-C and preserves the single native M6/S92 engine. The source change separates the unchanged 60s application-read transmission window from a 120s receipt observation window, allowing genuinely acknowledged late calendar pages to complete the existing request. Another opted-in calendar cycle can follow a completed previous cycle; an incomplete automatic cycle remains bounded. Existing read-only CURRENT, calendar selection, Home Assistant entities and ABORT/rollback are retained. Alarm 085F remains open. SOURCE/OFFLINE TESTED only: YAML, identifiers, headers and ZIP integrity passed. Not ESPHome target compiled, flashed or locally verified. The prior MAIN03 recurring CURRENT evidence remains unaffected.
+
+CURRENT MILESTONE: MAIN04-D calendar receipt completion.
+DELIVERABLE: private complete MAIN04-D ZIP.
+REAL BLOCKER: ESPHome target compilation and local confirmation of owned late calendar ACKs.
+ONE NEXT ACTION: user compiles MAIN04-D, then chooses one bounded runtime check.
+
+---
+
 ## 2026-10-27 — MAIN04-C lifecycle consolidation PREPARED / NOT RUN
 
 OBSERVED FACTS: User-supplied C5DS-CAL4 underlies private MAIN04-A then B. Source review of MAIN04-B showed controller-recovery M6 event3 and indirect STOP did not consistently revoke the new B retry/inflight and C5DK auto CURRENT tokens; queued lifecycle events also left a brief opportunity for stale unsent read intents until processing. MAIN04-C corrects these concrete session-state defects: one scoped M6 lambda used on START, STOP/ABORT, controller-loss and orphan STOP; synchronous revocation before queued M6 event2/3/6 in existing HA ABORT and watchdogs. CAL4 pending automatic calendar observer is reset with stale owner epoch; its existing user-enabled policy, original calendar physical request, existing 120s observer and switch UX remain otherwise unchanged. Pure C++ predicates refactor unchanged controller-only restart and retained ESP OTA-native entry boolean guards into named functions. No parallel session architecture, controller-epoch invention, new TX ownership, fresh guards, payload, register, 0x0F protected handshake change, electrical safety bypass or HA parameter-write expansion. Existing cold-start, FC16, FC03, 33-page register receipt ledger, V5 CRC/parser, ABORT, DE, home-sensor connection and HA catalogue retained.
