@@ -1,3 +1,20 @@
+## 2026-10-27 — CAL10 OEM persistent pending integrated SOURCE / OFFLINE TESTED; PREPARED / NOT RUN
+
+OBSERVED FACTS: On locally supplied XTR runtime logs, the prior automatic calendar request was repeatedly armed but revoked without calendar TX (17:13:06/08 and 17:16:06/08); CAL7 avoided treating UNSENT request as an incomplete receipt but did not preserve its demand. Native CURRENT / 0708 / FC16 operation continued. The current CAL9 source carried an accepted-epoch authorization fix in its physical dispatcher and a 12-page OEM-request mapping, but the calendar HA button still depended on the one-shot rejoin latch; both that mismatch and the 12-second unsent-request expiry remained.
+
+STRONG CONCLUSIONS: OEM Connect request-bit handling stores pending read flags and clears upon matching received register package or explicit request reset. Pending demand is a different concept from physical TX permission. An unsent intent with a valid session must not be marked as received/incomplete, and a temporarily unavailable S92 TX opportunity must not erase its read flags.
+
+IMPLEMENTATION: CAL10 private single-YAML base=CAL9. A pending APP read is epoch-scoped and persists until actually served by the sole physical S92 owner at a future real controller 0708; 12s arm-TTL removed from *unsent bookkeeping only*. Existing TX authorization, CRC, RX/parser, collision/peer, S92 UART/DE owner, 60s/48-poll post-send lease, CAL9 240s owned-ACK observer and 12-page geometry unchanged. Button and dispatcher now check the same accepted native epoch instead of temporary one-shot rejoin latch. Explicit AUTO OFF clears only that unsent calendar generation; controller restart/session loss and STOP/ABORT retain existing revoke semantics. Auto calendar remains OFF by default due to expanded 12-page live scope. 32 calendar entities and alarm fallback remain; no setting writes.
+
+STATUS: CAL10 **SOURCE / OFFLINE TESTED; PREPARED / NOT RUN**, not compiled/flashed/live. Offline: YAML parsed, unique ESPHome IDs, identical S92 TX-site and UART counts, ZIP CRC/SHA. Previous locally successful 6-page CAL6 receipts and subsequent unsent-guard failures remain distinct evidence. No claim of OEM Online/cloud acceptance or fully verified sustained 12-page freshness.
+
+CURRENT MILESTONE: Durable calendar refresh and OEM-equivalent request lifetime.
+DELIVERABLE: One private CAL10 full standalone ZIP and rollback instructions.
+REAL BLOCKER: User target compile and actual XTR 12-page read/ACK + repeated calendar freshness unverified.
+ONE NEXT ACTION: User compiles CAL10, then optionally activates one explicit bounded 12-page trial with S92 STOP/ABORT, RX_ONLY/DE LOW and last working firmware rollback available.
+
+---
+
 ## 2026-10-27 — MAIN04-D STANDALONE XTR LIVE native 4/4 re-refresh POSITIVE; calendar validation OPEN
 
 OBSERVED FACTS (user-uploaded 5,000-line 14:33:10–14:37:37 log): four MAIN04-D build markers prove standalone firmware FLASHED/LIVE on XTR. 152->362 seconds ESP uptime in sampled portion without visible reset. Native retained manual owner M6=5/stage40; FC16 ACK counter 52->168, controller-offered idle 0708 replies 26->88, no observed collisions/peer, RX drops, parser resync, or CRC_DIFF (CRC_CHECK reaches 2967). Actual controller-led read-only CURRENT TX 14:35:57.434 followed by four physically owner-ACKed pages 03E8/14, 042E/15, 0442/13 and 0546/20 completed by 14:36:00.275; M6 mask0F confirmation at 14:36:00.269; snapGen 1->2, refreshReq=2 and refreshOK=2; none were HA parameter writes. This is LOCALLY VERIFIED scoped MAIN04-D runtime and native FC03 refresh, **COMPLETE / POSITIVE** for the second CURRENT snapshot. Overall MAIN04-D is **RUNNING / PARTIAL**, not 24h production validated.
