@@ -1,3 +1,9 @@
+## 2026-10-27 — C5DS-CAL3 HA entity publication cleanup (NO PROTOCOL CHANGE)
+
+Private C5DS-CAL3 derives from C5DS-CAL2 byte-identical native transport/decoder/session/TX-owner logic. HA publication count goes 436 -> 244 after removing 139 id-unreferenced research sensor definitions, six obsolete experimental buttons and marking 47 dependency-retained diagnostic/calendar-staging entities internal:true. Exact Compressor Current, CURRENT four-page refresh, six-calendar one-shot, M6, V5 parser, 085F/0884 decoder, S92 ABORT and DE/collision guards preserved; no new registers/frames, no authority change and parameter writes remain ON HOLD. All relevant OEM calendar programmed/active mappings from earlier 2026-10-27 source/XTR evidence unchanged. SOURCE/OFFLINE TESTED, PREPARED / NOT RUN, no target compile or new XTR evidence. Physical calendar request ACK-credit completion remains OPEN, no actual 085F receipt; do not infer no alarm from stale page.
+
+---
+
 ## 2026-10-27 — OEM 930 2.4.2 calendar bitmaps cross-checked against local XTR
 
 Original Connect 2.1.105 930/2.3.0-2.4.3 configurations profile defines distinct eight-bit programmed/active registers: HW 05BA/05BB, EVU 061C/061D, Silent 067E/067F, Temperature Reduction 06E0/06E1. Actual XTR user log controller FC16 0662/33 gives 067E=0003 (programs 1 and 2 configured) and 067F=0000 (zero active bitmap at receipt time). FC16 05FF/33 gives 061C=0003 (two EVU programs configured), 061D=0000. 06C5/33 gives 06E0=0000, 06E1=0000. HW 059C/33 gives 05BA=001F (five programmed), 05BB=0000 (active bitmap zero). Do not equate zero active with no configured calendar or no functional Silent mode. Actual timetable of Silent programs 1/2 is in the earlier 0620/0641 pages not part of six-group one-shot.
