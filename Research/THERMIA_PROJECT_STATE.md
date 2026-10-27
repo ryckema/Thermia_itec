@@ -1,3 +1,16 @@
+## 2026-10-27 — W2R3 LIVE native/candidate proven, local EXP430 selector failure; W2R4 FIX PREPARED
+
+OBSERVED FACTS / LIVE XTR: W2R3 build marker on OTA reboot, M6=5 with S92-owner ACKed 4/4 CURRENT pages Heating Curve36. HA candidate controller sync to36 at 22:25:11. User stage37 and ARM accepted at 22:26:28, no immediate TX by design. Genuine next controller 0708: EXP444 cache age81.4s deemed invalid under legacy 15s cache; EXP430 SELECTOR_ABORT legacyIdle=0 rtAge=0ms. No Heating Curve selector/page on wire, semantic controller rejection not shown. Later stage35 without ARM. Parser CRC_DIFF=0, RX drops=0 in sample. W2R3 read/candidate portion LIVE POSITIVE; selector attempt COMPLETE / NEGATIVE (local NO_SETTING_TX); full write milestone RUNNING / PARTIAL.
+
+STRONG SOURCE CONCLUSION: EXP444/EXP430 cold-only runtimeAge and idle conditions were never native M6 transaction safety proof. Current 4/4 native owner evidence remains valid under its 300s TTL. One integrated W2R4 source fix aligns only explicitly ARM-authorized 03E8 word0 EXP444, selector, page and sole S92 TX guard to accepted same-epoch M6=5, actual physically owner-ACKed fresh CURRENT and pinned original, no competing dirty writer. Other HA parameter writes HOLD; preserve sole UART/RX/DE, CRC, peer/collision, parser, S92 ABORT, FC16/FC03/calendar and one physical desired page cap. No auto retries. Complete private W2R4 ZIP SOURCE/OFFLINE TESTED, PREPARED / NOT RUN; YAML 1049 identical IDs, globals740, one UART/writer and unchanged TX calls, SHA256 8ec8de17dd8ee86f82d43b96d26d15654815187e6659d057baa8e01542622262. W2R4 target compile, flash, XTR write semantic outcome NOT RUN.
+
+CURRENT MILESTONE: first OEM-aligned one-shot controller-confirmed Heating Curve write.
+DELIVERABLE: W2R3 LIVE native/HA ARM evidence; private W2R4 complete ZIP.
+REAL BLOCKER: W2R4 target compile and controller confirmed desired-page semantics.
+ONE NEXT ACTION: user compiles W2R4 then deliberately OTA/one bounded 36-to-35 trial only under healthy M6=5/current4/4 with S92 ABORT/W2R3 rollback ready.
+
+---
+
 ## 2026-10-27 — MAIN04-W2R3 candidate-latch deadlock corrected SOURCE only
 
 **OBSERVED FACTS:** Last supplied LIVE XTR log is W2R1 after OTA, M6=5, accepted same-epoch 4/4 CURRENT Heating Curve36, calendar read, good CRC, earlier setting ARMs rejected NO_TX. User says "weer niets" after W2R2, but no new W2R2 firmware build/log; cannot assert W2R2 flashed or specific runtime failure.
