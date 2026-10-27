@@ -1,3 +1,7 @@
+MAIN04-W1R1 2026-10-27 PREPARED / NOT RUN; W1 SUPERSEDED / NOT RUN. Hypothesis: existing controller-polled EXP430/EXP441 Heating Curve 0x03E8 desired path can produce one controller-accepted semantic write when user-armed in native M6/S92. Baseline exact user MAIN04-E-CAL14A source; prior CAL10 12/12 and MAIN04-D CURRENT read evidence separate. ONE integrated change: pin original at ARM, deny later unexpected original change, immediately revoke token on S92 ABORT, treat immediate unchanged FC16 as pending not negative; NOOP for pre-write target achieved. Expected: one correctly guarded OEM W1/W3 bit0 selector then one controller-polled desired page and future authoritative FC16 confirmation, no automatic retries or other HA writes. Actual: SOURCE/OFFLINE checks PASS; no target compile, flash, TX, live acceptance. ABORT: S92 ABORT DE low and token cancellation; previously applied physical controller setting must be restored via OEM UI if necessary; rollback verified user image. ONE NEXT ACTION user ESPHome target compile of W1R1.
+
+---
+
 ## MAIN04-W1 — PREPARED / NOT RUN — 2026-10-27
 
 - **Hypothesis:** The exact existing OEM-style generic desired-page transaction in EXP430/EXP441 can perform one controller-owned Heating Curve write within the locally qualified M6/S92 session without introducing another bus owner.
