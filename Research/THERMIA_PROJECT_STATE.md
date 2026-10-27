@@ -1,3 +1,16 @@
+## 2026-10-27 — W2R1 LIVE confirmed, correct five overly strict RX-before-ACK checks in private W2R2
+
+**OBSERVED FACTS (LIVE XTR):** W2R1 build observed after OTA reset 21:36:25. M6 automatically requalified transport at 21:36:43 and CURRENT 4/4 physically ACKed by 21:36:50 (state M6=5); real Heating Curve 03E8 word0=36. First calendar 12/12 owned ACKs also observed; CRC_DIFF=0 and RX drops=0. At 21:39:06 ARM target35 original36 delta-1 staged0 owner1 clean1 idle1 NO_TX. At 21:39:28 candidate34 staged with controller=-1 although native CURRENT was confirmed. Parameter write not physically offered, no XTR semantic acceptance/rejection.
+
+**STRONG CONCLUSION (SOURCE plus LIVE):** W2R1 demanded exp442 03E8 RX-cache timestamp be >= m6s_oldest_ms physical ACK snapshot timestamp. Genuine RX cache is set before FC16-ACK, making the predicate false on valid data. The source defect exists in FIVE locations: S92 TX owner permission, EXP430 selector permission, candidate edit, ARM source, and candidate publisher. **ONE integrated W2R2 source correction** checks cache age <300s instead, retains M6 snapshot same-epoch ownership, 300s freshness, exact cached word0 equality and all native S92 RX/CRC/peer/collision/DE/ABORT and single-page user ARM bound. All production HA controls and one UART writer preserved; OEM retry and all other HA parameter writes ON HOLD. W2R2 private complete ZIP SOURCE/OFFLINE TESTED with YAML, rollback W2R1, README, manifest and integrity; full YAML parse, 1049 IDs unchanged/unique, 740 globals, S92 send call sites90, one UART writer; W2R2 TARGET COMPILED/FLASHED/LIVE **NOT RUN**. W2R1 LIVE transport and calendar POSITIVE, but parameter write phase remains unrun due to local input denials; do not claim write was rejected by controller.
+
+**CURRENT MILESTONE:** First bounded OEM-style controller-confirmed Heating Curve parameter write without regression of native M6 and calendar.
+**DELIVERABLE:** Private MAIN04-W2R2 full firmware ZIP, SOURCE / OFFLINE TESTED; W2R1 live fault root cause.
+**REAL BLOCKER:** W2R2 not target compiled/flashed; Heating Curve desired page not physically attempted or semantically confirmed on XTR.
+**ONE NEXT ACTION:** User compiles W2R2, then optionally initiates OTA, verifies stage number follows actual live 03E8 curve36; only then stages35 and explicitly arms one bounded physical attempt; use S92 ABORT/actual W2R1 rollback if needed.
+
+---
+
 ## 2026-10-27 — W2 FLASHED/LIVE native; two user ARM denials NO_TX; W2R1 fix prepared
 
 **OBSERVED FACTS / PROVEN for W2 log only:** exact MAIN04-W2 build marker appears repeatedly; user flashed it. M6 stage40 accepted (existing manual session), CURRENT four owned H/D/C/M pages synced, 0708 continues, native FC16 ACK count grows and thermal readings update, CRC_DIFF=0 and RX drops=0 in uploaded log. Controller Heating Curve raw36. At 21:09:17 HA ARM target35 original36 delta-1 staged0 owner1 clean1 idle1 NO_TX; at 21:09:40 candidate staged34; 21:10:19 HA ARM target34 original36 delta-2 staged1 owner1 clean1 idle1 NO_TX. No W2 physical Heating Curve desired TX or controller semantic write confirmation occurred; W2 write experiment remains RUNNING / PARTIAL only for firmware/native observation, parameter-write phase NOT RUN (not COMPLETE/NEGATIVE). OEM source bitmapping/lifecycle unchanged.
