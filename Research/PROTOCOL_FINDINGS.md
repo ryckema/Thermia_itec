@@ -1,3 +1,15 @@
+## 2026-10-27 — OEM pending-bit semantics vs CAL10 source fix (no new XTR protocol proof)
+
+SOURCE: Original Thermia Connect Modbus-server request logic stores a read-request bit via set_register_read_request and clears it on a matching registers-received event or explicit reset_register_read_request. These are application request flags, NOT automatic authorization for serial TX or proof of XTR-specific semantic acceptance. Existing mapped request words W2/W3/W4 and 12 calendar details in CAL9 are inherited; no new frame/register assigned.
+
+LOCAL OBSERVATION: Previous 2026-10-27 XTR CAL7/CAL8 log has valid native FC16/0708 session while calendar auto demand was armed and then revoked without physical calendar TX. This is an existing discrepancy in our application scheduler/physical owner integration; it does not imply CRC/collision defects.
+
+CAL10 SOURCE / OFFLINE TESTED ONLY: Unsatisfied application request flags are no longer erased solely because one future 0708 fails a guard or the old 12-second pre-send arm expires. A queued request is tied to its accepted native session epoch and is sent only by the existing S92 UART/DE owner on a real controller 0708 when all unchanged ACK/profile/integrity/peer/collision/no-write/DE guards permit. The original 60s/48-poll physical TX lease starts upon actual send, with existing CAL9 240s passive physically owned ACK observer for 12 requested pages. Explicit auto-OFF/STOP/controller session loss revoke UNSENT pending. No new physical TX route or HA setting writes.
+
+CONFIDENCE: OEM request flag lifetime SOURCE-SUPPORTED; local old unsent calendar revocations PROVEN from user log; correction SOURCE / OFFLINE TESTED; sustained twelve-page XTR semantic success OPEN, status PREPARED / NOT RUN. No inference about cloud Online or 085F current alarm acquisition.
+
+---
+
 ## 2026-10-27 — XTR MAIN04-D LIVE native retained session and recurring CURRENT 4/4
 
 User-provided 5,000-line XTR API excerpt spanning 14:33:10–14:37:37 identifies the same standalone MAIN04-D firmware four times. The native FC16 ACK counter increases 52 to 168, controller 0708 replies 26 to 88 in a retained MANUAL context M6=5/stage40 without shown restart. The next read-only CURRENT request is emitted 14:35:57.434 on the existing guarded native route, with FC16 03E8/14, 042E/15, 0442/13, 0546/20 actually ACKed by 14:36:00.275, mask0F, snapGen1->2, refreshReq/OK=2/2. RX/parser counters remain zero-error in sampled period. These observations are LIVE/LOCALLY VERIFIED for the specific MAIN04-D second snapshot and ordinary native session continuity; they are not proof of Online cloud connection, HA semantic write permission or hours-long durability. 085F current alarm 0 acknowledgments and the unclosed 33-group calendar/app ledger (12 observed, pending27) remain OPEN. The 120s calendar late-page ACK logic was not activated in this record and must not be promoted to LIVE PROVEN. No new protocol frame or request/response meaning inferred.
