@@ -1,3 +1,16 @@
+## 2026-10-27 — MAIN04-W2R3 candidate-latch deadlock corrected SOURCE only
+
+**OBSERVED FACTS:** Last supplied LIVE XTR log is W2R1 after OTA, M6=5, accepted same-epoch 4/4 CURRENT Heating Curve36, calendar read, good CRC, earlier setting ARMs rejected NO_TX. User says "weer niets" after W2R2, but no new W2R2 firmware build/log; cannot assert W2R2 flashed or specific runtime failure.
+
+**STRONG CONCLUSION (SOURCE):** W2R2 candidate set_action latches staged=true when CURRENT owner snapshot is absent (controller=-1); the 250ms GUI publisher refuses to sync while staged=true, creating a real GUI state deadlock. W2R3 ONE integrated fix: HA stage and auto-publication use existing physically owner-ACKed M6=5, same-epoch, 300s fresh 4/4 CURRENT source without duplicate RX timestamp check; no early candidate latching, no staged NOOP/out-of-scope choice. Preserve all hardware safety and parameter TX authorization: original ARM/EXP430/S92 source and physical send guards unchanged, UART/RX/DE sole owner, V5 CRC, peer/collision, B11C/B11D, cold/rejoin, FC03/FC16/calendar, other HA writes HOLD. Full private W2R3 ZIP SOURCE/OFFLINE TESTED, PREPARED / NOT RUN; YAML 1049 unique original IDs, 740 globals, same physical TX calls/UART and ZIP hashes. No ESPHome target compile or W2R3 LIVE yet.
+
+**CURRENT MILESTONE:** First user-initiated OEM-style Heating Curve controller-confirmed write.
+**DELIVERABLE:** Complete private W2R3 source package; real GUI staging defect corrected.
+**REAL BLOCKER:** No W2R3 target compile/live candidate sync or physical XTR setting confirmation.
+**ONE NEXT ACTION:** User compiles W2R3, deliberately OTA if successful, waits for accepted CURRENT 4/4 and verifies candidate displays actual curve before a single bounded user-armed attempt.
+
+---
+
 ## 2026-10-27 — W2R1 LIVE confirmed, correct five overly strict RX-before-ACK checks in private W2R2
 
 **OBSERVED FACTS (LIVE XTR):** W2R1 build observed after OTA reset 21:36:25. M6 automatically requalified transport at 21:36:43 and CURRENT 4/4 physically ACKed by 21:36:50 (state M6=5); real Heating Curve 03E8 word0=36. First calendar 12/12 owned ACKs also observed; CRC_DIFF=0 and RX drops=0. At 21:39:06 ARM target35 original36 delta-1 staged0 owner1 clean1 idle1 NO_TX. At 21:39:28 candidate34 staged with controller=-1 although native CURRENT was confirmed. Parameter write not physically offered, no XTR semantic acceptance/rejection.
