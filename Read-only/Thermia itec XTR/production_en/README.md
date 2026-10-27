@@ -1,6 +1,6 @@
 # Thermia iTec XTR M — passive English monitoring
 
-**XTR-PASSIVE-EN-01 | PREPARED / NOT RUN | SOURCE/OFFLINE REVIEW ONLY.** This build has **not** been ESPHome-target-compiled, flashed, or live validated on XTR. It is a *production-layout candidate*, not a certified production release.
+**XTR-PASSIVE-EN-01 (ESPHome 2026.9 warning fix) | PREPARED / NOT RUN | SOURCE/OFFLINE REVIEW ONLY.** This build has **not** been ESPHome-target-compiled, flashed, or live validated on XTR. It is a *production-layout candidate*, not a certified production release.
 
 ## What changed
 
@@ -37,3 +37,7 @@ Good: plausible changing room/outdoor/supply/DHW/ODU data and `Bus Healthy` when
 All 258 existing HA component blocks remain wired; 174 are internal; 84 visible. ESPHome IDs preserved. The complete `globals: ... sensor:` UART/parser/CRC implementation is byte-identical to public v31 FIX4. No extra source dependency/header required. This is NOT a test or modification of the privately held original Connect firmware.
 
 **Current main-project milestone remains the private Heating Curve W2R2 bounded write experiment; this passive branch neither flashes nor replaces it.**
+
+## 2026-10-27 ESPHome 2026.9 warnings
+
+Four entity names using URL-reserved `/` have been corrected (no IDs, parser, or meaning changed). Keep the legacy OTA `password:` for the **first migration** when the existing device firmware has not yet been established as ESPHome 2026.9.0+ supporting Noise encrypted OTA. Only after the installed firmware advertises encryption should you replace the password with bare `encryption:` under the OTA platform in a separate controlled update. See official ESPHome 2026.9 migration documentation. Warnings do not show build success; check for final compile success.

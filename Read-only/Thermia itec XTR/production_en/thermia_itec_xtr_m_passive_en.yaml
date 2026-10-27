@@ -3188,7 +3188,7 @@ sensor:
   - platform: template
     internal: true
     id: thermia_native_0820_raw
-    name: "Native ODU 0820 Raw (Condenser In / Profile Collision)"
+    name: "Native ODU 0820 Raw (Condenser In Profile Collision)"
     accuracy_decimals: 0
     entity_category: diagnostic
     update_interval: never
@@ -3196,7 +3196,7 @@ sensor:
   - platform: template
     internal: true
     id: thermia_native_0821_raw
-    name: "Native ODU 0821 Raw (Condenser Out / Profile Collision)"
+    name: "Native ODU 0821 Raw (Condenser Out Profile Collision)"
     accuracy_decimals: 0
     entity_category: diagnostic
     update_interval: never
@@ -4895,7 +4895,7 @@ binary_sensor:
   - platform: template
     internal: true
     id: thermia_native_odu_unit_onoff
-    name: "Native ODU Unit On/Off"
+    name: "Native ODU Unit On Off"
     entity_category: diagnostic
 
   - platform: template
@@ -4919,7 +4919,7 @@ binary_sensor:
   - platform: template
     internal: true
     id: thermia_native_odu_thermal_onoff
-    name: "Native ODU Thermal On/Off"
+    name: "Native ODU Thermal On Off"
     entity_category: diagnostic
 
   - platform: template
