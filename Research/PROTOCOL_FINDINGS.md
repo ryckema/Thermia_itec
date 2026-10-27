@@ -1,3 +1,9 @@
+## 2026-10-27 — MAIN04-C session-intent revocation is an engineering fix, not new XTR protocol evidence
+
+Private MAIN04-C reuses exactly the pre-existing XTR-native controller cold-start and passive retained/ESP-OTA hot-entry routes in one M6/S92 RX/TX/DE owner. Pure classifier functions preserve their original conditions. Source review found an incomplete revocation of volatile AUTO CURRENT, MAIN04-B retry and CAL4 automatic-calendar pending intents on controller loss/nonmanual stop, fixed centrally and in immediate ABORT/watchdog fencing. No protocol frames, register meanings, handshake, semantic acceptance criteria, UART timings or physical TX authorization are newly asserted. The locally observed recurring MAIN03 CURRENT 4/4 remains valid; MAIN04-C itself is SOURCE/OFFLINE TESTED **PREPARED / NOT RUN**, not controller-live proof. Parameter writes remain ON HOLD.
+
+---
+
 ## 2026-10-27 — MAIN04-B read-only CURRENT retry: implementation, NOT new protocol evidence
 
 MAIN04-B reuses the already locally established controller-offered native CURRENT request and owner-ACKed four-page receipt mechanism. A physically sent automatic but incomplete transaction can schedule at most one additional identical owner-guarded read after the existing cooldown, for that same volatile session and snapshot generation; actual sending still requires another genuine controller request and the original bus/CRC/collision/profile guards. Manual reads, calendar group requests, and HA parameter writes are unchanged. This is a source-code reliability change, **PREPARED / NOT RUN**, not a new XTR observed response, new register, cloud Online acceptance or a justification for unsolicited TX. Previous live C5DK re-refresh confirmed snapGen2; sustained snapGen3+ and multi-hour native owner durability remain OPEN.
