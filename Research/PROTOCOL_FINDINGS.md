@@ -1,3 +1,9 @@
+## 2026-10-27 — Passive XTR unavailable numeric sensor emissions (SOURCE only)
+
+The optional XTR read-only EN firmware suppresses repeated `NaN` publication for native measurements on ongoing CRC-valid pages whose fields remain invalid. This is only HA state-publication behavior; native Modbus register source, decoding, incoming frames, 9600 8E1 GPIO18 and DE LOW/no TX remain unchanged. Local live logs demonstrate repeatedly invalid return temperature, NOT a positive value at `0x07D2` or proof of a controller fault. No protocol milestone changed.
+
+---
+
 ## 2026-10-27 — XTR-PASSIVE-EN-01 protocol scope (SOURCE only; PREPARED / NOT RUN)
 
 This ancillary read-only production-layout candidate adds **zero new protocol claims**. It preserves existing public XTR v31 FIX4 passive single-UART RX 9600 8E1 (GPIO18), DE ALWAYS_OFF GPIO21, no TX pin or write site. No native 0x0F FC03 refresh, 0x0F FC16 ACK, Online/DCM response, session ownership or HA parameter setting is provided. Observed native page absence remains unknown, not proof of function absence or scale. No new local live frames were inspected or broadcast by candidate. Existing protocol evidence priority and MAIN04 native roadmap unchanged.
