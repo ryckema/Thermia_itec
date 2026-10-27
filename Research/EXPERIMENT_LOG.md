@@ -1,3 +1,9 @@
+## 2026-10-27 — CAL11 source review (NO NEW EXPERIMENT)
+
+Read user-provided standalone CAL11 and current CAL12 roadmap together, one consolidated source review only. Facts: one UART / 727 globals / source-parsed YAML; CAL11 credits reset on new 12-page request, while full 12/12 first-read proof remains only CAL10 LIVE; CAL11 second read PREPARED / NOT RUN. CAL11's known calendar slot offset defect is already fixed in CAL12 SOURCE/OFFLINE TESTED, PREPARED / NOT RUN. Newly identified source-only production issue: fail-closed S92 correctly denies semantic setting TX, but some legacy caller success logs may still claim TX_EXECUTED and an HA action can queue an ON-HOLD write that reaches abort-on-denial. No indication that a setting write was sent. Mitigation to implement in MAIN04-E as early no-op/restore + accurate success logs; retain physical fail-closed safeguard. Regular logging also overly ERROR-severity. No live experiment opened or closed by this audit; preserve CAL10 scoped first-read COMPLETE / POSITIVE and second read COMPLETE / NEGATIVE. ONE NEXT ACTION: compile prepared CAL12 before any user-chosen bounded live validation.
+
+---
+
 ## CAL12-SLOTS-01 — 2026-10-27 — PREPARED / NOT RUN
 
 HYPOTHESIS: Incorrect Silent Mode / EVU / Reduction date/time and weekday strings are HA read offsets rather than controller misbehavior. OEM source defines 12 words/slot. CAL11 inherited CAL8 decoder starting EVU/Silent/Reduction at offset 0 of FC16 page 05BD/0620/0683 rather than actual OEM slot1 register 05BC/061E/0680.
