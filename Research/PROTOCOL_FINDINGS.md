@@ -1,3 +1,8 @@
+## 2026-10-27 — MAIN04-D standalone has no new protocol findings
+
+Single-YAML version is the same MAIN04-D code with only pure helper code embedded locally instead of loaded from four C++ headers. No change to handshake, native FC16/FC03, 33-group register map, 60s app-request lease, 120s passive FC16 receipt, UART/DE ownership or permitted TX. SOURCE/OFFLINE TESTED; not user-target-compiled or XTR-live-confirmed. This is a packaging change, not new evidence.
+
+---
 ## 2026-10-27 — MAIN04-D split request TX and owned receipt observer (source-only)
 
 XTR locally observed calendar page deliveries in three earlier manual controller-led reads end ~65–70s after the physical request, later than original 60s CM930 app-sync active/TX lease; do not infer that the final late pages were owner-ACKed. MAIN04-D retains original source-derived 33-group register geometries/request-bits in single existing M6/S92 owner and adds a separate local 120s passive receipt-credit window measured from actual physical read send, with completion ONLY after existing S92 physically ACKs exact controller FC16 pages for all requested groups. On expiry it closes the observer and does NOT retransmit. Existing CAL4 opt-in read can rearm after a completed previous receipt even if prior poll counter was nonzero; an incomplete auto read remains locked out. This is **SOURCE/OFFLINE TESTED / PREPARED / NOT RUN**, not new XTR measured protocol evidence or an assertion of cloud Online acceptance. Original 60s TX / 48-poll, hardware/CRC/collision guards, 300s calendar display TTL, 33-page map and HA parameter-write HOLD unchanged. Alarm 085F passive-only, still OPEN as current alarm evidence.
