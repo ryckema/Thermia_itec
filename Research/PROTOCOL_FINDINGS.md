@@ -1,3 +1,9 @@
+## 2026-10-27 — MAIN04-W1 OEM-style write gate prepared (no new XTR evidence)
+
+PRIVATE SOURCE implementation reuses the existing EXP430/EXP441 full-page desired-settings transaction model and the original M6/S92 owner, rather than inventing a separate Modbus master. The isolated W1 gate is scoped to Heating Curve only and a user-initiated bounded experiment. The intended semantic success condition is a later actual XTR controller FC16 confirming the intended value and unchanged other values; local physical TX and controller semantic acceptance remain UNVERIFIED. The first-trial one-unit change is an experiment bound, not claimed OEM firmware range. All other HA settings TX remain HOLD. SOURCE/YAML OFFLINE TESTED, PREPARED / NOT RUN. No OEM protected code or native responder implementation published.
+
+---
+
 ## 2026-10-27 — CAL14 source-only production cleanup, no protocol change
 
 Early application HA setting rejection now prevents legacy queues while S92 physical owner remains fail-closed. Generic desired-page dispatch reports physical owner success before EXECUTED status. Normal qualification/heartbeat logging reduced. No wire request, register mapping, UART/DE owner, CRC/collision/session guard or OEM semantic claim changed. Historical EXP modules remain where referenced. SOURCE/OFFLINE TESTED only, PREPARED / NOT RUN, parameter writes ON HOLD. Current-alarm 085F independent fetch remains OPEN.
