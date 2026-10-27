@@ -1,3 +1,9 @@
+## 2026-10-27 — MAIN04-W1 private single-scope write engine (PREPARED / NOT RUN)
+
+A single complete private user-delivered W1 firmware ZIP was prepared from the exact user-uploaded MAIN04-E-CAL14A compilefix source (not a claim that CAL14A was itself live verified). Reuses the existing EXP430/EXP441 register-page state machine and the sole M6/S92 UART/DE owner. A separate staged HA Heating Curve candidate and explicit one-shot ARM support a single controller-polled desired-page experiment; all other HA parameter controls remain on HOLD. Existing read-only CURRENT, 12-page calendar, native cold/rejoin, V5/CRC, peer/collision, DE, STOP/ABORT remain. One temporary one-unit first-trial limit, no automatic write retry, and confirmation requires actual controller-originated FC16 with the intended value and unchanged remainder. YAML parse, IDs, entity parity, substitutions, UART writer parity, and ZIP hashes verified OFFLINE. ESPHome TARGET COMPILE, FLASH, LIVE controller semantics: NOT RUN. **ONE NEXT ACTION:** User target-compiles the private W1 ZIP firmware; no flash on failure. A later physically initiated one-shot is permitted only after verified healthy accepted M6 session and explicit user ARM; read-only session/calendar regression first. Do not publish private firmware/OEM source.
+
+---
+
 ## 2026-10-27 — MAIN04-E / CAL14 consolidated source cleanup (PREPARED / NOT RUN)
 
 Private complete CAL13-derived YAML. Early HA write hold added to 29 writable switch/number/select entities (preserving IDs), preventing legacy dirty queue mutations. Six generic desired-page callers check actual S92 owner-send return before logging EXECUTED; routine heartbeat and FRESH_BOOT_RUNTIME_QUALIFIED log at DEBUG instead of ERROR. One UART owner, TX guard and ABORT unchanged. Existing calendar automatic ON, CAL11 credit reset, CAL12 corrected slots and passive alarm history remain. Experiment module dependency scan: older EXP378/379/380/383/410/421/452 are still referenced; no unsafe wholesale code removal. Source/YAML/ZIP checks only, not target compile or XTR live. Next: user target compiles CAL14 and validates continued 12-page periodic reads and held HA actions.
@@ -660,6 +666,11 @@ _Snapshot: 18 October 2026. This is a project-level overview, not a per-experime
 **Safety and deployment boundary:** the currently deployed V5 research path remains **RX-only / TX HARD_DENY**. Published Write (Beta) is a separate, guarded TX-capable build and must not be confused with that V5 deployment. No new native transmission is authorized by offline test success; any future live TX must have independently checked ownership, a bounded response slot, abort conditions and a recovery plan.
 
 ## Roadmap
+
+### MAIN04-W1 — een afgebakende Heating Curve-write (PRIVATE, PREPARED / NOT RUN)
+
+Eerste write-engine is voorbereid vanuit exacte gebruikers-YAML met bestaande M6/S92 en EXP430, niet als tweede UART; één user-ARM en controllerbevestiging vereist. Geen targetcompile of XTR-writeproef uitgevoerd. Overige HA writes ON HOLD; bestaande CURRENT/calendar-resultaten behouden en regressie vóór fysiek test uitvoeren.
+
 
 ### MAIN04 — geconsolideerde native engine (gepland, 2026-10-27)
 
