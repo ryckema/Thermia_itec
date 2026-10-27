@@ -1,3 +1,9 @@
+## 2026-10-27 — CAL14 MAIN04-E production cleanup SOURCE/OFFLINE TESTED
+
+Based on private CAL13. 29 HA setting controls short circuit prior to staging dirty queues; last published HA value reasserted, central physical S92 fail-closed remains. Six callers no longer claim EXECUTED when generic owner TX function rejects. Normal heartbeat and retained session qualifier moved from ERROR to DEBUG. Scanned old EXP modules for references, did not remove any with active HA/dispatcher/guard dependencies; cleanup is limited to verified targeted defects. CAL13 calendar auto ON, 0884 history passive, 085F forced alarm request not implemented. YAML parsed, IDs unique, ZIP SHA verified, physical owner sites unchanged. **PREPARED / NOT RUN.** Actual controller value rollback accuracy and runtime behavior require target compilation and live checks. Next: user compiles, flashes if successful, validates calendar second cycle and no queued writes or session abort from HA actions.
+
+---
+
 ## 2026-10-27 — CAL11 consolidated review: source decisions, not live evidence
 
 Reviewed user's exact 22,579-line private CAL11 standalone YAML. YAML parses, one configured UART, 727 global IDs, no external header dependency, existing single native owner/CRC and receipt ledger remain. Confirmed CAL11 clears prior request-generation page ACK stamps for twelve calendar slots while preserving independent last-good cache. This is SOURCE/OFFLINE TESTED, PREPARED / NOT RUN for CAL11, NOT local validation. Known CAL11 32-slot incorrect absolute word offsets and artificial slot8 suppression are already FIXED in prepared private CAL12 and should not be reimplemented elsewhere.
