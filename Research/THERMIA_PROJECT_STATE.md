@@ -1,3 +1,16 @@
+## 2026-10-27 — CAL11 consolidated review: source decisions, not live evidence
+
+Reviewed user's exact 22,579-line private CAL11 standalone YAML. YAML parses, one configured UART, 727 global IDs, no external header dependency, existing single native owner/CRC and receipt ledger remain. Confirmed CAL11 clears prior request-generation page ACK stamps for twelve calendar slots while preserving independent last-good cache. This is SOURCE/OFFLINE TESTED, PREPARED / NOT RUN for CAL11, NOT local validation. Known CAL11 32-slot incorrect absolute word offsets and artificial slot8 suppression are already FIXED in prepared private CAL12 and should not be reimplemented elsewhere.
+
+Source-found MAIN04-E cleanup issue: central S92 physical fail-closed owner correctly refuses unsupported parameter-setting response frames, yet legacy desired-page call sites can still print an unconditional TX_EXECUTED after a rejected dispatch; exposed HA controls can queue held semantics and then cause normal abort-on-denial rather than early no-op/controller-value restoration. Do NOT relax final wire boundary or enable parameter writes. Fix by early UI/dispatcher hold and success-result-aware logs while preserving original entities and all native FC16/FC03 and rollback. Also cut routine ERROR-level heartbeat and normal 0708 qualification log flooding (change-only/sample), preserve actual WARN/ERROR and stale watchdog. No new evidence of an actual setting write, collision or lost session; no firmware change in this review.
+
+CURRENT MILESTONE: CAL12 source-ready corrected 32-slot display on CAL11 credit fix; MAIN04-E production consolidation next.
+DELIVERABLE: actionable code review with one known calendar-decoder fix already integrated in CAL12 and specific later production fixes.
+REAL BLOCKER: CAL11 request-credit second cycle and CAL12 display not XTR LIVE validated.
+ONE NEXT ACTION: user compiles CAL12, then one bounded ordinary second calendar 12/12 cycle with existing S92 ABORT; do not start parallel experiments.
+
+---
+
 ## 2026-10-27 — CAL12 corrected OEM slot addresses and English recurring days/date display — PREPARED / NOT RUN
 
 OBSERVED FACTS: Prior locally logged XTR CAL10 twelve-page native read physically delivered and owner-ACKed every calendar FC16 page 0x055A..0x06C5, and data showed impossible Silent Mode field strings `date raw=0/59/23–0/127/1; mode=22` from the CAL8–CAL11 HA slot decoder. OEM Connect 2.4.2 `configurations.json` defines each slot as 12 consecutive register words, time_func=0 dates / =1 weekdays, weekday bits 0=Mon through 6=Sun. Verified first slot offsets: HW 0x055A page aligned; EVU 0x05BC (one before 0x05BD); Silent 0x061E (two before 0x0620); Reduction 0x0680 (three before 0x0683). All eight slots end before their distinct programmed/active bitmaps (e.g., Silent last `days` 0x067D vs bitmap 0x067E/067F). Previous slot-8 suppression was unnecessary.
