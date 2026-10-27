@@ -1,3 +1,21 @@
+## CAL12-SLOTS-01 — 2026-10-27 — PREPARED / NOT RUN
+
+HYPOTHESIS: Incorrect Silent Mode / EVU / Reduction date/time and weekday strings are HA read offsets rather than controller misbehavior. OEM source defines 12 words/slot. CAL11 inherited CAL8 decoder starting EVU/Silent/Reduction at offset 0 of FC16 page 05BD/0620/0683 rather than actual OEM slot1 register 05BC/061E/0680.
+
+BASELINE: Private full CAL11 one-YAML with pending-generation credit fix (itself not yet target compiled or XTR live). Prior CAL10 user-live successful single 12/12 FC16 calendar acquisition, negative second refresh; complete twelve-page raw capture saved separately.
+
+ONE CONSOLIDATED CHANGE: Display ONLY, thirty-two individual slot lambdas replaced to map all eight slots for each of four groups by OEM absolute word offsets, take preceding page end where slot1 crosses the boundary, and format time_func date/days plus selected weekdays as English. Removed mistaken slot8 trailer branch. Kept exact HA IDs/names, 300s page TTL, `Not set` behavior, all transport/session/owner/TX/CRC/collision/ABORT guards and CAL11 pending-ACK-generation fix byte-preserved outside display blocks except build marker.
+
+EXPECTED: From identical real XTR raw capture Silent slot 1 `Programmed; 22:00 to 23:59; Repeats: Every day`, Silent slot 2 `Programmed; 00:00 to 08:00; Repeats: Every day`; HW slot4 Every Sun, slot5 Every Sat. Weekly mode with zero mask remains `No weekdays selected`; date-mode shows OEM year=2000+raw; clean no-data slots `Not set`; stale missing page still Unavailable.
+
+ACTUAL: OFFLINE only: 32/32 slot start and 12-word extent compared to original OEM formula; all 32 YAML lambdas compiled with host g++ C++17 and executed with the original XTR FC16 page values; expected strings matched. Full YAML parses, 1,034 unique IDs, ZIP SHA/CRC valid; untouched all non-display source except build label. NOT ESPHome target compiled, flashed or LIVE CAL12. Therefore decision **PREPARED / NOT RUN**, no live closure.
+
+ABORT/ROLLBACK: No physical TX change. If user chooses compilation/OTA and sees unexpected bus behavior, calendar AUTO OFF and S92 STOP/ABORT RX_ONLY DE LOW, rollback to last locally working user image (CAL10 available). Do not disconnect room sensor; HA parameter writes ON HOLD.
+
+ONE NEXT ACTION: User target-compiles CAL12 and on success optionally chooses one bounded OTA, checks corrected slot labels and second owned twelve-page refresh on XTR; no forced physical bus fault.
+
+---
+
 ## CAL10-PENDING-01 — 2026-10-27 — COMPLETE / NEGATIVE (periodic refresh), scoped first-read POSITIVE
 
 HYPOTHESIS: OEM-persistent unsent read demand would allow successive 12-page calendar auto reads without loss of freshness. BASELINE: CAL10 private full standalone from CAL9 with session-scoped persistent pending. Prior six-page CAL6 was live, new 12-page geometry not yet live. User installed CAL10 and explicitly enabled auto at 18:09:02.
