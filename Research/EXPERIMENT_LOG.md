@@ -1,3 +1,9 @@
+## 2026-10-27 — XTR-PASSIVE-EN-01 (PREPARED / NOT RUN)
+
+Hypothesis: public XTR v31 FIX4 passive RX parser can be repackaged for production-layout HA without any bus behavioral change or experimental HA surface. Baseline: public XTR read-only v31 FIX4 blob `f4b90fcd3d96cb728ba4726409bacd9d5c23b5f3`; XTR FIX4 prior LIVE observation limited to native 03E8 page, most other native pages not received within the short boot window. ONE change: presentation-only internalization of 174 raw/default-disabled/source-diagnostic entities, 84 English HA visible entities, XTR-specific friendly name; parser and CRC code untouched. Offline checks: 255 distinct source IDs preserved, no TX pin or UART write, GPIO21 ALWAYS_OFF, RX GPIO18 9600/8E1, ZIP entry CRC/geometry passes. No target compiler, flash, live logs or semantic data refreshed. Expected: direct telemetry normal; advanced missing pages remain unknown; persisted heating settings may be last-known. Actual XTR outcome: NOT RUN. ABORT/rollback: on first user-initiated installation, stop if bus/readout regresses and restore user-saved last-known-good ESPHome firmware, leave room sensor connected. Project main write experiment not superseded.
+
+---
+
 ## MAIN04-W2R2 — PREPARED / NOT RUN (2026-10-27); fixes W2R1 LIVE ARM denial
 
 - Hypothesis: Removing the invalid source timestamp ordering permits a valid same-session physically ACKed controller Heating Curve snapshot to drive HA staged candidate and W2 OEM desired one-shot without relaxing electrical or protocol guards.
