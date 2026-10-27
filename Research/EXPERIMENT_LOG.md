@@ -1,3 +1,16 @@
+## MAIN04-W1 — PREPARED / NOT RUN — 2026-10-27
+
+- **Hypothesis:** The exact existing OEM-style generic desired-page transaction in EXP430/EXP441 can perform one controller-owned Heating Curve write within the locally qualified M6/S92 session without introducing another bus owner.
+- **Baseline:** User-uploaded MAIN04-E-CAL14A compilefix YAML; existing local XTR-native read/cache evidence is prior work, not W1 proof. Historical CAL10 first 12-page success and MAIN04-D CURRENT repeat remain separate evidence.
+- **ONE change:** Private single-scope user-armed Heating Curve setting authorization at the existing S92 physical owner, with explicit RAM staging, same-epoch controller-poll requirement, exact desired-page comparison, expiry and immediate STOP/ABORT revocation. Other HA write controls still HOLD.
+- **Expected:** On one manual arm, accepted native session and genuine requested frames, one desired selector and one altered register-page reply followed by fresh controller-originated confirmation. No automatic write retries. CRC/peer/DE and native reads continue. Denial/timeout causes no further write permission.
+- **Actual:** SOURCE/YAML OFFLINE checks passed; no target build, OTA, physical TX or XTR write confirmation took place.
+- **Result:** PREPARED / NOT RUN.
+- **Abort/rollback:** Existing S92 STOP/RX ONLY immediately revokes unsent W1 authorization; restore user's last LIVE proven image if required. A physical setting already accepted by the controller must be restored using the OEM user interface, not by assuming ESP abort undoes the change.
+- **ONE NEXT ACTION:** User target compile of W1 package, then one bounded explicitly user-triggered in-session physical write test only if normal read continuity remains healthy.
+
+---
+
 ## CAL14A-COMPILE-01 — 2026-10-27 — PREPARED / NOT RUN
 
 User ESPHome 2026.9.0 TARGET COMPILE of CAL14 failed in four HA template select set_action lambdas at source lines 20616, 20658, 20697 and 20732: generated TemplateSelectWithSetAction has no member 'state'. This is a definite SOURCE defect in CAL14, not a runtime XTR or protocol problem. CAL14A private full standalone YAML replaces exactly those four invalid select self-state expressions with checked existing confirmed-controller fields exp378_confirmed_w01, exp379_confirmed_w04, exp383_confirmed_link and exp380_confirmed_mode, only publishing when sync-valid. The early HA write hold, S92 owner, UART/DE, CRC and automatic calendar are unchanged. YAML source parsed offline, ZIP CRC/SHA valid; no ESPHome-target compilation or flashing of CAL14A yet. Existing OTA password warning is unrelated and was not modified.
