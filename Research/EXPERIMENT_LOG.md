@@ -1,3 +1,10 @@
+## MAIN04-W2R3 GUI candidate source fix — PREPARED / NOT RUN (2026-10-27)
+
+Hypothesis: W2R2 can latch a candidate with unknown current original=-1, preventing later 4/4 CURRENT GUI sync and misleading first one-step setting edit. Baseline: exact W2R2 source, last user-log-proven W2R1 native retained M6=5 and 4/4 CURRENT, no semantic setting TX. User says W2R2 "weer niets", no newer W2R2 capture.
+ONE change: W2R3 accepts GUI candidate stage only when the same-session physically ACKed CURRENT 4/4 is fresh; read-only periodic candidate follows that snapshot; prevent early staged latch and same-value/no-one-step trial candidates. Original ARM, EXP430 and S92 physical TX owner gates unchanged, other HA writes HOLD. Expected after native 4/4: candidate actual36 if controller still36, explicitly stage35 logs original36, single physical user ARM may advance on genuine controller polls; later controller FC16 03E8=35 required for semantic success. Actual OFFLINE YAML/1049 IDs/740 globals/UART/S92/ZIP parity passed; no W2R3 target compile, flash, live physical TX or controller semantic result. Status W2R3 PREPARED / NOT RUN, prior W2R1 native read RUNNING / PARTIAL for overall write milestone, physical parameterwrite not run. ABORT existing S92, DE low; OEM UI reversal if controller actually applied setting; rollback to last locally verified working firmware. ONE NEXT ACTION user target compile W2R3 then a single user-authorized bounded attempt only after auto-synced candidate.
+
+---
+
 ## MAIN04-W2R2 — PREPARED / NOT RUN (2026-10-27); fixes W2R1 LIVE ARM denial
 
 - Hypothesis: Removing the invalid source timestamp ordering permits a valid same-session physically ACKed controller Heating Curve snapshot to drive HA staged candidate and W2 OEM desired one-shot without relaxing electrical or protocol guards.
