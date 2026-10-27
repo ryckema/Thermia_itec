@@ -41,3 +41,7 @@ All 258 existing HA component blocks remain wired; 174 are internal; 84 visible.
 ## 2026-10-27 ESPHome 2026.9 warnings
 
 Four entity names using URL-reserved `/` have been corrected (no IDs, parser, or meaning changed). Keep the legacy OTA `password:` for the **first migration** when the existing device firmware has not yet been established as ESPHome 2026.9.0+ supporting Noise encrypted OTA. Only after the installed firmware advertises encryption should you replace the password with bare `encryption:` under the OTA platform in a separate controlled update. See official ESPHome 2026.9 migration documentation. Warnings do not show build success; check for final compile success.
+
+## Return Temperature status-publication correction (2026-10-27)
+
+User XTR OTA log from uptime 33–128 seconds shows valid live condenser/ODU updates and return sensor repeatedly published `nan °C` every roughly 2 seconds. Existing native `0x0F:07D2` page decoder uses `valid_whole_temp` and already reports unavailable values as NaN. A one-branch SOURCE correction now emits NaN only on first invalid observation or a valid-to-invalid transition. Other readings and decoder/CRC/DE/TX/HA IDs are identical. This removes repeated invalid log churn but **does not make the return measurement available**. No source value was substituted; an actual valid 07D2 is still published normally. SOURCE/OFFLINE ONLY, new build not target-compiled/OTA/live tested. Previous OTA showed API handshake and readings, not electrical TX-free proof or longitudinal full coverage.

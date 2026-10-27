@@ -2078,7 +2078,12 @@ uart:
                     publish_float_if_changed(id(thermia_return_temperature),
                                              float(return_raw), 0.5f);
                   } else {
-                    id(thermia_return_temperature)->publish_state(NAN);
+                    // Invalid/unavailable native return source: publish once, not on
+                    // every repeated 07D0 page. Never substitute condenser inlet.
+                    if (!id(thermia_return_temperature)->has_state() ||
+                        !isnan(id(thermia_return_temperature)->state)) {
+                      id(thermia_return_temperature)->publish_state(NAN);
+                    }
                   }
 
                   if (valid_whole_temp(system_supply_raw)) {

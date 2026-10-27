@@ -26,5 +26,6 @@
   ],
   "note": "CRC32 per ZIP entry used; source is public XTR v31 FIX4, no OEM private source.",
   "warning_fix": "Replaced four reserved slash names, no ID changes. OTA migration deliberately deferred for installed-firmware compatibility.",
-  "ota_password_retained_for_first_migration": true
+  "ota_password_retained_for_first_migration": true,
+  "return_temperature_fix": "Invalid 07D2 publishes NaN only at first invalid or valid-to-invalid transition, retains authentic semantics; SOURCE/OFFLINE TESTED only"
 }
