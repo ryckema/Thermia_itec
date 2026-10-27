@@ -3694,7 +3694,7 @@ sensor:
 
   - platform: template
     id: thermia_average_outdoor_temperature
-    name: "Average Outdoor Temperature"
+    name: "Ambient Outdoor Temperature"
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
