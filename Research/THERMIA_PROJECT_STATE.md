@@ -1,3 +1,16 @@
+## 2026-10-27 — MAIN04-B on MAIN04-A source, private package PREPARED / NOT RUN
+
+OBSERVED FACTS: Current user-provided base is C5DS-CAL4; MAIN04-A preserved the existing single M6/S92 lifecycle and added shared pure session predicates (source-only). MAIN04-B is a private full YAML ZIP that reuses the same original native controller-led, owner-guarded read-only CURRENT request; after one physically sent *automatic* read times out incomplete, it can hold at most one future same-request retry, provided the epoch, generation, original bus/owner/profile/collision guards and original 45-second spacing still pass. One follow-up means no uncontrolled retransmission. The existing 10-second deadline, staged owner-ACKed 4/4 completion, 300-second freshness TTL, original manual CURRENT, CAL4, V5 parser, FC16, cold/rejoin and HA parameter-write HOLD are retained. Retry state is volatile and cleared on completion/new session/ABORT/expired generation. No new physical TX owner or new wire command.
+
+Status: MAIN04-B **PREPARED / NOT RUN**, SOURCE/OFFLINE TESTED: YAML parsed, existing IDs and HA entities preserved, C++ helper syntax checked, same physical owner send count and UART geometry; NOT ESPHome target compiled, FLASHED, LIVE or LOCALLY VERIFIED. MAIN04-A also source-only. Latest directly demonstrated live C5DK had CURRENT snapGen1->2 after explicit refresh enable, but a fully autonomous later cycle and multi-hour durable owner remain OPEN (C5DK-FC03-DURABLE-01 RUNNING / PARTIAL). C5DS-CAL4 auto-calendar also PREPARED / NOT RUN, and the calendar owner-ACK ledger remains OPEN. No protection/recovery/write scope expansion asserted.
+
+CURRENT MILESTONE: MAIN04-B bounded native CURRENT durability.
+DELIVERABLE: one complete PRIVATE MAIN04-B firmware ZIP, dependencies/manifest/ABORT/rollback, SOURCE/OFFLINE TESTED.
+REAL BLOCKER: user target compile and XTR normal live repeated H/D/C/M 4/4 are not verified.
+ONE NEXT ACTION: user target-compiles MAIN04-B, then decides on one bounded, user-initiated live OTA; do not induce failures just to force retry; preserve S92 STOP/RX_ONLY and C5DS-CAL4 or locally verified rollback.
+
+---
+
 ## 2026-10-27 — Uploaded multi-build long-run reviewed (08:50–13:03); 42-minute CAL3 owner continuity, calendar timeout mismatch
 
 OBSERVED FACTS — User-uploaded 442,617-line API log spans MANY OTA images and ESP restarts (C5DF, C5DJ, C5DK, C5DL, C5DM, C5DP, C5DR, C5DS-CAL2, C5DS-CAL3, then a short post-13:03 new boot with build not yet identified). It is NOT one 4h uninterrupted firmware run. Across these segments 61 native CURRENT four-page read requests each had an emitted 4/4 completion. C5DK explicitly enabled periodic CURRENT at 09:16:49 and completed at 09:16:52, 09:21:10 and 09:25:28 in that same boot: previously missing next unattended generation is now XTR LIVE positive. C5DS-CAL3 ran approximately 12:21:09–13:03:05 (~42m), reached snapGen=10 (10 complete four-page snapshots), 1,095 physical native FC16 ACKs and 563 idle native FC03 responses, and retained freshness to the next OTA; late integrity metrics CRC_DIFF=0, parser resync=0 and RX drops=0. This verifies short/mid-term native owner and periodic CURRENT; 24h/multi-hour on ONE build remains OPEN.
