@@ -1,3 +1,11 @@
+## MAIN04-W2R3 user-ARM selector trial COMPLETE / NEGATIVE; W2R4 PREPARED / NOT RUN (2026-10-27)
+
+Hypothesis: user-staged native Heating Curve one-step can be physically selected on genuine controller 0708 and confirmed on later controller 03E8 FC16. Baseline W2R3 actually on XTR; original OEM source maps desired W1 bit0 and read W3 bit0 to 03E8. Prior evidence M6=5/4-of-4 owner ACK, candidate synced36 at 22:25:11. One user change stage37, explicit ARM_USER_ONCE accepted 22:26:28. Next 0708 at 22:26:30 EXP444 FAST_FALLBACK 81408ms cacheValid=0, EXP430 SELECTOR_ABORT desired0 legacyIdle0 rtAge0, NO_SETTING_TX. No physical desired selector/page; later stage35 but no subsequent ARM in this record. Actual W2R3 HA candidate and ARM COMPLETE / POSITIVE, physical selector attempt COMPLETE / NEGATIVE (local guard), overall project RUNNING / PARTIAL; no XTR semantic write evidence.
+
+ONE W2R4 integrated correction: reuse existing same-session M6=5 owner-ACKed CURRENT 4/4 (native freshness 300s) instead of cold-only cache15s, runtimeAge/legacy idle on descriptor1 only, at EXP444, EXP430 selector, desired page and central S92 sole owner. Keep dirty-owner/CRC/peer/DE/ABORT and single user-armed physical desired page, other parameters HOLD and cold guard for other descriptors. Expected subsequent user-controlled trial: stage35 from36, ARM once, real 0708 desired selector; only upon genuine FC03 03E8 is page allowed, and only genuine later controller FC16 03E8=35 proves semantics. Actual W2R4 only SOURCE/OFFLINE TESTED (parsed full YAML 1049 IDs/740 globals, one UART/writer, ZIP integrity); status PREPARED / NOT RUN. ABORT central S92, restore real controller value through OEM panel if physically applied, rollback W2R3 to last locally observed native build. ONE NEXT ACTION target compile W2R4 then one deliberate guarded test if normal read continuity verified.
+
+---
+
 ## MAIN04-W2R3 GUI candidate source fix — PREPARED / NOT RUN (2026-10-27)
 
 Hypothesis: W2R2 can latch a candidate with unknown current original=-1, preventing later 4/4 CURRENT GUI sync and misleading first one-step setting edit. Baseline: exact W2R2 source, last user-log-proven W2R1 native retained M6=5 and 4/4 CURRENT, no semantic setting TX. User says W2R2 "weer niets", no newer W2R2 capture.
