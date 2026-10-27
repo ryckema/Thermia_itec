@@ -1,3 +1,9 @@
+## 2026-10-27 — CAL14 source-only production cleanup, no protocol change
+
+Early application HA setting rejection now prevents legacy queues while S92 physical owner remains fail-closed. Generic desired-page dispatch reports physical owner success before EXECUTED status. Normal qualification/heartbeat logging reduced. No wire request, register mapping, UART/DE owner, CRC/collision/session guard or OEM semantic claim changed. Historical EXP modules remain where referenced. SOURCE/OFFLINE TESTED only, PREPARED / NOT RUN, parameter writes ON HOLD. Current-alarm 085F independent fetch remains OPEN.
+
+---
+
 ## 2026-10-27 — CAL11 engineering review (not new protocol evidence)
 
 Existing sole S92 physical owner enforces CRC, bus/session ownership and a fail-closed response boundary for HA setting writes. Review identified an application reporting discrepancy: a legacy desired-page caller can issue a success-looking log after an underlying owner denial and abort; execution-log words are not proof of physical send or semantic controller acceptance. This does not prove any user-write took place; no write scope expansion authorized. Early UI/dispatcher hold and checking the actual send result before reporting executed would correct this without changing protocol or relaxing protection. Twelve-page CAL11 new-generation ACK stamp revocation is a local bookkeeping fix, still PREPARED / NOT RUN; CAL12 correct 32 OEM slot offsets is already SOURCE/OFFLINE TESTED; only CAL10 first 12/12 remains live-proven. No new register/frame, no new controller-epoch inference, no Online/cloud acceptance or safety relaxation.
