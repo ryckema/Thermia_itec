@@ -1,3 +1,18 @@
+## 2026-10-27 — W2R4 semantic Heating Curve 36→35 PROVEN; W2R5 UI-source fix PREPARED / NOT RUN
+
+**OBSERVED FACTS / LIVE / LOCALLY VERIFIED:** MAIN04-W2R4 exact build running on XTR M 3N, retained native M6=5 and 4/4 same-session physically owner-ACKed CURRENT, original Heating Curve36. User staged35 at 23:04:40.943 and ARM once at 23:04:44.145. EXP444 native FAST_HIT and EXP430 desired selector TX at 23:04:45.930–23:04:45.949, followed by exactly ONE guarded desired 03E8 physical page at 23:04:46.132. Genuine controller-originated FC16 at 23:04:46.711 returned 03E8 word0=35; [W2] CONTROLLER_REGISTER_CONFIRMED original=36 target=35 otherWordsChanged=0 FC16readbacks=1 physicalAttempts=1. Production HA Heating Curve and cache became35; native session continued, CRC_DIFF=0 and RX drops=0 in observed window. **Experiment COMPLETE / POSITIVE, PROVEN for one explicitly user-initiated 03E8 word0 write only.** Transport ACK alone was not treated as semantic success. Other HA parameter writes remain ON HOLD; do not retest proven one-shot without contradictory evidence.
+
+**Observed non-physical defect:** Immediately after confirmed FC16, experimental Configuration W2 Stage Only candidate republished 36 from the older accepted CURRENT4/4 snapshot; actual controller and production HA continued to report35. Source precedence defect, not controller rollback. Separate EXP378 CURRENT_REFRESH_DEFERRED state7/runtimeAge0 remains open for ordinary native refresh; it did not invalidate the confirmed write.
+
+**ONE integrated W2R5 correction (SOURCE / OFFLINE TESTED, PREPARED / NOT RUN):** exact W2R4 source, only three non-restoring RAM provenance globals and UI state/sync plus bookkeeping on successful controller FC16. Candidate publisher prefers same-session postwrite controller FC16 when newer than oldest 4/4; candidate edits held while only older CURRENT is available. On genuinely refreshed 4/4, existing baseline resumes. EXP430 selector, EXP421 physical desired page, S92 sole UART/DE owner, CRC, peer, collision, epoch/session TX predicates, ABORT, one-page budget and all HA production entities unchanged. YAML parsed offline; 1049 existing unique IDs retained, +3 RAM globals; one physical UART writer, ZIP with actual W2R4 rollback and manifest verified. W2R5 not target compiled/flashed/live. Protected OEM code, secrets and private ZIP not published.
+
+**CURRENT MILESTONE:** First controller-confirmed Heating Curve write completed; preserve W2R4 and finish HA source consistency.
+**DELIVERABLE:** W2R4 LOCALLY VERIFIED 36→35; private W2R5 full ZIP SOURCE/OFFLINE TESTED.
+**REAL BLOCKER:** Candidate source precedence fixed only in source; W2R5 needs target compilation/user flash to verify UI; separate automatic CURRENT refresh still deferred.
+**ONE NEXT ACTION:** User compiles W2R5 and deliberately flashes if successful; verify read-only candidate equals actual cached controller35 under accepted M6/current, with no repeat parameterwrite.
+
+---
+
 ## 2026-10-27 — W2R3 LIVE native/candidate proven, local EXP430 selector failure; W2R4 FIX PREPARED
 
 OBSERVED FACTS / LIVE XTR: W2R3 build marker on OTA reboot, M6=5 with S92-owner ACKed 4/4 CURRENT pages Heating Curve36. HA candidate controller sync to36 at 22:25:11. User stage37 and ARM accepted at 22:26:28, no immediate TX by design. Genuine next controller 0708: EXP444 cache age81.4s deemed invalid under legacy 15s cache; EXP430 SELECTOR_ABORT legacyIdle=0 rtAge=0ms. No Heating Curve selector/page on wire, semantic controller rejection not shown. Later stage35 without ARM. Parser CRC_DIFF=0, RX drops=0 in sample. W2R3 read/candidate portion LIVE POSITIVE; selector attempt COMPLETE / NEGATIVE (local NO_SETTING_TX); full write milestone RUNNING / PARTIAL.
