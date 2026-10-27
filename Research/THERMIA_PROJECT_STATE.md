@@ -1,3 +1,18 @@
+## 2026-10-27 — CAL10 first 12-page request LIVE POSITIVE, periodic successor FAILED; CAL11 credit fix prepared
+
+OBSERVED FACTS: XTR user-flashed CAL10 build explicitly identified in the 18:08–18:29 log. Controller-provided 0708 carried a 12-page calendar APP read (W2=1FFE W3/W4=0000) at 18:09:07 after HA explicit enable; all twelve genuine FC16 pages 055A/33, 057B/33, 059C/33, 05BD/33, 05DE/33, 05FF/33, 0620/33, 0641/33, 0662/33, 0683/33, 06A4/33 and 06C5/33 were physically owner-ACKed by 18:09:18. Read owner terminally logged requested=12 complete; scheduler logged 12 owned ACKs at 18:09:24. The previously absent EVU, Silent Mode and Temperature Reduction HA slot pages became populated. **XTR LIVE / LOCALLY VERIFIED first CAL10 twelve-page acquisition**. No setting writes, apparent CRC errors, parser resync, RX drops or RS485 peer collisions in the cited sample.
+
+AT SECOND REQUEST: AUTO calendar armed at 18:12:34, but at 18:12:37 `APP_PENDING_DEFERRED guardOrBusy=1 pending=0`; no new physically emitted calendar read. At 18:14:14 EVU Slot 4 became stale per existing independent 300s per-page TTL. Root cause crosschecked in CAL10 original source: app button clears `main01_m6_app_received` and sets `main01_m6_app_pending` for indexes 11..22, but does not clear old `main01_m6_app_page_ms`. The generic FC16 observer maps previously observed shadow + old nonzero owned ACK timestamps back into `received`, illegitimately clearing a fresh generation's pending bits. The S92 owner refuses a read because nothing remains pending. The initial 12/12 proved only first read, NOT sustainable periodic refresh. Note separate Silent Mode slot decoding of raw dates/times looks implausible; request/ACK verification is distinct from semantic slot correctness.
+
+ONE CAL11 SOURCE CHANGE: Clear `main01_m6_app_page_ms[11..22]` on new calendar read generation only; keep the independent `c5do_*_rx_ms` last-good cache, request bits, all TX/owner/guard code, 60s/48poll lease and 240s receipt observer unchanged. One complete private CAL11 standalone ZIP made; YAML parse, 1034 unique IDs, unchanged 90 owner-send occurrences, 32 slots, ZIP integrity offline PASS. **CAL11 SOURCE / OFFLINE TESTED, PREPARED / NOT RUN**; user must compile/flash and verify second refresh. CAL10 first 12page scope LOCALLY VERIFIED, calendar durability still FAILS in log.
+
+CURRENT MILESTONE: OEM-equivalent 12-page calendar refresh through successive generations.
+DELIVERABLE: CAL10 12/12 locally verified + CAL11 private YAML integrated one-fix ZIP.
+REAL BLOCKER: no CAL11 target-compiled or XTR-LIVE second request/confirmation.
+ONE NEXT ACTION: User target-compiles CAL11, then enables a single bounded ordinary auto 12-page cycle and checks the **second** scheduled 0708 APP_READ_REQUEST and physical 12/12 ACKs before cache expiry. Existing S92 ABORT/RX_ONLY/DE_LOW and CAL10 rollback; HA writes ON HOLD.
+
+---
+
 ## 2026-10-27 — CAL10 OEM persistent pending integrated SOURCE / OFFLINE TESTED; PREPARED / NOT RUN
 
 OBSERVED FACTS: On locally supplied XTR runtime logs, the prior automatic calendar request was repeatedly armed but revoked without calendar TX (17:13:06/08 and 17:16:06/08); CAL7 avoided treating UNSENT request as an incomplete receipt but did not preserve its demand. Native CURRENT / 0708 / FC16 operation continued. The current CAL9 source carried an accepted-epoch authorization fix in its physical dispatcher and a 12-page OEM-request mapping, but the calendar HA button still depended on the one-shot rejoin latch; both that mismatch and the 12-second unsent-request expiry remained.
