@@ -1,3 +1,9 @@
+## 2026-10-27 — C5DM read-only complete H/D/C/M observability
+
+C5DL-derived C5DM does not alter protocol or TX; only makes all 62 positions in existing `03E8/14`, `042E/15`, `0442/13`, `0546/20` owned CURRENT snapshot accessible in HA. Existing 21 mapped entity IDs remain, native 03F4 read-only sensor and 40 additional unknown/candidate raw sensors use the exact existing clean-session/profile242/epoch/300s freshness expression. 03F1 remains unknown/disproven as DHW START; 0430/0559 candidates remain hypotheses, no setting write control granted. Exact Compressor Current source entity preserved. SOURCE/OFFLINE TESTED only; no XTR LIVE until user OTA. C5DL actual second recurring 4/4 remains open.
+
+---
+
 ## 2026-10-27 — C5DL automatic boot enable uses unchanged controller-led CURRENT protocol
 
 User confirms manually enabling C5DK Configuration periodic CURRENT works. No new raw controller trace in this turn; no claim of independently observed renewed H/D/C/M 4/4. Private C5DL changes only C5DK template switch default to `restore_mode: ALWAYS_ON`; retains existing ~255s/300s CURRENT lifecycle, actual `0708` read request qualification, physical owned page receipt, accepted native epoch/profile/CRC/collision/DE/ABORT and no HA setting writes. User's explicit request authorizes auto-enabled **already validated read-only function**, not new TX shape/parameter command or semantic Online proof. Source-only private firmware, offline checks complete; C5DL PREPARED / NOT RUN pending ESPHome target compile and user XTR live OTA/second generation. One action: bounded user-initiated C5DL boot-default validation with C5DK rollback.
