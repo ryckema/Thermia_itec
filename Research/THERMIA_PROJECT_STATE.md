@@ -1,3 +1,17 @@
+## 2026-10-27 — C5CZ live retained 085F phase regression; C5DA SOURCE prepared
+
+OBSERVED FACTS: User XTR ESP-only OTA ran C5CZ at 01:08:20; automatic stage40 retained native entry. Physical controller FC16 07E4/17 ACKed, then first 085F/5 ALARM ACKed. Following controller 0708/6 and 07D0/19 were denied/repeated, M6 remained2, H/D/C/M 0/4 and after 60.034s timed out to M67 RX-only DE LOW. Physical TX2, CRC_DIFF/resync/RXdrops/peer=0; no parameter writes. C5CZ COMPLETE / NEGATIVE for that join; its post-M6=5 upkeep correction was not reached and stays unverified.
+
+SOURCE CAUSE: The passive V5 phase switch still marked 085F/5 as export/setup; it incremented c5bx_setup_fc16_seen before the 085F native ACK, diverged from same-epoch c5cl_setup_entry_baseline and therefore c5cp_retained_transport_scope rejected later 0708/07D0. Original Connect 2.1.105 modbus_server15.py explicitly excludes ALARM_START_ADDRESS from its handshake-acceptance criterion; its FC16 transport handler does not imply XTR session owner. 085F is an alarm role not a new export phase merely because it follows an ACKed retained runtime page.
+
+C5DA complete PRIVATE YAML from C5CZ, SHA256 5bb0a467ed141de7edfc16bc2157edfa8140aee6ad8821bf77c50d63d45294f7. ONE code change: if genuine 085F/5 is observed in active same-epoch retained native session AFTER a physically ACKed ordinary FC16 first page, do not vote a new export phase. Without such physical evidence, original cold/setup classification remains; all ACK shapes, FC23, V5/CRC, peer/collision, one UART/DE owner, M6/one-shot CURRENT, HA parameter writes HOLD unchanged. Offline YAML/IDs/globals/entities/UART-TX sites/ZIP CRC PASS; not target compiled/flashed/LIVE. C5DA PREPARED / NOT RUN.
+
+CURRENT MILESTONE: native cold/retained join, 4/4 CURRENT, continuing guarded FC16/FC03 upkeep.
+DELIVERABLE: private full C5DA firmware zip SOURCE / OFFLINE TESTED; C5CZ negative live trace documented.
+REAL BLOCKER: C5DA retained 085F phase transition, subsequent M6=4 and post-M6=5 uninterrupted service unverified.
+ONE NEXT ACTION: user target-compile C5DA then ONE optional user-initiated bounded ESP-only OTA, existing S92 STOP/RX ONLY and C5CY/C5BN rollback available, export experimental TX false.
+---
+
 ## 2026-10-27 — C5CY focused OEM comparison of first-0884 → INFO → M6 → CURRENT (SOURCE REVIEW ONLY)
 
 OBSERVED FACTS / OEM SOURCE: Genuine Connect 2.1.105 modbus_server15.py uses Modbus slave FC16 handling independently of application-level semantic acceptance. Genuine 2026-10-03 DCM trace has 0532/18 before first 0708 and ordinary repeated 0884/60 FC16 with FC16 ACK after runtime polling. OEM 930 modbus-flags.json W2=0x4000, W3=0x8000 and W4=0x000B select the five same INFO groups, but its 1803 bit15 nominal *register mapping span* for 0532 is **20 addresses**, while actual genuine DCM wire FC16 frame is **0532/18**; distinguish source range from physical wire geometry. C5CY intentionally matches the observed 18-register FC16; no fabricated 20-register ACK shape. First 0884 after ESP-only OTA is supported by user's C5CW XTR LIVE log, not separately by OEM cold-start capture.
