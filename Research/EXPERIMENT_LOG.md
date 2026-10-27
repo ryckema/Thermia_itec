@@ -1,3 +1,26 @@
+## CAL10-PENDING-01 — 2026-10-27 — COMPLETE / NEGATIVE (periodic refresh), scoped first-read POSITIVE
+
+HYPOTHESIS: OEM-persistent unsent read demand would allow successive 12-page calendar auto reads without loss of freshness. BASELINE: CAL10 private full standalone from CAL9 with session-scoped persistent pending. Prior six-page CAL6 was live, new 12-page geometry not yet live. User installed CAL10 and explicitly enabled auto at 18:09:02.
+
+OBSERVED FIRST CYCLE: 18:09:04 auto arm, 18:09:07 controller-0708 owner-sent W2=1FFE W3=0000 W4=0000, twelve exact FC16 33-word calendar pages each separately S92-owned ACKed; `APP_READ_OWNED_RECEIPT_COMPLETE requested=12` 18:09:18, `AUTO_CAL_TWELVE_OWNED_ACKED` 18:09:24. The initial read and 32-slot publication (subject to decoder interpretation) are **XTR LIVE / LOCALLY VERIFIED scoped POSITIVE**. These owner ACKs are transport confirmations; do not assert OEM cloud acceptance or alarm/setting writes.
+
+SECOND CYCLE / NEGATIVE: 18:12:34 automatically armed second generation; next 0708 at 18:12:37 logged `APP_PENDING_DEFERRED pending=0 / NO TX`. 18:14:14 EVU Slot 4 and other calendar pages expired under 300s freshness TTL. No subsequent calendar APP_READ_REQUEST through 18:29:25 excerpt, while native FC16 and FC03 continued. CAL10 periodic durability hypothesis **COMPLETE / NEGATIVE**.
+
+ROOT CAUSE: Fresh request cleared received bitmap, but left owned ACK credit stamps `main01_m6_app_page_ms[11..22]` from previous cycle; generic FC16 observer reasserted old `received` from shadow and old stamps, clearing new pending bits. Correctable without weakening TX guards.
+
+ABORT/ROLLBACK: Existing S92 STOP/ABORT RX_ONLY/DE_LOW preserved, no forced restart and no HA setting writes; user retains CAL10 as first-read XTR-live fallback or prior six-page CAL6. No abnormal RX/error signs were found.
+
+## CAL11-CREDIT-01 — 2026-10-27 — PREPARED / NOT RUN
+
+HYPOTHESIS: Clearing ONLY per-request owner ACK stamps [11..22] when rearming calendar scope prevents replay from prior request generation, leaving pending=12 until new physical receipt or explicit cancel. One scoped implementation change on exact CAL10 source (separate CAL11 build marker). OEM mapping/owner TX/DE/CRC/session/collision, original 60s/48 poll TX, 240s 12-page observer, 180s spacing, one genuine post-send failed read recovery, 300s HA cache TTL unchanged. Does not clear preserved last-good calendar HA cache or set write permissions.
+
+EXPECTED: first 12page success as before, then at ~200s cache-age scheduler request `pending=12` before next safe controller 0708, second actual W2=1FFE APP_READ_REQUEST with twelve physical ACKs, updated c5do cache receipt timestamps and no 300s expiration. ACTUAL: only SOURCE / OFFLINE TESTED—YAML parsed; 1,034 IDs unique, owner TX sites unchanged, ZIP CRC/SHA good. No target compilation, flash or CAL11 XTR run. No phantom OEM status asserted.
+
+DECISION: PREPARED / NOT RUN.
+ONE NEXT ACTION: User target-compile CAL11, then one bounded user-initiated OTA and auto enable under the qualified native M6 session, watch second read; S92 STOP/ABORT and rollback.
+
+---
+
 ## CAL10-PENDING-01 — 2026-10-27 — PREPARED / NOT RUN
 
 HYPOTHESIS: CAL7/CAL8's observed calendar outages after the 300s TTL are driven partly by mistaken revocation of an UNSENT but session-valid APP read demand; CAL9 also left a one-shot rejoin-latch check in the calendar button. OEM read-request flags persist until page receipt or explicit reset. Holding a session-scoped pending demand until an eligible future controller 0708 should allow read-only calendar refresh without weakening S92 ownership.
