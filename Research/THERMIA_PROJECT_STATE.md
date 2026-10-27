@@ -1,3 +1,18 @@
+## 2026-10-27 — C5DA ESP-only OTA LIVE blocked by legacy 085F response guard, alarm origin unproven
+
+OBSERVED FACTS: User supplied C5DA XTR live log, running build MAIN03-C5DA after esphome.ota without controller restart. Automatic stage40 RETAINED_RUNTIME joined and ACKed eight genuine ordinary FC16 pages; first FC03 0708 INFO-FIRST physically replied, INFO mask reached 1F. Thereafter 085F/5 zero-payload controller FC16 repeated ~2 s, but pre-existing EXP419_085F_NO_CONTEXT intercepted each with NO_ACK. No further FC03 service, M6 remained 2, cache 0/4, session expired after 60.086s to M6=7 RX-only DE LOW, physicalTX=9 (8 FC16 ACKs + 1 FC03), CRC disagreements, parser resync, RX drops, and peer evidence all zero; HA setting writes absent. C5DA experiment COMPLETE / NEGATIVE for full retained join. C5CZ post-M6=5 upkeep remains not exercised here. Real heat pump alarm reportedly shown to user but exact local HMI alarm text/code not supplied.
+
+SOURCE ROOT CAUSE: C5DA's passive 085F phase reclassification is not the same as physical alarm reply. The older EXP419_085F_NO_CONTEXT condition accepts only legacy write_tx_used/recovery/hot-rejoin/resume flags, not ordinary physically ACKed C5CP retained context after first FC03/INFO, so 085F is left unacknowledged. The 085F payload zero does not prove that the controller's user-interface alarm has cleared or diagnose its origin; no automatic alarm reset or fabricated owner. OEM Connect server handles FC16 transport independently from application acceptance and excludes alarm register from internal handshake acceptance. No new firmware or bus TX performed by assistant.
+
+SAFETY DECISION: Do not flash further experimental firmware, force TX or reboot controller merely to chase session while physical device alarm type is unknown. Keep S92 STOP/RX ONLY and HA settings writes HOLD. Read actual Thermia panel alarm message/history before local user-manual alarm acknowledgement; persistent/safety alarm -> installer. Follow the iTec XTR user manual, which describes alarm display and acknowledgment through operating-mode OFF then previous mode where applicable; avoid unattended OFF in freezing conditions.
+
+CURRENT MILESTONE: one native retained session + cache with continuous FC16/FC03 maintenance.
+DELIVERABLE: user C5DA LIVE result + source-proven old EXP419 response blocker; no new firmware.
+REAL BLOCKER: repeated 085F no-ACK despite valid preceding native responses, plus unknown actual controller alarm indication.
+ONE NEXT ACTION: user record the exact alarm text/code shown on the Thermia controller; then distinguish alarm remediation from a single guarded native responder correction without repeated blind OTA.
+
+---
+
 ## 2026-10-27 — C5CZ live retained 085F phase regression; C5DA SOURCE prepared
 
 OBSERVED FACTS: User XTR ESP-only OTA ran C5CZ at 01:08:20; automatic stage40 retained native entry. Physical controller FC16 07E4/17 ACKed, then first 085F/5 ALARM ACKed. Following controller 0708/6 and 07D0/19 were denied/repeated, M6 remained2, H/D/C/M 0/4 and after 60.034s timed out to M67 RX-only DE LOW. Physical TX2, CRC_DIFF/resync/RXdrops/peer=0; no parameter writes. C5CZ COMPLETE / NEGATIVE for that join; its post-M6=5 upkeep correction was not reached and stays unverified.
