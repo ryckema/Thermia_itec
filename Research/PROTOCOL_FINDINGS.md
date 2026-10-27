@@ -1,3 +1,9 @@
+## 2026-10-27 — MAIN04-B read-only CURRENT retry: implementation, NOT new protocol evidence
+
+MAIN04-B reuses the already locally established controller-offered native CURRENT request and owner-ACKed four-page receipt mechanism. A physically sent automatic but incomplete transaction can schedule at most one additional identical owner-guarded read after the existing cooldown, for that same volatile session and snapshot generation; actual sending still requires another genuine controller request and the original bus/CRC/collision/profile guards. Manual reads, calendar group requests, and HA parameter writes are unchanged. This is a source-code reliability change, **PREPARED / NOT RUN**, not a new XTR observed response, new register, cloud Online acceptance or a justification for unsolicited TX. Previous live C5DK re-refresh confirmed snapGen2; sustained snapGen3+ and multi-hour native owner durability remain OPEN.
+
+---
+
 ## 2026-10-27 — native CURRENT recurrence and calendar late-receipt timing (XTR local long-run)
 
 Local user log 08:50–13:03 includes several firmware images and ESP restarts, not one unchanged native run. 61 native four-page CURRENT requests had 61 complete 4/4 confirmation logs across those images. C5DK had same-boot completion at 09:16:52, 09:21:10, 09:25:28 (~258s recurrence); C5DS-CAL3 reached 10 complete CURRENT generations over ~42m and remained physically FC16/FC03 active, with last CRC difference/resync/RX-drop indicators zero. This is XTR LIVE confirmation of controller-driven recurring read-only four-page freshness, not DCM cloud acceptance and not semantic parameter writes.
