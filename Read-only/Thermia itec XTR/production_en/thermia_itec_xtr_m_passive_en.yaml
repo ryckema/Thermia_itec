@@ -1325,7 +1325,9 @@ uart:
                         0.5f
                       );
                     else
+                      if (!id(thermia_distribution_circuit_1_curve)->has_state() || !isnan(id(thermia_distribution_circuit_1_curve)->state)) {
                       id(thermia_distribution_circuit_1_curve)->publish_state(NAN);
+                    }
 
                     if (circuit1_min != -100)
                       publish_float_if_changed(
@@ -1334,7 +1336,9 @@ uart:
                         0.5f
                       );
                     else
+                      if (!id(thermia_distribution_circuit_1_min_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_1_min_temperature)->state)) {
                       id(thermia_distribution_circuit_1_min_temperature)->publish_state(NAN);
+                    }
 
                     if (circuit1_max != -100)
                       publish_float_if_changed(
@@ -1343,7 +1347,9 @@ uart:
                         0.5f
                       );
                     else
+                      if (!id(thermia_distribution_circuit_1_max_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_1_max_temperature)->state)) {
                       id(thermia_distribution_circuit_1_max_temperature)->publish_state(NAN);
+                    }
 
                     if (circuit1_corr_plus5 != -100)
                       publish_float_if_changed(
@@ -1352,7 +1358,9 @@ uart:
                         0.5f
                       );
                     else
+                      if (!id(thermia_distribution_circuit_1_correction_plus5)->has_state() || !isnan(id(thermia_distribution_circuit_1_correction_plus5)->state)) {
                       id(thermia_distribution_circuit_1_correction_plus5)->publish_state(NAN);
+                    }
 
                     if (circuit1_corr_zero != -100)
                       publish_float_if_changed(
@@ -1361,7 +1369,9 @@ uart:
                         0.5f
                       );
                     else
+                      if (!id(thermia_distribution_circuit_1_correction_zero)->has_state() || !isnan(id(thermia_distribution_circuit_1_correction_zero)->state)) {
                       id(thermia_distribution_circuit_1_correction_zero)->publish_state(NAN);
+                    }
 
                     if (circuit1_corr_minus5 != -100)
                       publish_float_if_changed(
@@ -1370,7 +1380,9 @@ uart:
                         0.5f
                       );
                     else
+                      if (!id(thermia_distribution_circuit_1_correction_minus5)->has_state() || !isnan(id(thermia_distribution_circuit_1_correction_minus5)->state)) {
                       id(thermia_distribution_circuit_1_correction_minus5)->publish_state(NAN);
+                    }
 
                     if (circuit1_constant != -100)
                       publish_float_if_changed(
@@ -1379,18 +1391,34 @@ uart:
                         0.5f
                       );
                     else
+                      if (!id(thermia_distribution_circuit_1_constant_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_1_constant_temperature)->state)) {
                       id(thermia_distribution_circuit_1_constant_temperature)->publish_state(NAN);
+                    }
 
                   } else {
                     // Explicitly configured OFF => do not expose stored/default
                     // values as though a physical shunt circuit were installed.
-                    id(thermia_distribution_circuit_1_curve)->publish_state(NAN);
-                    id(thermia_distribution_circuit_1_min_temperature)->publish_state(NAN);
-                    id(thermia_distribution_circuit_1_max_temperature)->publish_state(NAN);
-                    id(thermia_distribution_circuit_1_correction_plus5)->publish_state(NAN);
-                    id(thermia_distribution_circuit_1_correction_zero)->publish_state(NAN);
-                    id(thermia_distribution_circuit_1_correction_minus5)->publish_state(NAN);
-                    id(thermia_distribution_circuit_1_constant_temperature)->publish_state(NAN);
+                    if (!id(thermia_distribution_circuit_1_curve)->has_state() || !isnan(id(thermia_distribution_circuit_1_curve)->state)) {
+                      id(thermia_distribution_circuit_1_curve)->publish_state(NAN);
+                    }
+                    if (!id(thermia_distribution_circuit_1_min_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_1_min_temperature)->state)) {
+                      id(thermia_distribution_circuit_1_min_temperature)->publish_state(NAN);
+                    }
+                    if (!id(thermia_distribution_circuit_1_max_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_1_max_temperature)->state)) {
+                      id(thermia_distribution_circuit_1_max_temperature)->publish_state(NAN);
+                    }
+                    if (!id(thermia_distribution_circuit_1_correction_plus5)->has_state() || !isnan(id(thermia_distribution_circuit_1_correction_plus5)->state)) {
+                      id(thermia_distribution_circuit_1_correction_plus5)->publish_state(NAN);
+                    }
+                    if (!id(thermia_distribution_circuit_1_correction_zero)->has_state() || !isnan(id(thermia_distribution_circuit_1_correction_zero)->state)) {
+                      id(thermia_distribution_circuit_1_correction_zero)->publish_state(NAN);
+                    }
+                    if (!id(thermia_distribution_circuit_1_correction_minus5)->has_state() || !isnan(id(thermia_distribution_circuit_1_correction_minus5)->state)) {
+                      id(thermia_distribution_circuit_1_correction_minus5)->publish_state(NAN);
+                    }
+                    if (!id(thermia_distribution_circuit_1_constant_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_1_constant_temperature)->state)) {
+                      id(thermia_distribution_circuit_1_constant_temperature)->publish_state(NAN);
+                    }
                   }
                 }
 
@@ -1474,51 +1502,79 @@ uart:
                       publish_float_if_changed(id(thermia_distribution_circuit_2_curve),
                                                float(circuit2_curve), 0.5f);
                     else
+                      if (!id(thermia_distribution_circuit_2_curve)->has_state() || !isnan(id(thermia_distribution_circuit_2_curve)->state)) {
                       id(thermia_distribution_circuit_2_curve)->publish_state(NAN);
+                    }
 
                     if (circuit2_min != -100)
                       publish_float_if_changed(id(thermia_distribution_circuit_2_min_temperature),
                                                float(circuit2_min), 0.5f);
                     else
+                      if (!id(thermia_distribution_circuit_2_min_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_2_min_temperature)->state)) {
                       id(thermia_distribution_circuit_2_min_temperature)->publish_state(NAN);
+                    }
 
                     if (circuit2_max != -100)
                       publish_float_if_changed(id(thermia_distribution_circuit_2_max_temperature),
                                                float(circuit2_max), 0.5f);
                     else
+                      if (!id(thermia_distribution_circuit_2_max_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_2_max_temperature)->state)) {
                       id(thermia_distribution_circuit_2_max_temperature)->publish_state(NAN);
+                    }
 
                     if (circuit2_corr_plus5 != -100)
                       publish_float_if_changed(id(thermia_distribution_circuit_2_correction_plus5),
                                                float(circuit2_corr_plus5), 0.5f);
                     else
+                      if (!id(thermia_distribution_circuit_2_correction_plus5)->has_state() || !isnan(id(thermia_distribution_circuit_2_correction_plus5)->state)) {
                       id(thermia_distribution_circuit_2_correction_plus5)->publish_state(NAN);
+                    }
 
                     if (circuit2_corr_zero != -100)
                       publish_float_if_changed(id(thermia_distribution_circuit_2_correction_zero),
                                                float(circuit2_corr_zero), 0.5f);
                     else
+                      if (!id(thermia_distribution_circuit_2_correction_zero)->has_state() || !isnan(id(thermia_distribution_circuit_2_correction_zero)->state)) {
                       id(thermia_distribution_circuit_2_correction_zero)->publish_state(NAN);
+                    }
 
                     if (circuit2_corr_minus5 != -100)
                       publish_float_if_changed(id(thermia_distribution_circuit_2_correction_minus5),
                                                float(circuit2_corr_minus5), 0.5f);
                     else
+                      if (!id(thermia_distribution_circuit_2_correction_minus5)->has_state() || !isnan(id(thermia_distribution_circuit_2_correction_minus5)->state)) {
                       id(thermia_distribution_circuit_2_correction_minus5)->publish_state(NAN);
+                    }
 
                     if (circuit2_constant != -100)
                       publish_float_if_changed(id(thermia_distribution_circuit_2_constant_temperature),
                                                float(circuit2_constant), 0.5f);
                     else
+                      if (!id(thermia_distribution_circuit_2_constant_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_2_constant_temperature)->state)) {
                       id(thermia_distribution_circuit_2_constant_temperature)->publish_state(NAN);
+                    }
                   } else {
-                    id(thermia_distribution_circuit_2_curve)->publish_state(NAN);
-                    id(thermia_distribution_circuit_2_min_temperature)->publish_state(NAN);
-                    id(thermia_distribution_circuit_2_max_temperature)->publish_state(NAN);
-                    id(thermia_distribution_circuit_2_correction_plus5)->publish_state(NAN);
-                    id(thermia_distribution_circuit_2_correction_zero)->publish_state(NAN);
-                    id(thermia_distribution_circuit_2_correction_minus5)->publish_state(NAN);
-                    id(thermia_distribution_circuit_2_constant_temperature)->publish_state(NAN);
+                    if (!id(thermia_distribution_circuit_2_curve)->has_state() || !isnan(id(thermia_distribution_circuit_2_curve)->state)) {
+                      id(thermia_distribution_circuit_2_curve)->publish_state(NAN);
+                    }
+                    if (!id(thermia_distribution_circuit_2_min_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_2_min_temperature)->state)) {
+                      id(thermia_distribution_circuit_2_min_temperature)->publish_state(NAN);
+                    }
+                    if (!id(thermia_distribution_circuit_2_max_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_2_max_temperature)->state)) {
+                      id(thermia_distribution_circuit_2_max_temperature)->publish_state(NAN);
+                    }
+                    if (!id(thermia_distribution_circuit_2_correction_plus5)->has_state() || !isnan(id(thermia_distribution_circuit_2_correction_plus5)->state)) {
+                      id(thermia_distribution_circuit_2_correction_plus5)->publish_state(NAN);
+                    }
+                    if (!id(thermia_distribution_circuit_2_correction_zero)->has_state() || !isnan(id(thermia_distribution_circuit_2_correction_zero)->state)) {
+                      id(thermia_distribution_circuit_2_correction_zero)->publish_state(NAN);
+                    }
+                    if (!id(thermia_distribution_circuit_2_correction_minus5)->has_state() || !isnan(id(thermia_distribution_circuit_2_correction_minus5)->state)) {
+                      id(thermia_distribution_circuit_2_correction_minus5)->publish_state(NAN);
+                    }
+                    if (!id(thermia_distribution_circuit_2_constant_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_2_constant_temperature)->state)) {
+                      id(thermia_distribution_circuit_2_constant_temperature)->publish_state(NAN);
+                    }
                   }
 
                   // Pool semantics are firmware-derived, but the local XTR page
@@ -2038,7 +2094,9 @@ uart:
                       0.5f
                     );
                   } else {
-                    id(thermia_native_supply_temperature_07d0)->publish_state(NAN);
+                    if (!id(thermia_native_supply_temperature_07d0)->has_state() || !isnan(id(thermia_native_supply_temperature_07d0)->state)) {
+                      id(thermia_native_supply_temperature_07d0)->publish_state(NAN);
+                    }
                   }
 
                   if (valid_whole_temp(dhw_top_raw)) {
@@ -2048,7 +2106,9 @@ uart:
                       0.5f
                     );
                   } else {
-                    id(thermia_native_dhw_top_temperature_07d3)->publish_state(NAN);
+                    if (!id(thermia_native_dhw_top_temperature_07d3)->has_state() || !isnan(id(thermia_native_dhw_top_temperature_07d3)->state)) {
+                      id(thermia_native_dhw_top_temperature_07d3)->publish_state(NAN);
+                    }
                   }
 
                   if (valid_whole_temp(dhw_raw)) {
@@ -2058,7 +2118,9 @@ uart:
                       0.5f
                     );
                   } else {
-                    id(thermia_native_dhw_temperature_07d4)->publish_state(NAN);
+                    if (!id(thermia_native_dhw_temperature_07d4)->has_state() || !isnan(id(thermia_native_dhw_temperature_07d4)->state)) {
+                      id(thermia_native_dhw_temperature_07d4)->publish_state(NAN);
+                    }
                   }
 
                   if (valid_whole_temp(outdoor_raw)) {
@@ -2068,7 +2130,9 @@ uart:
                       0.5f
                     );
                   } else {
-                    id(thermia_native_outdoor_temperature_07da)->publish_state(NAN);
+                    if (!id(thermia_native_outdoor_temperature_07da)->has_state() || !isnan(id(thermia_native_outdoor_temperature_07da)->state)) {
+                      id(thermia_native_outdoor_temperature_07da)->publish_state(NAN);
+                    }
                   }
 
                   // Keep distinct native measurements; no redundant comparison entities.
@@ -2090,7 +2154,9 @@ uart:
                     publish_float_if_changed(id(thermia_system_supply_temperature),
                                              float(system_supply_raw), 0.5f);
                   } else {
-                    id(thermia_system_supply_temperature)->publish_state(NAN);
+                    if (!id(thermia_system_supply_temperature)->has_state() || !isnan(id(thermia_system_supply_temperature)->state)) {
+                      id(thermia_system_supply_temperature)->publish_state(NAN);
+                    }
                   }
 
                   if ((id(thermia_capabilities_seen) && (uint32_t(millis() - id(thermia_capabilities_last_seen_ms)) <= 21600000UL) && id(thermia_buffer_tank_config) == 1)) {
@@ -2098,10 +2164,14 @@ uart:
                       publish_float_if_changed(id(thermia_buffer_tank_temperature),
                                                float(buffer_raw), 0.5f);
                     } else {
+                      if (!id(thermia_buffer_tank_temperature)->has_state() || !isnan(id(thermia_buffer_tank_temperature)->state)) {
                       id(thermia_buffer_tank_temperature)->publish_state(NAN);
                     }
+                    }
                   } else {
-                    id(thermia_buffer_tank_temperature)->publish_state(NAN);
+                    if (!id(thermia_buffer_tank_temperature)->has_state() || !isnan(id(thermia_buffer_tank_temperature)->state)) {
+                      id(thermia_buffer_tank_temperature)->publish_state(NAN);
+                    }
                   }
 
                   if ((id(thermia_capabilities_seen) && (uint32_t(millis() - id(thermia_capabilities_last_seen_ms)) <= 21600000UL) && id(thermia_distribution_circuit_1_config) == 1)) {
@@ -2109,10 +2179,14 @@ uart:
                       publish_float_if_changed(id(thermia_distribution_circuit_1_temperature),
                                                float(circuit1_raw), 0.5f);
                     } else {
+                      if (!id(thermia_distribution_circuit_1_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_1_temperature)->state)) {
                       id(thermia_distribution_circuit_1_temperature)->publish_state(NAN);
                     }
+                    }
                   } else {
-                    id(thermia_distribution_circuit_1_temperature)->publish_state(NAN);
+                    if (!id(thermia_distribution_circuit_1_temperature)->has_state() || !isnan(id(thermia_distribution_circuit_1_temperature)->state)) {
+                      id(thermia_distribution_circuit_1_temperature)->publish_state(NAN);
+                    }
                   }
 
                   if ((id(thermia_capabilities_seen) && (uint32_t(millis() - id(thermia_capabilities_last_seen_ms)) <= 21600000UL) && id(thermia_buffer_tank_config) == 1) && valid_whole_temp(tank_raw)) {
@@ -2122,7 +2196,9 @@ uart:
                       0.5f
                     );
                   } else {
-                    id(thermia_tank_temperature_07d9)->publish_state(NAN);
+                    if (!id(thermia_tank_temperature_07d9)->has_state() || !isnan(id(thermia_tank_temperature_07d9)->state)) {
+                      id(thermia_tank_temperature_07d9)->publish_state(NAN);
+                    }
                   }
 
                   // Full raw accounting for cross-profile/unmapped fields.
@@ -2205,7 +2281,9 @@ uart:
 
                     // The native room value remains published without the v29 delta.
                   } else {
-                    id(thermia_native_room_temperature_080c)->publish_state(NAN);
+                    if (!id(thermia_native_room_temperature_080c)->has_state() || !isnan(id(thermia_native_room_temperature_080c)->state)) {
+                      id(thermia_native_room_temperature_080c)->publish_state(NAN);
+                    }
                   }
 
                   // These three have strong firmware semantic ownership, but
@@ -2310,7 +2388,9 @@ uart:
                       0.5f
                     );
                   } else {
-                    id(thermia_supply_temperature_wanted)->publish_state(NAN);
+                    if (!id(thermia_supply_temperature_wanted)->has_state() || !isnan(id(thermia_supply_temperature_wanted)->state)) {
+                      id(thermia_supply_temperature_wanted)->publish_state(NAN);
+                    }
                   }
 
                   if (valid_wanted_temp(system_supply_wanted) &&
@@ -2321,7 +2401,9 @@ uart:
                       0.5f
                     );
                   } else {
-                    id(thermia_system_supply_temperature_wanted)->publish_state(NAN);
+                    if (!id(thermia_system_supply_temperature_wanted)->has_state() || !isnan(id(thermia_system_supply_temperature_wanted)->state)) {
+                      id(thermia_system_supply_temperature_wanted)->publish_state(NAN);
+                    }
                   }
 
                   if ((id(thermia_capabilities_seen) && (uint32_t(millis() - id(thermia_capabilities_last_seen_ms)) <= 21600000UL) && id(thermia_distribution_circuit_1_config) == 1)) {
@@ -2332,10 +2414,14 @@ uart:
                         0.5f
                       );
                     } else {
+                      if (!id(thermia_distribution_circuit_1_temperature_wanted)->has_state() || !isnan(id(thermia_distribution_circuit_1_temperature_wanted)->state)) {
                       id(thermia_distribution_circuit_1_temperature_wanted)->publish_state(NAN);
                     }
+                    }
                   } else {
-                    id(thermia_distribution_circuit_1_temperature_wanted)->publish_state(NAN);
+                    if (!id(thermia_distribution_circuit_1_temperature_wanted)->has_state() || !isnan(id(thermia_distribution_circuit_1_temperature_wanted)->state)) {
+                      id(thermia_distribution_circuit_1_temperature_wanted)->publish_state(NAN);
+                    }
                   }
 
                   if ((id(thermia_capabilities_seen) && (uint32_t(millis() - id(thermia_capabilities_last_seen_ms)) <= 21600000UL) && id(thermia_distribution_circuit_2_config) == 1)) {
@@ -2346,10 +2432,14 @@ uart:
                         0.5f
                       );
                     } else {
+                      if (!id(thermia_distribution_circuit_2_temperature_wanted)->has_state() || !isnan(id(thermia_distribution_circuit_2_temperature_wanted)->state)) {
                       id(thermia_distribution_circuit_2_temperature_wanted)->publish_state(NAN);
                     }
+                    }
                   } else {
-                    id(thermia_distribution_circuit_2_temperature_wanted)->publish_state(NAN);
+                    if (!id(thermia_distribution_circuit_2_temperature_wanted)->has_state() || !isnan(id(thermia_distribution_circuit_2_temperature_wanted)->state)) {
+                      id(thermia_distribution_circuit_2_temperature_wanted)->publish_state(NAN);
+                    }
                   }
 
                   // Firmware-derived DHW runtime semantics.
@@ -2360,7 +2450,9 @@ uart:
                       0.5f
                     );
                   } else {
-                    id(thermia_weighted_dhw_temperature)->publish_state(NAN);
+                    if (!id(thermia_weighted_dhw_temperature)->has_state() || !isnan(id(thermia_weighted_dhw_temperature)->state)) {
+                      id(thermia_weighted_dhw_temperature)->publish_state(NAN);
+                    }
                   }
 
                   // Zero is kept valid for the "lowest wanted" fields: the
@@ -2373,7 +2465,9 @@ uart:
                       0.5f
                     );
                   } else {
-                    id(thermia_lowest_wanted_tank_temperature)->publish_state(NAN);
+                    if (!id(thermia_lowest_wanted_tank_temperature)->has_state() || !isnan(id(thermia_lowest_wanted_tank_temperature)->state)) {
+                      id(thermia_lowest_wanted_tank_temperature)->publish_state(NAN);
+                    }
                   }
 
                   if ((id(thermia_capabilities_seen) && (uint32_t(millis() - id(thermia_capabilities_last_seen_ms)) <= 21600000UL) && id(thermia_buffer_tank_config) == 1) && valid_wanted_temp(lowest_wanted_tank_reduction)) {
@@ -2383,7 +2477,9 @@ uart:
                       0.5f
                     );
                   } else {
-                    id(thermia_lowest_wanted_tank_reduction_temperature)->publish_state(NAN);
+                    if (!id(thermia_lowest_wanted_tank_reduction_temperature)->has_state() || !isnan(id(thermia_lowest_wanted_tank_reduction_temperature)->state)) {
+                      id(thermia_lowest_wanted_tank_reduction_temperature)->publish_state(NAN);
+                    }
                   }
 
                   // Complete raw coverage of all currently unmapped words in
