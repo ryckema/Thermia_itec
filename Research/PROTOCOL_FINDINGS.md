@@ -1,3 +1,13 @@
+## 2026-10-27 — CAL10 twelve OEM-mapped calendar pages XTR LIVE; credit replay root cause for second request
+
+XTR user CAL10 log: genuine controller-offered 0708 followed by owner-transmitted 0F03 read request with W2=1FFE, W3=0000, W4=0000 at 18:09:07. Controller physically returned twelve mapped FC16 33-word pages 055A,057B,059C,05BD,05DE,05FF,0620,0641,0662,0683,06A4,06C5; each got existing native S92 physical FC16 ACK. At 18:09:18 owner logged request receipt completed 12/12 and at 18:09:24 auto task reported success. This **PROVES local XTR twelve-page transport/read completion in qualified M6 session for first CAL10 cycle**, not Online semantic acceptance or HA setting writes. 32 calendar slot entities briefly populated; Silent Mode raw data decoding still uncertain.
+
+Second automatic request at 18:12:34: no physical calendar APP read; at 18:12:37 `APP_PENDING_DEFERRED pending=0`. CAL10 source reinitialized `main01_m6_app_received` and pending mask but failed to reset `main01_m6_app_page_ms` for the calendar scope. The ordinary FC16 observer recomputes request receipt bits from prior already owner-ACKed page timestamps plus shadow, zeroing pending before a fresh read. Cache correctly expires after 300s, showing Unavailable at 18:14:14, unrelated to radio/parser malfunction. Distinguish OEM logical outstanding request from per-generation transport ACK evidence; old ACK cannot certify new request.
+
+CAL11 PRIVATE source fix resets only old request-credit stamps [11..22] upon creating a 12-page request generation; last-good calendar display cache retained; one UART/DE owner, CRC/peer/collision, session fences, physical wire request and 60s/48poll/240s bounds unchanged. CAL11 **SOURCE / OFFLINE TESTED / PREPARED / NOT RUN**. XTR-live repeated twelve-page calendar confirmation remains OPEN. No new register/frame semantics or settings TX authorization.
+
+---
+
 ## 2026-10-27 — OEM pending-bit semantics vs CAL10 source fix (no new XTR protocol proof)
 
 SOURCE: Original Thermia Connect Modbus-server request logic stores a read-request bit via set_register_read_request and clears it on a matching registers-received event or explicit reset_register_read_request. These are application request flags, NOT automatic authorization for serial TX or proof of XTR-specific semantic acceptance. Existing mapped request words W2/W3/W4 and 12 calendar details in CAL9 are inherited; no new frame/register assigned.
