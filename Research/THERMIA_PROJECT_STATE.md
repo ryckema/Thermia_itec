@@ -1,3 +1,18 @@
+## 2026-10-27 — CAL12 corrected OEM slot addresses and English recurring days/date display — PREPARED / NOT RUN
+
+OBSERVED FACTS: Prior locally logged XTR CAL10 twelve-page native read physically delivered and owner-ACKed every calendar FC16 page 0x055A..0x06C5, and data showed impossible Silent Mode field strings `date raw=0/59/23–0/127/1; mode=22` from the CAL8–CAL11 HA slot decoder. OEM Connect 2.4.2 `configurations.json` defines each slot as 12 consecutive register words, time_func=0 dates / =1 weekdays, weekday bits 0=Mon through 6=Sun. Verified first slot offsets: HW 0x055A page aligned; EVU 0x05BC (one before 0x05BD); Silent 0x061E (two before 0x0620); Reduction 0x0680 (three before 0x0683). All eight slots end before their distinct programmed/active bitmaps (e.g., Silent last `days` 0x067D vs bitmap 0x067E/067F). Previous slot-8 suppression was unnecessary.
+
+IMPLEMENTATION: CAL12 complete private YAML starts directly from CAL11. Exactly 32 template text_sensor slot lambdas use correct OEM per-category address offsets, previous page tail for slot1 (with freshness gate), and English `Repeats: Every day/Every Sat/No weekdays selected` or `Dates: YYYY-MM-DD to YYYY-MM-DD` with OEM year conversion. Programmed bitmap truth, `Not set`, and unavailability for stale pages remain. No new bus frames/registers/owner, TX guard, collision/CRC, UART/DE changes; existing CAL11 credit generation, 12-page request, 240s passive ACK receipt and parameter write HOLD preserved. Firmware build label CAL12.
+
+OFFLINE TESTED: parsed YAML, 1,034 unique declared IDs, 32/32 OEM register starts and end bounds crosschecked, standalone host C++ compilation of ALL 32 display lambdas against saved real XTR 12-page FC16 raw payload, matched Silent Mode S1 22:00–23:59 Every day / S2 00:00–08:00 Every day and HW4 Sunday/HW5 Saturday; ZIP CRC/SHA valid. SOURCE / OFFLINE TESTED only; CAL12 target compiled/FLASHED/LIVE not established. Weekly mode with days=0 for some XTR configured programs remains faithfully shown as `No weekdays selected`, not forced into a calendar schedule; programmed does not mean currently active. CAL10 12/12 first generation LOCALLY VERIFIED, second-cycle failed; CAL11 credit fix remains untested.
+
+CURRENT MILESTONE: Durable twelve-page OEM native refresh and reliable thirty-two-slot display.
+DELIVERABLE: Complete CAL12 standalone ZIP SOURCE / OFFLINE TESTED, PREPARED / NOT RUN.
+REAL BLOCKER: User CAL12 target compilation, second periodic 12-page live owner read and corrected slot presentation.
+ONE NEXT ACTION: User compiles CAL12, chooses one bounded OTA normal runtime observation, validates two successive owned calendar generations and Silent Mode 1/2 values, retains S92 STOP/ABORT/rollback.
+
+---
+
 ## 2026-10-27 — CAL10 first 12-page request LIVE POSITIVE, periodic successor FAILED; CAL11 credit fix prepared
 
 OBSERVED FACTS: XTR user-flashed CAL10 build explicitly identified in the 18:08–18:29 log. Controller-provided 0708 carried a 12-page calendar APP read (W2=1FFE W3/W4=0000) at 18:09:07 after HA explicit enable; all twelve genuine FC16 pages 055A/33, 057B/33, 059C/33, 05BD/33, 05DE/33, 05FF/33, 0620/33, 0641/33, 0662/33, 0683/33, 06A4/33 and 06C5/33 were physically owner-ACKed by 18:09:18. Read owner terminally logged requested=12 complete; scheduler logged 12 owned ACKs at 18:09:24. The previously absent EVU, Silent Mode and Temperature Reduction HA slot pages became populated. **XTR LIVE / LOCALLY VERIFIED first CAL10 twelve-page acquisition**. No setting writes, apparent CRC errors, parser resync, RX drops or RS485 peer collisions in the cited sample.
