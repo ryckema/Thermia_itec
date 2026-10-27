@@ -1,3 +1,11 @@
+## 2026-10-27 — XTR Heating Curve desired 03E8 word0 semantically accepted, one physical user-authorized attempt
+
+**PROVEN from user XTR W2R4 live capture:** M6=5, physically ACKed CURRENT4/4 Heating Curve original36; explicit user staging35 and one ARM in same epoch. Genuine controller 0708 led native EXP444 FAST_HIT, EXP430 physical desired selector at 23:04:45.949, and exactly one controller-requested desired 03E8 page at 23:04:46.132. Controller-originated FC16 03E8 confirmed word0=35 at 23:04:46.711, otherWordsChanged=0 and physicalAttempts=1; production HA reads35. **Semantic acceptance PROVEN**, not merely transport ACK. Scope limited to one bounded Heating Curve word0 write and observed OEM desired/FC03/FC16 choreography. No general-purpose HA write authorization, no OEM retry validation, no Online proof. Original UART/DE owner, V5 parser/CRC and collision protection retained.
+
+**Follow-on UI/source finding:** Later actual controller FC16=35 supersedes older accepted CURRENT snapshot36, but W2R4 stage-only candidate sync used the older m6s_heating_words[0] and published36. This is a UI freshness/precedence defect, not evidence of controller rejecting/reverting the write. W2R5 SOURCE/OFFLINE TESTED, PREPARED / NOT RUN: only same-session genuine successful postwrite controller FC16 value used as candidate UI truth until newer physically ACKed 4/4; stage blocked on stale baseline, no physical TX modifications. Native automatic FC03/current refresh still separately deferred in EXP378 state7/runtimeAge0; distinct milestone.
+
+---
+
 ## 2026-10-27 — W2R3 XTR OEM candidate/ARM works, EXP444/430 cold-only selector refuses valid native M6 cache
 
 LIVE OBSERVED: W2R3 owner-ACKed M6=5 CURRENT 4/4 including Heating Curve36, candidate published36; user explicitly staged37 and ARM accepted. At following genuine controller 0708 EXP444 cacheAge81408ms cacheValid0 due 15s legacy TTL, EXP430 SELECTOR_ABORT legacyIdle0 runtimeAge0, no desired selector/page physical TX. Later candidate35 staged without ARM in excerpt. Native 300s CURRENT cache source remained valid, EXP378 read-only deferred state7 and unset legacy runtime-enter timestamp are not controller auth failure. No new wire flag/register or XTR semantic write proof; OEM original desired W1bit0 and current-read W3bit0 remain source-supported.
