@@ -1,0 +1,28 @@
+{
+  "source_git_sha": "9b9fc5a9d2812ebbba00df627713a2039817868c",
+  "build": "XTR-PASSIVE-EN-01",
+  "status": "PREPARED / NOT RUN",
+  "evidence": "SOURCE/OFFLINE TESTED ONLY",
+  "visible_ha_entities": 84,
+  "internal_hidden_entities": 174,
+  "total_entity_blocks": 258,
+  "declared_ids": 255,
+  "rx_uart": "GPIO18 / 9600 8E1",
+  "rs485_de": "GPIO21 ALWAYS_OFF",
+  "uart_tx_configured": false,
+  "bus_tx_writers": 0,
+  "rx_crc_parser_unchanged": true,
+  "entity_ids_preserved": true,
+  "remaining_visible_english_labels": true,
+  "esphome_target_compiled": false,
+  "flashed": false,
+  "xtr_live_verified": false,
+  "controller_native_0x0f_page_freshness_guaranteed": false,
+  "contents": [
+    "thermia_itec_xtr_m_passive_en.yaml",
+    "README.md",
+    "ROLLBACK.md",
+    "MANIFEST.json"
+  ],
+  "note": "CRC32 per ZIP entry used; source is public XTR v31 FIX4, no OEM private source."
+}
