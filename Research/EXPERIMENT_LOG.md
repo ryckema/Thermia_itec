@@ -1,3 +1,22 @@
+## CAL10-PENDING-01 — 2026-10-27 — PREPARED / NOT RUN
+
+HYPOTHESIS: CAL7/CAL8's observed calendar outages after the 300s TTL are driven partly by mistaken revocation of an UNSENT but session-valid APP read demand; CAL9 also left a one-shot rejoin-latch check in the calendar button. OEM read-request flags persist until page receipt or explicit reset. Holding a session-scoped pending demand until an eligible future controller 0708 should allow read-only calendar refresh without weakening S92 ownership.
+
+BASELINE: CAL9 private full standalone source (12 OEM calendar detail pages, owner-ACK ledger, physically bounded 60s/48-poll TX and 240s observer). Earlier locally observed CAL7/CAL8 attempts at 17:13:06/08 and 17:16:06/08 were armed and then physically UNSENT/revoked, with native session/FC16 still operating. Previous six-page successful calendar acquisition is historical LIVE support for that old scope, NOT proof of new 12-page CAL9/CAL10.
+
+ONE CONSOLIDATED CHANGE: CAL10 changes application read-request lifetime from 12s transient arm to persistent, same-epoch pending until S92 physical send; temporary guard denial defers, not revokes. Front-end calendar request eligibility now matches dispatcher accepted epoch; explicit AUTO OFF / STOP / controller-session loss cancel pending. Original post-TX send cap and bus protections are unchanged, and there is no independent TX reader/owner, new command class or HA parameter-write permission. Existing 12-page CAL9 mapping/240s observer retained without expansion.
+
+EXPECTED (not yet observed): First safe 0708 after a transient denial can carry identical OEM-mapped outstanding W2/W3/W4 bits; successful owner-ACKed 12/12 pages remain current beyond 300s through subsequently completed automatic cycles, or an actual incomplete post-TX read reaches the existing bounded failure outcome. Safety ABORT must clear pending without TX after session loss.
+
+ACTUAL: SOURCE / OFFLINE TESTED only (YAML parse, unique IDs, unchanged physical send-site counts, ZIP CRC/SHA). NOT target compiled, FLASHED or LIVE. No experiment was run.
+
+ABORT/ROLLBACK: auto calendar OFF cancels only UNSENT auto demand; existing S92 STOP/ABORT enters RX_ONLY/DE LOW; user can restore last locally operating CAL6/CAL8. Do not induce controller fault or restart solely as a test. HA parameter writes ON HOLD.
+
+DECISION: PREPARED / NOT RUN; XTR-live GO/FIX/NO-GO cannot be assigned without user evidence.
+ONE NEXT ACTION: User target-compile and explicitly enable one bounded CAL10 12-page calendar cycle in a qualified native session; observe first/next owner transmissions, ACK receipts, pending/state and normal freshness.
+
+---
+
 ## 2026-10-27 — MAIN04-D-LIVE-CURRENT-01 COMPLETE / POSITIVE (scoped); MAIN04-D integration RUNNING / PARTIAL
 
 HYPOTHESIS: MAIN04-D standalone preserves controller-owned FC16/0708 runtime and repeats read-only CURRENT H/D/C/M snapshot after an established first cache generation, without setting TX. BASELINE: user-installed MAIN04-D single YAML; prior MAIN03 C5DK and CAL3 had repeated XTR CURRENT 4/4, but MAIN04-D was previously PREPARED / NOT RUN. ONE OBSERVATION: user 5,000-line ordinary runtime log 14:33:10–14:37:37 (no induced bus fault). ACTUAL: repeated MAIN04-D build marker and monotonic uptime/owner counters; 14:35:57.434 native owned read of existing CURRENT selector, then actual guarded FC16 page receipts and ACKs 03E8/14, 042E/15, 0442/13, 0546/20 complete by 14:36:00.275; mask0F and snapGen1->2, requests2/confirmed2. 52->168 FC16 ACK, 26->88 idle 0708, CRC_DIFF0, resync0, RX drops0, DE LOW, no HA writes. Scoped CURRENT result **COMPLETE / POSITIVE**, XTR LOCALLY VERIFIED; overall MAIN04-D runtime **RUNNING / PARTIAL** because one approximately six-minute session segment, not long endurance.
