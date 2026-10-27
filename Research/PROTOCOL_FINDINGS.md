@@ -1,3 +1,11 @@
+## 2026-10-27 — W2R3 XTR OEM candidate/ARM works, EXP444/430 cold-only selector refuses valid native M6 cache
+
+LIVE OBSERVED: W2R3 owner-ACKed M6=5 CURRENT 4/4 including Heating Curve36, candidate published36; user explicitly staged37 and ARM accepted. At following genuine controller 0708 EXP444 cacheAge81408ms cacheValid0 due 15s legacy TTL, EXP430 SELECTOR_ABORT legacyIdle0 runtimeAge0, no desired selector/page physical TX. Later candidate35 staged without ARM in excerpt. Native 300s CURRENT cache source remained valid, EXP378 read-only deferred state7 and unset legacy runtime-enter timestamp are not controller auth failure. No new wire flag/register or XTR semantic write proof; OEM original desired W1bit0 and current-read W3bit0 remain source-supported.
+
+W2R4 PRIVATE SOURCE/OFFLINE ONLY aligns 03E8 word0 single user-armed EXP444, EXP430 selector, desired-page and central S92 owner gates to physically owner-ACKed native same-epoch M6=5 4/4 source and pinned original. No other write parameters, no new owner/wire requests, retries, changes to CRC/DE/peer/collision/ABORT. PREPARED / NOT RUN; XTR semantic setting acceptance OPEN.
+
+---
+
 ## 2026-10-27 — W2R2 GUI candidate latch defect (not a wire/protocol failure)
 
 SOURCE W2R2 candidate set_action can set staged=true even with current_ok=false/controller=-1; existing periodic GUI sync requires staged=false. An early edit therefore can block publishing already owner-ACKed M6 CURRENT actual value and make ARM appear nonfunctional. W2R3 SOURCE correction uses existing same-epoch M6=5 physically ACKed fresh 4/4 Heating Curve for candidate staging and GUI sync; no duplicate exp442 RX timestamp prerequisite for UI-only use. ARM, EXP430, sole S92 physical TX owner, CRC/DE/peer/session and ABORT remain unchanged and still check actual recent 03E8 data; other parameter writes and physical OEM retries held. No new W2R2 user log nor new XTR setting write evidence. W2R3 SOURCE/OFFLINE TESTED, PREPARED / NOT RUN. OEM 03E8 desired/read flag mapping unchanged.
