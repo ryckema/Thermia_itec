@@ -1,3 +1,9 @@
+## 2026-10-27 — XTR MAIN04-D LIVE native retained session and recurring CURRENT 4/4
+
+User-provided 5,000-line XTR API excerpt spanning 14:33:10–14:37:37 identifies the same standalone MAIN04-D firmware four times. The native FC16 ACK counter increases 52 to 168, controller 0708 replies 26 to 88 in a retained MANUAL context M6=5/stage40 without shown restart. The next read-only CURRENT request is emitted 14:35:57.434 on the existing guarded native route, with FC16 03E8/14, 042E/15, 0442/13, 0546/20 actually ACKed by 14:36:00.275, mask0F, snapGen1->2, refreshReq/OK=2/2. RX/parser counters remain zero-error in sampled period. These observations are LIVE/LOCALLY VERIFIED for the specific MAIN04-D second snapshot and ordinary native session continuity; they are not proof of Online cloud connection, HA semantic write permission or hours-long durability. 085F current alarm 0 acknowledgments and the unclosed 33-group calendar/app ledger (12 observed, pending27) remain OPEN. The 120s calendar late-page ACK logic was not activated in this record and must not be promoted to LIVE PROVEN. No new protocol frame or request/response meaning inferred.
+
+---
+
 ## 2026-10-27 — MAIN04-D standalone has no new protocol findings
 
 Single-YAML version is the same MAIN04-D code with only pure helper code embedded locally instead of loaded from four C++ headers. No change to handshake, native FC16/FC03, 33-group register map, 60s app-request lease, 120s passive FC16 receipt, UART/DE ownership or permitted TX. SOURCE/OFFLINE TESTED; not user-target-compiled or XTR-live-confirmed. This is a packaging change, not new evidence.
