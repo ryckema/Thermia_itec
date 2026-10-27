@@ -1,3 +1,14 @@
+## CAL14A-COMPILE-01 — 2026-10-27 — PREPARED / NOT RUN
+
+User ESPHome 2026.9.0 TARGET COMPILE of CAL14 failed in four HA template select set_action lambdas at source lines 20616, 20658, 20697 and 20732: generated TemplateSelectWithSetAction has no member 'state'. This is a definite SOURCE defect in CAL14, not a runtime XTR or protocol problem. CAL14A private full standalone YAML replaces exactly those four invalid select self-state expressions with checked existing confirmed-controller fields exp378_confirmed_w01, exp379_confirmed_w04, exp383_confirmed_link and exp380_confirmed_mode, only publishing when sync-valid. The early HA write hold, S92 owner, UART/DE, CRC and automatic calendar are unchanged. YAML source parsed offline, ZIP CRC/SHA valid; no ESPHome-target compilation or flashing of CAL14A yet. Existing OTA password warning is unrelated and was not modified.
+
+CURRENT MILESTONE: MAIN04-E production source correction and native periodic calendar verification.
+DELIVERABLE: CAL14A private complete YAML ZIP, SOURCE/OFFLINE TESTED.
+REAL BLOCKER: User must target compile CAL14A; subsequent XTR runtime behavior open.
+ONE NEXT ACTION: Compile CAL14A and only on success user flashes it; retain current locally verified rollback and STOP/ABORT.
+
+---
+
 ## CAL14-MAIN04E-01 — 2026-10-27 — PREPARED / NOT RUN
 
 Hypothesis: early UI hold on 29 HA setting actions prevents dirty-queue staging / session abort under parameter-write HOLD; generic TX success checks prevent false EXECUTED logs; lowering routine ERROR logs retains genuine fault visibility. Baseline private CAL13. One consolidated source cleanup; old EXP modules were retained where active dependencies exist. Expected: no HA write queue from held controls, unchanged S92 native operation and 12-page auto calendar refresh, fewer normal ERROR logs. Actual: SOURCE/OFFLINE TESTED (YAML parsed, unique IDs, same physical TX owner sites, SHA/ZIP CRC); NOT target compiled, flashed or live. Abort: existing S92 STOP/ABORT RX_ONLY/DE LOW; rollback to last user-verified firmware. Next: user target compile then bounded local validation without permitting writes.
