@@ -1,3 +1,9 @@
+## 2026-10-28 — W2R18 XTR LIVE read-only native restoration (distinct from C5AZ)
+
+User's full W2R18 log confirms normal ESP OTA reboot and native retained-runtime route (C5CF), M6=2 to 4 to 5, current pages 4/4 with same-session owner receipts, calendar 12/12 with automatic receipts, controller version 2.4.2, CRC_DIFF0, no RX drops, parser resync stable at 15, no parameter writes. Normal runtime and recovery COMPLETE / POSITIVE. This boot did NOT enter the separate C5AZ first-normal route, so the new source-level role-accounting fix remains PREPARED / NOT RUN for its intended route, with newly enabled physical continuation disabled. The previous separate OTA crash cause is still unknown. Do not claim generalized unsolicited rejoin or Online status. ONE NEXT ACTION: retain W2R18 live baseline and evaluate one bounded, explicitly user-initiated C5AZ continuation decision before enabling any new physical traffic.
+
+---
+
 ## 2026-10-28 — W2R18 physically ACKed C5AZ role witness SOURCE ONLY
 
 W2R17 parser classified 0546/count20 as setup/export before C5AZ physical normal-prefix ACK and setup counter changed from auto-entry. Existing M6 and S92 scope then rejected continuation FC03 0708 and FC16 07E4 even after exact S92 0546 ACK. W2R18 records same-session local epoch and setup count ONLY after actual S92 0546/count20 ACK succeeds; two original owner predicates may distinguish exactly that event while rejecting extra setup events, missing ACK, changed session or invalid geometry. Does not mutate source counter or assert OEM Online/semantic acceptance. New physical continuation held at compile-time with c5az_0546_role_recovery_enabled=false by default; no additional physical TX or parameterwrite grant. Standalone source and syntax PASS; XTR live fix unproven. Separate first OTA API/socket InstrFetchProhibited cause OPEN.
