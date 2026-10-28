@@ -1,3 +1,18 @@
+## 2026-10-28 — Active W2R9 OEM-native write-engine milestone (SOURCE / OFFLINE TESTED, PREPARED / NOT RUN)
+
+User explicitly prioritizes reconstructing **the original Thermia Connect 2.1.105 CM930 register-update lifecycle**, not expanding EXP430 as a permanent experimental architecture. CURRENT verified baseline: W2R8 user ESPHome target compiled and OTA-flashed on XTR M controller 2.4.2; M6=5, physically owner-ACKed CURRENT4/4, automatic calendar12/12, normal HA, CRC_DIFF/drop/resync0 and no parameterwrite. W2R7 read-only and W2R5 semantic Heating Curve35→36 remain verified; **no redo** of prior S62/S88/S92 or W2R4/W2R5 experiments. Earlier first-attach work remains historical/open only where unsupported, not today's release blocker.
+
+OEM SOURCE private Connect `cm_register_update` writes desired register + 1800/1801 alert bit + 1802/1803 read-request bit; controller FC16 compares exact edited register before alert clears; OEM may retry up to three times. The locally verified Heating Curve1000 uses page03E8 word0 with 1801 bit0/1803 bit0. All 21 descriptor flag ranges checked against genuine private 930 JSON; this is SOURCE mapping, NOT proof of XTR writes for the other 20 parameters.
+
+**Current deliverable:** MAIN04-W2R9 complete PRIVATE single YAML, exact corrected W2R8 rollback. ONE integrated RAM-only OEM register transaction ledger (phase/descriptor/current+desired/epoch+generation/alert+read flags/attempts/controller FC16), now mandatory for the existing user-armed Heating Curve selector, desired page and real controller confirmation. Temporary EXP430 fields are compatibility adapters for unchanged HA and physical callback routes pending dependent-code removal. One existing S92 UART/RX/DE owner, CRC, collision, ABORT, cold/hot rejoin, FC03/calendar, existing HA preserved. 20 other descriptors' setting writes remain ON HOLD; OEM physical retries NOT enabled. W2R9 SOURCE / OFFLINE TESTED PREPARED / NOT RUN; full ESPHome target compile, OTA, XTR read-only regression still OPEN.
+
+**CURRENT MILESTONE:** Integrated OEM-native register update transactions.
+**DELIVERABLE:** W2R9 single YAML + W2R8 rollback private.
+**REAL BLOCKER:** Target build/live read-only verification before progressively retiring EXP430 compatibility; other descriptors lack physically authorized semantic write evidence.
+**ONE NEXT ACTION:** User ESPHome-target builds W2R9 and, if successful, consciously OTA-flashes once for native M6/current4/4/calendars/HA/CRC read-only regression, with no physical setting write.
+
+---
+
 ## 2026-10-25 — C5 FIRST cold join resumed (was parked during hot-rejoin), C5AV prepared
 
 2026-10-25 — User resumed previously PARKED FIRST native cold join on a RUNNING XTR M controller 2.4.2, with NO preceding DCM and NO controller restart. This is NOT C5AU retained hot rejoin, nor C5AR controller-cold-start (proven LIVE), nor C5AS 042E refresh (parked). Previous actual C5AB/C5AD/C5AF first-attach experiments already demonstrated physical ACK on 04BA and later 059C, ACKs for qualifying 059C/05FF/0662, and a standalone 085F ACK that stopped retries, but NEVER a fully qualified first DCM session. Do NOT repeat individual-page ACK microtests.
