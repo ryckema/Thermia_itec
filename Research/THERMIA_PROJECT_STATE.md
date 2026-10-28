@@ -4,23 +4,24 @@ Last updated: 2026-10-28. Public, non-sensitive status only; private firmware an
 
 ## Current verified baseline
 
-**W2R25F4 is now FLASHED / LIVE / LOCALLY VERIFIED on iTec XTR M 3N, controller 2.4.2, for D1, D4, D7, D8, D9, D10 and D11** in a single multiwrite session. The 2026-10-28 21:12:09–21:15:33 user XTR ESPHome log contains **19** distinct direct-HA user write intents, **19** actual single-page physical sends and **19** corresponding genuine controller-origin `0x03E8/14` FC16 semantic confirmations. All were successful with one desired-page send per user edit. Neither ESP reboot nor additional global write-enable between these edits was required.
+**Latest locally verified candidate:** Private W2R25F4, flashed by user, iTec XTR M 3N controller 2.4.2. **Nine of ten Heating descriptors LIVE / LOCALLY VERIFIED**, with **26/26** actual user-initiated physical desired-page sends followed by genuine controller-origin FC16 semantic acceptance in two consecutive 2026-10-28 captures. The first log (21:12:09–21:15:33) had 19 acceptances over seven descriptors; the second (21:16:16–21:20:05) adds seven verified sends (D6 three times, D12 twice, D8 once, D7 once). No ESP reboot or per-parameter/session count boundary was needed between deliberate HA writes.
 
 | Descriptor | Register | Field | Live verified examples |
 |---|---|---|---|
 | D1 | 03E8 | Heating Curve | 35→40→35→22→35 |
 | D4 | 03E9 | Heating Minimum | 21→25→10→20 |
-| D7 | 03EC | Correction 0 °C (signed) | +1→−2→0 |
-| D8 | 03ED | Correction −5 °C (signed) | +1→−1→0 |
+| D5 | 03EA | Heating Maximum | **NOT RUN / NO FC16 semantic proof in supplied logs** |
+| D6 | 03EB | Correction +5 °C | 0→1→0→1 (second log) |
+| D7 | 03EC | Correction 0 °C (signed) | 1→−2→0→1 |
+| D8 | 03ED | Correction −5 °C (signed) | 1→−1→0→1 |
 | D9 | 03EE | Heating Stop | 20→15→20→18→15→17 |
 | D10 | 03EF | Reduced Temperature | 20→22→20 |
 | D11 | 03F0 | Room Factor | 2→1 |
+| D12 | 03F4 | Room Setpoint | 22→21→22 (second log) |
 
-Each verified descriptor: **COMPLETE / POSITIVE, LIVE / LOCALLY VERIFIED** for the observed selected-word changes. **D5** (Heating Maximum), **D6** (Correction +5 °C) and **D12** (Room Setpoint) remain **PREPARED / NOT RUN** based on this capture; a user's general statement that all controls work is not treated as a missing semantic receipt. Overall Heating group: **RUNNING / PARTIAL** until those three are confirmed.
+**Per-descriptor statuses:** D1/D4/D6/D7/D8/D9/D10/D11/D12 **COMPLETE / POSITIVE, LIVE / LOCALLY VERIFIED** for these observed register changes; D5 **PREPARED / NOT RUN**. Heating group overall **RUNNING / PARTIAL** until D5 controller readback. Second capture had **7** `HEATING_DIRECT_USER_EDIT`, **7** `GENERIC_PAGE_TX_EXECUTED`, **7** `CONTROLLER_ACCEPTED`, exact selected-word readbacks; a single d12 `PREVIEW_DENIED idle=0 / NO_TX` protected against overlapping physical writes and the subsequent edit was accepted. Native M6 remained 5 and CURRENT 4/4 remained confirmed; V5 CRC_DIFF=0, RX buffer drops=0, parser resyncs=0 in sample counters. A calendar 12/12 read was armed in the second capture, **not proof of completion**; the first captured run and historical verified W2R24 native calendar evidence remain separate.
 
-The same captured session remained in native M6=5 with genuine CURRENT 4/4 confirmation and automatic calendar 12/12 confirmation. Logs show CRC_DIFF=0, RX drops=0, resyncs=0; a single `PREVIEW_DENIED d=10 ... idle=0 ... NO_TX` during a busy writer correctly prevented overlapping TX and a later deliberate D10 edit succeeded. This is a local user run, not an assistant-flashed firmware.
-
-**Last historically verified fallback:** W2R24, with D1 and D4 live evidence, native M6, CURRENT 4/4 and calendar 12/12. W2R19 is the earlier historical rollback. W2R25F3 and earlier pre-F4 revisions remain superseded; earlier Sept 2026 experiment records were shared as private user snapshots and should not be silently reclassified.
+**Historical verified fallbacks:** W2R24, D1/D4 live proof plus M6/CURRENT/calendar; W2R19 earlier historical rollback. Earlier W2R25F2 session=0 write denials were NO_TX, not controller rejection. W2R25F3 was superseded. Previous seven-of-ten status was correct **for the first capture only**; second capture supersedes the current total.
 
 ## Scope and safeguards
 
@@ -29,6 +30,6 @@ One S92 UART/RX/DE owner; V5/CRC/integrity and collision safeguards; explicit us
 ## Current milestone / deliverable / real blocker / ONE next action
 
 - **CURRENT MILESTONE:** Write User, Heating group.
-- **DELIVERABLE:** W2R25F4 LIVE / LOCALLY VERIFIED multiwrite engine for seven Heating descriptors.
-- **REAL BLOCKER:** No controller-semantic live receipts yet for D5, D6, D12 in the supplied 21:12–21:15 capture.
-- **ONE NEXT ACTION:** One user-initiated consolidated D5/D6/D12 acceptance using the existing W2R25F4 firmware, collecting controller-origin per-word FC16 confirmations, then GO/FIX/NO-GO for the full Heating group. Do not add further preparatory microtests.
+- **DELIVERABLE:** W2R25F4 LIVE / LOCALLY VERIFIED multiwrite engine for nine Heating descriptors (26 confirmed edits).
+- **REAL BLOCKER:** No controller-semantic live receipt for D5 in either supplied live capture.
+- **ONE NEXT ACTION:** One user-initiated D5 Heating Maximum acceptance with unchanged W2R25F4 and genuine controller-origin FC16 selected-word readback; then GO/FIX/NO-GO for the ten-descriptor Heating group. No new firmware or preparatory microtests.
