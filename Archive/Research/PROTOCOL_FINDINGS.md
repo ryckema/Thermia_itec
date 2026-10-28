@@ -1,3 +1,9 @@
+## 2026-10-28 W2R12 OEM curve live success
+
+User W2R12 live log confirms user ARM Heating Curve 36 to 35; OEM ledger staged, controller-requested desired selector and one desired page dispatched, actual FC16 03E8/14 from controller confirms value35, no other words changed. HA and controller cache report35. At 02:10:46.817 OEMW CONTROLLER_ACCEPTED, 02:10:46.820 W2 CONTROLLER_REGISTER_CONFIRMED, one physical attempt and one readback. EXP-01 COMPLETE / POSITIVE, LIVE / LOCALLY VERIFIED for curve only. Calendar CAL5 12/12 also confirmed at 02:08:06; M6=5 CURRENT4/4; CRC errors0, resync0, drops0. One UART 51ms warning without observable failure. Other settings writes HOLD; no autonomous retries. Latest proven baseline W2R12. NEXT ACTION preserve W2R12 and target next integrated write scope only with specific validation and user authorization.
+
+---
+
 ## 2026-10-28 — W2R12 build-linked XTR live native regression
 
 W2R12 exact build ID user confirmed via existing HA sensor; prior OTA native log is attributable. M6=5 and owner-ACKed 4 CURRENT pages, CRC_DIFF0, V5 resync0, RX drop0, real HA values, no parameterwrites. Evidence only for read-only native regression, not for OEM ledger semantic parameter-write equivalence. CAL5 calendar 12/12 completion is not visible in supplied W2R12 excerpt (calendar pages are progressing). OEM flags and FC16 semantics from original Connect remain source-derived; Heating Curve setting write physically proven only in earlier W2R4/W2R5 architecture, not migrated W2R12. New OEM TX permissions and retries remain HOLD. ONE NEXT ACTION: bounded, explicitly user-approved one-step curve trial; no autonomous TX.
