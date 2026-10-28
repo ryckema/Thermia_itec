@@ -2,6 +2,12 @@
 
 
 
+## W2R28 — Cooling group integrated private firmware, no live test
+
+**2026-10-28 W2R28 Cooling group source integration — SOURCE / OFFLINE TESTED; PREPARED / NOT RUN.** Created one complete **private** ESPHome firmware ZIP based on the actually LIVE W2R27 D13/D14 (4/4 controller-semantic writes), preserving the W2R25F4 Heating 10/10, 27/27 baseline. Five source-mapped Cooling user descriptors **D15 `0x0442` word0 Enabled 0/1; D16 `0x0443` word1 Desired Temperature 7–40°C; D17 `0x0445` word3 Active Above 10–50°C (preserved Heating Stop+3K constraint); D18 `0x0449` word7 Cooling Time 5–40min; D20 `0x044E` word12 Room Hysteresis High raw 5–50 (0.5–5.0K)** now use existing sole S92 TX and OEM ledger, exact `0x0442/13` 31-byte selected-word page and `0x0708` selector W1/W3 `0x0010`, same-epoch CURRENT/cache, physical boundary, CRC, controller-origin FC16 semantic readback, no auto-retry, ABORT. **D19 `0x044C` Room Sensor write remains ON HOLD** owing to unverified meaning of 0/1 direction. All other unvalidated settings remain HOLD; no additional UART reader/writer or bypass of session safety. Changed stale build label to W2R28 and recategorized existing D14 HA entity name as Hot Water without changing IDs. One bounded user-initiated live Cooling trial is prepared (D18, D16, D20, D17 then D15 sequentially; each reversibly), rollback W2R27, W2R25F4 and W2R24 packaged. Offline YAML structure PASS, 1099 unique IDs, 225 C++ lambda delimiter balance PASS, existing 1 UART writer and HA IDs unchanged, source geometry and selector CRC checked, ZIP integrity PASS. **NOT ESPHome TARGET COMPILED / NOT FLASHED / NOT LIVE / NOT LOCALLY VERIFIED.** Existing W2R27 D13+D14 remains COMPLETE / POSITIVE; existing Heating milestone remains closed. **CURRENT MILESTONE:** Write User Cooling group. **DELIVERABLE:** private W2R28 full source ZIP, PREPARED / NOT RUN. **REAL BLOCKER:** first real controller-origin FC16 semantic acceptance for Cooling is still unverified (and target compile pending). **ONE NEXT ACTION:** user compiles W2R28 and, only after success, user-flashes and conducts the single bounded reversible Cooling group test with ABORT/rollback.
+
+
+
 ## W2R27 — D14 final live closure, same firmware, 2026-10-28
 
 - **Experiment ID:** W2R27 Hot Water D14 first user-initiated live semantic write, completing D13/D14 group.
