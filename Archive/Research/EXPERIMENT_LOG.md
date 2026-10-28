@@ -1,3 +1,9 @@
+## MAIN04-W2R17-RECOVERY-CACHE-EPOCH-01 — RUNNING / PARTIAL (2026-10-28) — OTA crash addendum
+
+User reports W2R17 normal operation but additionally supplied crash log. Previous-boot ESP32 InstrFetchProhibited/core1/PC FFFFFFFF, decoded call chain OTA handle_data -> Application::safe_reboot -> APIServer::teardown -> BSDSocketImpl::close. Direct ESPHome API connects after boot; parser CRC_DIFF0 in initial sample, bus still active. M6 remained RETAINED_UNPROVEN state2 with denied 0708 and 07E4 requests in 11:52:01–11:52:17; no M6=5 shown. Source diff W2R16/W2R17 confirms no changes to API/OTA and no new S92 TX grants, only M6 passive cache timestamp invalidation/current-epoch CAL checks. Actual OTA failure time and crashing firmware image UNKNOWN; previous-boot stack may be symbolized against newer image. Positive user routine-operation claim retained but cannot prove crash-free reboot or auto hot-rejoin. Experiment RUNNING / PARTIAL (normal works, OTA restart fault observed, recovery unproven); no new parameter TX, no synthetic restarts. ONE NEXT ACTION collect organically produced future reboot evidence and address an actionable root cause rather than producing a microtest firmware.
+
+---
+
 ## MAIN04-W2R17-RECOVERY-CACHE-EPOCH-01 — RUNNING / PARTIAL (2026-10-28)
 
 User after W2R17 package: "ja werkt allemaal correct". Normal operation after compile/flash reported POSITIVE. No W2R17 log supplied for exact CRC, M6 transition, calendar epoch reset, or autonomous hot-rejoin; do not close recovery as PROVEN. No unvalidated physical parameter TX authorized. Continue with existing experiment only upon real naturally observed session transition; avoid duplicate microtests. Baseline user-reported W2R17 running normally; previous full local XTR log verified W2R16. Status RUNNING / PARTIAL. ONE NEXT ACTION next integrated recovery/production code step as roadmap, without new physical write activation.
