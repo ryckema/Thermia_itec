@@ -1,3 +1,9 @@
+## 2026-10-28 W2R11 prepared
+
+Latest locally verified baseline W2R10. New private W2R11 full YAML consolidates native Heating Curve selector, FC03 desired-page, FC16 confirmation and expiry within the OEM ledger. The S92 bus owner and working read-only firmware are preserved; new parameter writes remain disabled. SOURCE/OFFLINE TESTED, PREPARED/NOT RUN. Full target build and live test pending. Exact W2R10 rollback supplied.
+
+---
+
 ## 2026-10-28 — W2R10 build identity confirmed by user
 
 User explicitly reported the HA firmware-build entity: `Thermia MAIN04-W2R10 | W2R9 LIVE / OEM RECEIPT+DESIRED OWNER / TX HOLD / CAL14A | 2026-10-27`. This resolves the only missing attribution in the immediately preceding user OTA log (01:34:58–01:35:53). W2R10 is now **TARGET COMPILED / FLASHED / LIVE / LOCALLY VERIFIED**, read-only native regression **COMPLETE / POSITIVE**: M6=5, owned CURRENT 4/4, fresh snapGen=1, calendar 12/12, live HA, Heating Curve36, CRC_DIFF0, parser resync0, RX drops0, no setting write. OEM ledger physical setting transaction/semantic FC16 confirmation NOT live tested; remaining EXP430 compatibility and other 20 descriptors ON HOLD. No repeat read-only test needed. **CURRENT MILESTONE:** OEM-native write engine consolidation. **DELIVERABLE:** W2R10 locally verified read-only. **REAL BLOCKER:** transitional EXP430 callbacks and physically unvalidated OEM setting cycle. **ONE NEXT ACTION:** migrate remaining active EXP430 dependencies into sole OEM transaction engine from verified W2R10 without activating additional setting writes.
