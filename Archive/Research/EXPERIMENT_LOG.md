@@ -1,3 +1,9 @@
+## 2026-10-28 01:35 — W2R10 candidate user OTA log, read-only positive with build identity unconfirmed
+
+User-submitted ESPHome API log 01:34:58–01:35:53 shows OTA reset, native M6 stage40 retained qualification 2→4→5, actual ACKed CURRENT 03E8/14 042E/15 0442/13 0546/20; at 01:35:22.428 CURRENT_4PAGE_CONFIRMED mask0F 4/4, snapshotGen1; at 01:35:44.870 CAL5 AUTO_CAL_TWELVE_OWNED_ACKED; Heating Curve36, HA heating/DHW/cooling/mode values populated, CRC_DIFF0, parser resync0, RX drops0, pending writes0, no setting TX. Old EXP378 CURRENT_REFRESH_DEFERRED remains independent. **Important:** this 1254-line excerpt contains NO Thermia Firmware Build banner; therefore exact W2R10 compiled/flashed identity cannot be unambiguously established from the excerpt, despite OTA reset and matching functional flow. Read-only regression **COMPLETE / POSITIVE for observed native functions**, W2R10 attribution **RUNNING / PARTIAL pending build marker**. OEM-write lifecycle not physically tested; other descriptors remain ON HOLD. No need to repeat previous tested M6/4pages/calendar. ONE NEXT ACTION: confirm W2R10 build marker from existing HA Firmware Build entity or normal next publish; no further OTA or setting TX needed.
+
+---
+
 ## 2026-10-28 W2R9 and W2R10
 
 W2R9: COMPLETE / POSITIVE for user target-built OTA read-only regression: M6=5, CURRENT4/4, calendar12/12, HA functional, CRC_DIFF=0, drops=0, parser resync=2 stable. No parameter write performed; semantic OEM write not validated.
