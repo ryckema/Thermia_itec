@@ -1,3 +1,9 @@
+## 2026-10-28 — OEM 03E9 descriptor integration: source vs local proof
+
+**PROVEN XTR baseline:** W2R12 successfully performed controller-requested OEM Heating Curve register1000/0x03E8 write 36→35 and received genuine FC16 semantic acceptance, unchanged other page words. **OEM SOURCE mapping:** register1001/0x03E9 (Heating Minimum) belongs to native 03E8/count14 page word1 and shares original Connect 930 selector flag 1801 bit0 (alert) and 1803 bit0 (read request) with register1000; shared *page-group* bits do not prove write acceptance of each word. **W2R13/W2R14 source integration only:** Minimum preview remains phase0/IDLE, no pending flags, no physical Minimum authorization or retry. W2R14 corrects freshness precedence: existing same-runtime CRC-valid 03E8 FC16 may supersede earlier owner-ACKed CURRENT4/4 word1; no TX implication. W2R14 source/structural checks passed, but ESPHome compile and XTR live are NOT RUN. Minimum semantic change remains OPEN; descriptor1 curve continues as sole evidenced physical parameter-write scope.
+
+---
+
 ## 2026-10-28 W2R12 OEM curve live success
 
 User W2R12 live log confirms user ARM Heating Curve 36 to 35; OEM ledger staged, controller-requested desired selector and one desired page dispatched, actual FC16 03E8/14 from controller confirms value35, no other words changed. HA and controller cache report35. At 02:10:46.817 OEMW CONTROLLER_ACCEPTED, 02:10:46.820 W2 CONTROLLER_REGISTER_CONFIRMED, one physical attempt and one readback. EXP-01 COMPLETE / POSITIVE, LIVE / LOCALLY VERIFIED for curve only. Calendar CAL5 12/12 also confirmed at 02:08:06; M6=5 CURRENT4/4; CRC errors0, resync0, drops0. One UART 51ms warning without observable failure. Other settings writes HOLD; no autonomous retries. Latest proven baseline W2R12. NEXT ACTION preserve W2R12 and target next integrated write scope only with specific validation and user authorization.
