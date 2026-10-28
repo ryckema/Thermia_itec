@@ -1,3 +1,9 @@
+## 2026-10-28 W2R17 repeated OTA: partial retained transport recovery
+
+Second OTA reboot of unchanged firmware reports reset `Reboot request from esphome.ota` not previous panic. Native controller-offered FC16 and 0708 physically served; M6 2->4 `RETAINED_TRANSPORT_QUALIFIED`, not M6 5. One real 0884 transport acknowledgement is not Online or parameter semantic acceptance. Profile gate remains `profile=0`, `WAIT_PROFILE_242`; source recognizes controller 0864/4 last word as version242 and requires current local epoch. No 0864 profile proof in supplied short log. Current page receipts0/4, fresh snapshot0. CRC_DIFF0, drops0, parser resync39: integrity issue remains unknown. This differs from first OTA cycle where no 0708 served and M67. Neither permits D2–D21 physical setting writes. STOP/rejoin and OEM Online full capability still OPEN.
+
+---
+
 ## 2026-10-28 — ESP32 previous-boot crash after OTA, not a Thermia protocol acceptance
 
 ESPHome 2026.9.0 / ESP-IDF 5.5.5 user crash log: InstrFetchProhibited cause20 PC FFFFFFFF core1; decoded OTA stack includes ESPHomeOTAComponent::handle_data_/loop, Application::safe_reboot, APIServer::teardown/remove_client_, BSDSocketImpl::close, newlib close. This is a native ESPHome shutdown path, not proof of Thermia UART corruption; prior firmware image ELF mismatch remains possible. W2R16->W2R17 exact diff confirms API/OTA untouched and only M6 cached FC16 timestamp revocation and 12-page calendar epoch checks changed. In observed boot 11:52:01–11:52:17, native M6 remained2 retained-unproven with valid RX/CRC0 and correctly withheld FC03 0708 / FC16 07E4 due to missing owner, no setting TX. The crash is observed; root cause HYPOTHESIS, W2R17 automatic rejoin OPEN, no arbitrary guard weakening. Do not call a transport ACK semantic acceptance.
