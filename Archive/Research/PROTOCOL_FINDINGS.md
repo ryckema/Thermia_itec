@@ -1,3 +1,9 @@
+## 2026-10-28 — XTR W2R9 OEM ledger live read-only; W2R10 moves active owner dispatch
+
+W2R9 user OTA XTR 2.4.2 live: M6 retained 5, CURRENT4/4 ACK, native calendar 12/12, CRC_DIFF0, RX drop0, resync2 stable. This confirms OEM ledger does not regress native read-only; NOT controller-semantic new write acceptance. W2R10 SOURCE changes ONLY existing Heating Curve reg1000 active path to use OEM ledger for controller FC16 receipt ownership, genuine FC03 desired page dispatch, pending alert, original and desired values, while reusing original S92 UART/RX/DE and current native M6 guards. Original Connect 930 selector layout: 1801 alert maps selector word1 bit0; CURRENT refresh 1803 maps selector word3 bit0. 21 canonical descriptors previously matched OEM modbus-flags JSON, but 20 unvalidated physical writes still disabled; no new TX roles/CRC/frames. W2R10 TARGET COMPILE/LIVE NOT RUN.
+
+---
+
 ## 2026-10-28 — Connect 2.1.105 930 OEM desired-register flags and FC16 semantic receipt; W2R8 XTR live
 
 OEM SOURCE (supplied private device_client extracted appfs): `cm_register_update` stages desired holding register and sets BOTH alert selector (1800/1801) and read-request bit (1802/1803) from original `930/modbus-flags.json`. Original controller FC16 triggers `on_registers_received_event` then `_check_register_updates`: only equal edited-register value clears alert and outstanding edit; on mismatch OEM reoffers up to 3 times, independent of transport ACK. XTR has PROVEN these semantics for Heating Curve register1000 (03E8 word0, alert 1801 bit0 and read-request 1803 bit0) from earlier user-armed 36↔35 real controller FC16. Other descriptor writes/physical retries NOT PROVEN. Original 930 JSON and local 21-descriptor geometry map 21/21 to valid alert/read bits, including page057B which is NOT one of native four CURRENT pages.
