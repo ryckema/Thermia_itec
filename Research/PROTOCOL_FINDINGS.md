@@ -2,6 +2,10 @@
 
 Last updated: 2026-10-28. This public summary excludes confidential OEM firmware-derived code, algorithms, credentials, mailbox tooling and raw sensitive captures.
 
+## Final Heating semantic evidence — 2026-10-28
+
+**PROVEN: all 10 Heating descriptors on the local XTR.** Third XTR user log 2026-10-28 21:21:36–21:25:35: D5 Heating Maximum reg 03EA word2 user edit 40→42 at 21:25:18; one desired 03E8/14 physical page with deltaWords=1 at 21:25:28 (S92 DE=LOW); real controller-origin FC16 semantic CONTROLLER_ACCEPTED d=5 actual=42 at 21:25:29.481. M6=5; calendar AUTO_CAL_TWELVE_OWNED_ACKED 21:22:02 and 21:25:32; CURRENT 4/4 confirmed 21:22:26.991; sampled CRC_DIFF=0, RX drops=0, parser resync=0. Other d7/d8 preview attempts while busy correctly NO_TX. Combined three capture evidence: 27/27 physical Heating writes semantically accepted across all ten descriptors. OEM automatic parameter retry, unrelated write groups, and all recovery scenarios are not thereby validated. **ONE NEXT ACTION:** extend the same sole S92/ledger engine to bounded Hot Water Write User implementation, no unauthorized TX.
+
 ## Controller-semantic Heating write verification — LIVE / LOCALLY VERIFIED
 
 On iTec XTR M 3N controller 2.4.2, W2R25F4 user-initiated direct HA changes to Heating `0x03E8` 14-word page were each followed by controller-origin FC16 readback that included the desired selected register. This is semantic confirmation, not merely a transport ACK.
