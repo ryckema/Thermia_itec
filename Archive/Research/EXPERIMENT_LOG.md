@@ -1,3 +1,9 @@
+## MAIN04-W2R17-RECOVERY-CACHE-EPOCH-01 — RUNNING / PARTIAL (2026-10-28)
+
+User after W2R17 package: "ja werkt allemaal correct". Normal operation after compile/flash reported POSITIVE. No W2R17 log supplied for exact CRC, M6 transition, calendar epoch reset, or autonomous hot-rejoin; do not close recovery as PROVEN. No unvalidated physical parameter TX authorized. Continue with existing experiment only upon real naturally observed session transition; avoid duplicate microtests. Baseline user-reported W2R17 running normally; previous full local XTR log verified W2R16. Status RUNNING / PARTIAL. ONE NEXT ACTION next integrated recovery/production code step as roadmap, without new physical write activation.
+
+---
+
 ## MAIN04-W2R17-RECOVERY-CACHE-EPOCH-01 — PREPARED / NOT RUN
 
 Hypothesis: native CAL and optional FC16 cache timestamps from previous M6 epoch must not satisfy age-only freshness in a newly started native session. Baseline exact W2R16 XTR LIVE M6=5/CURRENT4/4, Calendar/HA, D4 RAM preview20->21 NO_TX; W2R15 controller-confirmed physical D1. ONE change: in existing M6 transition START/STOP/controller restart/boot return/orphan revoked owner clear 21 passive FC16 mirror receipt timestamps, retaining raw words; existing CAL auto freshness and completed receipt require page timestamp >= current local session epoch. Expected no false cache freshness or missed new CAL read, no changed S92 TX. Actual SOURCE/OFFLINE TESTED YAML, unique IDs, component counts, physical send call parity, exact rollback and C++17 added block PASS. User target compilation and natural reboot/rejoin evidence NOT RUN; experiment PREPARED / NOT RUN. Keep exactly one RX/UART/DE owner; no new physical write scope, user-initiated flash only. ABORT existing S92 STOP, rollback exact W2R16. ONE NEXT ACTION user target-compiles W2R17 and checks one normal native regression; wait for naturally occurring recovery evidence.
