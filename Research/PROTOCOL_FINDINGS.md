@@ -13,12 +13,12 @@ On iTec XTR M 3N controller 2.4.2, W2R25F4 user-initiated direct HA changes to H
 - D9 03EE, word6, heating stop: repeated writes `20→15→20→18→15→17` accepted (OEM profile 0–30).
 - D10 03EF, word7, reduced temperature: `20→22→20` accepted.
 - D11 03F0, word8, room factor: `2→1` accepted.
-- D5 03EA, word2; D6 03EB, word3; D12 03F4, word12: **not yet semantically demonstrated in this supplied log**.
+- D5 03EA, word2, Heating Maximum: **sole remaining unverified Heating descriptor**, no physical user write or controller readback in either supplied capture.\n- D6 03EB, word3, correction +5 °C: **0→1→0→1**; all three new user edits accepted via controller-origin FC16 in the second capture.\n- D12 03F4, word12, Room Setpoint: **22→21→22**; both new user edits accepted via controller-origin FC16 in the second capture.
 
-The Heating desired payload was one 14-word page derived from the latest suitable same-epoch controller snapshot, with only the user-selected word intentionally changed. Each of 19 actual edits had one delivered page and matching controller acceptance. Runtime CURRENT 4/4 and automatic calendar 12/12 continued to work; V5 CRC integrity sample counters remained clean. An overlapping write was denied with idle=0, NO_TX. The native owner and collision/CRC safeguards remain required.
+The Heating desired payload was one 14-word page derived from the latest suitable same-epoch controller snapshot, with only the user-selected word intentionally changed. Across two real XTR captures, all **26** user-initiated physical edits had one delivered page and matching controller acceptance (19 first capture, 7 second). Runtime CURRENT 4/4 and automatic calendar 12/12 continued to work; V5 CRC integrity sample counters remained clean. An overlapping write was denied with idle=0, NO_TX. The native owner and collision/CRC safeguards remain required.
 
 ## OEM comparison and remaining uncertainty
 
-Original Thermia Connect's per-register pending updates and controller-value comparison are consistent with the observed successful XTR semantic readback. OEM automatic retry behavior has **not** been replicated and must not be inferred from these successes. No proof here of arbitrary untested register groups, controller online state, or general authorization for autonomous parameter transmissions. The remaining three Heating descriptors require their own live semantic readback.
+Original Thermia Connect's per-register pending updates and controller-value comparison are consistent with the observed successful XTR semantic readback. OEM automatic retry behavior has **not** been replicated and must not be inferred from these successes. No proof here of arbitrary untested register groups, controller online state, or general authorization for autonomous parameter transmissions. Only D5 Heating Maximum still requires its own live semantic readback. In the second log, CURRENT 4/4 was confirmed and sample CRC/RX/resync counters were zero; calendar 12/12 was merely armed for reread, not independently completed in that second excerpt.
 
-**ONE NEXT ACTION:** One consolidated user-run D5/D6/D12 acceptance in W2R25F4; preserve all current TX guards and full rollback.
+**ONE NEXT ACTION:** One user-run D5 `03EA` Heating Maximum write and genuine controller-origin FC16 readback on unchanged W2R25F4; preserve all TX guards and rollback.
