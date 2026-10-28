@@ -1,3 +1,9 @@
+## 2026-10-28 — W2R10 active OEM write path consolidation PREPARED / NOT RUN
+
+W2R9 latest user **LOCALLY VERIFIED** XTR read-only: M6=5/current4/4/calendar12/12/HA, CRC_DIFF0, stable two parser resyncs; no semantic physical write. W2R10 full PRIVATE single YAML based on exact W2R9 now changes live-capable Heating Curve reg1000 FC16 owner, controller FC03 desired dispatch, pinned original, desired word and selector alert to authoritative original Connect-style OEM RAM ledger. EXP430 remains a compatibility data structure for 20 other DISABLED parameters/old HA callbacks; no new independent physical writer. Single sole S92 RX/UART/DE, existing CRC/peer/collision/ABORT, no new physical packet, no new parameter write or physical OEM retries. 21 original OEM flag maps previously checked. Offline YAML/HA-ID/count/syntax smoke + ZIP integrity passed; target ESPHome compile/flash/live PENDING. Exact live W2R9 rollback in ZIP. **Milestone OEM-native write engine. Deliverable W2R10 source prepared. Real blocker full target build and live read-only native regression. ONE NEXT ACTION user compiles W2R10, flashes only on success, checks M6/current/calendar/HA/CRC, no settings TX.**
+
+---
+
 ## 2026-10-28 — Active W2R9 OEM-native write-engine milestone (SOURCE / OFFLINE TESTED, PREPARED / NOT RUN)
 
 User explicitly prioritizes reconstructing **the original Thermia Connect 2.1.105 CM930 register-update lifecycle**, not expanding EXP430 as a permanent experimental architecture. CURRENT verified baseline: W2R8 user ESPHome target compiled and OTA-flashed on XTR M controller 2.4.2; M6=5, physically owner-ACKed CURRENT4/4, automatic calendar12/12, normal HA, CRC_DIFF/drop/resync0 and no parameterwrite. W2R7 read-only and W2R5 semantic Heating Curve35→36 remain verified; **no redo** of prior S62/S88/S92 or W2R4/W2R5 experiments. Earlier first-attach work remains historical/open only where unsupported, not today's release blocker.
