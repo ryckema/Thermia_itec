@@ -1,3 +1,8 @@
+## 2026-10-28 — W2R12 build-linked XTR live native regression
+
+W2R12 exact build ID user confirmed via existing HA sensor; prior OTA native log is attributable. M6=5 and owner-ACKed 4 CURRENT pages, CRC_DIFF0, V5 resync0, RX drop0, real HA values, no parameterwrites. Evidence only for read-only native regression, not for OEM ledger semantic parameter-write equivalence. CAL5 calendar 12/12 completion is not visible in supplied W2R12 excerpt (calendar pages are progressing). OEM flags and FC16 semantics from original Connect remain source-derived; Heating Curve setting write physically proven only in earlier W2R4/W2R5 architecture, not migrated W2R12. New OEM TX permissions and retries remain HOLD. ONE NEXT ACTION: bounded, explicitly user-approved one-step curve trial; no autonomous TX.
+
+---
 ## 2026-10-28 — W2R12 canonical OEM selector and revoke SOURCE ONLY
 
 W2R11 locally verified native read-only session with CURRENT4/4 and calendar12/12; boot-only parser resync12 stable, CRC_DIFF0, RX drops0. W2R12 retains controller-poll-driven OEM register1000 03E8/14 desired/1801 alert/1803 read/FC16 semantic match. One active-path cleanup: canonical OEM ledger now directly governs S92 physical desired selector rather than legacy EXP430 state3, HA in-flight curve value and immediate owner-revoke. No new frame/CRC, second UART owner, expanded parameter TX, physical retry, or autonomous ARM. W2R12 physical parameter write semantics remain UNTESTED. Exact source private and user controlled. STATUS SOURCE/OFFLINE TESTED PREPARED/NOT RUN.
