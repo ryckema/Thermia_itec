@@ -2,6 +2,10 @@
 
 Last updated: 2026-10-28. Public, non-sensitive status only; private firmware and genuine OEM-derived material are not published here.
 
+## Latest 2026-10-28 milestone closure
+
+**COMPLETE / POSITIVE: 10/10 Heating descriptors LIVE / LOCALLY VERIFIED on user-flashed W2R25F4.** Third XTR user log 2026-10-28 21:21:36–21:25:35: D5 Heating Maximum reg 03EA word2 user edit 40→42 at 21:25:18; one desired 03E8/14 physical page with deltaWords=1 at 21:25:28 (S92 DE=LOW); real controller-origin FC16 semantic CONTROLLER_ACCEPTED d=5 actual=42 at 21:25:29.481. M6=5; calendar AUTO_CAL_TWELVE_OWNED_ACKED 21:22:02 and 21:25:32; CURRENT 4/4 confirmed 21:22:26.991; sampled CRC_DIFF=0, RX drops=0, parser resync=0. Other d7/d8 preview attempts while busy correctly NO_TX. Combined three capture evidence: 27/27 physical Heating writes semantically accepted across all ten descriptors. **CURRENT MILESTONE:** Heating Write User complete. **DELIVERABLE:** W2R25F4, 27/27 semantic readbacks over three logs. **REAL BLOCKER:** none for Heating; other groups unvalidated. **ONE NEXT ACTION:** integrate Hot Water Write User into the same S92 writer/ledger, with user-controlled bounded live acceptance and TX still on hold until authorized. Earlier 9/10 text below is historical.
+
 ## Current verified baseline
 
 **Latest locally verified candidate:** Private W2R25F4, flashed by user, iTec XTR M 3N controller 2.4.2. **Nine of ten Heating descriptors LIVE / LOCALLY VERIFIED**, with **26/26** actual user-initiated physical desired-page sends followed by genuine controller-origin FC16 semantic acceptance in two consecutive 2026-10-28 captures. The first log (21:12:09–21:15:33) had 19 acceptances over seven descriptors; the second (21:16:16–21:20:05) adds seven verified sends (D6 three times, D12 twice, D8 once, D7 once). No ESP reboot or per-parameter/session count boundary was needed between deliberate HA writes.
