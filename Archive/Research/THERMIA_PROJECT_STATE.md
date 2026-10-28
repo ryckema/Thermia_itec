@@ -1,3 +1,18 @@
+## 2026-10-28 — W2R9 LIVE read-only verified; W2R10 OEM-native active path consolidation PREPARED
+
+**OBSERVED FACTS:** User W2R9 user-target-compiled and OTA-flashed. ESPHome log at 01:22:54–01:23:~: marker MAIN04-W2R9, M6 retained auto rejoin 0→2→4→5, physically ACKed 03E8/14 + 042E/15 + 0442/13 + 0546/20 CURRENT4/4 at 01:23:20.306, snapshotGen1, Heating Curve36, calendar12 owner ACKed by 01:23:46.882, CRC_DIFF0, RX buffer drops0, parser resync reached 2 then stable, no physical HA setting write. W2R9 **TARGET COMPILED / FLASHED / LIVE / LOCALLY VERIFIED** **COMPLETE / POSITIVE** read-only native/HA regression only. OEM parameter-write semantic cycle not live proven by W2R9.
+
+**SOURCE / OFFLINE TESTED W2R10:** Based on exact live W2R9 full YAML, one concentrated active-path consolidation: OEM register ledger governs Heating Curve FC16 owner receipt, desired-page FC03 dispatch, pinned baseline original, desired word in native FC03 builder, selector alert bit and semantic confirmation, with same single S92 TX/RX/DE owner and unchanged call sites. Original Connect 930 flags desired register1000 → selector W1 bit1, CURRENT selector W3 bit1; OEM ledger checked against 21-geometry. Disabled descriptor EXP430 status remains as compatibility only; avoids breaking production HA and read-only CURRENT. Native pause/abort/rollback retained; all other settings writes ON HOLD and OEM automatic physical retries OFF. PyYAML, HA entity ID parity, UART owner counts, ZIP integrity and extracted host-C++ predicate smoke test PASS; **ESPHome TARGET COMPILE / FLASHED / LIVE NOT RUN for W2R10**. Full private W2R10 single YAML + exact W2R9 rollback delivered; do not publish private firmware.
+
+**OPEN:** Full EXP430 removal still depends on historical disabled descriptor and HA callback dependency migration; no authority to broaden physical TX. Legacy EXP378 CURRENT_REFRESH_DEFERRED independently warns while native refresh runs.
+
+**CURRENT MILESTONE:** OEM-native register transactions (W2R10).
+**DELIVERABLE:** W2R10 single YAML + W2R9 rollback SOURCE/OFFLINE TESTED PREPARED/NOT RUN.
+**REAL BLOCKER:** Target compilation and XTR native read-only regression for changed owner dispatch, semantic XTR write confirmation still not exercised.
+**ONE NEXT ACTION:** User ESPHome 2026.9 target compile W2R10, then user-enabled OTA read-only native M6 CURRENT 4/4/HA/calendar/CRC check without setting write.
+
+---
+
 ## 2026-10-28 — MAIN04-W2R8 LIVE positive; W2R9 OEM-native register transaction ledger PREPARED
 
 **OBSERVED FACTS (XTR M 3N, controller 2.4.2):** User compiled/OTA-flashed corrected W2R8 and supplied 00:51:32–00:52:~ log. On fresh ESP OTA reboot, retained automatic owner qualified M6=5 after exact owner-ACKed H/D/C/M CURRENT4/4 at 00:51:58.909, CRC_DIFF0, RX drops0, parser resync0, Heating Curve36; native calendar twelve-page sequence controller-confirmed at 00:52:20.290. Existing HA heating/DHW/cooling values published; no physical HA setting write trial. W2R8 read-only/session regression **COMPLETE / POSITIVE, TARGET COMPILED / FLASHED / LIVE / LOCALLY VERIFIED**. W2R7 similarly locally verified read-only; W2R5 remains latest controller-semantic Heating Curve35→36 proof.
