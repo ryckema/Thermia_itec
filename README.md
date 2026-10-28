@@ -113,6 +113,17 @@ Some values depend on the heat pump configuration, available bus messages and fi
 - Passive monitoring option without bus transmission
 - Local caching of selected controller settings
 
+## Roadmap
+
+**Development status (28 October 2026).** The latest locally verified private XTR firmware is W2R19. Real controller-origin readback has confirmed one user-initiated Heating Curve write (D1) and one Heating Minimum write (D4); native session recovery, four-page CURRENT and calendar reads have also been verified. These private experimental milestones do not mean the public Write User release is complete.
+
+1. **Write User — heating group (current):** W2R20 is prepared, source/offline tested but not yet target compiled or tested live. It connects ten existing heating controls to one controller-driven write ledger via direct Home Assistant edits; no separate ARM buttons. Unvalidated settings require a bounded, user-initiated controller-semantic verification before general release.
+2. **Write User — additional register groups:** extend the same shared ledger to hot water, cooling, operating mode and calendar according to genuine controller evidence and user-accessible ranges. Do not create a second UART writer or parallel protocol engine.
+3. **Native session reliability:** retain the verified DCM communication, CURRENT/cache freshness and calendar lifecycle. Investigate remaining restart/rejoin issues only when concrete evidence warrants it.
+4. **Write Service:** later, separately scoped work. Preserve all controller interlocks and explicit authorization.
+
+Parameter-write features that lack controller-semantic proof remain experimental; no parameter or physical transmission permission is inferred from a transport acknowledgement. Proprietary firmware source and private captures are not published.
+
 ## Hardware requirements
 
 You only need a few inexpensive components to get started.
