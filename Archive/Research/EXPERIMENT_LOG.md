@@ -1,3 +1,11 @@
+## 2026-10-28 W2R9 and W2R10
+
+W2R9: COMPLETE / POSITIVE for user target-built OTA read-only regression: M6=5, CURRENT4/4, calendar12/12, HA functional, CRC_DIFF=0, drops=0, parser resync=2 stable. No parameter write performed; semantic OEM write not validated.
+
+W2R10: PREPARED / NOT RUN, SOURCE / OFFLINE TESTED. One focused OEM ledger source refactor from exact W2R9: Heating Curve receipt ownership, desired page dispatch, baseline, desired value, selector alert and confirmation use canonical transaction; temporary EXP430 compatibility remains for inactive descriptor paths. Physical S92 UART safeguards and permitted writes unchanged. YAML parse, HA parity and packaging pass; not target compiled/flashed/live. Existing S92 ABORT and exact W2R9 rollback. ONE NEXT ACTION: user compiles and checks OTA read-only regression; no new setting TX.
+
+---
+
 ## MAIN04-W2R8 read-only OEM source regression — COMPLETE / POSITIVE; W2R9 OEM-native ledger PREPARED / NOT RUN (2026-10-28)
 
 Hypothesis W2R8 generic descriptor native CURRENT provenance preserves W2R7 transport, HA and auto ESP OTA hot rejoin. Baseline W2R7 locally verified, earlier user-controller-confirmed W2R5 Heating Curve35→36. One W2R8 implementation introduced RAM-only descriptor source certificate for 20 native descriptors, fixed original C++ std::array-vs-vector RX cache type error. Actual user ESP OTA 00:51:32–00:52:~: W2R8 marker, M6=0→2→4→5 with actual 03E8/14, 042E/15, 0442/13, 0546/20 physical FC16 owner ACK and CURRENT_4PAGE_CONFIRMED mask0F at 00:51:58.909, Heating Curve36, normal HA controls, 12/12 native calendar page receipts by 00:52:20, CRC_DIFF0 and drops/resync0, no parameterwrite. **Status W2R8 COMPLETE / POSITIVE for native read-only/source regression, LOCALLY VERIFIED.** Not proof that native extra descriptor setting writes work. Existing controller settings unchanged; ABORT and rollback to W2R7 remain.
