@@ -2,6 +2,18 @@
 
 Last updated: 2026-10-28. This restored public status file records non-sensitive outcomes only. Historical user-provided September 2026 snapshots remain separate private source material; their detailed experiment history is not reconstructed or silently overwritten here. See Git commit history and private project captures for earlier raw evidence.
 
+## W2R25F4 — Heating consolidated milestone closure
+
+- **Experiment ID:** W2R25F4 Heating multiwrite acceptance, continuation, no firmware change.
+- **Hypothesis:** D5 Heating Maximum works through the existing user-initiated desired-page path.
+- **Baseline:** prior 26/26 acceptances spanning nine Heating descriptors.
+- **ONE change:** user edited D5 40→42 on unchanged W2R25F4.
+- **Expected:** one changed word, one physical page, genuine controller FC16 acceptance, M6/CURRENT/calendar stable.
+- **Actual:** Third XTR user log 2026-10-28 21:21:36–21:25:35: D5 Heating Maximum reg 03EA word2 user edit 40→42 at 21:25:18; one desired 03E8/14 physical page with deltaWords=1 at 21:25:28 (S92 DE=LOW); real controller-origin FC16 semantic CONTROLLER_ACCEPTED d=5 actual=42 at 21:25:29.481. M6=5; calendar AUTO_CAL_TWELVE_OWNED_ACKED 21:22:02 and 21:25:32; CURRENT 4/4 confirmed 21:22:26.991; sampled CRC_DIFF=0, RX drops=0, parser resync=0. Other d7/d8 preview attempts while busy correctly NO_TX. Combined three capture evidence: 27/27 physical Heating writes semantically accepted across all ten descriptors.
+- **Status:** **COMPLETE / POSITIVE**, 10/10 descriptors and 27/27 physical user writes with semantic readback.
+- **ABORT/rollback:** no ABORT required; existing S92 abort and verified W2R24 fallback retained.
+- **ONE NEXT ACTION:** roadmap step 2, integrate supported Hot Water writes in the same engine, without expanding physical TX before user-initiated bounded experiment.
+
 ## W2R25F4 — second live capture, added to existing consolidated acceptance
 
 - **Experiment ID:** Same W2R25F4 Heating multiwrite acceptance, continued user-run; not a new firmware experiment.
