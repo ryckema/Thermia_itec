@@ -1,3 +1,9 @@
+## 2026-10-28 W2R11 prepared
+
+Latest locally verified baseline W2R10. New private W2R11 full YAML consolidates native Heating Curve selector, FC03 desired-page, FC16 confirmation and expiry within the OEM ledger. The S92 bus owner and working read-only firmware are preserved; new parameter writes remain disabled. SOURCE/OFFLINE TESTED, PREPARED/NOT RUN. Full target build and live test pending. Exact W2R10 rollback supplied.
+
+---
+
 ## 2026-10-28 — XTR W2R9 OEM ledger live read-only; W2R10 moves active owner dispatch
 
 W2R9 user OTA XTR 2.4.2 live: M6 retained 5, CURRENT4/4 ACK, native calendar 12/12, CRC_DIFF0, RX drop0, resync2 stable. This confirms OEM ledger does not regress native read-only; NOT controller-semantic new write acceptance. W2R10 SOURCE changes ONLY existing Heating Curve reg1000 active path to use OEM ledger for controller FC16 receipt ownership, genuine FC03 desired page dispatch, pending alert, original and desired values, while reusing original S92 UART/RX/DE and current native M6 guards. Original Connect 930 selector layout: 1801 alert maps selector word1 bit0; CURRENT refresh 1803 maps selector word3 bit0. 21 canonical descriptors previously matched OEM modbus-flags JSON, but 20 unvalidated physical writes still disabled; no new TX roles/CRC/frames. W2R10 TARGET COMPILE/LIVE NOT RUN.
