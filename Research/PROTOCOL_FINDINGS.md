@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## W2R38 — OEM-style calendar field intent, same S92/OEMW owner (SOURCE; NOT LIVE)
+
+User-supplied original Connect client supports per-field calendar configuration, changed-page signaling and later controller readback, and a logical record can cross physical 33-word page boundaries. This supports a register-level calendar transaction plan sharing the already proven parameter OEMW ledger's exclusivity and the single S92 physical owner; the old EXP452 full-page value-write path was not semantically proven and is now removed as a physical TX branch. W2R38 uses actual same-epoch controller originals to enumerate up to five weekly field changes including cross-page slots; it never transmits those intentions or modifies calendar metadata. OEM input source does not prove exact XTR write semantics. Still PREPARED / NOT RUN; no target compile, no XTR live calendar value-acceptance; writes ON HOLD.
+
+
 ## MAIN04-W2R37 — calendar OEM 2.4.2 schema comparison (SOURCE / OFFLINE TESTED; NOT LIVE)
 
 Genuine user-supplied Connect 2.1.105 device-client for CM930 2.4.2 confirms eight slots per calendar type, a 12-field slot schema (mode, start/stop date+time, weekdays) and programmed/active metadata. Configuration edits are field-scoped and associated with page-change notification and controller readback, not semantic acceptance by transport ACK alone. The previously XTR-live-verified 12/12 calendar pages match the expected read-side grouping; some program slots straddle the physical 33-word boundaries. Original device-client alone does NOT prove the existing EXP452 write-side full-page semantics, controller adoption or eventual persistence on XTR. OEM proprietary source not copied into repo.
