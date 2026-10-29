@@ -1,5 +1,17 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R41 independent automatic calendar re-read after confirmed one-word write — COMPLETE / POSITIVE
+
+**Hypothesis:** actual controller retains previously accepted P4 stop minute26 across a later automatic calendar refresh, rather than only reflecting local speculative cache.
+**Baseline:** first W2R41 user-authorized two-press P4 one-minute write successfully confirmed via controller FC16 reg0584=26 at 00:42:33.923; no later independent read then.
+**ONE change/observation:** user allowed normal W2R41 operation and supplied continued live log; NO additional calendar setting action.
+**Expected:** controller-owned new 057B/33 FC16 during native calendar12/12, word9 0x001A=26, then HA Sunday18:20–18:26; no setting TX.
+**Actual:** COMPLETE / POSITIVE as exactly observed at 00:46:59.897 and 00:47:10.560–.731. Also periodic CURRENT4/4 at 00:44:14 and CRC_DIFF0/drops0, stable M6=5. Does not test reboot/nonvolatile persistence.
+**ABORT/rollback:** unchanged, not needed. No retest of one-word write and no artificial controller fault.
+
+**2026-10-30 W2R41 independent natural calendar refresh confirms retained P4 setting — COMPLETE / POSITIVE within same running controller session.** New user-supplied XTR live log 00:43:43–00:47:4x after previously completed deliberate calendar P4 one-minute write at 00:42:33.923. At 00:46:57.100–108 normal C5DS/CAL10/C5DS-CAL4 arms calendar12/12 using future genuine 0708 (no new calendar setting command); at 00:46:59.897 the actual controller-origin FC16 `start=057B count=33` includes word9/register `0584 = 0x001A` (26) where original was 0x0019 (25). Physical owner sends ordinary FC16 ACK only, DE LOW. At 00:47:10.560 `APP_READ_OWNED_RECEIPT_COMPLETE requested=12 pages epoch=10165 pollTX=1`, and HA re-publishes Hot Water Slot4 Sunday 18:20–18:26 at 00:47:10.731. No `CAL_OEMW_ONE_WORD_TX_EXECUTED`, `CAL_OEMW_TRIAL_ARMED` or new setting dispatch in this entire second log; ordinary `RUNTIME_FC16_ACK_EXECUTED` are required native protocol acknowledgments, not setting writes. This is an **independent subsequent controller read** after the first semantic accept, establishes retention across the next automatic calendar read in one uninterrupted M6=5 session. It does NOT prove nonvolatile storage/restart survival and no restart should be artificially forced. Separately periodic CURRENT request at 00:44:11.641, controller four FC16 receipts at 00:44:11–14, `CURRENT_4PAGE_CONFIRMED` and `snapGen=2`; session M6=5 stable. V5 end CRC_CHECK>=3912, CRC_DIFF=0, RX Drops=0, ambiguous frames=0, parser resync counter remained 7. No new need for firmware patch/test of proven single-field path. Scope: W2R41 XTR LOCALLY VERIFIED for user-authorized one-field controller semantic adoption AND subsequent independent automatic calendar refresh retention, plus OTA native rejoin and CURRENT refresh. Other calendar fields/add/delete and post-controller-restart persistence remain OPEN; HA parameter writes still ON HOLD. Existing single UART/S92 owner, CRC/V5, ABORT and rollback preserved; no confidential capture or OEM source should be committed; README unchanged.
+
+
 ## W2R41 P4 calendar 0584 one-minute write with OEMW controller semantic confirmation — COMPLETE / POSITIVE
 
 **Hypothesis:** after one fresh controller-origin selected calendar F1 3/3 snapshot and one subsequent separate explicit user action, common S92/OEMW can offer the OEM-like single-field change using one bounded full physical page and receive exact controller FC16 showing new value.
