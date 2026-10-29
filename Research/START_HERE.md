@@ -1,5 +1,8 @@
 # THERMIA — START HERE
 
+**2026-10-30 OEM-wide review:** compared W2R40 exact full source and user-supplied genuine Connect CM930 2.0.18/2.1.105. Best future simplifications are ONE native page request/receipt+freshness ledger for CURRENT/CAL/INFO/FC03 and unifying duplicated pending-write state under existing OEMW after dependency checks. Can adapt declarative field decoding/error distinctions. Do NOT replace locally verified S92/V5/CRC/UART/DE/ABORT or copy proprietary handshake, cloud, CM920/ATtiny, retries or cross-model routines. No firmware edits, physical TX or OEM source publication in this review. W2R40 remains SOURCE/OFFLINE TESTED, PREPARED / NOT RUN. Current next action remains user target-build/manual flash and normal XTR native read/preview observation (no forced fault); calendar value-setting remains user-initiated experiment ON HOLD.
+
+
 **2026-10-29 — W2R39 OEM comparison conclusion (SOURCE review; firmware still PREPARED / NOT RUN):** Exact original Connect CM930 2.4.2 proves field-shadow update + per-page dirty/read-request flags + actual physical page reply + subsequent FC16 controller readback; supports retaining 33-word calendar transport with only one changed word. Existing W2R39 descriptor22 has separate special-cases while original OEMW geometry covers 21 descriptors; EXP452 includes unreachable action2 states3..11 despite read states1..2 being used. **FIX next:** one source-integrated OEMW geometry/lease/confirmation unification and remove dead EXP452 writer, preserve all XTR verified native, V5, single S92 physical UART/DE, ABORT and rollback. No calendar setting writes or new HA parameter writes enabled, no artificial recovery tests, no README modifications.
 
 
