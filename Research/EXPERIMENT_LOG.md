@@ -1,5 +1,15 @@
 # THERMIA EXPERIMENT LOG
 
+## MAIN04-W2R37 — OEM-checked calendar selected-program Read & Preview — PREPARED / NOT RUN
+
+**Hypothesis:** existing EXP452 native read-only 3-page F1 snapshot can hydrate the visible HA warm-water program editor, and a locally computed, same-native-epoch fresh snapshot diff can report staged changes without altering controller settings.
+**Baseline:** W2R34 XTR LOCALLY VERIFIED for native owner M6=5/calendar12/12/periodic CURRENT; W2R36 automatic recovery retained as SOURCE/OFFLINE TESTED but NOT RUN.
+**ONE change:** expose existing RAM-only staging/program/status controls; wire missing native EXP452 refresh armer under user button and a no-TX preview; admit non-dirty legacy substatus7 in the original read selector guard. All 90 physical S92 send callsites unchanged; no expanded TX geometry and no calendar Save enablement.
+**Expected:** when M6=5 real clean owner, user selects program1–8, presses Read (existing 3 pages only after fresh 0708), sees actual time/weekday state, edits local staging, presses Preview (zero new TX), sees before/after and changedFields. On stale session or bad bus, read and preview are denied; no setting writes.
+**Actual:** NOT RUN live. Complete YAML parsed offline, 1,110 IDs retained+4 new and no duplicates; ZIP hashes/rollback pass. No target compile.
+**ABORT:** S92 manual ABORT and byte-identical W2R34 locally verified rollback if instability. **Decision:** PREPARED / NOT RUN; separate calendar Save remains ON HOLD until controller-semantic validation and separate user authorization; do not intentionally reproduce previous loss.
+
+
 ## W2R36 — automatic single-engine S92 owner recovery — PREPARED / NOT RUN
 
 **Hypothesis:** when a real C5DE alarm-only candidate appears, the same physical S92 085F/0884/INFO response geometry verified with W2R34 can be armed automatically within the original session epoch, without a second UART owner or human action. If a proven M6=5/CURRENT4/4 native session later reaches real M6=7 loss, one new evidence-gated auto-entry is allowed.
