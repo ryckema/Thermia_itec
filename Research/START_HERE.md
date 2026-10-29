@@ -1,5 +1,8 @@
 # THERMIA — START HERE
 
+**2026-10-29 current handoff — W2R36 native automatic DCM recovery SOURCE / OFFLINE TESTED, PREPARED / NOT RUN.** User explicitly requested automatic response without one-shot opt-in or artificial fault reproduction. Baseline: W2R34 LOCALLY VERIFIED on XTR for manually restored M6=5, calendar12/12 and periodic CURRENT4/4; exact source preserved as rollback, plus older W2R29F1. W2R36 complete private ZIP derives from verified W2R34, adds one S92 watchdog auto native C5DE candidate/arm route with 45s/owner/CRC/DE safeguards, exactly one attempt per native episode; only previously accepted M6=5 later lost may rearm. Original S92 manual ABORT locks out further auto attempts for ESP boot. NO new UART/DE writer, physical frames, parameter or calendar setting writes. W2R35 one-shot experiment SUPERSEDED / NOT RUN. User manually compiles/flashes, observes naturally occurring recovery only; errors -> ABORT/W2R34 rollback. NO ESPHome target compile or live W2R36 proof yet. Never edit README.md.
+
+
 
 
 **W2R33, 29 Oct 2026 21:49:** Flashed and passive RX live. No `[W2R33] USER_RECOVERY_ARMED` in the new log; the intentional startup recovery experiment remains PREPARED / NOT RUN. Normal auto attempt held M6=2, withheld 0708 and expired after 60s into M6=7. Previous-build panic report is not evidence W2R33 crashed. Next: in HA use S92 manual START, then once M6=2/stage40, press the one-shot recovery within 45s. No calendar writes. Do not edit README.md.
