@@ -17,8 +17,8 @@ The integration is organized into four firmware versions, each offering a differ
 |---|---|---|---|
 | **Passive** | Yes | No | Read-only, passive bus monitoring |
 | **DCM Read Only** | Yes | No | Read-only, using native DCM communication |
-| **Write User** | Yes | Yes | User-accessible settings |
-| **Write Service** | Yes | Yes | User and service-menu settings |
+| **Write User (soon)** | Yes | Yes | User-accessible settings |
+| **Write Service (soon)** | Yes | Yes | User and service-menu settings |
 
 ### 1. Passive
 
@@ -44,8 +44,8 @@ This version is intended to provide more complete monitoring by supporting nativ
 - Access to additional parameters and status information where supported
 - No parameter changes
 
-### 3. Write User
-
+### 3. Write User 
+**Beining tested at the moment and will be realeased soon**
 **Monitoring and control of settings available through the heat pump's normal user interface.**
 
 This version is intended to allow Home Assistant to change user-accessible settings documented in the Thermia operating interface.
@@ -64,7 +64,7 @@ Examples include:
 These controls remain subject to protocol validation and controller support.
 
 ### 4. Write Service
-
+**Beining tested at the moment and will be realeased soon**
 **Integration of user-accessible settings and parameters available through the Thermia SERVICE menu.**
 
 This version is intended to expose supported service-level settings in addition to the normal user controls.
