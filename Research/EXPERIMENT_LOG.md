@@ -1,5 +1,16 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R40 first XTR live OTA rejoin and complete calendar READ — COMPLETE / POSITIVE (bounded subset)
+
+**Hypothesis:** W2R40 after ordinary ESPHome OTA can requalify one native M6 owner, synchronize CURRENT4/4 and read calendar12/12 without setting TX.
+**Baseline:** W2R34 verified manual native/read; W2R40 newly running and not previously live.
+**ONE change:** first ordinary OTA reboot/observation of W2R40; no forced failure and no calendar setting trial.
+**Expected:** M6=5, actual current/calendar receipts, clean V5/DE/HA read state, zero parameter writes.
+**Actual:** COMPLETE / POSITIVE for only session/reads; exact timestamp evidence below. W2R40 calendar value-write remains PREPARED / NOT RUN. **ABORT/rollback:** standard S92 ABORT and exact W2R34 rollback in private firmware ZIP, neither needed.
+
+**2026-10-30 00:16:25–00:17:36 — W2R40 first XTR LIVE trace, OTA retained-runtime native rejoin: COMPLETE / POSITIVE (read/session scope only); calendar write PREPARED / NOT RUN.** Firmware build sensor expressly identifies Thermia MAIN04-W2R40; reset reason ESPHome OTA reboot (ESP32-S3, ESPHome 2026.9.0). C5CF AUTO_NATIVE_ENTRY_ARMED route=RETAINED_RUNTIME at 00:16:27.419, first genuine 0884 special physical ACK via C5CG at 00:16:29.508, INFO first 00:16:33, second 0884/M6=4 at 00:16:50.905, four controller CURRENT FC16 pages 03E8/042E/0442/0546 and M6=5 at 00:16:57.317–318 (acceptedOwner=1, integrity=1, profile=1, fresh=1); one manual/auto-scoped calendar read at 00:16:59, all twelve calendar FC16 starts 055A/057B/059C/05BD/05DE/05FF/0620/0641/0662/0683/06A4/06C5 controller-owned, completed 00:17:14.593, HA summaries Hot Water5/8 EVU2/8 Silent2/8 Temperature Reduction0/8. Native M6=5 persists through excerpt end 00:17:36; V5 CRC_CHECK=625, CRC_DIFF=0, parser resync0, RX drops0, no crash/collision/ABORT; DE LOW following ACK. Pending setting queue0 and dirty0, no HA parameter or calendar setting TX. Scope: OTA retained-runtime AUTO rejoin is live observed, NOT automatic alarm-first C5DE/085F restart (085F ACK=0), genuine spontaneous session-loss recovery, 200s periodic CURRENT refresh (snapGen=1), cloud acceptance, long-run durability, or any W2R40 calendar semantic write. W2R40 TARGET COMPILED inferred from running flashed binary, FLASHED/LIVE and LOCALLY VERIFIED narrowly for OTA/native session/CURRENT4/4/calendar12/12. NOTE: generic FIX32 RUNTIME_FC16_NO_OWNER NO_ACK at 00:16:29.508 is contradicted by the special C5CG FIRST_0884_ACK_SENT (same controller frame and owned physical send), so diagnostic wording is misleading; no demonstrated physical TX rejection. Nonblocking log-label defect, not reason to invalidate successful session. MAIN01 CM930 receipts 24/33 observed pending0 are different bookkeeping than 12/12 calendar; do not call 33/33 proved. No new firmware recommended solely for this stable session; preserve exact W2R34 rollback and existing S92 guards; do not publish private captures/OEM secrets or modify README.
+
+
 ## W2R40 wider Connect OEM substitution review — COMPLETE / POSITIVE (source review only; no physical trial)
 
 **Hypothesis:** OEM 2.0.18/2.1.105 architecture can identify safely reusable lifecycle/data-ledger concepts without replacing XTR validated hardware safeguards.
