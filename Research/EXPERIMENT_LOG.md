@@ -1,5 +1,18 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R33 first user-armed physical restoration — COMPLETE / NEGATIVE
+
+Hypothesis: W2R33's one-shot, explicitly USER-ARMED alarm-first recovery will qualify native S92 ownership after controller-offered 085F and 0884 and restore fresh CURRENT/calendar without HA writes.
+
+Baseline: W2R29F1 last fully locally verified; W2R33 FLASHED and normal passive/auto startup previously LIVE / PARTIAL, but recovery NOT RUN. One change in this experiment: manually START S92 (22:05:18.660) then arm W2R33 one shot (22:05:35.438), no firmware changes, no parameter/calendar writes.
+
+Expected: an exact physically acknowledged 0884 and first INFO response, M6=5, CURRENT 4/4, calendar12/12.
+
+Actual: controller 085F ZERO ACK physically sent 22:05:18.869; USER_RECOVERY_ARMED 22:05:35.438; S92 rejected real 0884/60 at 22:05:49.591 (FIX32/FIX39 OWNER UNPROVEN, DE LOW), while 0708 idle FC03SERVED reached 12, physicalTXthisSession 13. First INFO and 0884 physical ACK were never recorded. 0708 scope denied after 12 at 22:06:14.818. M6 2->7 timed out 22:06:18.718 after 60063ms, integrity=1, profile/fresh=0; CURRENT=0/4, calendar unavailable. Earlier separate 22:03:19 parser-integrity abort (resync=124, later 128) does NOT explain the final trial outcome by itself; V5 CRC_DIFF=0, RX drops=0. Passive OEM_INTERNAL=ACCEPTED FC16=0884 does not prove owner or semantic acceptance.
+
+Decision: **COMPLETE / NEGATIVE for W2R33 recovery goal**; do not re-run the unchanged experiment. Owner/role authorization must be reconciled in the single S92 engine, with exact private W2R33 YAML and locally verified W2R29F1 source, preserving all physical guards, controller qualification and ABORT. **ABORT/rollback:** leave M6=7 RX ONLY/DE LOW; user may manually flash known-good W2R29F1 when appropriate, understanding that an ESP rollback cannot reset controller session context. No calendar/HA parameter TX. Further details: 2026-10-29 22:02–22:06 uploaded ESPHome log. **NEXT ACTION:** one integrated scoped S92 fix in a complete private ZIP; never edit README.md.
+
+
 
 
 ## W2R33 — flashed, recovery button not activated; first bounded trial still NOT RUN
