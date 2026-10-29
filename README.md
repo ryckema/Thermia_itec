@@ -45,7 +45,9 @@ This version is intended to provide more complete monitoring by supporting nativ
 - No parameter changes
 
 ### 3. Write User 
+
 **Beining tested at the moment and will be realeased soon**
+
 **Monitoring and control of settings available through the heat pump's normal user interface.**
 
 This version is intended to allow Home Assistant to change user-accessible settings documented in the Thermia operating interface.
@@ -64,7 +66,9 @@ Examples include:
 These controls remain subject to protocol validation and controller support.
 
 ### 4. Write Service
+
 **Beining tested at the moment and will be realeased soon**
+
 **Integration of user-accessible settings and parameters available through the Thermia SERVICE menu.**
 
 This version is intended to expose supported service-level settings in addition to the normal user controls.
