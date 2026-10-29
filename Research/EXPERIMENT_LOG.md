@@ -1,5 +1,11 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-10-29 — W2R34 native startup+calendar+CURRENT experiment CLOSED: COMPLETE / POSITIVE
+
+**Evidence / one change:** Follow-up passive ESPHome log from 22:35:23–22:39:25 after the previously qualified user-armed W2R34 manual native start (epoch 194367). One user-initiated bounded calendar read arm at 22:38:11.628, 60s/48-poll scope, no parameter writes; physical receipt and ACK for all twelve 33-word calendar pages (055A,057B,059C,05BD,05DE,05FF,0620,0641,0662,0683,06A4,06C5) 22:38:14–25. `APP_READ_OWNED_RECEIPT_COMPLETE requested=12 pages` at 22:38:25.995. HA calendar summary/slots populated across all four groups. Automatic periodic CURRENT read after fresh controller 0708 at 22:38:48.879, controller returned all four pages 03E8/042E/0442/0546; `CURRENT_4PAGE_CONFIRMED` 22:38:51.710; `snapGen=2`, confirmed fresh in 22:39:17.632 cache status. Native M6=5 throughout follow-up until 22:39:24, CRC_DIFF=0, parser resync=0, RX drops=0, DE LOW on executed ACKs. **Actual outcome:** COMPLETE / POSITIVE for scoped native recovery, calendar 12/12 and one periodic CURRENT refresh; SOURCE+TARGET COMPILED+FLASHED+LIVE+LOCALLY VERIFIED for those functions only. **Scope limitations:** no autonomous cold start/hot-rejoin test, no cloud Online proof, no long-run durability; no HA settings or calendar-setting write authorization. **ABORT and rollback:** retained manual S92 ABORT/DE LOW and byte-identical W2R29F1 rollback; do not re-run same experiment. **Next:** source-based integrate automatic owned S92 recovery within only proven native exchange, preserve guards and explicit enablement.
+
+
+
 ## W2R34 first correctly user-armed native recovery — RUNNING / PARTIAL (session COMPLETE / POSITIVE)
 
 **Hypothesis:** source-fixed one-or-two physical 085F witness enables genuine one-shot XTR 0884/INFO sequence and native CURRENT+calendar sync.
