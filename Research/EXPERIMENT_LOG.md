@@ -1,5 +1,10 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R47 unified native CURRENT legacy handler — PREPARED / NOT RUN
+
+Baseline W2R46 XTR live M6=5 CURRENT4/4 CAL12/12. One integrated source refactor: owner-indexed queue expiry and in-flight integrity/timeout watchdog with original page-specific HA rollback and status, plus one shared runtime-qualification result reused by the three CURRENT legacy dispatchers. Ordinary HA and calendar setting writes remain ON HOLD; S92 UART/DE and existing ABORT unchanged. Offline YAML and 231 lambda structures passed; 714 globals and 348 HA entities retained. NOT target compiled/flashed/live. Rollback exact W2R46 live source in private full ZIP. Expected normal recovery M6=5 CURRENT4/4 CAL12/12. Next manual compile and read-only live observation, without tests of held physical settings.
+
+
 ## W2R46 live check — COMPLETE / POSITIVE
 
 30 October 2026: W2R46 recovered from OTA restart. M6 qualified, four CURRENT pages and twelve calendar pages were received. No CRC errors or RX drops. The updated lifecycle storage works for first-start read operation. No settings write trial was performed. Legacy handlers remain.
