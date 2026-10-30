@@ -1,5 +1,8 @@
 # THERMIA — START HERE
 
+**W2R42F1 first live observation, 2026-10-30:** Compiled/flashed, M6=5. Program 4 F1 3/3 read and one-field RAM preview correct. First Apply was denied because an automatic calendar read was active. That read later completed 12/12; no setting write occurred. **Next:** when idle, press Apply once to prepare and inspect result without physical write. New field control not yet validated. W2R41 remains rollback.
+
+
 **2026-10-30 W2R42F1 SOURCE/OFFLINE TESTED, PREPARED / NOT RUN:** W2R42 failed user ESPHome configuration validation: `[optimistic] is an invalid option for [button.template]` because the new Field to Apply *select* was accidentally in the `button:` list. One source fix: move unchanged `w2r42_calendar_field_select` to existing `select:` list; keep `w2r42_calendar_field_commit` in `button:`; update build display to W2R42F1. No protocol lambda changes, S92/DE/CRC/FC03/FC16/ABORT and explicit two-press authorisation unchanged. Full private ZIP `Thermia_MAIN04_W2R42F1_OEMW_Calendar_Editor_Compile_Fix_PRIVATE.zip` contains full YAML+docs+W2R42 source and exact locally verified W2R41 rollback. PyYAML including !secret, per-component template classification, original lambda texts, unique IDs and package hashes PASS offline; ESPHome target compilation/flash/LIVE NOT RUN. **ONE NEXT ACTION:** user compiles W2R42F1, then flashes only if compile succeeds; no physical field edit without separate user initiation. W2R41 remains last XTR validated. README unchanged.
 
 
