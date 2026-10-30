@@ -1,5 +1,10 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R46 live check — COMPLETE / POSITIVE
+
+30 October 2026: W2R46 recovered from OTA restart. M6 qualified, four CURRENT pages and twelve calendar pages were received. No CRC errors or RX drops. The updated lifecycle storage works for first-start read operation. No settings write trial was performed. Legacy handlers remain.
+
+
 ## W2R45 live — COMPLETE / POSITIVE
 
 30 October 2026 XTR log: W2R45 remains M6=5; calendar read 12/12 and CURRENT 4/4 complete. No CRC differences or RX drops. This verifies native cache refactor for normal reads, not setting writes. All setting trials on hold. Next: integrate remaining legacy control state in the current owner.
