@@ -1,5 +1,8 @@
 # THERMIA — START HERE
 
+**2026-10-30 W2R47 PREPARED / NOT RUN.** W2R46 remains latest locally verified XTR read/runtime baseline: OTA recovered M6=5 CURRENT4/4 CAL12/12. Private W2R47 full ZIP consolidates active legacy CURRENT queue expiry, in-flight fail-closed guard and shared runtime preflight across EXP378/379/380 in existing native/S92 owner. Original per-page HA rollback, page validation, native session/CRC, ABORT, all user controls and dual calendar TX HOLD remain. Source YAML, 231 lambda structures, 714 globals and 348 HA entities offline checked. W2R47 NOT target compiled, flashed or live. Selector/desired legacy branches still present; no new settings TX. **ONE NEXT ACTION:** user compile and manually flash W2R47 only if successful, observe ordinary M6/CURRENT/CAL read behavior, no setting trial. Exact W2R46 rollback supplied.
+
+
 **2026-10-30 W2R46 PREPARED / NOT RUN:** last locally verified XTR firmware W2R45, stable M6=5 CURRENT4/4 CAL12/12. Complete private W2R46 firmware ZIP stores EXP378/379/380 state/sync_valid/queue_ms in 3 native arrays instead of 9 globals, preserving exact original defaults and guards, with old EXP handlers not yet removed. All setting TX still ON HOLD; manual ABORT and unique S92 TX owner unchanged. Offline YAML verified, 720 to 714 globals; NOT TARGET COMPILED or FLASHED. Exact W2R45 rollback in ZIP. ONE NEXT ACTION: manually compile/flash W2R46 and observe routine reads; no setting test.
 
 
