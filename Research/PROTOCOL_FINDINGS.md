@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## W2R45 XTR runtime evidence: native desired/confirmed arrays
+
+Live W2R45 XTR log 09:08:32–09:12:32, M6=5, app 12/12 F1-derived calendar owned receipt 09:09:30–36, native CURRENT four-page complete 09:11:31. CRC_DIFF=0 across 6742 checks, drops and parser resyncs zero. Calendar P4 remains Sunday18:20–18:26. Normal FC16 runtime reply/ACK does not prove semantic acceptance of any user-changed register: no new setting write was armed. Thus W2R45 storage refactor is LOCALLY VERIFIED for runtime reads but legacy dirty/abort state remains unretired and all setting writes stay ON HOLD.
+
+
 ## W2R45 source-only legacy desired/confirmed cache consolidation
 
 W2R45 replaces 34 EXP378/379 scalar register desired/confirmed words with four native arrays, preserving existing page word offsets and initial values. Existing S92 physical owner, native receipt qualification, V5 CRC, FC03 refresh, OEMW semantic confirmation and hold on calendar/HA-setting writes are unchanged by this source-only storage change. OFFLINE TESTED only; XTR live compatibility not yet shown. EXP378/379/380 control-state guards remain active dependencies. The most recent locally verified runtime baseline remains W2R44.
