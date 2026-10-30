@@ -1,5 +1,10 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R44 — native CURRENT word buffers from EXP378/379/380 — PREPARED / NOT RUN
+
+Hypothesis: forty-eight scalar CURRENT-page word globals can be one native array per existing controller CURRENT page with unchanged register word indexing and no second bus owner. Baseline W2R43 XTR LOCALLY VERIFIED for M6=5 CURRENT4/4 CAL12/12. ONE source change: 15 words for 042E, 13 for 0442, 20 for 0546 moved from scalar `exp378/379/380_wNN` globals into zero-initialized `native_current_042e_words`, `native_current_0442_words`, `native_current_0546_words` arrays. Existing status/dirty/abort/guard and user HA controls retained; calendar setting and HA parameter writes ON HOLD. Offline PyYAML, exact parsed inverse mapping, HA IDs, UART and 91 S92 owner calls static PASS. Net globals 795→750, no other component behavior change intended. NOT TARGET COMPILED, NOT FLASHED, NOT LIVE. Full private ZIP W2R44 with W2R43 (latest read-live), W2R42F1, W2R41 rollback; ABORT via existing S92. **ONE NEXT ACTION:** user compiles W2R44 and flashes manually only if compiled, confirm ordinary native pages; no write trials.
+
+
 ## W2R43 first OTA XTR live, native sync and calendar cache — RUNNING / PARTIAL
 
 **Baseline:** W2R42F1 locally verified session/read/editor RAM; W2R41 last locally verified calendar setting write, now ON HOLD. **Change:** W2R43 single F1 calendar cache and OEMW snapshot, plus hard calendar TX HOLD; old EXP native dependencies retained.
