@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## W2R46 read results
+
+Native session qualified after OTA restart and the controller provided four CURRENT pages and twelve calendar pages. No CRC differences or dropped bytes. This confirms the new lifecycle arrays in the observed read path. Ordinary FC16 responses are not setting writes.
+
+
 ## W2R45 XTR runtime evidence: native desired/confirmed arrays
 
 Live W2R45 XTR log 09:08:32–09:12:32, M6=5, app 12/12 F1-derived calendar owned receipt 09:09:30–36, native CURRENT four-page complete 09:11:31. CRC_DIFF=0 across 6742 checks, drops and parser resyncs zero. Calendar P4 remains Sunday18:20–18:26. Normal FC16 runtime reply/ACK does not prove semantic acceptance of any user-changed register: no new setting write was armed. Thus W2R45 storage refactor is LOCALLY VERIFIED for runtime reads but legacy dirty/abort state remains unretired and all setting writes stay ON HOLD.
