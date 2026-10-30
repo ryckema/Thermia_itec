@@ -1,5 +1,10 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R45 live — COMPLETE / POSITIVE
+
+30 October 2026 XTR log: W2R45 remains M6=5; calendar read 12/12 and CURRENT 4/4 complete. No CRC differences or RX drops. This verifies native cache refactor for normal reads, not setting writes. All setting trials on hold. Next: integrate remaining legacy control state in the current owner.
+
+
 ## W2R45 native desired/confirmed cache consolidation — PREPARED / NOT RUN
 
 Baseline: W2R44 XTR locally verified M6=5/current4/4/calendar12/12. One source change: 34 legacy EXP378/379 desired/confirmed word scalars moved to four native indexed arrays with exact original word positions and initial values. Existing transaction-state, dirty-mask, idle and manual ABORT logic not altered. Ordinary parameter/calendar setting writes remain ON HOLD. Offline YAML parsing and unchanged HA entities verified, 750→720 globals; ZIP includes exact W2R44 rollback and prior sources. **NOT TARGET COMPILED / NOT FLASHED / NOT LIVE**. Expected: identical regular readings and native synchronization. Abort: existing S92 manual ABORT; rollback W2R44. One next action: user manually compile then flash if it succeeds; ordinary read-only observations only.
