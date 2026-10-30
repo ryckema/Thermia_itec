@@ -1,5 +1,8 @@
 # THERMIA — START HERE
 
+**2026-10-30 W2R42F1 latest XTR LIVE:** actual `CAL_EDITOR_PREPARED` at 01:37:35: P4 start-minute reg057F old20 new21, RAM only, NO setting TX, second press required. User then pressed Read Selected Program again 01:37:57; selected F1 3/3 completed 01:38:00 and reset HA Start Minute to original20. Do NOT press second time expecting21 from stale preparation. W2R42F1 LOCALLY VERIFIED for editor RAM-only Prepare and native reads, not new field controller semantic accept; experiment RUNNING / PARTIAL. **ONE NEXT ACTION:** set HA Start Minute21 again, Preview, Prepare once, then optionally deliberately press same Apply again within60s without any intervening Read; inspect real controller FC16 before calling write positive. Keep exact W2R41 rollback and HA parameter-write HOLD; README unchanged.
+
+
 **W2R42F1 first live observation, 2026-10-30:** Compiled/flashed, M6=5. Program 4 F1 3/3 read and one-field RAM preview correct. First Apply was denied because an automatic calendar read was active. That read later completed 12/12; no setting write occurred. **Next:** when idle, press Apply once to prepare and inspect result without physical write. New field control not yet validated. W2R41 remains rollback.
 
 
