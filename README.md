@@ -7,6 +7,18 @@ This project provides a local, cloud-independent integration for Thermia iTec XT
 The integration is developed and tested on a **Thermia iTec XTR M with Total Compact indoor unit**, using an ESP32-S3 with an RS485 interface.
 If you are looking for a ATEC version it can be found here: https://github.com/fclauson/Thermia-ATEC-ESP-emulator-of-DCOM
 
+## Roadmap
+
+**Development status (30 October 2026):** Current locally observed XTR runtime/editor baseline is **W2R42F1** (M6 session, native read and calendar preview/Prepare). **W2R41** is the last locally verified controller-accepted calendar setting change and subsequent natural re-read. The current **W2R43** consolidation is **SOURCE / OFFLINE TESTED, PREPARED / NOT RUN**; it has not been target compiled, flashed or live validated.
+
+1. **Consolidate native calendar reads** into one authoritative F1 data store, retaining controller-origin CRC validation, per-page freshness, and a separate owned-session receipt generation. Source implemented in private W2R43; **next: verify ordinary read-only live operation after manual compilation/flash**.
+2. **Retain one OEMW setting transaction and one S92 UART/RX/DE owner.** Source W2R43 shares one page snapshot across legacy confirmation paths without adding bus writers or changing retry/safety guards.
+3. **Retire obsolete EXP writing state only after preserving its active native refresh, cache, ABORT and idle dependencies.** EXP378/379/380 are not yet fully removable; no parallel write system should replace them.
+4. **Calendar setting trials ON HOLD at user request.** Both old and new calendar pilot setting TX paths are held in W2R43. Normal native FC16 sync/ACKs and FC03 read/refresh are not setting writes. New/other calendar fields and create/delete require separate XTR validation and explicit user authorization before any new physical setting TX.
+5. **General Home Assistant parameter writes remain ON HOLD** pending user authorization and real controller semantic validation.
+
+Development firmware and private OEM-derived protocol materials are not published in this public repository. The canonical detailed status and evidence remain under `Research/`; this public roadmap describes priority and availability only.
+
 ## Features
 
 The integration is organized into four firmware versions, each offering a different level of access to the heat pump.
