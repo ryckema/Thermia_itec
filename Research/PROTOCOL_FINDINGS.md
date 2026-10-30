@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## W2R48 XTR live protocol observations: genuine current/calendar (2026-10-30)
+
+User W2R48 live log 12:35:57–12:40:02 independently confirms retained/manual M6=5 stage40 operation, automatic calendar read request on future real 0708 at12:36:48.389, 12 genuine controller-origin 33-word FC16 pages from 055A to 06C5, owned 12/12 receipt 12:36:59.910 (epoch10175, one pollTX, within240s, NOT_ONLINE) and complete ACK at12:37:06.599. Separate CURRENT request12:37:31.377 acquired 03E8/042E/0442/0546 and mask0F 4/4 at12:37:34.216 with DE=LOW semanticTX=0; FC03 cache fresh. CRC_DIFF0 across21613 checks, drops0, resync0. No setting write, pending/dirty0. This supports normal runtime equivalence following storage refactor, but cannot establish physical write semantics, OEM Online, cold start or recovery. W2R48 latest locally verified read/runtime baseline; W2R47 prior read baseline, W2R46 explicit OTA-start fallback. No S92 safety guard change or new TX permission.
+
 ## W2R48 source-level transaction state migration (NOT LIVE)
 
 Starting from XTR W2R47 locally verified for M6=5, controller CURRENT4/4 and automatic native calendar12/12, W2R48 combines legacy EXP378/379/380 `target_word`, `target_value`, `original_value`, `selector_ms`, and `desired_ms` from 15 scalar globals into five three-owner native arrays, owner0=042E, owner1=0442, owner2=0546, preserving per-owner initial values and exact original transaction branches. 714→704 globals, no second RX/TX owner, S92 writes/guards/CRC/session/ABORT and HA component IDs intact. Offline YAML/manifest checks PASS but NOT ESPHome target compiled or XTR flashed/live. This is source/storage consolidation, no new controller semantic evidence; remaining old selector/action branches still dependencies. All settings writes held. W2R47 remains latest LOCALLY VERIFIED for routine read/runtime; W2R46 verified for startup fallback.
