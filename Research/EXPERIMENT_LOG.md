@@ -1,5 +1,12 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R42F1 correct P4 Start Minute 20→21 prepared, later Apply rejected during auto-read — RUNNING / PARTIAL
+
+**Baseline:** W2R41 proven P4 stop-minute25→26 with later independent controller read; W2R42F1 XTR M6=5 with new field edit and preview live.
+**Observed:** at 01:46:11 user initially prepared StartMinute20→22 only, no TX. At 01:47:20.483 correctly prepared reg057F old20 desired21, RAM only. New selected program read at 01:47:59→01:48:05 returned original20 and field restaged21; at 01:48:10 auto 12-page calendar read started. User pressed Apply 01:48:14.958; correct busy denial `idle=0`/NO_TX, controller 12/12 receipt ended 01:48:23.480. NO calendar field physical write, no semantic acceptance, so not a negative controller-write result.
+**Actual:** COMPLETE / POSITIVE for exact 20→21 *preparation* only; full new-field experiment RUNNING / PARTIAL. **ABORT/rollback:** none required; S92 retained, W2R41 available. **ONE next action:** no more prep-only exercises; after native read idle, one chosen two-press bounded user trial, no Read between and verify new controller-origin FC16 if transmitted.
+
+
 ## W2R42F1 later P4 Start Minute preview 20→22 — RUNNING / PARTIAL
 
 01:45:49 Preview refused because selected snapshot absent; native F1 read3/3 then completed at 01:45:56. User staged Start Minute21 then22 in HA; preview generated exactly one changed field and first editor press at 01:46:11 prepared reg057F original20 desired22 in RAM, `NO_SETTING_TX`. There was no separate second press and no setting TX. This is another positive demonstration of safe Prepare, but not the intended 20→21 semantic controller write. User should set 21 precisely and confirm prepared value before any separate commit. Previous ESP reset was exception/panic with saved crash record from another build, not attributable to editor; observe if repeated rather than forcing recovery tests. Last semantic write proof remains W2R41 P4 stop minute25→26. Status RUNNING / PARTIAL.
