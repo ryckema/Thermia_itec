@@ -1,5 +1,10 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R42F1 later P4 Start Minute preview 20→22 — RUNNING / PARTIAL
+
+01:45:49 Preview refused because selected snapshot absent; native F1 read3/3 then completed at 01:45:56. User staged Start Minute21 then22 in HA; preview generated exactly one changed field and first editor press at 01:46:11 prepared reg057F original20 desired22 in RAM, `NO_SETTING_TX`. There was no separate second press and no setting TX. This is another positive demonstration of safe Prepare, but not the intended 20→21 semantic controller write. User should set 21 precisely and confirm prepared value before any separate commit. Previous ESP reset was exception/panic with saved crash record from another build, not attributable to editor; observe if repeated rather than forcing recovery tests. Last semantic write proof remains W2R41 P4 stop minute25→26. Status RUNNING / PARTIAL.
+
+
 ## W2R42F1 successful first editor Prepare, then HA edit reset by Read — RUNNING / PARTIAL
 
 **Baseline:** W2R42F1 live session and preview, previous first Apply denied correctly during concurrent calendar refresh.
