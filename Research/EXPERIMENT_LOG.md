@@ -1,5 +1,17 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R42F1 — fix W2R42 invalid ESPHome button template schema — PREPARED / NOT RUN
+
+**Hypothesis:** an improperly placed select component under button causes compiler validation rejection before target build.
+**Baseline:** full W2R42 source, which user tried compiling but got `[optimistic] is an invalid option for [button.template]`; last XTR LIVE baseline W2R41.
+**ONE change:** move exactly `w2r42_calendar_field_select` unchanged from `button:` to existing `select:`, adjust only firmware build label; no protocol, write or other lambda change.
+**Expected:** ESPHome schema recognizes `select.template` options including optimistic; remaining calendar editor and S92 owner unchanged.
+**Actual:** source YAML/!secret, select/button schema shape, 231 functional lambda texts, original ID set, ZIP hashes all PASS offline; target compilation NOT RUN, live NOT RUN. Status PREPARED / NOT RUN.
+**ABORT/rollback:** original S92 ABORT and exact W2R41 LOCALLY VERIFIED rollback; no physical TX because W2R42 config failed.
+
+**2026-10-30 — W2R42F1 ESPHome configuration defect fix, SOURCE / OFFLINE TESTED, PREPARED / NOT RUN.** User reported the exact ESPHome schema error `[optimistic] is an invalid option for [button.template]` when compiling W2R42 (no flash). Root cause in exact full W2R42 YAML: `w2r42_calendar_field_select` was wrongly placed in top-level `button:` list though it is a `select.template` with `optimistic`, `restore_value`, `initial_option`, `options`, `set_action`. Fix W2R42F1 moves the entire unchanged select item to the existing top-level `select:` list; the user-triggered `w2r42_calendar_field_commit` remains in `button:`. Only other change is diagnostic firmware build label W2R42→W2R42F1. All 231 lambda bodies retained (apart from build label), all 1,120 unique list IDs present, existing sole S92 physical UART/DE and CRC/V5/ABORT, session/current/calendar refresh, OEMW confirmation and TX-scope/guards unchanged. Source YAML parse with !secret, component-type schema check for all `button` entries, select fields, ZIP CRC/SHA-256 manifest pass offline. Full private `Thermia_MAIN04_W2R42F1_OEMW_Calendar_Editor_Compile_Fix_PRIVATE.zip` contains integrated fixed YAML, original W2R42 uncompiled source, verified W2R41 rollback and further complete rollbacks. ESPHome CLI unavailable locally: NOT TARGET COMPILED, NOT FLASHED, NOT LIVE; real user target compile result pending. W2R42 as distributed failed ESPHome config validation, so no W2R42 live test; W2R41 remains last XTR LOCALLY VERIFIED for P4 one-word calendar edit+subsequent automatic readback. Physical new-field editor scope still user-triggered separately two presses, no auto TX; ordinary parameter writes HOLD. No private OEM/captures published; README untouched.
+
+
 ## W2R42 — calendar editor integration — PREPARED / NOT RUN
 
 2026-10-30: Complete private firmware package W2R42 produced from locally verified W2R41. The existing Home Assistant weekly hot-water editor is connected to the existing centralized transaction and confirmation logic. User chooses a changed field, prepares it without a value write, and separately confirms it. New field types and additional programs have not been target compiled, flashed, or tested on the XTR; they are not yet validated. The previous successful W2R41 calendar change and later readback remain the last local live evidence.
