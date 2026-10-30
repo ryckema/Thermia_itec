@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-10-30 W2R47 XTR live read-path result (scope-limited)
+
+W2R47 existing manual-context S92 native M6=5 stage40 remained qualified after user OTA flash; fresh startup/rejoin was not captured. At 11:37:16–19, physical native CURRENT/FC16 cycle covered 03E8/042E/0442/0546 and confirmed 4/4, `DE=LOW semanticTX=0`. Controller-origin FC16 ACKs rose 2165→2203 with 0708/FC03 continuing and CRC_DIFF0 (35,092 checks), resync0, drops0. Automatic calendar 12-page refresh began at 11:37:58, with ten 33-word pages (055A,057B,059C,05BD,05DE,05FF,0620,0641,0662,0683) shown before log ends; not a proven owned 12/12 receipt. W2R47's consolidated legacy pre-dispatch/watchdog failure branches were not exercised; this is positive evidence for read-path compatibility, not new TX authorization, recovery or write semantics. Single ESPHome API buffer warning not an RS485 drop. Calendar setting and HA parameter writes remain ON HOLD.
+
 ## W2R47 native shared legacy handler guard (source only)
 
 The three previous EXP378/379/380 CURRENT control handlers are now served by one native queue-expiry decision, one native in-flight CRC/parser/peer/timeout decision and one common transport preflight, inside the same single S92 session owner. Original 70s queued age, 15s/5s stage timeouts, confirmed-controller HA restoration and no-retry ABORT paths are preserved. This changes no physical UART writer, register geometry, framing or write authorization. Remaining page-specific selector/desired paths still require migration. W2R47 not yet XTR live tested; W2R46 last locally verified runtime; calendar and HA setting writes ON HOLD.
