@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## W2R42F1 XTR fresh Prepare proof and editor UI re-read interaction
+
+**OBSERVED:** on real XTR 01:37:35.226 prepared descriptor23 candidate Program4 start-minute register057F old20 desired21 from one-field HA preview with `NO_SETTING_TX=1`. This verifies editor RAM geometry and two-step prepare path only. At 01:37:57 another `Read Selected Program` cleared selected controller snapshot/field plan and at 01:38:00 republished original Start Minute20, overwriting HA21. No physical calendar value write or semantic FC16 receipt. Source confirms reader always loads current controller fields and resets plan, while separate apply compares frozen staged fields before commit. Therefore do not treat old Prepare as write-ready following another read; fresh desired21/preview/preparation required. Session M6=5, CRC_DIFF0, RX drops0. No broadened permission or added protocol test needed.
+
+
 ## W2R42F1 XTR live first editor preview and correct calendar-busy refusal
 
 **Observed:** W2R42F1 actual flashed/running, M6=5 and native F1 selected read 3/3 on XTR at 01:29:41.856. Program4 genuine original Sun18:20–18:26; user HA edit Start Minute20→21, preview `changedRegisters=1 pageMask=02` RAM only, selected field Start Minute. At 01:30:40 native AUTO_CAL refresh (12 pages) independently starts; user first Apply 01:30:48 returns `CAL_EDITOR_DENIED ... idle=0 ... NO_TX`; native CAL12/12 receives final page at 01:30:55.733. This is successful collision/overlap prevention, not a mapping defect. owner, clean, fresh, weekly predicates true. Selected field register geometry from exact source reg057F, page057B, word4, original20 desired21; no setting physical transaction or semantic controller acceptance demonstrated. Clean CRC_DIFF0 and RX drops0 in supplied excerpt. **Conclusion:** preserve native app-sync idle exclusivity; do not add unnecessary UART owner or auto retry. **Confidence:** PROVEN for safe busy refusal, OPEN for actual new-field semantic write. No private OEM source copied; ordinary parameter writes HOLD.
