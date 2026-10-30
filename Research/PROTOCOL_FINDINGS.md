@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## W2R47 extended XTR local verification: automatic calendar read 12/12
+
+Same user W2R47 run as earlier partial: 11:37:58 calendar auto arm on genuine 0708, controller-origin 12 FC16 calendar 33-word pages 055A..06C5, final 06A4 then 06C5, owned receipt at11:38:10.728 with requested12 pages epoch12363 pollTX1, within240s and NOT_ONLINE. This resolves earlier missing CAL12/12 evidence. CURRENT4/4 also genuine at11:37:19.120, M6=5 stable. Controller CRC checks 36,499 with zero CRC diff at11:41:03, RX drops/resync0, normal HA measurements and P4 stop minute26 retained, no HA parameter writes. **PROVEN within observed scope:** W2R47 read/runtime compatibility including automatic calendar completion. **OPEN:** initial startup, hot-rejoin, timeout/abort failure branches, any setting write acceptance. API buffer warning unrelated to RS485 RX integrity. W2R47 is latest local read/runtime baseline for source-only next integrated refactor; W2R46 remains explicit OTA startup fallback.
+
 ## 2026-10-30 W2R47 XTR live read-path result (scope-limited)
 
 W2R47 existing manual-context S92 native M6=5 stage40 remained qualified after user OTA flash; fresh startup/rejoin was not captured. At 11:37:16–19, physical native CURRENT/FC16 cycle covered 03E8/042E/0442/0546 and confirmed 4/4, `DE=LOW semanticTX=0`. Controller-origin FC16 ACKs rose 2165→2203 with 0708/FC03 continuing and CRC_DIFF0 (35,092 checks), resync0, drops0. Automatic calendar 12-page refresh began at 11:37:58, with ten 33-word pages (055A,057B,059C,05BD,05DE,05FF,0620,0641,0662,0683) shown before log ends; not a proven owned 12/12 receipt. W2R47's consolidated legacy pre-dispatch/watchdog failure branches were not exercised; this is positive evidence for read-path compatibility, not new TX authorization, recovery or write semantics. Single ESPHome API buffer warning not an RS485 drop. Calendar setting and HA parameter writes remain ON HOLD.
