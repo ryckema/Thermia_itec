@@ -1,5 +1,8 @@
 # THERMIA — START HERE
 
+**2026-10-30 W2R46 PREPARED / NOT RUN:** last locally verified XTR firmware W2R45, stable M6=5 CURRENT4/4 CAL12/12. Complete private W2R46 firmware ZIP stores EXP378/379/380 state/sync_valid/queue_ms in 3 native arrays instead of 9 globals, preserving exact original defaults and guards, with old EXP handlers not yet removed. All setting TX still ON HOLD; manual ABORT and unique S92 TX owner unchanged. Offline YAML verified, 720 to 714 globals; NOT TARGET COMPILED or FLASHED. Exact W2R45 rollback in ZIP. ONE NEXT ACTION: manually compile/flash W2R46 and observe routine reads; no setting test.
+
+
 **2026-10-30 W2R45 PREPARED / NOT RUN:** latest locally verified XTR firmware W2R44 (normal M6=5 CURRENT4/4 CAL12/12 after >20 minutes). Private ZIP `Thermia_MAIN04_W2R45_NativeDesiredConfirmed_HOLD_PRIVATE.zip` integrates 34 EXP378/379 desired/confirmed word globals into four native arrays, exact same positions/defaults; total globals 750→720, HA entities and S92 sole UART owner unchanged. Old EXP state/dirty/ABORT guards remain; all calendar setting and ordinary parameter writes ON HOLD. Offline YAML/entity validation only, no target compile/flash/live. **ONE NEXT ACTION:** user manually compile W2R45 then flash if successful and observe native sync/read; rollback exact W2R44 if failure.
 
 
