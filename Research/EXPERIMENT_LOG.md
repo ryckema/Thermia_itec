@@ -1,5 +1,12 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R42F1 successful first editor Prepare, then HA edit reset by Read — RUNNING / PARTIAL
+
+**Baseline:** W2R42F1 live session and preview, previous first Apply denied correctly during concurrent calendar refresh.
+**Observed change:** 01:37:12 selected F1 3/3 read, HA P4 start minute20→21 preview one register; 01:37:35 `CAL_EDITOR_PREPARED` reg057F old20 new21 NO_SETTING_TX. At 01:37:57 Read Selected Program was triggered again and 01:38:00 controller read republished original20 to HA field, so stale staged plan cannot be committed as21. No value write occurred.
+**Outcome:** COMPLETE / POSITIVE for RAM-only Prepare; overall new-field semantic TX remains RUNNING / PARTIAL, no physical value test yet. **Next:** set21 again, preview, prepare; optionally explicitly confirm separately within60s without re-reading in between. ABORT unchanged, W2R41 rollback available.
+
+
 ## W2R42F1 editor preview live — RUNNING / PARTIAL
 
 Observed on XTR: firmware W2R42F1 runs; program 4 read and start-minute change preview work. The first Apply press occurred during automatic calendar refresh and was rejected before write. Calendar refresh then completed. New-field writing not run. Next: retry only the first Prepare press after normal refresh, then inspect prepared old/new values. Keep W2R41 rollback.
