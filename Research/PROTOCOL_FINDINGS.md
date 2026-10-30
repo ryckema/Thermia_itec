@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## W2R42F1: actual P4 start-minute21 prepared, native auto calendar read prevents commit
+
+**OBSERVED:** genuine selected F1 3/3 pages read Program4 Sunday18:20–18:26. At 01:47:20.483 `CAL_EDITOR_PREPARED p=4 field=0 reg=057F old=20 new=21 NO_SETTING_TX=1`. At 01:47:59 another selected program read was armed, 3/3 received 01:48:05.467 and controller still start-minute20; HA21 restaged and RAM preview unchanged. Auto CAL12/12 begun 01:48:10.382; Apply 01:48:14.958 `CAL_EDITOR_DENIED ... idle=0 ... NO_TX`; 12/12 completed 01:48:23.480. The normal `RUNTIME_FC16_ACK_EXECUTED` in auto-read are protocol ACKs, NOT setting TX. No physical editor frame, no semantic FC16 accept or reject. **STRONGLY SUPPORTED:** busy guard correctly prevents overlapping read/edit transactions; do not remove. **OPEN:** first bounded live field-write reg057F. CRC_DIFF0, RXdrops0 and M6=5 stable.
+
+
 ## W2R42F1 live selected snapshot and HA field staging 20→22
 
 01:45:49 `CAL_FIELD_PLAN_DENIED snapshot=0 idle=1 clean=1 NO_TX`; after genuine F1 3/3 read at 01:45:56.705, HA changed Start Minute to21 and then22 within 230ms. 01:46:03 preview shows only one changed register pageMask02; 01:46:11 editor Prepare reg057F old20 desired22 RAM ONLY, no physical value TX. Controller schedule remains 18:20–18:26. Thus per-field preparation and F1 snapshot ownership work on XTR, but do NOT claim 20→21 or new field semantic adoption. `esp32.crash` previous boot Abort refers to different ELF; current reset reason exception/panic, causal build/trigger unknown. M6=5 CRC_DIFF0 and zero RX drops in shown runtime. Preserve sole S92 physical owner and existing safeguards.
