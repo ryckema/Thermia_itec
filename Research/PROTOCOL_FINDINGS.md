@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## W2R44 native CURRENT 042E/0442/0546 word cache (SOURCE ONLY)
+
+From W2R43 last local XTR LIVE M6=5 CURRENT4/4 CAL12/12, `exp378_w00..w14` (15), `exp379_w00..w12` (13) and `exp380_w00..w19` (20) were storage of the existing controller page words. W2R44 replaces them with three native zero-initialized indexed arrays, with all existing consumers using identical indices. All received FC16 page receipt qualification, m6 cache freshness, V5 CRC, S92 physical single owner, semantic confirmation and OEMW remain unchanged. The source-only consolidation does not authorize any new value TX; calendar setting and general HA parameter write HOLD continue. OFFLINE YAML and mapping passed; real XTR acceptance of W2R44 is still UNKNOWN until manually compiled/flashed. EXP write control state/guards remain, so do not claim full EXP378/379/380 retirement.
+
+
 ## W2R43 first XTR OTA-read evidence — cached F1 page reuse retains independent owned receipts
 
 **Observed:** W2R43 compiled/flashed/OTA-rebooted; native retained transport qualified and four controller CURRENT FC16 pages 03E8/042E/0442/0546 confirm M6=5 at 02:31:28.682. First auto calendar F1 055A/057B/059C contained original weekly DHW4 Sunday18:20–18:26, then all 12 app calendar pages owned (pollTX1) 02:31:46.018 and freshness reported 02:31:51.606; HA populated all calendars. CRC_DIFF0 on check sequence 132–493, drops/resync/ambiguous0. Normal physical `RUNTIME_FC16_ACK_EXECUTED` reflects controller-requested native ACK and does NOT establish value-write semantics. Source examination confirms immutable-at-runtime `native_calendar_setting_write_hold` initialized true, both descriptor22/23 second-press paths reject and the existing sole S92 physical guard rejects calendar setting TX. **Confidence PROVEN:** source HOLD, normal boot F1/12-page read and owned ACK functional locally; **OPEN:** periodic refresh after 200s and button HOLD behavior not live pressed, neither is required to infer first boot success. No new wire roles or settings rights granted.
