@@ -1,5 +1,8 @@
 # THERMIA — START HERE
 
+**2026-10-30 W2R45 PREPARED / NOT RUN:** latest locally verified XTR firmware W2R44 (normal M6=5 CURRENT4/4 CAL12/12 after >20 minutes). Private ZIP `Thermia_MAIN04_W2R45_NativeDesiredConfirmed_HOLD_PRIVATE.zip` integrates 34 EXP378/379 desired/confirmed word globals into four native arrays, exact same positions/defaults; total globals 750→720, HA entities and S92 sole UART owner unchanged. Old EXP state/dirty/ABORT guards remain; all calendar setting and ordinary parameter writes ON HOLD. Offline YAML/entity validation only, no target compile/flash/live. **ONE NEXT ACTION:** user manually compile W2R45 then flash if successful and observe native sync/read; rollback exact W2R44 if failure.
+
+
 **2026-10-30 W2R44 now last locally verified XTR firmware:** user log at 08:22:57–08:27:13 demonstrates OTA-installed `Thermia MAIN04-W2R44` running >23min, M6=5, native auto 12/12 calendar completed 08:25:26, repeated genuine controller CURRENT 4/4 receipt complete 08:26:16; XTR HA P4 Sunday18:20–18:26, CRC_DIFF0 checked12788, RX drops0, resync0, no queued writes. W2R44 COMPLETE / POSITIVE for source cache consolidation 48 legacy EXP word scalars -> 3 native 042E/0442/0546 arrays. This establishes latest LIVE LOCALLY VERIFIED firmware for normal session/runtime/refresh (W2R41 still last physically verified OEMW calendar setting). New calendar write trial remains ON HOLD, d22/d23 held by source including final S92 guard; ordinary HA parameter writes ON HOLD. **ONE NEXT ACTION:** integrate EXP378/379/380 *remaining status/dirty/abort/idle guard state* into one existing native/OEMW owner, preserving all working HA and safety controls. No need to repeat live cache test or flash just for status.
 
 
