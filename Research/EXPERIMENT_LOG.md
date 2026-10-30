@@ -1,5 +1,12 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R43 first OTA XTR live, native sync and calendar cache — RUNNING / PARTIAL
+
+**Baseline:** W2R42F1 locally verified session/read/editor RAM; W2R41 last locally verified calendar setting write, now ON HOLD. **Change:** W2R43 single F1 calendar cache and OEMW snapshot, plus hard calendar TX HOLD; old EXP native dependencies retained.
+**Actual:** user target-compiled/flashed W2R43 by ESPHome OTA (build label and OTA reset verified). From 02:31:00 first M6=2 unowned, profile/transport requalification at 02:31:17, 4/4 CURRENT controller FC16 reception and ACK with M6=5 at 02:31:28.692, 12/12 owned app calendar pages receipt 02:31:46, native auto calendar fresh 02:31:51. HA shows Program4 Sunday18:20–18:26, Hot Water Summary 5/8, Silent2 daily00–08. CRC_DIFF0, RXdrops0, parser resync0, ambiguous0 in ~62s capture; no panic. Ordinary 42 native FC16 ACKs are **not parameter/calendar setting TX**. No editor field press/new setting TX, and physical HOLD is source-guarded at both preparation/commit and S92 physical owner.
+**Evidence:** TARGET COMPILED / FLASHED / LIVE / LOCALLY VERIFIED for first native M6=5+CURRENT4/4+auto CAL12/12 and HA readback; only RUNNING / PARTIAL overall because 200s periodic refresh/manual editor select3/3 not shown. New setting proof NOT RUN / ON HOLD; do not mark positive/negative. **Decision:** GO for native calendar cache consolidation; no new validation loop. **ONE NEXT ACTION:** remove legacy EXP378/379/380 writer-state duplication via dependency-preserving singleton integration, without altering validated TX/DE semantics or enabling HA writes.
+
+
 ## W2R43 native calendar consolidation — PREPARED / NOT RUN
 
 30 October 2026. User placed new calendar write experiment ON HOLD. Based on latest XTR-lived W2R42F1, one private integrated W2R43 firmware ZIP was built. Its source shares one 99-word F1 calendar cache across previously duplicate pages, retains separate three-page session-owned receipt checks, moves the existing exact page snapshot under OEMW, and blocks both calendar pilot TX routes at second press and final S92 physical owner. Existing native reads, CRC, ABORT and HA entities are retained. Obsolete EXP378/379/380 writer state is still referenced by native synchronisation and safety checks, so it was NOT removed without a replacement.
