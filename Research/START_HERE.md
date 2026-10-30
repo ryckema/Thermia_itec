@@ -1,5 +1,8 @@
 # THERMIA — START HERE
 
+**2026-10-30 W2R42F1 current live evidence:** user supplied two overlapping logs. At 01:47:20 `CAL_EDITOR_PREPARED reg057F P4 old20 desired21 NO_SETTING_TX` proved correct intended RAM stage. Then separate selected read at01:47:59–01:48:05 returned old20, HA restaged21, and auto CAL12/12 overlapped (01:48:10–23). Apply 01:48:14 denied safely `idle=0 NO_TX`. New-field calendar write NOT RUN, no protocol rejection; W2R42F1 stable M6=5 CRC_DIFF0 drops0. **ONE NEXT ACTION:** after auto read completes and no other READ/refresh is ongoing, set HA Start Minute21, Preview, first Apply prepare and second user-initiated Apply within60s only if willing to carry out bounded physical write. Verify controller-origin FC16, preserve original S92 guards and W2R41 rollback. No firmware update needed; README unchanged.
+
+
 **W2R42F1 latest 2026-10-30 LIVE:** P4 selected F1 read3/3 completed 01:45:56, controller still Sunday 18:20–18:26. HA Start Minute briefly21, then22; preview showed one change; at 01:46:11 `CAL_EDITOR_PREPARED reg=057F old=20 new=22 NO_SETTING_TX`. No second press or physical setting write. Early snapshot-missing preview guard at 01:45:49 behaved correctly. User intended minute21, so do not commit the staged22: set21 precisely, Preview, Prepare again, optionally separate conscious commit. Earlier ESP32 `exception/panic` reset and crash record from different firmware build are not attributable to this editor trial; note only, no forced reset/retest. M6=5, CRC errors and RX drops zero. W2R41 remains last proven physical calendar semantic write; W2R42F1 current milestone RUNNING / PARTIAL for new-field semantic TX. No firmware change; no ordinary HA parameter writes.
 
 
