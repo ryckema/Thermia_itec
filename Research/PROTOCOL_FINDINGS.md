@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## W2R48 source-level transaction state migration (NOT LIVE)
+
+Starting from XTR W2R47 locally verified for M6=5, controller CURRENT4/4 and automatic native calendar12/12, W2R48 combines legacy EXP378/379/380 `target_word`, `target_value`, `original_value`, `selector_ms`, and `desired_ms` from 15 scalar globals into five three-owner native arrays, owner0=042E, owner1=0442, owner2=0546, preserving per-owner initial values and exact original transaction branches. 714→704 globals, no second RX/TX owner, S92 writes/guards/CRC/session/ABORT and HA component IDs intact. Offline YAML/manifest checks PASS but NOT ESPHome target compiled or XTR flashed/live. This is source/storage consolidation, no new controller semantic evidence; remaining old selector/action branches still dependencies. All settings writes held. W2R47 remains latest LOCALLY VERIFIED for routine read/runtime; W2R46 verified for startup fallback.
+
 ## W2R47 extended XTR local verification: automatic calendar read 12/12
 
 Same user W2R47 run as earlier partial: 11:37:58 calendar auto arm on genuine 0708, controller-origin 12 FC16 calendar 33-word pages 055A..06C5, final 06A4 then 06C5, owned receipt at11:38:10.728 with requested12 pages epoch12363 pollTX1, within240s and NOT_ONLINE. This resolves earlier missing CAL12/12 evidence. CURRENT4/4 also genuine at11:37:19.120, M6=5 stable. Controller CRC checks 36,499 with zero CRC diff at11:41:03, RX drops/resync0, normal HA measurements and P4 stop minute26 retained, no HA parameter writes. **PROVEN within observed scope:** W2R47 read/runtime compatibility including automatic calendar completion. **OPEN:** initial startup, hot-rejoin, timeout/abort failure branches, any setting write acceptance. API buffer warning unrelated to RS485 RX integrity. W2R47 is latest local read/runtime baseline for source-only next integrated refactor; W2R46 remains explicit OTA startup fallback.
