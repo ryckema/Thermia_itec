@@ -1,5 +1,14 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R42 — calendar editor integration — PREPARED / NOT RUN
+
+2026-10-30: Complete private firmware package W2R42 produced from locally verified W2R41. The existing Home Assistant weekly hot-water editor is connected to the existing centralized transaction and confirmation logic. User chooses a changed field, prepares it without a value write, and separately confirms it. New field types and additional programs have not been target compiled, flashed, or tested on the XTR; they are not yet validated. The previous successful W2R41 calendar change and later readback remain the last local live evidence.
+
+Offline checks: source YAML parsed, existing entities retained, single communication owner retained, package and rollbacks verified. No firmware flash or physical bus experiment performed by assistant. The first rollback is exact locally verified W2R41. ABORT remains the existing manual abort; normal parameter writes remain on hold.
+
+**Status:** PREPARED / NOT RUN. **ONE NEXT ACTION:** user manually compiles W2R42, flashes it, and, only if explicitly desired, initiates one separately bounded new field experiment; no repeated previous proven test.
+
+
 ## W2R41 independent automatic calendar re-read after confirmed one-word write — COMPLETE / POSITIVE
 
 **Hypothesis:** actual controller retains previously accepted P4 stop minute26 across a later automatic calendar refresh, rather than only reflecting local speculative cache.
