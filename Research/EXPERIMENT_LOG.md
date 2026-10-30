@@ -1,5 +1,10 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R42F1 editor preview live — RUNNING / PARTIAL
+
+Observed on XTR: firmware W2R42F1 runs; program 4 read and start-minute change preview work. The first Apply press occurred during automatic calendar refresh and was rejected before write. Calendar refresh then completed. New-field writing not run. Next: retry only the first Prepare press after normal refresh, then inspect prepared old/new values. Keep W2R41 rollback.
+
+
 ## W2R42F1 — fix W2R42 invalid ESPHome button template schema — PREPARED / NOT RUN
 
 **Hypothesis:** an improperly placed select component under button causes compiler validation rejection before target build.
