@@ -1,5 +1,10 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R45 native desired/confirmed cache consolidation — PREPARED / NOT RUN
+
+Baseline: W2R44 XTR locally verified M6=5/current4/4/calendar12/12. One source change: 34 legacy EXP378/379 desired/confirmed word scalars moved to four native indexed arrays with exact original word positions and initial values. Existing transaction-state, dirty-mask, idle and manual ABORT logic not altered. Ordinary parameter/calendar setting writes remain ON HOLD. Offline YAML parsing and unchanged HA entities verified, 750→720 globals; ZIP includes exact W2R44 rollback and prior sources. **NOT TARGET COMPILED / NOT FLASHED / NOT LIVE**. Expected: identical regular readings and native synchronization. Abort: existing S92 manual ABORT; rollback W2R44. One next action: user manually compile then flash if it succeeds; ordinary read-only observations only.
+
+
 ## W2R44 runtime result — COMPLETE / POSITIVE
 
 30 October 2026: User's XTR logs show W2R44 running for more than 23 minutes. The normal automatic calendar refresh completed at 08:25:26 and a separate four-page CURRENT refresh completed at 08:26:16. M6 remained 5; calendar and HA values remained populated; zero CRC differences and zero RX drops. This validates the array-cache consolidation for live reads. Setting writes remain on hold. The remaining legacy EXP control-state migration is the next engineering action.
