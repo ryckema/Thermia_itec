@@ -1,5 +1,8 @@
 # THERMIA — START HERE
 
+**W2R42F1 latest 2026-10-30 LIVE:** P4 selected F1 read3/3 completed 01:45:56, controller still Sunday 18:20–18:26. HA Start Minute briefly21, then22; preview showed one change; at 01:46:11 `CAL_EDITOR_PREPARED reg=057F old=20 new=22 NO_SETTING_TX`. No second press or physical setting write. Early snapshot-missing preview guard at 01:45:49 behaved correctly. User intended minute21, so do not commit the staged22: set21 precisely, Preview, Prepare again, optionally separate conscious commit. Earlier ESP32 `exception/panic` reset and crash record from different firmware build are not attributable to this editor trial; note only, no forced reset/retest. M6=5, CRC errors and RX drops zero. W2R41 remains last proven physical calendar semantic write; W2R42F1 current milestone RUNNING / PARTIAL for new-field semantic TX. No firmware change; no ordinary HA parameter writes.
+
+
 **2026-10-30 W2R42F1 latest XTR LIVE:** actual `CAL_EDITOR_PREPARED` at 01:37:35: P4 start-minute reg057F old20 new21, RAM only, NO setting TX, second press required. User then pressed Read Selected Program again 01:37:57; selected F1 3/3 completed 01:38:00 and reset HA Start Minute to original20. Do NOT press second time expecting21 from stale preparation. W2R42F1 LOCALLY VERIFIED for editor RAM-only Prepare and native reads, not new field controller semantic accept; experiment RUNNING / PARTIAL. **ONE NEXT ACTION:** set HA Start Minute21 again, Preview, Prepare once, then optionally deliberately press same Apply again within60s without any intervening Read; inspect real controller FC16 before calling write positive. Keep exact W2R41 rollback and HA parameter-write HOLD; README unchanged.
 
 
