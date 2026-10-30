@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## W2R42F1 live selected snapshot and HA field staging 20→22
+
+01:45:49 `CAL_FIELD_PLAN_DENIED snapshot=0 idle=1 clean=1 NO_TX`; after genuine F1 3/3 read at 01:45:56.705, HA changed Start Minute to21 and then22 within 230ms. 01:46:03 preview shows only one changed register pageMask02; 01:46:11 editor Prepare reg057F old20 desired22 RAM ONLY, no physical value TX. Controller schedule remains 18:20–18:26. Thus per-field preparation and F1 snapshot ownership work on XTR, but do NOT claim 20→21 or new field semantic adoption. `esp32.crash` previous boot Abort refers to different ELF; current reset reason exception/panic, causal build/trigger unknown. M6=5 CRC_DIFF0 and zero RX drops in shown runtime. Preserve sole S92 physical owner and existing safeguards.
+
+
 ## W2R42F1 XTR fresh Prepare proof and editor UI re-read interaction
 
 **OBSERVED:** on real XTR 01:37:35.226 prepared descriptor23 candidate Program4 start-minute register057F old20 desired21 from one-field HA preview with `NO_SETTING_TX=1`. This verifies editor RAM geometry and two-step prepare path only. At 01:37:57 another `Read Selected Program` cleared selected controller snapshot/field plan and at 01:38:00 republished original Start Minute20, overwriting HA21. No physical calendar value write or semantic FC16 receipt. Source confirms reader always loads current controller fields and resets plan, while separate apply compares frozen staged fields before commit. Therefore do not treat old Prepare as write-ready following another read; fresh desired21/preview/preparation required. Session M6=5, CRC_DIFF0, RX drops0. No broadened permission or added protocol test needed.
