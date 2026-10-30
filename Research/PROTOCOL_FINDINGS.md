@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## W2R47 native shared legacy handler guard (source only)
+
+The three previous EXP378/379/380 CURRENT control handlers are now served by one native queue-expiry decision, one native in-flight CRC/parser/peer/timeout decision and one common transport preflight, inside the same single S92 session owner. Original 70s queued age, 15s/5s stage timeouts, confirmed-controller HA restoration and no-retry ABORT paths are preserved. This changes no physical UART writer, register geometry, framing or write authorization. Remaining page-specific selector/desired paths still require migration. W2R47 not yet XTR live tested; W2R46 last locally verified runtime; calendar and HA setting writes ON HOLD.
+
+
 ## W2R46 read results
 
 Native session qualified after OTA restart and the controller provided four CURRENT pages and twelve calendar pages. No CRC differences or dropped bytes. This confirms the new lifecycle arrays in the observed read path. Ordinary FC16 responses are not setting writes.
