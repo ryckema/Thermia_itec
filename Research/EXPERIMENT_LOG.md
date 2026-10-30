@@ -1,5 +1,14 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R43 native calendar consolidation — PREPARED / NOT RUN
+
+30 October 2026. User placed new calendar write experiment ON HOLD. Based on latest XTR-lived W2R42F1, one private integrated W2R43 firmware ZIP was built. Its source shares one 99-word F1 calendar cache across previously duplicate pages, retains separate three-page session-owned receipt checks, moves the existing exact page snapshot under OEMW, and blocks both calendar pilot TX routes at second press and final S92 physical owner. Existing native reads, CRC, ABORT and HA entities are retained. Obsolete EXP378/379/380 writer state is still referenced by native synchronisation and safety checks, so it was NOT removed without a replacement.
+
+Offline YAML and 231 embedded lambda checks passed. 802 to 795 globals; one physical UART writer and 91 owner call sites retained; complete ZIP includes W2R42F1 and W2R41 rollback. No ESPHome target compilation, flash or W2R43 live validation. **Status: PREPARED / NOT RUN.**
+
+**One next action:** manually compile and flash W2R43 when ready, observe ordinary read-only native session, current and calendar refresh; no calendar write trial. Rollback/ABORT remain the existing S92 session ABORT and W2R42F1 source.
+
+
 ## W2R42F1 correct P4 Start Minute 20→21 prepared, later Apply rejected during auto-read — RUNNING / PARTIAL
 
 **Baseline:** W2R41 proven P4 stop-minute25→26 with later independent controller read; W2R42F1 XTR M6=5 with new field edit and preview live.
