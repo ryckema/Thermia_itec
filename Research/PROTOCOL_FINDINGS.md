@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## W2R45 source-only legacy desired/confirmed cache consolidation
+
+W2R45 replaces 34 EXP378/379 scalar register desired/confirmed words with four native arrays, preserving existing page word offsets and initial values. Existing S92 physical owner, native receipt qualification, V5 CRC, FC03 refresh, OEMW semantic confirmation and hold on calendar/HA-setting writes are unchanged by this source-only storage change. OFFLINE TESTED only; XTR live compatibility not yet shown. EXP378/379/380 control-state guards remain active dependencies. The most recent locally verified runtime baseline remains W2R44.
+
+
 ## W2R44 native CURRENT 042E/0442/0546 word cache (SOURCE ONLY)
 
 From W2R43 last local XTR LIVE M6=5 CURRENT4/4 CAL12/12, `exp378_w00..w14` (15), `exp379_w00..w12` (13) and `exp380_w00..w19` (20) were storage of the existing controller page words. W2R44 replaces them with three native zero-initialized indexed arrays, with all existing consumers using identical indices. All received FC16 page receipt qualification, m6 cache freshness, V5 CRC, S92 physical single owner, semantic confirmation and OEMW remain unchanged. The source-only consolidation does not authorize any new value TX; calendar setting and general HA parameter write HOLD continue. OFFLINE YAML and mapping passed; real XTR acceptance of W2R44 is still UNKNOWN until manually compiled/flashed. EXP write control state/guards remain, so do not claim full EXP378/379/380 retirement.
