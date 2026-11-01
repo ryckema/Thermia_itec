@@ -1,5 +1,8 @@
 # Thermia iTec XTR — ESPHome & Home Assistant
 
+**2026-11-01 MAIN04-W2R63HW — SOURCE / OFFLINE TESTED; PREPARED / NOT RUN:** Private full W2R62HW-derived YAML now integrates Hot Water ON/OFF `0x042E/15 word0` as new OEMW descriptor D24 in the **existing sole S92/FC03/FC16 writer**, plus an explicitly user-armed, one-edit/45-second trial for ON/OFF and the existing D13 Holiday Eco/AWAY (target/source value 2). No new UART/TX/DE owner; one physical desired page per selected edit, controller-origin exact FC16 acceptance required, ABORT and source-file rollback retained. Existing LIVE-verified Comfort/Eco remains unchanged. TOP-UP stays visible as a one-shot NO_TX because its exact controller command is not established; do not claim full Hot Water completion. PyYAML and C++ lambda delimiter offline checks pass; **NOT TARGET COMPILED / FLASHED / LIVE**. **CURRENT MILESTONE:** Hot Water Write User. **DELIVERABLE:** private complete W2R63HW trial ZIP (user-supplied W2R62HW baseline). **REAL BLOCKER:** no physical XTR semantic acceptance of D24/AWAY; TOP-UP OEM one-shot encoding still OPEN. **ONE NEXT ACTION:** user compiles/flashes W2R63HW and initiates ONE reversible ON/OFF trial, then supplies controller-origin FC16 outcome.
+
+
 **Local monitoring and control of the Thermia iTec XTR heat pump using ESP32, ESPHome and Home Assistant.**
 
 This project provides a local, cloud-independent integration for Thermia iTec XTR heat pumps by communicating directly with the heat pump's internal RS485 bus.
