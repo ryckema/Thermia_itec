@@ -1,5 +1,11 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-02 W2R67CAL F1 8-program source geometry
+
+F1 calendar uses three 33-word pages starting 055A,057B,059C; eight weekly program records of 12 words beginning at index 12*(p-1), metadata indices96..98. Offsets startMinute1,startHour2,stopMinute6,stopHour7,weekdays11. Register=0x055A+12*(program-1)+offset. Page=0x055A+33*floor(index/33), selector flag=2<<floor(index/33). W2R67 integrates all 8*5=40 address cases with same single S92 OEMW23 physical writer and controller-origin FC16 receipt and new owned F1 3/3 read. Source geometry / OFFLINE TESTED, not XTR semantic write proof for P1/2/3/5/6/7/8. F2 EVU 05BD..05FF, F3 Silent 0620..0662, F4 Temperature Reduction 0683..06C5 are RX mapped but their writable slot/date/type semantics and selection authorizations remain OPEN and NO_TX. No private OEM code published.
+
+
+
 ## 2026-11-02 XTR 2.4.2 TOP-UP physical behavior / calendar blockage
 
 **LIVE W2R65:** One-shot OEM operation reg1072 (0x0430 CURRENT page042E/count15 word2) user-armed original0→desired1 single desired-page TX, genuine independent controller-origin page FC16 returns0 00:25:39.186, other words unchanged, and user physically observes new DHW heating cycle; log also shows actual DHW active. STRONGLY SUPPORTED trigger effect but precise 2149 bit2 OEM boost flag OPEN (it stayed0); do not invent 1→0 reset or equate a transport ACK with semantic acceptance. Existing persistent-value comparator EXP444 treats 0 return as CONFIRM_MISMATCH and sets exp430_state6; OEMW phase3 later lease-revoked leaving legacy state6. Existing calendar/CURRENT native readers require exp430_state0, preventing refresh despite successful 12/12 receipt at00:23:21.932 and clean CRC/RX. W2R66 SOURCE/OFFLINE ONLY adds D25 exact same-epoch one-physical-page/controller-origin FC16 with word0-return, unchanged other14 words terminal release of both logical leases as INCONCLUSIVE/no retry; others untouched. Operation new modes0/3/4 NO physical writes due owner busy. Genuine OEM 0870/17 operating-hour page LIVE, but last defrost duration 64800 min is implausible and needs semantic qualification before interpreting as real minutes. W2R66 not live yet.
