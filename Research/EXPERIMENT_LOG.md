@@ -1,5 +1,14 @@
 # THERMIA EXPERIMENT LOG
 
+## W2R63HW — COMPLETE / NEGATIVE for D24 intended write (2026-11-01)
+
+Baseline: flashed W2R63HW after earlier W2R60 locally verified runtime. Hypothesis: D24 Hot Water `0x042E/15` word0 ON(1)→OFF(0) reaches OEMW/S92 desired-page and semantically applies. Prior evidence: verified M6 transport and Comfort/Eco D13. ONE change under test: new D24 one-edit trial. **Observed:** M6=5, CURRENT4/4, CAL12/12 and V5/RX clean. Write User enabled 23:29:14, one-edit trial armed 23:29:23, D24 requested 1→0 23:29:32, CURRENT selector physically sent 23:29:33, followed by `EXP444 ABORT_RANGE d=24 original=1 target=0 NO_DESIRED_TX=1`. No controller change or refusal evidenced. **Strong conclusion:** integration defect in existing 042E FC03 validation (D24 treated like D14 with target>=1), not bus/collision defect. **ABORT:** standard S92 abort. **Rollback:** user W2R63HW remains physical installed, Hot Water controller still reports ON. **Next:** apply W2R64HW fix; do not rerun W2R63HW.
+
+## W2R64HW — PREPARED / NOT RUN (2026-11-01)
+
+Hypothesis: correcting exact descriptor-specific 042E FC03 source/target range lets one D24 desired-page proceed within same S92 owner. Baseline: W2R63HW live abort trace. ONE change: original 042E range evaluator now accepts D24 0/1, D13 0/1/2, D14 1..30 and denies unknown descriptors. Expected: D24 CURRENT_CACHED, one bounded physical desired page, authoritative controller FC16 actual=0 or explicit negative/inconclusive; no unbounded retry. Actual: source/offline checks only, not flashed. ABORT: existing native abort button. Rollback: included exact W2R63HW YAML; manually restore previous ON with a separately enabled trial if controller confirms OFF. TOP-UP remains NO_TX.
+
+
 ## W2R63HW — PREPARED / NOT RUN (2026-11-01)
 
 Hypothesis: controller-visible DHW enable on `0x0F:042E/15` word0 can be semantically written through the proven OEMW/S92 desired-page transaction; D13 AWAY uses the same already established D13 page and target 2. Baseline: XTR W2R60 locally verified, user-supplied W2R62HW source-only candidate. Change: add D24 0x042E word0 and bounded one-edit authorization for D24 and D13 AWAY; no TOP-UP TX, no UART owner changes. Expected: one controller-offered 0708 selector/FC03, one exact desired-page send, controller-origin FC16 with selected word updated and all other words unchanged. Actual: **not run**; offline YAML/delimiter checks only. ABORT: `S92 Native DCM | ABORT Session`, DE LOW and stop. Rollback: supplied W2R62HW (source-only), or previously live-verified W2R60. This experiment must not be marked complete without user XTR evidence.
