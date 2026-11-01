@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-01 XTR live Hot Water ON/OFF and AWAY semantic proof — PROVEN
+
+**XTR LIVE / LOCALLY VERIFIED** from user-flashed MAIN04-W2R64HW on iTec XTR M 3N controller 2.4.2, native CURRENT4/4; CRC/RX clean. `0x0F` controller-origin FC16 page `0x042E` count15 word0 (register `0x042E`) controls production enable, live confirmed ON=1→OFF=0 and back OFF=0→ON=1 through one S92/OEMW desired page each; exact controller-origin acceptance d=24 actual=0 (23:38:48) and d=24 actual=1 (23:39:39). Word1 (register `0x042F`) is D13 Hot Water mode: XTR controller-confirmed ECO=1→COMFORT=0 (23:39:52), then COMFORT=0→HOLIDAY ECO/AWAY=2 (23:40:01). **4/4 semantic writes**, not just Modbus/transport ACK. Existing one-edit experiment permission correctly denied repeated unauthorized D24 and D13 commands with NO_TX. Source mistake in W2R63 old range check for D24 and AWAY is demonstrably fixed. Last observed controller state after capture is HW enabled=1, mode Holiday Eco=2. `0x0430` TOP-UP hypothesis remains OPEN: OEM top-up is a one-shot command, not a persistent switch; NO_TX until exact command source and controller semantic readback are established. No repeated validation of D24/D13 warranted without contradiction.
+
+
 ## 2026-11-01 XTR W2R63HW 042E/D24 range rejection — verified software defect
 
 **LIVE observation, not a controller rejection:** D24 register `0x042E` word0 source value 1 requested target 0 after native M6=5 and CURRENT4/4; 042E CURRENT selector sent via existing sole S92 owner; legacy EXP444 validation raised `ABORT_RANGE` for d=24 / original=1 / target=0, so no desired value was physically transmitted and no controller semantic feedback occurred. The source validator used D13=0/1 else D14=1..30, incorrectly classifying D24 0 and D13 AWAY 2. W2R64HW source fixes this software-only defect with D24 0/1, D13 0/1/2, D14 1..30; **SOURCE / OFFLINE TESTED, NOT FLASHED, NOT LIVE**. Do not infer physical controller acceptance of D24 or AWAY. One-shot TOP-UP command remains unknown and is NO_TX.
