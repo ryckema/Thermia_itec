@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-01 W2R58 productised P4 editor, scope unchanged — PREPARED / NOT RUN
+
+W2R58 integrates a fresh user-initiated per-Apply permission in the same native owner, max five existing P4 weekly field pages per Apply, original 30min bound, exact field receipt and new selected F1 persistence, same known field-value step limitations. Stale/partial attempts require new genuine selected P4 read before a further user click. No new XTR physical protocol finding or general setting-write authorization. W2R57 normal OTA/live read remains verified; W2R56 physical five-field proof remains the source for XTR semantics. Source offline checked only; target compile/flash/live pending.
+
+
 ## 2026-11-01 W2R57 retained native startup — XTR LOCALLY VERIFIED
 
 W2R57 user OTA log 10:38:54–10:40:47 reports M6=5, genuine CURRENT FC16 4/4, controller-owned calendar 12/12, CRC_DIFF0, parser resync0, RX drops0 and unchanged P4 Sunday18:20–18:26. This verifies ordinary native session and read behavior after the UI-only cleanup; **no setting-write or new controller-recovery semantics tested**. W2R56 P4 five-field controller acceptance and restore remains the independent write proof. All other setting writes remain ON HOLD.
