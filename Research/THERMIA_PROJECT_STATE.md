@@ -1,5 +1,9 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-03 W2R87F1 ESPHome configuration correction — PREPARED / NOT RUN
+
+User target validation of W2R87 failed: `update_interval` is invalid in new F3 `switch.template`; seven week-day switches affected (no flash/live). W2R87F1 single full private firmware ZIP removes only these seven options, updates build label, retains W2R86-proven F1 writes and all F3 source-only staging/no physical F3 TX. YAML 1182 unique IDs and old F3 GCC C++ callback offline syntax validated, archive CRC/SHA pass; TARGET COMPILE/LIVE still pending. W2R87 superseded by W2R87F1. Full details Research/W2R87F1_TEMPLATE_SWITCH_CONFIG_FIX_2026-11-03.md. CURRENT MILESTONE: F3 staging and F1 stale reread. REAL BLOCKER: no for config correction. ONE NEXT ACTION: user target-validates W2R87F1.
+
 ## 2026-11-03 W2R87 — PREPARED / NOT RUN (SOURCE / OFFLINE TESTED)
 
 Based on XTR LIVE W2R86 P4+P5 F1 five-field proof. Full private W2R87 ZIP integrates automatic expiry-driven native selected F1 re-read once per 300s expired source generation (unless unsaved edits) and F3 Silent Mode source-qualified HA staging Program1–8 via existing C5DO pages 05FF/0620/0641/0662, status, Discard and NO_TX write-plan. No new writer, no physical F3 setting TX, original W2R86 Apply untouched. 1182 unique YAML IDs; C++ syntax checks passed; no target compile/flash/live. Details in Research/W2R87_F1_STALE_REFRESH_F3_SILENT_EDITOR_2026-11-03.md. CURRENT MILESTONE: F1 stale reread/F3 source staging. REAL BLOCKER: no for staged editor; F3 semantic write owner not yet implemented. ONE NEXT ACTION: user flashes W2R87 and verifies F3 native source + F1 expiry behavior.
