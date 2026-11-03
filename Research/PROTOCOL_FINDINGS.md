@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 W2R88F3 live guard observation — no new EVU protocol semantic proof
+
+XTR controller2.4.2 user log `Pasted text(20261103-232848).txt` confirms native owned calendar reading of existing EVU slot10 **mode1/programmed1, 18:01–20:01 Monday** and repeatable live CAL12 source acquisition on W2R88F3. HA staged target **19:01–20:01 weekday0, changed2**; `NONF1_APPLY_DENIED arm0 fresh1 exact1 idle1 fields2 NO_TX` proves only a **local software guard refusal**. No physical mask0 write, controller FC16 acceptance, or calendar-after-write verification occurred. Consequently original prior finding remains: **weekday mask0 does not necessarily mean an unprogrammed slot** (locally observed before prior EVU2 edit), but **controller semantic acceptance of changing weekday1→0 for this EVU2 record is still OPEN**. Do not count this as a negative protocol experiment or introduce a new write transport.
+
 ## 2026-11-04 existing EVU/F2 zero-weekday weekly program vs deleted program — XTR LIVE
 
 Actual XTR 2.4.2 EVU Program2 global slot10 `mode=1 programmed=1`, initial 17:00–19:00 days0x00 with EVU configured=2/8: mask0 does **not** imply unprogrammed/deleted. Same exact local source can accept five per-word S92 controller FC16 changes to18:01–20:01 Monday days0x01 and fresh CAL12 `CAL32_BATCH_DONE exact=1 pages=5 count=5`. F2 EVU Program1 global slot9 is date-mode (`mode=0`) and not an existing-weekly editable record. W2R88F2 prevents reversing to days0 before sending due to duplicated daymask>0 guards, not controller semantic refusal. W2R88F3 SOURCE/OFFLINE TESTED narrowly fixes zero-mask return for EVU2 with weekday word written last; physical acceptance of reverse remains OPEN. No true deletion/create protocol inferred. Detailed report Research/W2R88F3_EVU2_ZERO_WEEKDAYS_RESTORE_2026-11-04.md.
