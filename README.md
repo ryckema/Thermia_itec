@@ -1,5 +1,11 @@
 # Thermia iTec XTR — ESPHome & Home Assistant
 
+Local monitoring and control of the Thermia iTec XTR heat pump using ESP32, ESPHome and Home Assistant.
+
+This project provides a local, cloud-independent integration for Thermia iTec XTR heat pumps by communicating directly with the heat pump's internal RS485 bus.
+
+The integration is developed and tested on a Thermia iTec XTR M with Total Compact indoor unit, using an ESP32-S3 with an RS485 interface. If you are looking for a ATEC version it can be found here: https://github.com/fclauson/Thermia-ATEC-ESP-emulator-of-DCOM
+
 
 ## Features
 
