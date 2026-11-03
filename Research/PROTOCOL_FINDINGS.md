@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 User-accepted calendar write milestone — evidence boundary preserved
+
+Project owner explicitly accepted all calendar **write tests** for milestone closure: **COMPLETE / POSITIVE / GO (user acceptance)**. This is not additional protocol evidence. Genuine XTR controller FC16+fresh calendar receipts already demonstrate existing-program writes across F1 Hot Water P4/P5, F2 EVU P2 five-field weekday0→Monday, and F3 Silent Mode multi-field + weekday toggles. W2R88F3 EVU2 reverse weekday1→0 generated `NO_TX` in the supplied log, so reverse mask-zero physical acceptance remains **OPEN** rather than claimed proven. No cited XTR evidence proves F4 physical writes or record create/delete transitions, and `mode=1 programmed=1 weekdayMask=0` was observed for an existing EVU slot. Retain this distinction in future code; end repetition of existing-slot write tests under the user GO decision and pursue separately scoped create/delete semantics.
+
 ## 2026-11-04 W2R88F3 live guard observation — no new EVU protocol semantic proof
 
 XTR controller2.4.2 user log `Pasted text(20261103-232848).txt` confirms native owned calendar reading of existing EVU slot10 **mode1/programmed1, 18:01–20:01 Monday** and repeatable live CAL12 source acquisition on W2R88F3. HA staged target **19:01–20:01 weekday0, changed2**; `NONF1_APPLY_DENIED arm0 fresh1 exact1 idle1 fields2 NO_TX` proves only a **local software guard refusal**. No physical mask0 write, controller FC16 acceptance, or calendar-after-write verification occurred. Consequently original prior finding remains: **weekday mask0 does not necessarily mean an unprogrammed slot** (locally observed before prior EVU2 edit), but **controller semantic acceptance of changing weekday1→0 for this EVU2 record is still OPEN**. Do not count this as a negative protocol experiment or introduce a new write transport.
