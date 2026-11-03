@@ -1,5 +1,9 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-03 W2R87 config validation COMPLETE / NEGATIVE; W2R87F1 PREPARED / NOT RUN
+
+Observed user's ESPHome validator: `[update_interval] is an invalid option for [switch.template]`. Seven F3 weekday template switches used unsupported option. W2R87F1 precisely removes seven invalid keys and updates build string; no S92 or F1/F3 behavior change. SOURCE/OFFLINE TESTED with unique ID/AST/C++ syntax/ZIP SHA and CRC PASS; not target compiled/flashed. Existing W2R86 remains live proven rollback; F3 setting TX remains NO_TX. Evidence and exact scope in Research/W2R87F1_TEMPLATE_SWITCH_CONFIG_FIX_2026-11-03.md. ABORT existing S92, rollback W2R86. NEXT: user validates compiles/flashes W2R87F1.
+
 ## 2026-11-03 W2R87 F1 stale reread/F3 source staging — PREPARED / NOT RUN
 
 Baseline: W2R86 LIVE/LOCALLY VERIFIED F1 P4/P5 five-field writes. New source code re-arms existing W2R37 F1 reader once per expiry (300s) only without unsaved staged values; F3 Program1–8 editor uses existing native CAL12 four-page read, allows staging/discard and source-matched NO_TX write planning. Expected: STALE_F1_REARM followed by owned F1 3/3 and F3_SNAPSHOT_READY for P1/P2; no physical F3 setting TX. OFFLINE: YAML 1182 unique IDs, 31 modified/new C++ callbacks syntax-only pass, exact W2R86 firmware rollback in one ZIP. Not compiled/flashed/live. ABORT existing S92; rollback to W2R86 as supplied. Full evidence in Research/W2R87_F1_STALE_REFRESH_F3_SILENT_EDITOR_2026-11-03.md. NEXT: user flashes W2R87 and checks source/UX only.
