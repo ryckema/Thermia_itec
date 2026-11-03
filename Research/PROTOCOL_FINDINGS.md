@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-03 W2R88F1 source-only S92 guard syntax correction
+
+User's actual target compiler rejected the newly combined S92 F1 vs CAL32 branch in W2R88 before any physical F2/F3/F4 setting TX. W2R88F1 groups old F1 predicate OR exact new-domain sender predicate correctly under the unchanged common UART/CRC/epoch and bus guards. This is a C++ syntax fix only, not proof of controller acceptance of F2/F3/F4. Full trace Research/W2R88F1_CAL32_S92_COMPILER_FIX_2026-11-03.md. W2R88F1 SOURCE / OFFLINE TESTED / PREPARED / NOT RUN; W2R86 P4+P5 five-field FC16+F1 remains locally PROVEN. No new delete or empty slot write added.
+
 ## 2026-11-03 W2R88 unified calendar physical write implementation — SOURCE, not new XTR proof
 
 F1/F2/F3/F4 x8 weekly 12-word records map OEM bases 0x055A/0x05BC/0x061E/0x0680 with time/day offsets1,2,6,7,11; 33-word page alignment from 0x055A. Original native OEMW23/S92 sender now receives explicitly user-armed exact staged source F2/F3/F4 one-field 33-word page only from existing program mode1, verifies entire source page, guard epoch/CRC/owner/slot/TTL/DE, requires per-word genuine FC16 and fresh all12 CAL pages to confirm persist. This is SOURCE/OFFLINE, PREPARED/NOT RUN, not live acceptance of F2/F3/F4. W2R86 F1 scope remains PROVEN for P4+P5. New 32-slot UI and W2R87 stale F1 read share the original native owner. Real delete, empty/date or new record still not implemented. Details Research/W2R88_CAL32_SINGLE_EDITOR_GUARDED_WRITES_2026-11-03.md.
