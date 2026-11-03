@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-03 F3 physical attempt denied before controller; W2R88F2 source guard correction
+
+Genuine controller2.4.2 W2R88F1: user explicitly ARM-ed existing weekly F3 Silent P1 and staged start-minute reg0x061F 0→1; batch field armed page0x05FF, but the earlier 0708 selector aborted `CAL_TRIAL_SELECTOR_ABORT NO_TX DE_LOW` before any desired-value physical TX; later owned source still 22:00–23:59 daily. **Not a controller-semantic negative.** Original legacy F1 selector compared `exp452_selected_program` and used page-only 055A–059C. For F3 page05FF requires selector W0/W2 mask **0x0040** corresponding to index5 when page size33 base055A; same normal OEMW23 one-word page sender and controller-origin FC16. W2R88F2 adds narrow source-pinned, current owner-epoch and frozen user trial authorization for F2/F3/F4 in selector; no new UART sender, CRC, DE or other TX. W2R88F2 SOURCE/OFFLINE tested, PREPARED/NOT RUN, so acceptability of F3 value remains unproven. See Research/W2R88F2_F3_SELECTOR_ABORT_FIX_2026-11-03.md.
+
 ## 2026-11-03 W2R88F1 F3 local source confirmed under shared CAL32 editor
 
 LIVE XTR controller2.4.2 23:15:45.164 CAL32_SNAPSHOT_READY slot17 domain F3 Silent Mode Program1 mode1 programmed1; real owned calendar source and descriptive slot sensor match 22:00–23:59, days0x7F. F1 Program4 source 20:23–20:38 days0x71 also loaded through same shared UI. S92 sole native owner M6=5, CRC_DIFF0 RX drops0; no F3 setting TX present, so new-domain semantic write remains HYPOTHESIS/PREPARED. Full evidence Research/W2R88F1_CAL32_LIVE_READ_CONFIRMATION_2026-11-03.md.
