@@ -1,5 +1,9 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-03 W2R88 unified 32-slot calendar — SOURCE / OFFLINE TESTED, PREPARED / NOT RUN
+
+Live baseline remains W2R86 XTR P4+P5 five-field F1 writes, M6=5 and controller FC16+fresh F1. One full W2R88 private firmware ZIP implements single 32-slot selector (F1/F2/F3/F4 x8), shared Read/Discard/Apply/Stop/ARM, time/day controls, preserves all existing HA IDs internally; guards F2/F3/F4 existing mode1 physical five-field TX behind one explicit user Arm 45s and one Apply in the exact original single S92 owner, max5 pages, individual controller FC16, full fresh CAL12 final readback, no retries, ABORT/rollback. Empty/date/create/delete NO TX. Strict YAML 1230 unique IDs, no duplicate keys/invalid switch.update_interval, 38 new/modified C++ lambda syntax checks, ZIP SHA/CRC verified. Not target compiled or LIVE. Full description Research/W2R88_CAL32_SINGLE_EDITOR_GUARDED_WRITES_2026-11-03.md. CURRENT MILESTONE: 32-slot UI + guarded new calendar-class TX. REAL BLOCKER: no for bounded experiment; actual F2/F3/F4 semantic acceptance OPEN. ONE NEXT ACTION: user flashes W2R88 and explicitly runs first F3 P1 minute+1 test.
+
 ## 2026-11-03 W2R87F1 ESPHome configuration correction — PREPARED / NOT RUN
 
 User target validation of W2R87 failed: `update_interval` is invalid in new F3 `switch.template`; seven week-day switches affected (no flash/live). W2R87F1 single full private firmware ZIP removes only these seven options, updates build label, retains W2R86-proven F1 writes and all F3 source-only staging/no physical F3 TX. YAML 1182 unique IDs and old F3 GCC C++ callback offline syntax validated, archive CRC/SHA pass; TARGET COMPILE/LIVE still pending. W2R87 superseded by W2R87F1. Full details Research/W2R87F1_TEMPLATE_SWITCH_CONFIG_FIX_2026-11-03.md. CURRENT MILESTONE: F3 staging and F1 stale reread. REAL BLOCKER: no for config correction. ONE NEXT ACTION: user target-validates W2R87F1.
