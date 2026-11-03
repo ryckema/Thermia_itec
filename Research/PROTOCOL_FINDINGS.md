@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-03 F3 Silent Mode source geometry confirmed; W2R87 SOURCE/OFFLINE ONLY
+
+Genuine Connect 930/2.4.2 configuration maps F3 eight records x12 words to registers 1566–1661 (0x061E–0x067D), programmed at 1662, active at 1663. First record crosses prior 05FF page boundary (0x061E/061F); remaining owned native source pages are 0620/0641/0662. Original alert/read registers 1800/1802 have page-dependent bit masks; F1 editor semantics cannot simply be reused without extending the sole S92 owner. W2R87 includes F3 read/stage/Discard and exact would-write plan only, NO F3 setting TX. Existing W2R86 F1 writes remain locally proven, new F3 sends NOT RUN. F1 stale selected snapshot now re-arms existing native reader without overwriting staged values. Details in Research/W2R87_F1_STALE_REFRESH_F3_SILENT_EDITOR_2026-11-03.md.
+
 ## 2026-11-03 W2R86 F1 five-field verified on second configured program (P5)
 
 **LIVE / LOCALLY VERIFIED** genuine XTR M controller 2.4.2: one W2R86 P5 native OEMW23/S92 user Apply, five separate physical 0x057B/33 page updates with controller-origin FC16 exact field receipts for 0x058B startMin31→30; 0x058C startHour18→17; 0x0590 stopMin36→35; 0x0591 stopHour18→17; 0x0595 weekdayMask0x20→0x21 (+Monday). Explicit extended trial flag was 0: all changes were established ±1/single-bit scope, so no separate ARM. Terminal owned F1 3/3 independently confirmed P5 17:30–17:35 Monday+Saturday; `BATCH_DONE f1Exact=1 pages=5 count=5`. Together with prior proven P4 five-field batch, proves cross-program configured F1 geometry and persistence for P4/P5. Not a proof of arbitrary P6/7/8 write behavior, new/empty records, F2/F3/F4, or deletion. Observed F1 expiry >300s cannot re-arm reader without program reselection; guard correctly remains NO_TX. Next: preserve sole S92 engine, extend with actual F3 source semantics and correct expired read using existing transaction mechanism.
