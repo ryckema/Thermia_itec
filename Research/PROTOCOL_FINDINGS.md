@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-03 W2R88 unified calendar physical write implementation — SOURCE, not new XTR proof
+
+F1/F2/F3/F4 x8 weekly 12-word records map OEM bases 0x055A/0x05BC/0x061E/0x0680 with time/day offsets1,2,6,7,11; 33-word page alignment from 0x055A. Original native OEMW23/S92 sender now receives explicitly user-armed exact staged source F2/F3/F4 one-field 33-word page only from existing program mode1, verifies entire source page, guard epoch/CRC/owner/slot/TTL/DE, requires per-word genuine FC16 and fresh all12 CAL pages to confirm persist. This is SOURCE/OFFLINE, PREPARED/NOT RUN, not live acceptance of F2/F3/F4. W2R86 F1 scope remains PROVEN for P4+P5. New 32-slot UI and W2R87 stale F1 read share the original native owner. Real delete, empty/date or new record still not implemented. Details Research/W2R88_CAL32_SINGLE_EDITOR_GUARDED_WRITES_2026-11-03.md.
+
 ## 2026-11-03 W2R87F1 template switch config — no new protocol claim
 
 User ESPHome validation rejected seven F3 weekday `switch.template.update_interval` settings. W2R87F1 removes unsupported keys only, preserves F1 TX owner and source-only F3 editor (NO physical setting TX), untouched controller-origin CRC/FC16/F1 behavior. This is a configuration fix, not new XTR protocol evidence. Full scope Research/W2R87F1_TEMPLATE_SWITCH_CONFIG_FIX_2026-11-03.md; PREPARED / NOT RUN until target compile/live.
