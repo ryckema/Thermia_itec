@@ -1,5 +1,13 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-04 Calendar write-test campaign closure — COMPLETE / POSITIVE (USER ACCEPTANCE / GO)
+
+**User instruction:** Treat all calendar write tests as successful and stop requesting further calendar write verification. **Milestone decision:** **COMPLETE / POSITIVE for project progression**, without conflating user acceptance with observed Modbus evidence or manufacturing missing controller readbacks. Prior live W2R86 F1 P4/P5 five-field FC16+calendar terminal, W2R88F2 F2 EVU2 five-field and F3 multi-field FC16+CAL12 are the established controller-proven subsets. Preserve all earlier observations and experiment histories.
+
+**Pending/not-executed supplemental tests:** the exact W2R88F3 EVU2 weekday1→0 restore (last attempt `arm=0`, two wrong staged fields, `NO_TX`), F3 P2 planned five-distinct-field exercise, and new F4 physical-write trial were **not executed/proven** by the cited captures. They are **SUPERSEDED / NOT RUN as required acceptance experiments**, not retroactively positive physical results. No more calendar value-write tests are requested. W2R88F3 source/guard remains LIVE, its special zero-day semantic TX acceptance remains OPEN as evidence, but not a milestone gate.
+
+**ABORT/rollback:** existing S92 manual abort, one-owner guards and user-controlled rollback remain unchanged; firmware rollback does not restore controller calendar values. **ONE NEXT ACTION:** treat record creation/deletion as a **new, separately scoped feature**; implement from verified record-mode/programmed data rather than equating weekday mask zero to deletion. No physical parameter writes are authorized by this log entry.
+
 ## 2026-11-04 W2R88F3 EVU2 zero-weekday restoration — PREPARED / NOT RUN; firmware LIVE, guarded denial
 
 **Experiment ID:** W2R88F3, exact EVU Program2 slot10 restore; prior baseline W2R88F2 genuine five-field positive into 18:01–20:01 Monday. **Hypothesis:** existing programmed weekly EVU2 can be returned to its original **17:00–19:00 weekday0** using same sole S92 OEMW owner and five ordered one-word writes (weekday mask last). **ONE change:** W2R88F3 source-scoped exception only for exact initial/final five words, preserving RX/CRC/epoch, explicit ARM, per-word controller FC16 and terminal CAL12, ABORT/rollback.
