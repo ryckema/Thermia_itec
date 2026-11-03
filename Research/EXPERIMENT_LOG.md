@@ -1,5 +1,9 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-03 W2R88 calendar 32-slot selector and F3 physical trial — PREPARED / NOT RUN
+
+Hypothesis: original one-owner OEMW descriptor23 + native CAL12 controller receipt semantics also apply to existing weekly F3 Silent Mode. Baseline: W2R86 P4 and P5 5-field F1 LIVE/LOCALLY VERIFIED; corrected W2R87F1 not flashed. W2R88 integrated all32 shared controls and bounded F2/F3/F4 real setting send behind user ARM45s + one Apply; five ordinary fields only, no empty/date/delete, five physical pages max, one FC16 per word, final full fresh CAL12, no retry. Expected first user-initiated F3 P1 existing daily 22:00-23:59 ->22:01-23:59, one OEMW23 0x05FF/33 reg0x061F 00->01, actual controller FC16 and CAL32_BATCH_DONE exact=1; reverse only after fresh controller evidence via separate user activation. Actual: OFFLINE ONLY, strict YAML parse 1230 IDs and 38 lambda syntax checks; no target compile, flash, physical TX or controller semantic proof. ABORT: native S92, rollback exact W2R86 YAML included; partial controller writes require independent readback. Status PREPARED / NOT RUN. Full info Research/W2R88_CAL32_SINGLE_EDITOR_GUARDED_WRITES_2026-11-03.md.
+
 ## 2026-11-03 W2R87 config validation COMPLETE / NEGATIVE; W2R87F1 PREPARED / NOT RUN
 
 Observed user's ESPHome validator: `[update_interval] is an invalid option for [switch.template]`. Seven F3 weekday template switches used unsupported option. W2R87F1 precisely removes seven invalid keys and updates build string; no S92 or F1/F3 behavior change. SOURCE/OFFLINE TESTED with unique ID/AST/C++ syntax/ZIP SHA and CRC PASS; not target compiled/flashed. Existing W2R86 remains live proven rollback; F3 setting TX remains NO_TX. Evidence and exact scope in Research/W2R87F1_TEMPLATE_SWITCH_CONFIG_FIX_2026-11-03.md. ABORT existing S92, rollback W2R86. NEXT: user validates compiles/flashes W2R87F1.
