@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 existing EVU/F2 zero-weekday weekly program vs deleted program — XTR LIVE
+
+Actual XTR 2.4.2 EVU Program2 global slot10 `mode=1 programmed=1`, initial 17:00–19:00 days0x00 with EVU configured=2/8: mask0 does **not** imply unprogrammed/deleted. Same exact local source can accept five per-word S92 controller FC16 changes to18:01–20:01 Monday days0x01 and fresh CAL12 `CAL32_BATCH_DONE exact=1 pages=5 count=5`. F2 EVU Program1 global slot9 is date-mode (`mode=0`) and not an existing-weekly editable record. W2R88F2 prevents reversing to days0 before sending due to duplicated daymask>0 guards, not controller semantic refusal. W2R88F3 SOURCE/OFFLINE TESTED narrowly fixes zero-mask return for EVU2 with weekday word written last; physical acceptance of reverse remains OPEN. No true deletion/create protocol inferred. Detailed report Research/W2R88F3_EVU2_ZERO_WEEKDAYS_RESTORE_2026-11-04.md.
+
 ## 2026-11-04 F3 multiword semantic completion and weekday register verified on genuine XTR
 
 On XTR controller2.4.2 W2R88F2, original S92 OEMW descriptor23 sole UART/DE owner accepted F3 Silent Mode P2/slot18 multiple field words on page0x0620 and complete fresh independently owned CAL12. Terminal `CAL32_BATCH_DONE exact=1 pages=3 count=3` at00:06:24 and `exact=1 pages=1 count=1` at00:07:46, followed respectively by owned 12-page receipt and exact P2 source. Genuine FC16 per word reg0x0630 stopMin1→0, reg0x0631 stopHour7→8, reg0x0635 weekday mask0x7F→0x7E, then independent user ARM+Apply reg0x0635 0x7E→0x7F. Weekday both directions now controller semantically PROVEN. Earlier three-field batch starting00:04:26 independently native CAL12 confirms P2 00:01–07:01 all days in this new log. Last actual controller state00:01–08:00 all days; five-field target NOT RUN. Clean M6=5 CRC_DIFF0 RX drops0 parser resync0 and no retries. Detailed report Research/W2R88F2_F3_P2_CAL12_FULL_TERMINAL_AND_NEXT_BATCH_2026-11-04.md.
