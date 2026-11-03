@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-03 W2R87F1 template switch config — no new protocol claim
+
+User ESPHome validation rejected seven F3 weekday `switch.template.update_interval` settings. W2R87F1 removes unsupported keys only, preserves F1 TX owner and source-only F3 editor (NO physical setting TX), untouched controller-origin CRC/FC16/F1 behavior. This is a configuration fix, not new XTR protocol evidence. Full scope Research/W2R87F1_TEMPLATE_SWITCH_CONFIG_FIX_2026-11-03.md; PREPARED / NOT RUN until target compile/live.
+
 ## 2026-11-03 F3 Silent Mode source geometry confirmed; W2R87 SOURCE/OFFLINE ONLY
 
 Genuine Connect 930/2.4.2 configuration maps F3 eight records x12 words to registers 1566–1661 (0x061E–0x067D), programmed at 1662, active at 1663. First record crosses prior 05FF page boundary (0x061E/061F); remaining owned native source pages are 0620/0641/0662. Original alert/read registers 1800/1802 have page-dependent bit masks; F1 editor semantics cannot simply be reused without extending the sole S92 owner. W2R87 includes F3 read/stage/Discard and exact would-write plan only, NO F3 setting TX. Existing W2R86 F1 writes remain locally proven, new F3 sends NOT RUN. F1 stale selected snapshot now re-arms existing native reader without overwriting staged values. Details in Research/W2R87_F1_STALE_REFRESH_F3_SILENT_EDITOR_2026-11-03.md.
