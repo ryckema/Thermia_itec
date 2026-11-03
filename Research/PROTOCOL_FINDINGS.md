@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-03 W2R88F1 F3 local source confirmed under shared CAL32 editor
+
+LIVE XTR controller2.4.2 23:15:45.164 CAL32_SNAPSHOT_READY slot17 domain F3 Silent Mode Program1 mode1 programmed1; real owned calendar source and descriptive slot sensor match 22:00–23:59, days0x7F. F1 Program4 source 20:23–20:38 days0x71 also loaded through same shared UI. S92 sole native owner M6=5, CRC_DIFF0 RX drops0; no F3 setting TX present, so new-domain semantic write remains HYPOTHESIS/PREPARED. Full evidence Research/W2R88F1_CAL32_LIVE_READ_CONFIRMATION_2026-11-03.md.
+
 ## 2026-11-03 W2R88F1 source-only S92 guard syntax correction
 
 User's actual target compiler rejected the newly combined S92 F1 vs CAL32 branch in W2R88 before any physical F2/F3/F4 setting TX. W2R88F1 groups old F1 predicate OR exact new-domain sender predicate correctly under the unchanged common UART/CRC/epoch and bus guards. This is a C++ syntax fix only, not proof of controller acceptance of F2/F3/F4. Full trace Research/W2R88F1_CAL32_S92_COMPILER_FIX_2026-11-03.md. W2R88F1 SOURCE / OFFLINE TESTED / PREPARED / NOT RUN; W2R86 P4+P5 five-field FC16+F1 remains locally PROVEN. No new delete or empty slot write added.
