@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 F3 Silent Mode P2 — 3 physical one-word writes in one user batch
+
+Genuine XTR 2.4.2 W2R88F2 native sole S92 OEMW23 one ARM+Apply `fields=3` applies three exact pre-existing weekly F3 P2/slot18 page0x0620 words: **0x062B** startMinute0→1, **0x0630** stopMinute0→1, **0x0631** stopHour8→7. Controller-origin FC16 confirmed each exact value and original owner reports `CAL32_CONTROLLER_CONFIRMED step=3/3`; CRC_DIFF0, no RX drops/resync/retries, M6=5. Proves sequential new-domain multi-field semantic receipt; **not** full 5-field because no staging of startHour or weekdays. Full owned CAL12 postwrite requested but terminal receipt and `CAL32_BATCH_DONE` missing in capture. Source before=00:00–08:00 days0x7F; current after-word registers imply00:01–07:01 daily, require independent read before any future TX. Legacy `CAL_OEMW_ALERT_SENT reg0584` is outdated label; actual sender/FC16 used verified 062B/0630/0631. Full analysis Research/W2R88F2_F3_P2_THREE_FIELD_CONTROLLER_WRITE_2026-11-04.md.
+
 ## 2026-11-03 first F3 write retained-state clarification — no controller spontaneous revert evidence
 
 On genuine XTR 2.4.2 W2R88F2 reg0x061F 0→1, native OEMW/S92 single owner physically sent, FC16 controller read value1 and passive page diff1, slot source initially 22:01; later owned CAL12 showed22:00. User explicitly confirms **manual deliberate restore to22:00 between captures**. So latter CAL12 is consistent with restored state, NOT a controller reject/spontaneous reset. One-field physical write is PROVEN; original batch terminal `CAL32_BATCH_DONE` was not observed, later read belongs to different cycle. Previous NO-GO inference SUPERSEDED. No additional protocol fields/commit assumptions invented. Next five-field F3 P2 test PREPARED / NOT RUN. Evidence Research/W2R88F2_F3_P1_RESTORE_CLARIFICATION_2026-11-03.md.
