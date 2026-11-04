@@ -1,5 +1,13 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-04 W2R90 alarm presentation source integration — PREPARED / NOT RUN (NO alarm injection)
+
+**Experiment/change ID:** MAIN04-W2R90. **Hypothesis:** ordinary XTR display alarm status/history can be represented read-only using existing 0x085F and 0x0884 controller-origin receipts and version-matched OEM alarm names, with stale/unsupported provenance preserved. **Baseline:** exact W2R89 source, user-flashed W2R88F3 known LIVE, observed eight 0x0884/60 7-word history records and raw 085F evidence status UNKNOWN. **ONE change:** 9 new read-only text sensors + correction of old misleading `No alarms (unverified)`; no physical TX, no new parser or writer.
+
+**Expected:** Fresh all-zero 085F says no active flags; missing or aged 085F says UNKNOWN; any set known alarm bit displays corresponding OEM source label; unknown flags preserve code; 0884 records display plausible date/hour/minute with original hexadecimal numeric event/detail, not fabricated historical alarm names. **Actual:** SOURCE/OFFLINE TESTED: YAML/IDs 1240 vs 1231, exact old script/interval/UART/calendar/button/control preservation, C++17 strict syntax 9/9 PASS, original 29 positively asserted OEM alarm bits matched, native XTR historical sample fields checked, ZIP hashes and CRC pass. **NOT TARGET COMPILED / NOT FLASHED / NOT LIVE** W2R90. No synthetic test alarm and no alarm reset; no controller alarm reproduced. **Status: PREPARED / NOT RUN** for passive firmware deployment. This is not a LIVE semantic alarm event test.
+
+**ABORT / rollback:** existing S92 Native DCM ABORT Session unchanged; ZIP includes full W2R89 source rollback and last user-flashed W2R88F3 baseline. **ONE NEXT ACTION:** manually target compile/flash W2R90; no alarm test or physical activation needed, inspect passive status and only request compiler output on failure.
+
 ## 2026-11-04 Existing Write User evidence reconciliation — COMPLETE / POSITIVE (review; no TX)
 
 **Hypothesis / user feedback:** preceding feature-gap overview treated too many validated settings as missing. **Baseline:** latest W2R88F3 flashed/native calendar live; W2R89 prepared offline. **ONE change:** review of already documented XTR captures against User Guide section 5; NO code, firmware, user operation, physical TX or new experiment.
