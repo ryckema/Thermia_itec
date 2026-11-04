@@ -1,5 +1,19 @@
 # THERMIA EXPERIMENT LOG
 
+## RC08-D24 — bounded native Hot Water Enabled experiment — PREPARED / NOT RUN (2026-11-04)
+
+**Hypothesis:** native OEMW/S92 descriptor24 can change controller-accepted Hot Water Enabled (0/1), via owned 042E/15 word0, with authoritative controller-origin FC16 readback, beyond the preexisting transport ACK evidence.
+
+**Baseline / previous evidence:** last owner-LIVE RC07F1 retained M6=5, CURRENT4/4, Calendar12/12 and clean sampled CRC/RX; W2R92 semantic writes verified for existing parameter group. RC07F1 already contains D24 mapping, selector/ledger, one TX max and 042E source guard; the existing experimental W2R63 ARM was internal/hidden, therefore unavailable for ordinary explicit HA initiation. No claim that D24 was previously live validated.
+
+**ONE change:** integrate RC07F2 UI cleanup; unhide only W2R63 as a disabled-by-default one-edit ARM; add a nonpersistent descriptor scope `w2r84_hw_trial_scope=24` on successful ARM (45s), checked before the existing preview/commit path and cleared after commit/Disable Write User/ABORT. AWAY/TOP-UP cannot borrow the D24 ARM. S92/UART/DE, FC03, FC16, cold-start and native read system unchanged.
+
+**Expected:** ARM itself generates NO TX. On a user-initiated opposite 0/1 edit within 45s, after same-epoch/current-page and V5/no-collision checks, at most one existing OEMW 042E/15 TX attempt. Success requires fresh controller FC16 word0 and Thermia UI reflecting the desired value, not ACK alone. Restore previous setting on OEM display as needed.
+
+**Actual:** no physical RC08 run or target compilation supplied yet. **Status: PREPARED / NOT RUN** (SOURCE / OFFLINE TESTED only). User compile/flash and a separate deliberate ARM+edit are needed for live result.
+
+**ABORT / rollback:** `Configuration | ABORT Native Session` latches native TX lockout; `Configuration | Disable Write User` only at owner idle; restore original Hot Water Enabled using Thermia control panel, and flash exact known-good W2R92 firmware if needed. No room sensor removal, guessed reset, autonomous retransmit or new privilege escalation. Private full ZIP is not committed.
+
 ## RC07F2 hide 3 control switches, preserve automatic reads — PREPARED / NOT RUN (2026-11-04)
 
 Hypothesis: three already-advanced Configuration toggles can be removed from ESPHome API exposure with `internal:true` without changing automatic CURRENT, Calendar refresh or User setting write semantics. Baseline: user-LIVE RC07F1 M6=5 CURRENT4/4, CAL12/12, CRC_DIFF0, RX drops0 and original W2R92 rollback; optional 34 Pool/Buffer/Shunt entities already `disabled_by_default:true`. One meaningful change: mark `w2r77_automatic_validated_writes`, `c5dh_periodic_current_enabled`, `c5ds_cal_auto_enabled` internal. Expected no HA export for these three switches and unchanged read refresh running with ALWAYS_ON; manual validated User setting writes remain unchanged. Offline actual: full YAML !secret parse, exact AST diff isolated to 3 switch `internal` properties and one build text plus comment, exact original callback/IDs/restore modes, one UART writer and protected engine, all 34 optional entities disabled defaults, archive CRC/hash original rollback PASS. LIVE RC07F2 NOT RUN, no ESPHome target compile, no physical TX or setting writes. ABORT existing S92 native ABORT, Disable Write User, byte-exact W2R92 reflash. Decision GO for owner-controlled compilation and regular read observation. Existing HA registry records may remain and need manual cleanup/disable once.
