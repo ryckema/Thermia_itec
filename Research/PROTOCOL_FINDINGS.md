@@ -1,5 +1,13 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 OEM alarm bit mapping and history readout — SOURCE / OFFLINE TESTED
+
+Local genuine XTR 2.4.2 UART parser already RX-caches controller-origin FC16 `0x085F/5` as registers2143–2147 and `0x0884/60` as 60-word history page. The original private Connect 2.1.105 version-matched CM930/2.3.0–2.4.3 metadata `alarms.json` gives 29 POSITIVE named bit conditions for 2143–2145 (sensor, pump, outdoor unit and communication faults); **2146–2147 and other bits are NOT assigned invented names**. Optional OEM conditions on some alarm flags depend on configured accessories; raw bit is kept even if model applicability remains unknown. The `2095.10` ODU-compressor-down condition is **outside 085F** and intentionally not misattributed to this page.
+
+User W2R88F3 historical captures show eight successive 7-word blocks and four trailer words in `0884/60`; blocks plausibly decode `[event-id, detail, minute, hour, day, month, year-since-2000]` (e.g. 2026-10-29 23:37 for row1 `002C 0000 0025 0017 001D 000A 001A`). **Timestamp field order strongly supported by cross-record consistency, NOT independently confirmed OEM history schema**. Event-code identifiers remain unknown; no names inferred from current alarm bit metadata. User guide allows up to 10 alarm entries but present source geometry accommodates eight complete entries; do not invent records9–10.
+
+**Source implementation W2R90** extends only HA alarm interpretation, no live fault or physical TX. Source fresh/unknown gate prevents `No alarms` on missing/expired 085F, and invalid history timestamps are unknown. Original full raw data, parser, CRC, sole S92 owner and ABORT unchanged. W2R90 `SOURCE / OFFLINE TESTED; PREPARED / NOT RUN`, NOT target compiled/live. No fault injection or alarm reset required by user.
+
 ## 2026-11-04 User display evidence audit — semantic confirmations retained
 
 This entry adds NO new protocol mapping or physical evidence. Genuine XTR controller-origin FC16 has confirmed 51/51 writes: Heating W2R25F4 27/27, Hot Water D13/D14 W2R27 4/4, Cooling W2R28F1 D2/D15/D16/D17/D18/D20 18/18, and Operation AUTO↔COMPRESSOR W2R29F1 2/2. W2R64HW additionally confirmed Hot Water ON↔OFF and D13 Away/Comfort/Eco 4/4, total 55 actual semantic confirmations. Both Cooling ROOM-sensor hysteresis registers 044D and 044E are proven; separate general user Cooling HYSTERESIS remains OPEN. D19 room-sensor write OPEN. Operation 0553 enum0/3/4 source-known but XTR controller-semantic acceptance unverified.
