@@ -1,5 +1,9 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-04 W2R90F1 alarm None correction — PREPARED / NOT RUN
+
+**User evidence:** explicitly confirms actual current XTR display alarms **None**, without triggering any fault. Earlier W2R88F3 ESPHome log has no qualified recent 085F receipt (`ACKs=0`), so report this as **manual controller-display confirmation**, not a fabricated fresh Modbus alarm read. **ONE change:** W2R90F1 uses `None` for the two user-facing active alarm text entities when 085F absent/stale without prior alarm or fresh all-zero, preserves real named/unmapped bits on fresh nonzero frame, preserves stale prior nonzero flag warning, and keeps separate OEM provenance unknown if source unavailable. No reset, no alarm stimulation, no TX. **Actual:** SOURCE/OFFLINE TESTED only: 1240 unique YAML IDs, unchanged sole UART/S92/scripts/calendars/control, two C++17 strict syntax checks and zero/nonzero/stale/no-frame synthetic *offline code-path* test pass, ZIP SHA/CRC pass. **Status:** PREPARED / NOT RUN for W2R90F1 deploy; user confirmation `None` recognized, but automatic 085F receipt not claimed. **ABORT/rollback:** unchanged manual S92 ABORT, ZIP W2R90/W2R89/W2R88F3 rollback. **ONE NEXT ACTION:** manual compile/flash and observe normal alarm UI, no physical alarm experiment.
+
 ## 2026-11-04 W2R90 alarm presentation source integration — PREPARED / NOT RUN (NO alarm injection)
 
 **Experiment/change ID:** MAIN04-W2R90. **Hypothesis:** ordinary XTR display alarm status/history can be represented read-only using existing 0x085F and 0x0884 controller-origin receipts and version-matched OEM alarm names, with stale/unsupported provenance preserved. **Baseline:** exact W2R89 source, user-flashed W2R88F3 known LIVE, observed eight 0x0884/60 7-word history records and raw 085F evidence status UNKNOWN. **ONE change:** 9 new read-only text sensors + correction of old misleading `No alarms (unverified)`; no physical TX, no new parser or writer.
