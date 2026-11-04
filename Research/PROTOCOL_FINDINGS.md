@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 CLEAN03 — 0x0870 defrost word13 remains semantically unqualified
+
+Genuine controller-origin 0x0F FC16 `0x0870` count17 word13 was displayed as Last Defrost Duration in minutes in W2R92/CLEAN02, but source values 15462 (2026-09-25), 16026 (2026-10-03), and owner-reported 64800 (2026-11-04) are implausible as single-defrost minutes. **PROVEN:** field/raw exists in native XTR 0870 block. **OPEN:** OEM units, sign/sentinel semantics and whether the displayed value should be zero under current conditions; no invented scaling. **CLEAN03 source-side mitigation:** limit displayed duration provisionally to 0..60 raw and mark other values Unavailable; entity diagnostic/disabled by default; preserve raw native cache for future mapping. This is a display fix, not verified protocol semantics. CLEAN03 also strips cosmetic `14 Calendar`/`15 Alarms` ordering prefixes and hides 36 secondary diagnostic entities by default; native S92/CRC/FC03/FC16/HA write engine unchanged. Offline only. No new protocol claim, TX or service enablement.
+
 ## 2026-11-04 USER-CLEAN02 — manufacturer English UI wording; protocol unchanged
 
 The official 2024 Thermia iTec XT/XTR User Guide AWIXT01UG0202 uses **Comfort/Eco/Away** for Hot Water and **Distribution Circuit 1/2**, **Heat Stop**, and **Setback Temp** in the user interface. Private User CLEAN02 normalizes corresponding HA labels and read-only status strings. The existing 0x042E Hot Water mode value **2 is still the same third controller mode**; only its label changed from Holiday/Vakantie Eco to Away. No new register/address inference and no new semantic write test. V5 RX/CRC, FC03/FC16 cache, S92 physical UART ownership, native M6, CAL32, abort and rollback unchanged in SOURCE/OFFLINE checks; not target compiled or live.
