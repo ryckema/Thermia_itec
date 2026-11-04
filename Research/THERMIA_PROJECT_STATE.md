@@ -1,5 +1,15 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-04 RC08HW private TOP-UP one-shot UI exposure — PREPARED / NOT RUN
+
+**Baseline:** user-supplied RC07F2 single-YAML; original W2R92 semantic-write rollback retained byte-exact. Latest consolidated XTR local results in Research document W2R64HW already report ON/OFF and COMFORT/ECO/AWAY 4/4 controller FC16 verified. W2R65 one bounded TOP-UP pulse with observed actual DHW production remains STRONGLY SUPPORTED, not routine-verified; controller word2 returned 0, and W2R66 existing terminal fix releases the ledger as INCONCLUSIVE without retry. Do not repeat 55 already locally verified writes absent contradiction.
+
+**Implementation:** one complete PRIVATE `Thermia_XTR_WRITE_USER_RC08HW_TOPUP_UI_PRIVATE_20261104.zip`, single YAML SHA256 `3d3954a9996c4641bb11fd820d207fd91ab935065d46bf1380f8e8ee0b0bcaa6`; original W2R92 rollback SHA256 `b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`. Changes **ONLY two HA button metadata entries**: existing W2R65 45s operation/TOP-UP trial ARM is no longer internal but disabled_by_default, and existing one-shot TOP-UP action is no longer internal and is disabled_by_default. No new action, TX, response, transaction or authorization logic. Existing old test TOP-UP switch remains internal. ONE native UART sender, S92, V5, FC03/FC16, M6, CAL32, ABORT and HA IDs preserved.
+
+**OFFLINE TESTED:** strict PyYAML parse with !secret and duplicate key rejection, full parsed-component AST equal after reverting exactly two metadata changes, one physical UART callsite, unchanged components, exact rollback hash and ZIP CRC PASS. NOT ESPHOME TARGET COMPILED / FLASHED / LIVE. This is UI accessibility of pre-existing bounded TOP-UP experiment, not newly validated routine one-shot functionality. One-shot requires explicit HA entity enable, manual 45s trial ARM then press; never retransmit or send a guessed reset.
+
+**CURRENT MILESTONE:** complete User HOT WATER UI and truthful one-shot status. **DELIVERABLE:** complete private RC08HW one-YAML ZIP + rollback/manifest. **REAL BLOCKER:** no source blocker for UI; new RC08HW live confirmation pending, routine TOP-UP remains without conclusive one-shot result semantics. **ONE NEXT ACTION:** owner compile/flash RC08HW; verify unchanged M6/CURRENT/CAL. Only if deliberately initiating a bounded TOP-UP trial, enable the two disabled entities, press ARM then one-shot within 45s, watch OEM DHW and existing status; ABORT or W2R92 rollback on deviation.
+
 ## 2026-11-04 RC08F1 manual-only D24 authorization correction — PREPARED / NOT RUN
 
 **Baseline:** RC07F1 owner FLASHED/LIVE retained M6=5, CURRENT4/4, CAL12/12 and sampled CRC/RX clean; RC08 was SOURCE/OFFLINE, not user-flashed. W2R92 is the original owner-verified semantic-write rollback.
