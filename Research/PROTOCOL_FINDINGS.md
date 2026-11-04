@@ -1,5 +1,11 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 RC06 and RC07 display-only source interpretation
+
+RC06 corrected the user-facing name of existing controller register 2068 to Current Limiter Reading, based on the original CM930 sensor definition. It is distinct from compressor current; no mapping or raw value changed. RC06 also extended the read-only 0884 history parser to accept unambiguous sparse 6-word XTR or 7-word Eco records, while refusing unknown layouts.
+
+RC07 applies a single qualified 0884 history-source predicate to eight visible records, eight raw diagnostics and the history-layout diagnostic. A current record requires a received frame no older than five minutes, a matching active S92/M6 accepted session and a recently valid CRC-backed bus frame (ten seconds). This is cache presentation freshness, not a new register interpretation, request mechanism or controller-write semantic. **SOURCE/OFFLINE TESTED only**, not FLASHED/LIVE. Historical event-name mapping, current alarm 085F refresh and calendar DELETE remain OPEN.
+
 ## 2026-11-04 0884 history record geometry differs across genuine captures — SOURCE/OFFLINE
 
 Controller-origin 0x0F FC16 0x0884/count60 genuine local XTR captures 2026-09-25 and 2026-10-03 split into TEN six-word records [code,minute,hour,day,month,year2]. Independent iTec Eco 2026-09-26 controller capture splits into EIGHT seven-word records [code,detail,minute,hour,day,month,year2] plus four trailing words. Prior unconditional 8x7 decoder is wrong for the historical XTR payload. RC05 uses bounded timestamp-validity/geometry scores to select 6 or 7 words; otherwise emits unverified. Only the first eight of ten 6-word records are visible through existing eight HA entities. Historical alarm numeric code meanings remain UNKNOWN, and current 2026-11-04 XTR full 0884 payload must be checked to establish its current layout; an RC01 displayed History6 code varied at constant timestamp. No new native TX or mapping inference; 085F current alarm provenance remains independent and unchanged.
