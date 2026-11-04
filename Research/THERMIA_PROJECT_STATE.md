@@ -1,5 +1,19 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-04 CLEAN04 OEM 2.4.2 signed-defrost and lifetime HA — PREPARED / NOT RUN
+
+**Baseline:** private CLEAN03 SHA256 `32d8bb2fb4bf3ea9ebb52d9e392390aff686633881c2cb2a380d883f0694bcd3`; unchanged last owner-confirmed LIVE W2R92 SHA256 `b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`. **Private deliverable:** `Thermia_XTR_WRITE_USER_CLEAN04_OEM_PRIVATE_20261104.zip`, full `Thermia_WRITE_USER_CLEAN04_OEM.yaml` SHA256 `957a0aaa2408a87679f14fd264ff58f20177dca5d14fbfee5196670c47102ef8`, exact W2R92 rollback. No private OEM/handshake code published.
+
+**Source evidence:** owner-provided genuine Thermia Connect 2.1.105 extracted appfs, `etc/device-client.d/930/2.3.0-2.4.3/sensors.json` (applicable to 2.4.2), and `device_client/data/extractor.py` from private `device_client.zip`. OEM `{2160:u}`, `{2162:u}`, `{2163:u}`, `{2166:u}`–`{2170:u}` are unsigned accumulated hours. `{2171}`, `{2172}`, `{2173}` are default **signed INT16**: defrost count, minutes since last defrost, and last defrost duration in minutes. Source interpretation of raw 64800 is **-736**, not 0 nor 64800 minutes. Prior locally captured raw 16026 is positive but implausibly long. Actual XTR semantic/sentinel behavior remains **OPEN**; do not claim observed zero.
+
+**CLEAN04 code fix:** three `w65_` defrost sensor lambdas use signed INT16 and return Unavailable for invalid negative counts/time; last duration remains conservatively accepted only within 0..60 and disabled by default; raw cache and native FC16 untouched. Add HA `device_class: duration` and `state_class: total_increasing` to eight accumulated-hour sensors, `state_class: total_increasing` to defrost count. Correct stale Firmware Build string `CLEAN02` to `CLEAN04`. All User UI remains English; no new User or Service TX.
+
+**OFFLINE TESTED:** YAML !secret parse, 11 full-source assertions, exact same component/global IDs, UART, one native physical write owner, V5 RX/CRC, M6, FC03/FC16, CAL32, all scripts, intervals, user setting controls/guards, ABORT, and original W2R92 rollback; OEM metadata validated directly. **NOT TARGET COMPILED / FLASHED / LIVE.** No new physical write tests; do not repeat previously accepted trials.
+
+**Optimization decision:** OEM has firmware-versioned metadata, request/clear freshness signaling, controller-origin readback and bounded retry logic. User firmware already owns native startup/rejoin/FC03/CAL32/write confirmation; no evidence-based reason to import OEM retry/handshake/extra polling now. Remaining improvement area: validate 2173 abnormal value on one naturally occurring defrost event and check manufacturer semantics; not a blocker for source cleanup.
+
+**CURRENT MILESTONE:** Write User OEM-aligned telemetry types/HA statistics. **DELIVERABLE:** one private CLEAN04 integrated firmware ZIP. **REAL BLOCKER:** none source-side; user target compile and normal operation observations before claiming LIVE. **ONE NEXT ACTION:** compile/flash CLEAN04 in normal owner-controlled workflow, check native health, hours, HA long-term stats and signed defrost availability without new user-setting write experiments.
+
 ## 2026-11-04 CLEAN03 — Write User diagnostic cleanup and labels — SOURCE / OFFLINE TESTED
 
 **Input:** CLEAN02 private source SHA256 `ed6845858b5bdc5b58fb6bdda2d0c243604cba841765cb06db85300380827ba9`, derived from owner-confirmed LIVE W2R92 SHA256 `b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`. **Output:** one private complete firmware ZIP `Thermia_XTR_WRITE_USER_CLEAN03_PRIVATE_20261104.zip`, full YAML SHA256 `32d8bb2fb4bf3ea9ebb52d9e392390aff686633881c2cb2a380d883f0694bcd3`. CLEAN03 is **PREPARED / NOT RUN**, SOURCE/OFFLINE TESTED only; W2R92 remains last owner-confirmed flashed/live baseline.
