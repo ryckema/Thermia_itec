@@ -29,9 +29,14 @@
 #    every ~4.3 seconds using FC23 (read 3 @46000, write 3 @46020).
 # 2. When emulation is enabled in Home Assistant (switch ON) and temperature data is fresh,
 #    the ESP responds with an 11-byte frame:
-#    0A 17 06 <temp*10> 00 00 00 00 <CRC16>
-# 3. The iTec Eco display auto-detects the room sensor and uses the supplied indoor
-#    temperature for heating curve compensation and display.
+#    0A 17 06 <temp*10> <setpoint_req> <topup_req> <CRC16>
+#    - Word 0 (@46000): Indoor temperature x10 (e.g. 215 = 21.5 C)
+#    - Word 1 (@46001): Target room setpoint request (10-30 C, 0 = no request)
+#    - Word 2 (@46002): Hot-water top-up trigger (1 = trigger immersion heater run, 0 = idle)
+# 3. The iTec Eco display auto-detects the room sensor and:
+#    - Adopts the supplied indoor temperature for heating curve room compensation.
+#    - Updates its active room setpoint when a non-zero setpoint request is received (mirrored in @46021).
+#    - Starts a hot-water top-up cycle when word 2 is 1 (status mirrored in @46022, 2 = active).
 # 4. Fail-closed safeguards:
 #    - Emulation switch defaults to OFF after boot.
 #    - DE is held LOW at all times except during the ~12 ms transmission.
@@ -131,6 +136,26 @@ api:
             } else {
               ESP_LOGW("thermia_service", "Invalid room temperature: %.1f C", temperature);
             }
+
+    - service: set_target_room_setpoint
+      variables:
+        setpoint: int
+      then:
+        - lambda: |-
+            if (setpoint >= 10 && setpoint <= 30) {
+              id(thermia_target_room_setpoint)->publish_state(float(setpoint));
+              id(thermia_pending_setpoint_request) = int16_t(setpoint);
+              id(thermia_setpoint_request_retries) = 0;
+              ESP_LOGI("thermia_service", "Target room setpoint set via HA service: %d C", setpoint);
+            } else {
+              ESP_LOGW("thermia_service", "Invalid target room setpoint: %d C", setpoint);
+            }
+
+    - service: trigger_hot_water_topup
+      then:
+        - lambda: |-
+            id(thermia_pending_dhw_topup) = true;
+            ESP_LOGI("thermia_service", "Hot water top-up triggered via HA service");
 
 ota:
   - platform: esphome
@@ -247,6 +272,23 @@ globals:
     initial_value: '0'
 
   - id: thermia_peer_room_sensor_detected
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  # Room setpoint request state (@46001 / B3B1)
+  - id: thermia_pending_setpoint_request
+    type: int16_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: thermia_setpoint_request_retries
+    type: uint8_t
+    restore_value: no
+    initial_value: '0'
+
+  # Hot water top-up trigger state (@46002 / B3B2)
+  - id: thermia_pending_dhw_topup
     type: bool
     restore_value: no
     initial_value: 'false'
@@ -1606,7 +1648,9 @@ uart:
                   // ===========================================================
                   // SLAVE 0x0A
                   //
+                  // B3C4 = outdoor temperature pushed to room sensor
                   // B3C5 = controller-propagated / confirmed room setpoint
+                  // B3C6 = hot-water top-up status (0 = idle, 2 = active)
                   // ===========================================================
 
                   if (
@@ -1630,7 +1674,43 @@ uart:
                     ) {
 
                       publish_float_if_changed(id(thermia_room_setpoint), room_setpoint, 0.5f);
+
+                      const int16_t current_sp_int = int16_t(roundf(room_setpoint));
+
+                      // If a setpoint change was requested, check if master has adopted it
+                      if (id(thermia_pending_setpoint_request) > 0) {
+                        if (current_sp_int == id(thermia_pending_setpoint_request)) {
+                          ESP_LOGI(
+                            "thermia_setpoint",
+                            "Heat pump confirmed new room setpoint: %d C! Clearing pending request.",
+                            current_sp_int
+                          );
+                          id(thermia_pending_setpoint_request) = 0;
+                          id(thermia_setpoint_request_retries) = 0;
+                        }
+                      } else {
+                        // Keep Home Assistant target number entity in sync with panel adjustments
+                        if (id(thermia_target_room_setpoint)->has_state()) {
+                          if (int16_t(roundf(id(thermia_target_room_setpoint)->state)) != current_sp_int) {
+                            id(thermia_target_room_setpoint)->publish_state(float(current_sp_int));
+                          }
+                        } else {
+                          id(thermia_target_room_setpoint)->publish_state(float(current_sp_int));
+                        }
+                      }
                     }
+                  }
+
+                  if (
+                    slave == 0x0A &&
+                    write_start <= 0xB3C6 &&
+                    (
+                      uint32_t(write_start) +
+                      uint32_t(write_count)
+                    ) > 0xB3C6
+                  ) {
+                    const int16_t topup_status = write_reg_s(0xB3C6);
+                    publish_bool_if_changed(id(thermia_dhw_topup_active), (topup_status == 2));
                   }
 
 
@@ -1654,8 +1734,28 @@ uart:
                         const float cur_temp = id(thermia_room_temp_input)->state;
                         if (!isnan(cur_temp) && cur_temp >= 5.0f && cur_temp <= 35.0f) {
                           const int16_t raw_temp = int16_t(roundf(cur_temp * 10.0f));
-                          const int16_t req_sp = 0;
-                          const int16_t topup = 0;
+
+                          int16_t req_sp = 0;
+                          if (id(thermia_pending_setpoint_request) > 0) {
+                            req_sp = id(thermia_pending_setpoint_request);
+                            id(thermia_setpoint_request_retries)++;
+                            if (id(thermia_setpoint_request_retries) > 5) {
+                              ESP_LOGW(
+                                "thermia_setpoint",
+                                "Setpoint change request %d C was not acknowledged after 5 cycles. Clearing request.",
+                                req_sp
+                              );
+                              id(thermia_pending_setpoint_request) = 0;
+                              id(thermia_setpoint_request_retries) = 0;
+                            }
+                          }
+
+                          int16_t topup = 0;
+                          if (id(thermia_pending_dhw_topup)) {
+                            topup = 1;
+                            id(thermia_pending_dhw_topup) = false;
+                            ESP_LOGI("thermia_dhw", "Transmitted hot-water top-up trigger (1) in 0x0A response!");
+                          }
 
                           uint8_t resp[11];
                           resp[0] = 0x0A;
@@ -1693,7 +1793,11 @@ uart:
                           publish_float_if_changed(id(thermia_room_sensor_last_sent_temp_sensor), cur_temp, 0.05f);
                           publish_float_if_changed(id(thermia_room_temperature), cur_temp, 0.05f);
 
-                          ESP_LOGD("thermia_room", "Transmitted 0x0A room sensor response: %.1f C (raw=%d)", cur_temp, raw_temp);
+                          ESP_LOGD(
+                            "thermia_room",
+                            "Transmitted 0x0A room sensor response: %.1f C (raw=%d), req_sp=%d, topup=%d",
+                            cur_temp, raw_temp, req_sp, topup
+                          );
                         }
                       }
                     }
@@ -2124,6 +2228,25 @@ uart:
 # HOME ASSISTANT CONTROLS / NUMBER INPUTS
 # =============================================================================
 
+# =============================================================================
+# BUTTONS
+# =============================================================================
+
+button:
+  - platform: template
+    id: thermia_trigger_dhw_topup
+    name: "Trigger Hot Water Top-Up"
+    icon: "mdi:water-boiler-alert"
+    on_press:
+      - lambda: |-
+          id(thermia_pending_dhw_topup) = true;
+          ESP_LOGI("thermia_dhw", "Hot water top-up trigger staged for next 0x0A cycle");
+
+
+# =============================================================================
+# NUMBERS
+# =============================================================================
+
 number:
   - platform: template
     id: thermia_room_temp_input
@@ -2157,6 +2280,27 @@ number:
     set_action:
       - lambda: |-
           ESP_LOGI("thermia_room", "Room temperature timeout set to %.0f min", x);
+
+  - platform: template
+    id: thermia_target_room_setpoint
+    name: "Target Room Setpoint"
+    icon: "mdi:thermostat"
+    min_value: 10.0
+    max_value: 30.0
+    step: 1.0
+    unit_of_measurement: "°C"
+    mode: BOX
+    optimistic: true
+    restore_value: true
+    initial_value: 20.0
+    set_action:
+      - lambda: |-
+          int target = int(roundf(x));
+          if (target < 10) target = 10;
+          if (target > 30) target = 30;
+          id(thermia_pending_setpoint_request) = int16_t(target);
+          id(thermia_setpoint_request_retries) = 0;
+          ESP_LOGI("thermia_setpoint", "Staged room setpoint change request to %d C", target);
 
 
 sensor:
@@ -2724,6 +2868,12 @@ sensor:
 binary_sensor:
 
   # iTec Eco locally/cross-model confirmed status helpers.
+  - platform: template
+    id: thermia_dhw_topup_active
+    name: "Hot Water Top-Up Active"
+    icon: "mdi:water-boiler"
+    device_class: running
+
   - platform: template
     id: thermia_high_power_setting
     name: "High Power"
