@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 0884 history record geometry differs across genuine captures — SOURCE/OFFLINE
+
+Controller-origin 0x0F FC16 0x0884/count60 genuine local XTR captures 2026-09-25 and 2026-10-03 split into TEN six-word records [code,minute,hour,day,month,year2]. Independent iTec Eco 2026-09-26 controller capture splits into EIGHT seven-word records [code,detail,minute,hour,day,month,year2] plus four trailing words. Prior unconditional 8x7 decoder is wrong for the historical XTR payload. RC05 uses bounded timestamp-validity/geometry scores to select 6 or 7 words; otherwise emits unverified. Only the first eight of ten 6-word records are visible through existing eight HA entities. Historical alarm numeric code meanings remain UNKNOWN, and current 2026-11-04 XTR full 0884 payload must be checked to establish its current layout; an RC01 displayed History6 code varied at constant timestamp. No new native TX or mapping inference; 085F current alarm provenance remains independent and unchanged.
+
 ## 2026-11-04 RC03 LIVE optional installation flags zero; RC04 HA only
 
 New owner HA entity snapshot explicitly identifies flashed RC03 firmware and same-session CM930 2.4.2 native M6. Installation capability readouts for Pool, Buffer Tank, Distribution Circuit 1 and Distribution Circuit 2 all report mode 0, and corresponding RC03 user-facing status strings say `Not configured`. This supports the existing OEM source interpretation of 0532 installation flags for this controller; no new register or writable command is established. RC04 adds `disabled_by_default` metadata to all twelve optional read-only User entities to avoid needless entries on absent installations. **SOURCE/OFFLINE TESTED** RC04; no protocol or native physical TX differences. HA entity registry existing entries may require manual disable.
