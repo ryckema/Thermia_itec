@@ -1,5 +1,20 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-04 RC08F1 manual-only D24 authorization correction — PREPARED / NOT RUN
+
+**Baseline:** RC07F1 owner FLASHED/LIVE retained M6=5, CURRENT4/4, CAL12/12 and sampled CRC/RX clean; RC08 was SOURCE/OFFLINE, not user-flashed. W2R92 is the original owner-verified semantic-write rollback.
+
+**Observed SOURCE defect in RC08:** existing OEMW preview left descriptor24 (Hot Water Enabled 042E/15 word0) in routine_validated, and computed auto_d24 from W2R77 automatic lease/request. This could bypass the otherwise explicit 45-second D24 trial ARM despite no XTR controller-semantic validation of that novel physical setting write. Initial defaults were off, but a future separate user-enabled automatic lease was a real authorization expansion. Not a claim of live misbehavior.
+
+**RC08F1 FIX:** one complete private single-YAML `Thermia_XTR_WRITE_USER_RC08F1_SINGLE_FILE_PRIVATE_20261104.zip`. YAML SHA256 `96d381201c5d1bb4a603e58a28a1cda0dbd86c4cf09716e5fe69186411a472f7`. Removes auto_d24 bypass; removes D24 from routine_validated; D24 only with existing fresh W2R63 descriptor-scoped manual 45s one-edit ARM and established OEMW/S92 readback. Other validated automatic scope, all existing HA IDs/components, single UART/DE owner, V5 RX/CRC, FC03/FC16, M6, CAL32, ABORT and fallback unchanged. RC07F2 three Configuration toggles remain hidden; optional Pool/Buffer/Shunt disabled_by_default.
+
+**OFFLINE TESTED:** duplicate-key-checked full ESPHome YAML parse with secret handler; strict unchanged whole-component AST except exactly one OEMW preview script and firmware version text; native interval/physical UART parser/TX engine byte-equivalent; exactly one UART write; truth-table D24 denied in routine predicate for both source states and destinations; fresh manual arm gate; ZIP SHA/CRC; W2R92 byte-exact rollback SHA256 `b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`. **NOT TARGET COMPILED, NOT FLASHED, NOT LIVE.** Firmware private, not published.
+
+**CURRENT MILESTONE:** RC08F1 D24 bounded manual semantic trial — PREPARED / NOT RUN.
+**DELIVERABLE:** complete RC08F1 single YAML private ZIP, instructions, manifest, original rollback. **SUPERSEDES** the earlier RC08 ZIP; no need to flash RC08 first.
+**REAL BLOCKER:** no source blocker identified; actual owner target compile/flash plus one user-initiated and controller-observed D24 edit needed to establish semantic acceptance. Separate TOP-UP/AWAY/CAL DELETE and cold-join remain OPEN.
+**ONE NEXT ACTION:** owner flashes RC08F1, checks M6/CURRENT/CAL/bus first; if deliberately initiating the bounded D24 trial, presses visible but disabled-by-default ARM and edits ONE Enabled value, checks controller-origin 042E word0 and OEM panel; ABORT/rollback otherwise.
+
 ## 2026-11-04 RC08-D24 bounded Hot Water ON/OFF experiment — PREPARED / NOT RUN
 
 **Baseline:** owner-supplied RC07F1 full single-YAML, FLASHED/LIVE retained session (M6=5, CURRENT4/4, CAL12/12, clean sampled CRC/RX); W2R92 remains byte-exact locally verified semantic-write rollback. RC07F2 Configuration cleanup is incorporated, not separately required to flash.
