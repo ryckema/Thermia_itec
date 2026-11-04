@@ -1,5 +1,13 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-04 W2R92 user GO + W2R93 calendar output consolidation
+
+**Experiment W2R92 status correction:** user states the newly delivered W2R92 `draait goed`, accepted as **COMPLETE / POSITIVE** for the dead EXP410/EXP455 cleanup; FLASHED/LIVE normal operation is user reported, NOT a new readout log or per-control physical TX proof. Closed earlier W2R92 PREPARED/NOT RUN status superseded by this live report. S92/CRC/FC03/FC16 native owner and alarms/calendars/HA operation user accepted; no numeric counters newly supplied.
+
+**Experiment W2R93:** hypothesis: 32 calendar text program outputs + four domain summaries are stable across consecutive 15s updates, so duplicate Home Assistant API publication can be dropped without changing controller data freshness or values. **ONE change:** 36 existing `text_sensor` lambda filters (`if (x == id(self).state) return {}; return x;`) only; all 36 15s publishers still evaluate source and 300s expiry. No new native polling, no settings permission, no altered UART, script, globals, write path or ABORT. Expected maximum suppressed unchanged publish attempts: 36×4 =144/min (not measured); all first/new/stale/refresh values still forwarded.
+
+**Actual:** W2R93 SOURCE/OFFLINE TESTED, not target compiled/flashed/live. PyYAML AST 1,205 unique IDs, sole original `.write_array`, non-text source components byte-for-byte on AST, 36 source lambda logic unchanged, strict C++17 comparison syntax/behavior compiled, SHA256 and ZIP test pass. **Status: PREPARED / NOT RUN** target deployment; do not claim performance numbers. **ABORT/rollback:** existing S92 ABORT and exact W2R92 user-live YAML rollback. **ONE NEXT ACTION:** optional user compile/flash W2R93, normal read-path validation; no repeat live controller write tests.
+
 ## 2026-11-04 W2R92 dead legacy state machine elimination — PREPARED / NOT RUN
 
 **Experiment/change ID:** MAIN04-W2R92. **Hypothesis:** removing the never-activated EXP410 and EXP455 parallel state machines has no runtime semantics on the existing native XTR firmware. **Baseline:** W2R91 SOURCE/OFFLINE; last user FLASHED/LIVE W2R88F3, with M6=5, CURRENT and owned CAL12 normal. **ONE change:** remove obsolete EXP410 and EXP455 branches instead of introducing a new engine or re-testing proven controller writes.
