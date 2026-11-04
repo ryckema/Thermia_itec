@@ -1,5 +1,13 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-04 RC09 W2R65 TOP-UP live — COMPLETE / POSITIVE for native activation flag
+
+OBSERVED: RC09 user-LIVE. ARM 22:31:29.894; D25/0430 0->1 user request 22:31:37.351; exactly ONE desired-page physical TX 22:31:42.706, DE LOW. Controller returned 0430 word2=0 at 22:31:43, and W2R66 correctly marked the persistent-value comparison INCONCLUSIVE, unlocked calendar and did NO RETRY. Crucially, independent controller-origin CRC-valid FC16 0864/4 word1 bit 0x0004 (native Hot Water TOP-UP Active) was 0 at 22:31:48.967 and 1 at 22:32:03.943, 21.237s after TX. Result COMPLETE / POSITIVE specifically for observed native TOP-UP activation following one pulse. Strongly supported semantic effect; controller request word=0 is not a persistent acceptance criterion for a one-shot.
+
+LIMITS: Ordinary DHW Active rose already at 22:29:32, BEFORE ARM; additional hot-water heating/temperature rise is NOT PROVEN. Tank top remained 50C and mid 48C over the short observation. OEM Summary still said DHW boost OFF because it reports 042E request word rather than 0864 active state; do not interpret as an active-state all-clear. M6 stage40, CURRENT4/4, FC16 237->402, V5 CRC_DIFF=0, RX drops0, parser resync0 remained healthy. One UART duration warning 59ms vs 50ms budget was observed with no proven RX fault. 085F alarm page still missing.
+
+CURRENT MILESTONE: TOP-UP one-shot semantic display correction. DELIVERABLE: RC09 LIVE source-backed activation evidence; original single TX and NO RETRY work. REAL BLOCKER: none for one-shot physical path; firmware UI should distinguish pulse-word reset from subsequent independently observed native activation, with same-epoch freshness guards. ONE NEXT ACTION: implement source-qualified delayed 0864 confirmation status in the existing native engine without new TX or expanded automatic permissions.
+
 ## 2026-11-04 RC09 consolidated display/source-qualified compressor status — PREPARED / NOT RUN
 
 **Baseline:** complete private RC08HW single-YAML (source derived from RC07F2, locally verified retained RC07F1 session), original W2R92 rollback SHA256 `b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`. New full private ZIP `Thermia_XTR_WRITE_USER_RC09_SINGLE_FILE_PRIVATE_20261104.zip`; complete one-YAML SHA256 `0a465572628f27df0b03d8ec20aace20549587482a8f0828513eddbc4a414d63`.
