@@ -1,8 +1,9 @@
 # Thermia iTec Eco — Room Sensor Emulation, Setpoint Control & DHW Top-Up (Write Beta v01)
 
-This folder contains the active room sensor emulation and control profile for the **Thermia iTec Eco** heat pump (Danfoss DHP-AQ controller family):
+This folder contains the active room sensor emulation and control profiles for the **Thermia iTec Eco** heat pump (Danfoss DHP-AQ controller family):
 
-📄 [`thermia_itec_eco_waveshare_room_sensor_v01.yaml`](./thermia_itec_eco_waveshare_room_sensor_v01.yaml)
+- 📄 [`thermia_itec_eco_waveshare_room_sensor_v01.yaml`](./thermia_itec_eco_waveshare_room_sensor_v01.yaml) — **Standard profile:** `0x0A` Room Sensor emulation, native Home Assistant `Room Thermostat` (`climate`), bidirectional setpoint control, hot-water top-up trigger, and flash-persisted `0x03E8` / `0x042E` settings cache.
+- 📄 [`thermia_itec_eco_waveshare_room_sensor_0f_ack_v01.yaml`](./thermia_itec_eco_waveshare_room_sensor_0f_ack_v01.yaml) — **Extended `0x0F` ACK profile:** Identical to `v01`, plus optional **`0x0F` Online/DCM ACK emulation** (`FC10` write ACKs + `FC03 0x0708` idle replies with automatic peer collision guard) so a heat pump without a physical Thermia Online module immediately publishes all `0x0F` settings blocks (`0x03E8..0x03F5` heating curve and `0x042E..0x0434` hot-water settings) without retry timeouts.
 
 ---
 
@@ -58,9 +59,11 @@ When flashed to an ESP32, this configuration exposes the following control and d
 
 | Entity | Type | Description | Default |
 |---|---|---|---|
+| `climate.thermia_room_thermostat` | Climate (Thermostat) | Native Home Assistant thermostat card (`10–30 °C` target step `1 °C`, `0.1 °C` measured room temperature, and real `Heating` / `Cooling` / `Idle` action from the heat pump). | `Heat` / `20 °C` |
 | `switch.thermia_room_sensor_emulation` | Switch | Master toggle for room sensor emulation (must be ON to answer polls). | `OFF` (fail-closed) |
+| `switch.thermia_0f_ack_emulation` | Switch | *(Only in `0f_ack_v01`)* Master toggle for `0x0F` Online/DCM ACK emulation (auto-disables if an external `0x0F` module is detected). | `ON` |
 | `number.thermia_room_temp_input` | Number | Input indoor temperature fed from Home Assistant (5.0–35.0 °C, step 0.1 °C). | `21.0 °C` |
-| `number.thermia_target_room_setpoint` | Number | Target room setpoint (10.0–30.0 °C, step 1.0 °C). Synchronized bidirectionally with the heat pump panel. | `20.0 °C` |
+| `number.thermia_target_room_setpoint` | Number | Target room setpoint (10.0–30.0 °C, step 1.0 °C). Synchronized bidirectionally with both the heat pump panel and `climate.thermia_room_thermostat`. | `20.0 °C` |
 | `button.thermia_trigger_dhw_topup` | Button | One-shot trigger to start hot-water top-up (pikalämmitys). | — |
 | `binary_sensor.thermia_dhw_topup_active` | Binary Sensor | Status of hot-water top-up (`true` when active, mirrors `@46022 == 2`). | `false` |
 | `number.thermia_room_temp_timeout_min` | Number | Safety watchdog timeout in minutes (0–120 min, 0 = disabled). | `30 min` |

@@ -101,6 +101,39 @@ esphome:
               );
             }
 
+            // Restore cached 0x0F 042E..0434 Hot Water settings once observed.
+            if (id(thermia_dhw_cache_valid)) {
+              id(thermia_dhw_enabled_setting)->publish_state(id(thermia_dhw_enabled_saved));
+              const int16_t saved_mode = id(thermia_dhw_mode_saved);
+              const char *saved_mode_str = "Unknown";
+              if (saved_mode == 0) saved_mode_str = "Comfort";
+              else if (saved_mode == 1) saved_mode_str = "Eco";
+              else if (saved_mode == 2) saved_mode_str = "Super-Eco";
+              id(thermia_dhw_mode_setting)->publish_state(saved_mode_str);
+              id(thermia_startup_ht_setting)->publish_state(id(thermia_startup_ht_saved));
+              id(thermia_heating_time_setting)->publish_state(id(thermia_heating_time_saved));
+
+              ESP_LOGD(
+                "thermia_persist",
+                "Restored validated DHW settings cache: enabled=%d mode=%s (%d) startup_ht=%.0f heating_time=%.0f",
+                id(thermia_dhw_enabled_saved) ? 1 : 0,
+                saved_mode_str,
+                (int) saved_mode,
+                id(thermia_startup_ht_saved),
+                id(thermia_heating_time_saved)
+              );
+            }
+
+            // Initialize Room Thermostat climate entity state on boot
+            id(thermia_room_thermostat).mode = climate::CLIMATE_MODE_HEAT;
+            id(thermia_room_thermostat).action = climate::CLIMATE_ACTION_IDLE;
+            if (id(thermia_target_room_setpoint)->has_state()) {
+              id(thermia_room_thermostat).target_temperature = id(thermia_target_room_setpoint)->state;
+            } else if (id(thermia_settings_cache_valid)) {
+              id(thermia_room_thermostat).target_temperature = id(thermia_room_setpoint_mirror_saved);
+            }
+            id(thermia_room_thermostat).publish_state();
+
 esp32:
   variant: esp32s3
   flash_size: 16MB
@@ -144,11 +177,13 @@ api:
         - lambda: |-
             if (setpoint >= 10 && setpoint <= 30) {
               id(thermia_target_room_setpoint)->publish_state(float(setpoint));
+              id(thermia_room_thermostat).target_temperature = float(setpoint);
+              id(thermia_room_thermostat).publish_state();
               id(thermia_pending_setpoint_request) = int16_t(setpoint);
               id(thermia_setpoint_request_retries) = 0;
-              ESP_LOGI("thermia_service", "Target room setpoint set via HA service: %d C", setpoint);
+              ESP_LOGI("thermia_service", "Target room setpoint set via HA service: %d C", (int) setpoint);
             } else {
-              ESP_LOGW("thermia_service", "Invalid target room setpoint: %d C", setpoint);
+              ESP_LOGW("thermia_service", "Invalid target room setpoint: %d C", (int) setpoint);
             }
 
     - service: trigger_hot_water_topup
@@ -360,6 +395,32 @@ globals:
     type: float
     restore_value: yes
     initial_value: '22.0'
+
+  # Persisted copies of the 0x0F 042E..0434 Hot Water settings block.
+  - id: thermia_dhw_cache_valid
+    type: bool
+    restore_value: yes
+    initial_value: 'false'
+
+  - id: thermia_dhw_enabled_saved
+    type: bool
+    restore_value: yes
+    initial_value: 'true'
+
+  - id: thermia_dhw_mode_saved
+    type: int16_t
+    restore_value: yes
+    initial_value: '1'
+
+  - id: thermia_startup_ht_saved
+    type: float
+    restore_value: yes
+    initial_value: '10.0'
+
+  - id: thermia_heating_time_saved
+    type: float
+    restore_value: yes
+    initial_value: '5.0'
 
 
 uart:
@@ -1084,6 +1145,17 @@ uart:
                       run_enable_command_active
                     );
 
+                    const climate::ClimateAction desired_thermostat_action =
+                      (heating_context && compressor_running && cycle_request_active && run_enable_command_active)
+                        ? climate::CLIMATE_ACTION_HEATING
+                        : ((cooling_context && compressor_running && cycle_request_active && run_enable_command_active)
+                            ? climate::CLIMATE_ACTION_COOLING
+                            : climate::CLIMATE_ACTION_IDLE);
+                    if (id(thermia_room_thermostat).action != desired_thermostat_action) {
+                      id(thermia_room_thermostat).action = desired_thermostat_action;
+                      id(thermia_room_thermostat).publish_state();
+                    }
+
                     // Keep the existing ESPHome id for compatibility, but give the
                     // entity its corrected meaning in Home Assistant.
                     publish_bool_if_changed(
@@ -1391,18 +1463,29 @@ uart:
                   const int16_t startup_ht = reg_s(0x0433);
                   const int16_t heating_time = reg_s(0x0434);
 
-                  if (enabled == 0 || enabled == 1)
+                  if (enabled == 0 || enabled == 1) {
+                    id(thermia_dhw_enabled_saved) = (enabled == 1);
                     publish_bool_if_changed(id(thermia_dhw_enabled_setting), enabled == 1);
+                  }
 
-                  if (mode == 0) publish_text_if_changed(id(thermia_dhw_mode_setting), "Comfort");
-                  else if (mode == 1) publish_text_if_changed(id(thermia_dhw_mode_setting), "Eco");
-                  else if (mode == 2) publish_text_if_changed(id(thermia_dhw_mode_setting), "Vakantie Eco");
-                  else publish_text_if_changed(id(thermia_dhw_mode_setting), "Unknown");
+                  const char *mode_str = "Unknown";
+                  if (mode == 0) mode_str = "Comfort";
+                  else if (mode == 1) mode_str = "Eco";
+                  else if (mode == 2) mode_str = "Super-Eco";
+                  if (mode >= 0 && mode <= 2) {
+                    id(thermia_dhw_mode_saved) = mode;
+                    id(thermia_dhw_cache_valid) = true;
+                  }
+                  publish_text_if_changed(id(thermia_dhw_mode_setting), mode_str);
 
-                  if (startup_ht >= 0 && startup_ht <= 120)
+                  if (startup_ht >= 0 && startup_ht <= 120) {
+                    id(thermia_startup_ht_saved) = float(startup_ht);
                     publish_float_if_changed(id(thermia_startup_ht_setting), float(startup_ht), 0.5f);
-                  if (heating_time >= 0 && heating_time <= 180)
+                  }
+                  if (heating_time >= 0 && heating_time <= 180) {
+                    id(thermia_heating_time_saved) = float(heating_time);
                     publish_float_if_changed(id(thermia_heating_time_setting), float(heating_time), 0.5f);
+                  }
                 }
 
                 if (slave == 0x0F && start == 0x0442 && count >= 13) {
@@ -1432,11 +1515,11 @@ uart:
 
                 if (slave == 0x0F && start == 0x0546 && count >= 20) {
                   const int16_t mode = reg_s(0x0553);
-                  if (mode == 0) publish_text_if_changed(id(thermia_operation_mode_setting), "Uit");
+                  if (mode == 0) publish_text_if_changed(id(thermia_operation_mode_setting), "Off");
                   else if (mode == 1) publish_text_if_changed(id(thermia_operation_mode_setting), "Auto");
                   else if (mode == 2) publish_text_if_changed(id(thermia_operation_mode_setting), "Compressor");
-                  else if (mode == 3) publish_text_if_changed(id(thermia_operation_mode_setting), "Bijverwarmer");
-                  else if (mode == 4) publish_text_if_changed(id(thermia_operation_mode_setting), "Warmwater");
+                  else if (mode == 3) publish_text_if_changed(id(thermia_operation_mode_setting), "Auxiliary Heater");
+                  else if (mode == 4) publish_text_if_changed(id(thermia_operation_mode_setting), "Hot Water");
                   else publish_text_if_changed(id(thermia_operation_mode_setting), "Unknown");
                 }
 
@@ -1689,13 +1772,18 @@ uart:
                           id(thermia_setpoint_request_retries) = 0;
                         }
                       } else {
-                        // Keep Home Assistant target number entity in sync with panel adjustments
+                        // Keep Home Assistant target number & thermostat entities in sync with panel adjustments
                         if (id(thermia_target_room_setpoint)->has_state()) {
                           if (int16_t(roundf(id(thermia_target_room_setpoint)->state)) != current_sp_int) {
                             id(thermia_target_room_setpoint)->publish_state(float(current_sp_int));
                           }
                         } else {
                           id(thermia_target_room_setpoint)->publish_state(float(current_sp_int));
+                        }
+                        if (isnan(id(thermia_room_thermostat).target_temperature) ||
+                            int16_t(roundf(id(thermia_room_thermostat).target_temperature)) != current_sp_int) {
+                          id(thermia_room_thermostat).target_temperature = float(current_sp_int);
+                          id(thermia_room_thermostat).publish_state();
                         }
                       }
                     }
@@ -2229,6 +2317,82 @@ uart:
 # =============================================================================
 
 # =============================================================================
+# CLIMATE / THERMOSTAT
+# =============================================================================
+
+climate:
+  - platform: thermostat
+    id: thermia_room_thermostat
+    name: "Room Thermostat"
+    icon: "mdi:thermostat"
+    sensor: thermia_room_temperature
+    min_heating_off_time: 0s
+    min_heating_run_time: 0s
+    min_idle_time: 0s
+    default_preset: Home
+    preset:
+      - name: Home
+        default_target_temperature_low: 20 °C
+    visual:
+      min_temperature: 10 °C
+      max_temperature: 30 °C
+      temperature_step:
+        target_temperature: 1.0 °C
+        current_temperature: 0.1 °C
+    heat_action:
+      - lambda: |-
+          // Keep HVAC action driven by actual heat pump state rather than local hysteresis
+          if (id(thermia_heating_active).has_state() && id(thermia_heating_active).state) {
+            id(thermia_room_thermostat).action = climate::CLIMATE_ACTION_HEATING;
+          } else if (id(thermia_cooling_active).has_state() && id(thermia_cooling_active).state) {
+            id(thermia_room_thermostat).action = climate::CLIMATE_ACTION_COOLING;
+          } else {
+            id(thermia_room_thermostat).action = climate::CLIMATE_ACTION_IDLE;
+          }
+    idle_action:
+      - lambda: |-
+          // Keep HVAC action driven by actual heat pump state rather than local hysteresis
+          if (id(thermia_heating_active).has_state() && id(thermia_heating_active).state) {
+            id(thermia_room_thermostat).action = climate::CLIMATE_ACTION_HEATING;
+          } else if (id(thermia_cooling_active).has_state() && id(thermia_cooling_active).state) {
+            id(thermia_room_thermostat).action = climate::CLIMATE_ACTION_COOLING;
+          } else {
+            id(thermia_room_thermostat).action = climate::CLIMATE_ACTION_IDLE;
+          }
+    target_temperature_change_action:
+      - lambda: |-
+          // Keep HVAC action driven by actual heat pump state
+          if (id(thermia_heating_active).has_state() && id(thermia_heating_active).state) {
+            id(thermia_room_thermostat).action = climate::CLIMATE_ACTION_HEATING;
+          } else if (id(thermia_cooling_active).has_state() && id(thermia_cooling_active).state) {
+            id(thermia_room_thermostat).action = climate::CLIMATE_ACTION_COOLING;
+          } else {
+            id(thermia_room_thermostat).action = climate::CLIMATE_ACTION_IDLE;
+          }
+
+          // Ignore boot-time preset initialization before bus/flash state has settled
+          if (millis() < 5000UL) return;
+
+          int target = int(roundf(id(thermia_room_thermostat).target_temperature));
+          if (target < 10) target = 10;
+          if (target > 30) target = 30;
+
+          if (!id(thermia_target_room_setpoint)->has_state() ||
+              int(roundf(id(thermia_target_room_setpoint)->state)) != target) {
+            id(thermia_target_room_setpoint)->publish_state(float(target));
+          }
+
+          const bool matches_bus =
+            id(thermia_room_setpoint)->has_state() &&
+            int(roundf(id(thermia_room_setpoint)->state)) == target;
+          if (!matches_bus && id(thermia_pending_setpoint_request) != int16_t(target)) {
+            id(thermia_pending_setpoint_request) = int16_t(target);
+            id(thermia_setpoint_request_retries) = 0;
+            ESP_LOGI("thermia_setpoint", "Staged room setpoint change request via Thermostat to %d C", target);
+          }
+
+
+# =============================================================================
 # BUTTONS
 # =============================================================================
 
@@ -2298,6 +2462,11 @@ number:
           int target = int(roundf(x));
           if (target < 10) target = 10;
           if (target > 30) target = 30;
+          if (isnan(id(thermia_room_thermostat).target_temperature) ||
+              int(roundf(id(thermia_room_thermostat).target_temperature)) != target) {
+            id(thermia_room_thermostat).target_temperature = float(target);
+            id(thermia_room_thermostat).publish_state();
+          }
           id(thermia_pending_setpoint_request) = int16_t(target);
           id(thermia_setpoint_request_retries) = 0;
           ESP_LOGI("thermia_setpoint", "Staged room setpoint change request to %d C", target);
