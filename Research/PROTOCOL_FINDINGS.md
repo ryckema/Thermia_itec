@@ -1,5 +1,11 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 W2R91 changes HA alarm output only — no new protocol findings
+
+No new frame, register, register-write semantics, role, CRC, session or selector in W2R91. W2R90F1's existing 085F/5 active and 0884/60 historical controller source interpretation is byte-identical; source expiry 300s, manual current alarm `None` baseline and warning on prior nonzero flags remain. ESPHome API publishes only changed alarm text states for 19 relevant entities, raw history diagnostic calculations every30s rather than10s. This does **not** prove the unobserved fresh 085F receipt or independently validate historical code names. All native S92 TX/DE, frame parser, FC03/FC16, calendar and semantic write code remain unchanged.
+
+**Status:** W2R91 SOURCE/OFFLINE TESTED, PREPARED/NOT RUN user flash. No physical alarm test required.
+
 ## 2026-11-04 Current XTR alarm status confirmed None (user display, not 085F RX)
 
 User explicitly confirms no current alarms on the actual Thermia display: **None** (point-in-time human observation). The prior W2R88F3 XTR runtime log still has **zero qualified 085F ACKs** and OEM 085F evidence UNKNOWN: therefore this confirmation must NOT be described as independently observed 085F all-zero or a working periodic alarm read. W2R90F1 maps the manually confirmed baseline to user-facing `None` when fresh 085F unavailable; nonzero fresh alarm flags always override and stale prior nonzero flags remain flagged STALE. This change is presentation only, no protocol discovery, no write or alarm reset. Genuine future alarm event semantic mapping remains untested, with no deliberate alarm injection required.
