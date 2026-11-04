@@ -1,5 +1,15 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-04 Existing Write User evidence reconciliation — COMPLETE / POSITIVE (review; no TX)
+
+**Hypothesis / user feedback:** preceding feature-gap overview treated too many validated settings as missing. **Baseline:** latest W2R88F3 flashed/native calendar live; W2R89 prepared offline. **ONE change:** review of already documented XTR captures against User Guide section 5; NO code, firmware, user operation, physical TX or new experiment.
+
+**OBSERVED FACTS from prior experiments:** W2R25F4 Heating 27/27 ten descriptors; W2R27 Hot Water D13/D14 4/4; W2R28F1 Cooling six descriptors 18/18 including LOW/HIGH room hysteresis; W2R29F1 AUTO/COMPRESSOR 2/2; subtotal 51/51 controller-origin FC16. W2R64HW adds 4/4 D24 enable and D13 AWAY/Comfort/Eco; total 55 semantic TX receipts. W2R65 TOP-UP user-observed DHW trigger after D25 TX but logical refresh deadlock. Existing F1/F2/F3 calendar multi-field positives; user accepts calendar test milestone. W2R88F3 OEM 0870/17 fresh counters 1615/824/657/115 hours and eight raw alarms. Configured shunts 0/0.
+
+**STRONG CONCLUSION:** no repeat physical tests for Heating, Hot Water enabled/modes, six Cooling settings, AUTO/COMPRESSOR or accepted calendar. **OPEN:** Operation0/3/4 semantic writes; TOP-UP post-one-shot terminal; independent general Cooling Hysteresis/D19; applicable extra Heating options; Calendar DATE/create/delete/clock; alarm decode and abnormal defrost field; W2R89 target build. **STATUS:** COMPLETE / POSITIVE for this evidence correction only, not for never-run controller experiments.
+
+**ABORT/rollback:** not exercised; all existing S92/CRC/FC03/FC16 protections intact. **ONE NEXT ACTION:** source-integrate remaining user Operation modes guarded and disabled until bounded user initiated controller-readback trial.
+
 ## 2026-11-04 W2R89 single-button calendar UI consolidation — PREPARED / NOT RUN
 
 **Experiment/change ID:** MAIN04-W2R89. **Hypothesis:** one deliberate user Write click can invoke existing validated guarded arm+apply chain for existing programmed weekly calendar records without introducing another sender or requiring separate HA buttons. **Baseline:** W2R88F3 source/live, W2R88F2/W2R86 recorded positive controller FC16 calendar writes, calendar write-test milestone accepted by user. **ONE meaningful change:** UI consolidation: keep 32-slot select, four time numbers, seven weekday switches and one Write button; all duplicate calendar configuration buttons internal; one-click conditionally invokes existing F1 extended/nonF1 45s frozen arm and existing corresponding apply. Additionally enable safe re-selection to discard only untransmitted edits and native refresh/rebase of unchanged source after expiry. **Expected:** staged edits cause no setting TX; click enters old single-owner guarded writer; controller FC16 per word and fresh F1/CAL12 terminal mandatory; denial leaves TX untouched, ABORT remains available.
