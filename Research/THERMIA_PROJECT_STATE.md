@@ -1,5 +1,14 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-04 WRITE USER private production packaging — OFFLINE TESTED
+
+A separate, complete **private User-only** production-baseline ZIP was delivered from the original two-track source: `Thermia_XTR_WRITE_USER_PROD_BASELINE_W2R92_PRIVATE_20261104.zip`. Contains one standalone W2R92 ESPHome YAML, install/ABORT/rollback instructions, SHA256 and audit. YAML is BYTE-IDENTICAL to owner-confirmed W2R92 live source (`b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`). No new physical TX, service function, YAML feature, compile, flash, controller setting-write test or forced live experiment was performed.
+
+Offline verification: YAML parsed, substitutions resolved, 1205 unique component/global/UART IDs, one `thermia_uart.write_array` physical writer, one UART, existing native S92 ABORT/API/OTA/Wi-Fi present, package CRC/member bytes verified. `W2R93` change-only calendar UI dedup remains excluded from User Stable because source/offline only. Service DEV S0 remains independent. The branch `xtr-write-user-stable` documents this non-sensitive packaging; README and `Write (Beta)/iTec Eco` untouched. No new experiment result or protocol discovery (Experiment Log and Protocol Findings unchanged by design).
+
+**CURRENT MILESTONE:** Write User private production baseline W2R92 packaged. **DELIVERABLE:** one User-only ZIP; source unchanged and user-live verified earlier. **REAL BLOCKER:** none for maintaining currently running W2R92; public redistribution requires OEM/proprietary material scrub. **ONE NEXT ACTION:** only fix proven User defects or port independently verified general fixes, keeping Service development separate.
+
+
 ## 2026-11-04 WRITE TRACK SPLIT — W2R92 User Stable vs W2R93-derived Service DEV S0
 
 **User direction:** split the project into a stable ordinary-user firmware and a separate continuing Service firmware. **IMPLEMENTED:** GitHub branches `xtr-write-user-stable` and `xtr-write-service-dev` created; separate non-sensitive branch-local descriptions committed at `Research/WRITE_USER_STABLE_TRACK.md` and `Research/WRITE_SERVICE_DEV_TRACK.md`. Main new non-sensitive `Research/WRITE_TRACK_SPLIT_2026-11-04.md` is the canonical split contract. Original `README.md` and `Write (Beta)/iTec Eco` not touched.
