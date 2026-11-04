@@ -1,5 +1,17 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-04 RC08-D24 bounded Hot Water ON/OFF experiment — PREPARED / NOT RUN
+
+**Baseline:** owner-supplied RC07F1 full single-YAML, FLASHED/LIVE retained session (M6=5, CURRENT4/4, CAL12/12, clean sampled CRC/RX); W2R92 remains byte-exact locally verified semantic-write rollback. RC07F2 Configuration cleanup is incorporated, not separately required to flash.
+
+**Deliverable:** one private complete `Thermia_XTR_WRITE_USER_RC08_D24_TRIAL_PRIVATE_20261104.zip` with full single-file `Thermia_WRITE_USER_RC08_SINGLE_FILE.yaml` SHA256 `b00d2965d104a713f54c706c31d3dcd1efb22e43fe206110d328c0ee660468ab`, manifest, build/experiment/ABORT instructions and original rollback SHA256 `b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`. Keep the ZIP PRIVATE; no firmware secrets or protected protocol content committed.
+
+**One meaningful implementation change:** existing W2R63 ARM button is user-visible but `disabled_by_default: true`, labelled as an explicit 45s, one-edit D24 Hot Water ON/OFF experiment. New nonpersistent `w2r84_hw_trial_scope` restricts this ARM to descriptor24 (`042E` word0, 0/1) only; AWAY/operation TOP-UP cannot borrow the lease. ARM preflight checks the existing native 042E cache plus 4/4 current word0 range. The old single OEMW/S92 ledger, exactly one physical UART sender, per-edit physical TX budget and authoritative controller-origin FC16 confirmation remain unchanged. Commit, Disable Write User and Native ABORT clear the new ARM scope. Three optional Configuration toggles remain hidden as in RC07F2; their original on/off defaults and behavior remain unchanged.
+
+**OFFLINE TESTED:** strict `!secret` YAML parse with duplicate-key check; RC07F2 whole-component AST comparison (same UART, native RX/DE/TX interval engine, scripts except descriptor-preview scope; existing component IDs plus exactly one new global); original single UART sender; button visibility and 45s per-edit gate; SHA/ZIP/byte-exact rollback integrity. **NOT TARGET COMPILED / FLASHED / LIVE; RC08-D24 PREPARED / NOT RUN**. Transport ACK is never semantic proof.
+
+**CURRENT MILESTONE:** RC08 single owner-scoped Hot Water ON/OFF D24 live trial, prepared. **DELIVERABLE:** complete RC08 private single-file firmware ZIP. **REAL BLOCKER:** owner target compilation/flash and one user-initiated bounded physical D24 controller-semantic readback; no code blocker in the offline package. **ONE NEXT ACTION:** owner manually flash RC08 and verify retained M6/CURRENT/CAL before independently initiating D24 ARM + ONE ON/OFF edit. If the owner only wants read-only validation, do not press ARM.
+
 ## 2026-11-04 RC07F2 single-file Configuration UI cleanup — PREPARED / NOT RUN
 
 Owner supplied RC07F1 live ESPHome log (~20:26:52–20:28), proving USER-RC07F1 FLASHED/LIVE retained native M6=5 by 20:27:12 (CURRENT 4/4), CAL12/12 by 20:27:43, FC16 receipts, CRC_DIFF=0/RX drops=0, loop 41–51 ms and heap ~166–172kB in the observed window. Manual retained session, not fresh FC23 cold join. Observed status 085F ACK=0/Missing remains an explicitly qualified unknown; no confirmed active-alarm all-clear. One API 'Buffer full, ping queued' warning at 20:27:54 but no proved persistent fault.
