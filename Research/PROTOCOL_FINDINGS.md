@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 WUCLEAN01 scope preservation — no new protocol finding
+
+Private Write User CLEAN01 uses exact owner-confirmed W2R92 source; presentation-only English HA labels and two zero-reference EXP394 global variables were cleaned. Full YAML AST comparison confirms no change to V5 CRC/RX framing, S92 exclusive TX/DE ownership, existing controller-origin FC16 confirmation, native FC03 refresh, M6 session/cold-start/hot-rejoin and calendar CAL32. **Evidence:** SOURCE / OFFLINE TESTED only; this does not establish a new Modbus role, register meaning, session acceptance, controller semantic write, or target LIVE behavior. W2R92 remains last owner-confirmed live source. No need to redo S62/S88/V4.1/S92.
+
 ## 2026-11-04 Dual Write User/Service development tracks — no new bus semantics
 
 The owner-requested product split is a versioning/source separation, **not** a discovery of new Thermia protocol roles, service register bindings or new write authority. Write User Stable is exact user-live W2R92 full YAML; Service Development S0 is W2R93 source with only a separate build diagnostic. Existing sole S92 UART RX/TX/DE owner, parser CRC, controller FC03/FC16, calendar and ABORT remain identical to their source baselines; no new physical command is added or enabled. Both variants are intended to be used **one at a time on the same ESP32**, never dual-master on the RS485 bus. New Service writes require model-specific register/page/range evidence, a guarded disabled prototype, user-initiated bounded experiment and authoritative controller-origin readback. Source code and protected algorithms remain private; GitHub receives non-sensitive Research-only track metadata. No new LIVE Service proof is claimed.
