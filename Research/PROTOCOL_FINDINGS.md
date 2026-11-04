@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 Dual Write User/Service development tracks — no new bus semantics
+
+The owner-requested product split is a versioning/source separation, **not** a discovery of new Thermia protocol roles, service register bindings or new write authority. Write User Stable is exact user-live W2R92 full YAML; Service Development S0 is W2R93 source with only a separate build diagnostic. Existing sole S92 UART RX/TX/DE owner, parser CRC, controller FC03/FC16, calendar and ABORT remain identical to their source baselines; no new physical command is added or enabled. Both variants are intended to be used **one at a time on the same ESP32**, never dual-master on the RS485 bus. New Service writes require model-specific register/page/range evidence, a guarded disabled prototype, user-initiated bounded experiment and authoritative controller-origin readback. Source code and protected algorithms remain private; GitHub receives non-sensitive Research-only track metadata. No new LIVE Service proof is claimed.
+
 ## 2026-11-04 W2R92 user-confirmed normal; W2R93 calendar text dedup has zero bus protocol delta
 
 User reports W2R92 cleaned firmware `draait goed` on XTR: good ordinary operation accepted without separate fresh frame log. No new protocol semantic proof inferred beyond historic W2R88F3 bus captures. W2R93 source changes only HA text publication filters for 32 existing F1–F4 calendar slot strings and four summaries; all 15s evaluations, controller-origin CAL page recency gates 300s, RX parser, CRC, S92 sole UART/RX/TX/DE, 0708 selector, FC03/FC16, calendar write guards, ABORT and session logic unchanged. Thus no physical write or new role and no need for extra calendar/parameter trials. W2R93 SOURCE/OFFLINE TESTED only; not target compiled or live. Duplicated HA publish suppression does NOT alter when controller communication occurs or prove fewer CPU cycles.
