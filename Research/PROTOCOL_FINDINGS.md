@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 EXP410/EXP455 dormant legacy TX branches removed from W2R92 — no new protocol claims
+
+W2R92 eliminates two **unreachable** old EXP code paths, not real supported OEM behaviors. W2R91 source showed `exp410_state` and `exp455_state` both RAM-only initialized0 with no reachable state1 entry; hence their alternate dated-slot 055A create/delete and retained-0546 ACK transmit code was dormant. Those speculative old TX branches were removed from W2R92 without changing the original single S92 owner, parser/V5, CRC, FC03/FC16, native controller sync, CAL32 F1–F4 editor or verified routine writes. Existing source-mode zero-state predicates remain equivalent constants. **Do not infer** that actual calendar create/delete semantics were disproven or validated; EXP410 was not an active operational feature. Other legacy EXP445/EXP452 and native lifecycle machinery still have references and were deliberately retained rather than removed by name. W2R92 is SOURCE/OFFLINE TESTED only; no target compile/live/payload evidence, and no new physical TX scope.
+
 ## 2026-11-04 W2R91 changes HA alarm output only — no new protocol findings
 
 No new frame, register, register-write semantics, role, CRC, session or selector in W2R91. W2R90F1's existing 085F/5 active and 0884/60 historical controller source interpretation is byte-identical; source expiry 300s, manual current alarm `None` baseline and warning on prior nonzero flags remain. ESPHome API publishes only changed alarm text states for 19 relevant entities, raw history diagnostic calculations every30s rather than10s. This does **not** prove the unobserved fresh 085F receipt or independently validate historical code names. All native S92 TX/DE, frame parser, FC03/FC16, calendar and semantic write code remain unchanged.
