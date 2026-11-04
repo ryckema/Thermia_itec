@@ -1,5 +1,13 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-04 WRITE User/Service tracks separation — COMPLETE / POSITIVE (source/branch split)
+
+**ID:** 2026-11-04 WRITE-TRACK-SPLIT. **Hypothesis:** fixed User live baseline and separate private Service development source can be maintained without changing native UART/FC03/FC16/HA ownership or publicly disclosing protected firmware. **Baseline:** user-confirmed W2R92 working; W2R93 calendar API dedup SOURCE/OFFLINE, not LIVE. **ONE meaningful change:** separate User and Service ownership into dedicated branches and two complete independent firmware snapshots in ONE private ZIP; Service S0 modifies only firmware-build diagnostic/commentary relative to W2R93, no new Service writes.
+
+**Actual:** GitHub `xtr-write-user-stable` and `xtr-write-service-dev` branches created and non-sensitive Research track notes committed; main `Research/WRITE_TRACK_SPLIT_2026-11-04.md` written. User file SHA256 b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f byte-identical to confirmed W2R92. Service source SHA256 765b9adb6ea0099bfaaab18e47452ebfdb9dabeee739f09d189a4d0a3394160b. Both parsed as one-file ESPHome YAML with 1204 unique existing IDs; same device identity, one physical UART write_array TX site, S92 ABORT, scripts, intervals and controller guards; manifest/ZIP CRC PASS. No flashed tests of new Service S0, no Service parameter writes attempted.
+
+**Status:** `COMPLETE / POSITIVE` for split mechanics and offline integrity; **Service S0 remains PREPARED / NOT RUN for ESPHome target flash/live**, not a production functional Service release. **ABORT:** original S92 ABORT unchanged; **rollback:** exact user-live W2R92 YAML included. This work does not override historically accepted parameter/calendar test closures. **ONE NEXT ACTION:** work on actual service settings exclusively in Service-dev while preserving W2R92 User Stable.
+
 ## 2026-11-04 W2R92 user GO + W2R93 calendar output consolidation
 
 **Experiment W2R92 status correction:** user states the newly delivered W2R92 `draait goed`, accepted as **COMPLETE / POSITIVE** for the dead EXP410/EXP455 cleanup; FLASHED/LIVE normal operation is user reported, NOT a new readout log or per-control physical TX proof. Closed earlier W2R92 PREPARED/NOT RUN status superseded by this live report. S92/CRC/FC03/FC16 native owner and alarms/calendars/HA operation user accepted; no numeric counters newly supplied.
