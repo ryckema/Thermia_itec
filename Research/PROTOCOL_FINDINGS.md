@@ -1,5 +1,13 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 RC08F1 D24 authorization boundary (SOURCE, not a new protocol finding)
+
+**PROVEN from source:** RC08 preview contained `auto_d24` (enabled by W2R77 auto lease/request) and D24 in `routine_validated`, allowing a path that did not require new one-edit manual ARM. That was an authorization defect; default automatic writes were off, no live adverse event claimed.
+
+**FIXED in private RC08F1, SOURCE/OFFLINE TESTED:** D24 is removed from routine automatic scope and `auto_d24` is removed. The sole valid authorization for experimental 042E/15 word0 ON/OFF is the fresh explicit 45s user-initiated D24-scoped manual ARM plus all original S92/V5/CRC/FC03/FC16 owner and controller readback protections. Existing validated routine descriptors unchanged. No physical TX, new protocol semantics, or live acceptance established by this change.
+
+**OPEN:** controller-accepted D24 0↔1, OEM-panel agreement, TOP-UP one-shot, AWAY, calendar delete, cold-start recovery. Older native XTR controller-origin 042E source mapping is evidence for the source register, **not** proof of semantic write. Status RC08F1-D24 **PREPARED / NOT RUN**; RC08 **SUPERSEDED / NOT RUN**.
+
 ## 2026-11-04 RC08 D24 experiment preparation — NO NEW LIVE PROTOCOL PROOF
 
 - **SOURCE / OFFLINE TESTED only:** a private single-YAML RC08 candidate exposes one disabled-by-default, explicit user-initiated 45s ARM for the existing D24 Hot Water Enabled path. New nonpersistent `w2r84_hw_trial_scope` binds the permission to descriptor24 (native 042E/15, word0, allowed 0/1) so AWAY and TOP-UP cannot use this one-edit gate.
