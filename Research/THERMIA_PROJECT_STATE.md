@@ -1,5 +1,17 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-04 WRITE TRACK SPLIT — W2R92 User Stable vs W2R93-derived Service DEV S0
+
+**User direction:** split the project into a stable ordinary-user firmware and a separate continuing Service firmware. **IMPLEMENTED:** GitHub branches `xtr-write-user-stable` and `xtr-write-service-dev` created; separate non-sensitive branch-local descriptions committed at `Research/WRITE_USER_STABLE_TRACK.md` and `Research/WRITE_SERVICE_DEV_TRACK.md`. Main new non-sensitive `Research/WRITE_TRACK_SPLIT_2026-11-04.md` is the canonical split contract. Original `README.md` and `Write (Beta)/iTec Eco` not touched.
+
+**USER release-line FREEZE:** full private W2R92 YAML exactly byte-identical to user FLASHED/LIVE normal-operation confirmation (`die draait goed`); SHA256 `b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`. This is the last owner-confirmed running baseline, not an assertion of independent post-flash M6/CRC counters. No new Service features, and no repeat of closed 55 controller-semantic user writes or accepted calendar tests. Not yet published as redistributable user release.
+
+**SERVICE separate evolution:** full private `Thermia_WRITE_SERVICE_DEV_S0.yaml` SHA256 `765b9adb6ea0099bfaaab18e47452ebfdb9dabeee739f09d189a4d0a3394160b`, exact W2R93 source with two descriptive comments and distinct firmware build identity. Service S0 **contains all existing User functions but NO new Service parameter-write feature and NO new TX enablement**. W2R93 calendars change-only HA text optimization is source/offline-only. Future service descriptors must extend the original one-owner native S92 firmware, disabled, bounded only by user-initiated tests with controller-origin semantic readback and ABORT/rollback. No parallel S92 engine or TX sender.
+
+**DELIVERED ONE PRIVATE ZIP:** `Thermia_XTR_WRITE_USER_SERVICE_SPLIT_PRIVATE_20261104.zip` with exactly two independent complete, standalone ESPHome YAML files, each preserving the same device/API identity, 1204 unique native/component IDs, native scripts, one `id(thermia_uart).write_array` physical TX site, S92/CRC/FC03/FC16/CAL32/ABORT, and rollback. Separate SHA256 manifest, audit and NL instructions. YAML parsing, branch-only delta and identical IDs/owner checks PASS. **SERVICE TARGET COMPILED/FLASHED/LIVE: NO; USER source exact last working W2R92**, no new target compilation. No private OEM/handshake/0708/0F code published in repo.
+
+**CURRENT MILESTONE:** User Stable isolated, Service development ready for new features. **DELIVERABLE:** two GitHub branches and private two-firmware ZIP. **REAL BLOCKER:** none for split; publication of public User requires private-code/license scrub, Service requires actual features/controller validation. **ONE NEXT ACTION:** implement first meaningful SERVICE-menu feature in Service-dev source behind disabled source-backed scope, without touching User Stable.
+
 ## 2026-11-04 W2R92 user live GO; W2R93 calendar API dedup — SOURCE / OFFLINE TESTED
 
 **Latest user evidence:** owner explicitly reports W2R92 `die draait goed` (2026-11-04), confirming actual use of the cleaned firmware. Mark W2R92 **FLASHED / LIVE (USER CONFIRMED NORMAL OPERATION), cleanup COMPLETE / POSITIVE**. No new ESPHome log was supplied, hence do not invent numerical M6/CURRENT/CAL/CRC samples, compiled heap use, or parameter write tests. Historical W2R88F3 captured bus evidence stays authoritative for those detailed counters; prior 55 user semantic parameterwrites/calendar test campaign remain closed.
