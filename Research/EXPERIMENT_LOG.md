@@ -1,5 +1,14 @@
 # THERMIA EXPERIMENT LOG
 
+## RC08F1 D24 manual-only authorization FIX — PREPARED / NOT RUN (2026-11-04)
+
+**Hypothesis:** existing RC08 W2R63 scoped trial permit is sufficient for exactly one novel D24 user edit; automatic W2R77 lease must never authorize D24 until controller semantic acceptance is locally demonstrated.
+**Prior evidence:** owner-LIVE RC07F1 M6=5, CURRENT4/4, CAL12/12, V5 CRC/RX clean in excerpt; source RC08 contains old `routine_validated` D24 inclusion and `auto_d24` bypass. No live RC08 D24 test. Transport ACK is not semantic acceptance.
+**ONE meaningful change:** remove D24 from routine automatic predicate and remove auto_d24 bypass. Existing 45s descriptor24 manual ARM, sole S92/OEMW ledger, valid 042E source/epoch/CRC, one TX budget and authoritative FC16 readback unchanged. No second writer.
+**Expected:** without fresh manual D24 ARM no D24 TX even with automatic lease. With fresh user-initiated ARM, eligible one-edit S92 transaction still requires controller-origin FC16 042E word0 and Thermia panel to claim POSITIVE.
+**Actual OFFLINE:** YAML strict parsing and AST comparison PASS; D24 automated predicate false for 0→1 / 1→0, one UART writer, ZIP CRC/SHA and rollback PASS. No owner flash, no physical D24 TX or controller feedback. **PREPARED / NOT RUN**; earlier RC08 archive **SUPERSEDED / NOT RUN**.
+**ABORT / rollback:** Configuration ABORT Native Session; restore old Hot Water Enabled on OEM display; firmware rollback exact W2R92. D24 permission not broadened to AWAY or TOP-UP. Keep firmware PRIVATE.
+
 ## RC08-D24 — bounded native Hot Water Enabled experiment — PREPARED / NOT RUN (2026-11-04)
 
 **Hypothesis:** native OEMW/S92 descriptor24 can change controller-accepted Hot Water Enabled (0/1), via owned 042E/15 word0, with authoritative controller-origin FC16 readback, beyond the preexisting transport ACK evidence.
