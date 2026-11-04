@@ -1,5 +1,9 @@
 # Write User Stable — XTR M
 
+## WUCLEAN01 — English-label cleanup candidate (2026-11-04)
+
+From exact live W2R92 private source (SHA256 `b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`), prepared separate private `Thermia_XTR_WRITE_USER_CLEAN01_EN_PRIVATE_20261104.zip` (firmware SHA256 `f01e3d21db23fe6b2ca4f6b96bb5b3cc4524889707b5209b4cd20a70b5481e78`). Translated 71 of 444 exposed HA labels to English; 2 never-referenced EXP394 globals removed, concise source header and read-only build text updated. Source YAML AST, single S92 physical UART TX owner, M6/CURRENT/CAL32, FC03/FC16, V5/CRC, ABORT and all component IDs unchanged in behavior. **PREPARED / NOT RUN**; offline tested only. W2R92 stays frozen last FLASHED/LIVE normal-operation baseline and exact rollback. Service DEV unchanged. No private firmware published. English label changes may require HA entity registry review, not automatic assumption of same entity_id.
+
 **Status (2026-11-04):** W2R92 private standalone ESPHome YAML, **FLASHED / LIVE according to user normal-operation confirmation**. No new numerical bus-health trace or per-parameter write retest supplied; historical 51/51 + 4/4 verified user writes and accepted existing calendar tests remain closed.
 
 - Source snapshot SHA256: `b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`.
