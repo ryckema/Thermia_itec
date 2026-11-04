@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 W2R92 user-confirmed normal; W2R93 calendar text dedup has zero bus protocol delta
+
+User reports W2R92 cleaned firmware `draait goed` on XTR: good ordinary operation accepted without separate fresh frame log. No new protocol semantic proof inferred beyond historic W2R88F3 bus captures. W2R93 source changes only HA text publication filters for 32 existing F1–F4 calendar slot strings and four summaries; all 15s evaluations, controller-origin CAL page recency gates 300s, RX parser, CRC, S92 sole UART/RX/TX/DE, 0708 selector, FC03/FC16, calendar write guards, ABORT and session logic unchanged. Thus no physical write or new role and no need for extra calendar/parameter trials. W2R93 SOURCE/OFFLINE TESTED only; not target compiled or live. Duplicated HA publish suppression does NOT alter when controller communication occurs or prove fewer CPU cycles.
+
 ## 2026-11-04 EXP410/EXP455 dormant legacy TX branches removed from W2R92 — no new protocol claims
 
 W2R92 eliminates two **unreachable** old EXP code paths, not real supported OEM behaviors. W2R91 source showed `exp410_state` and `exp455_state` both RAM-only initialized0 with no reachable state1 entry; hence their alternate dated-slot 055A create/delete and retained-0546 ACK transmit code was dormant. Those speculative old TX branches were removed from W2R92 without changing the original single S92 owner, parser/V5, CRC, FC03/FC16, native controller sync, CAL32 F1–F4 editor or verified routine writes. Existing source-mode zero-state predicates remain equivalent constants. **Do not infer** that actual calendar create/delete semantics were disproven or validated; EXP410 was not an active operational feature. Other legacy EXP445/EXP452 and native lifecycle machinery still have references and were deliberately retained rather than removed by name. W2R92 is SOURCE/OFFLINE TESTED only; no target compile/live/payload evidence, and no new physical TX scope.
