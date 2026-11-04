@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 Owner-LIVE RC07F1 retained runtime and 0884 display evidence; RC07F2 UI-only
+
+User-provided RC07F1 log confirms retained transport requalification M6=5, current four controller pages ACKed, and 12 Calendar pages acknowledged in one normal OTA session. V5 CRC_DIFF=0 and RX drops=0 in excerpt. The runtime decoder published `Alarms | History Source (Raw) = 0884/60: 8 x 7-word historical records plus 4 words` and the sixth raw record changed from `1000 0000 0023 0016 001D 000A 001A` to `3000 0000 0023 0016 001D 000A 001A`, with timestamp fields stable. This is owner-LIVE decoder evidence favoring 7-word current profile and independently confirms unverified History6 event-code field; not a separate complete captured 60-word payload and not an OEM event-name mapping. 085F ACK count stayed zero during early log, so the correct current alarm state remains unknown. RC07F2 marks three HA Configuration switches internal and keeps existing periodic CURRENT and Calendar read logic intact: **no new Modbus/register/FC23, FC03/FC16 or TX semantic finding**.
+
 ## 2026-11-04 RC06 and RC07 display-only source interpretation
 
 RC06 corrected the user-facing name of existing controller register 2068 to Current Limiter Reading, based on the original CM930 sensor definition. It is distinct from compressor current; no mapping or raw value changed. RC06 also extended the read-only 0884 history parser to accept unambiguous sparse 6-word XTR or 7-word Eco records, while refusing unknown layouts.
