@@ -1,5 +1,13 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 User display evidence audit — semantic confirmations retained
+
+This entry adds NO new protocol mapping or physical evidence. Genuine XTR controller-origin FC16 has confirmed 51/51 writes: Heating W2R25F4 27/27, Hot Water D13/D14 W2R27 4/4, Cooling W2R28F1 D2/D15/D16/D17/D18/D20 18/18, and Operation AUTO↔COMPRESSOR W2R29F1 2/2. W2R64HW additionally confirmed Hot Water ON↔OFF and D13 Away/Comfort/Eco 4/4, total 55 actual semantic confirmations. Both Cooling ROOM-sensor hysteresis registers 044D and 044E are proven; separate general user Cooling HYSTERESIS remains OPEN. D19 room-sensor write OPEN. Operation 0553 enum0/3/4 source-known but XTR controller-semantic acceptance unverified.
+
+W2R65 one-shot TOP-UP 0430 desired1 physically triggered user-observed DHW production, followed by controller returned0 and persistent-comparator logical latch preventing refresh. Effect STRONGLY SUPPORTED, terminal behavior OPEN; status 2149.2 not established by that capture. Genuine OEM uptime/lifetime 0870/17 is LIVE on W2R88F3 with 1615/824/657/115 hours; last defrost duration 64800min is implausible and is NOT a validated duration. Alarm history records available raw.
+
+Existing F1/F2/F3 weekly calendar write receipts are real; owner user-GO closes more write tests, not fabricated physical F4/daymask0-reversal/date/record-create/delete evidence. Local controller shunt groups configured0, not required for local unit write equivalence. Keep sole S92 writer, CRC, session and controller-confirmed semantic readback.
+
 ## 2026-11-04 W2R89 implementation scope — no new protocol semantics asserted
 
 MAIN04-W2R89 is a **Home Assistant calendar UI/dispatch consolidation**, not discovery of a new frame, register, CRC, slot or OEM operation. The existing controller-owned 32-slot F1/F2/F3/F4 page geometry, fresh-epoch validation, original F1 separate write procedure and single S92 OEMW physical writer/FC16 semantic acceptance remain authoritative. A single explicit HA Write click invokes the existing frozen 45-second per-target ARM when needed, followed by the already-existing F1 or new-domain Apply. Original session/CRC/bus idle and ABORT stay intact. New native read lease refresh is source-only; staged edits rebase only against *unchanged* genuine record values. No new physical acceptance asserted for untested reverse weekday0, F4, date mode or record create/delete. Prior user GO closes repeated calendar-value write tests for project purposes, not individual never-run experiments. **Status:** W2R89 SOURCE / OFFLINE TESTED; PREPARED / NOT RUN for target/live.
