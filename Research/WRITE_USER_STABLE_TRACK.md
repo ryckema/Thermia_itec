@@ -11,3 +11,13 @@
 - No rewrites of project `README.md` or `Write (Beta)/iTec Eco`.
 
 **GO:** freeze the verified User baseline; **ONE NEXT ACTION:** prepare non-sensitive public release surface and scrub proprietary source before any publication. Do not retest already accepted controller writes.
+
+## Private Write User production packaging — 2026-11-04
+
+- **DELIVERED (private, no code delta):** `Thermia_XTR_WRITE_USER_PROD_BASELINE_W2R92_PRIVATE_20261104.zip`, containing exactly one standalone firmware YAML, NL installation/ABORT/rollback instructions, SHA256 sums and offline audit.
+- Firmware YAML bytes are **unchanged** from user-confirmed running W2R92: SHA256 `b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`.
+- **OFFLINE TESTED:** YAML parsed; all substitutions defined; 1,205 component/global/UART IDs unique; one physical `thermia_uart.write_array` sender; API/Wi-Fi/OTA, native S92 ABORT and one UART preserved; ZIP CRC and member hash verified. No ESPHome target compile or new flash/live test was executed.
+- **SCOPE:** user-only private production baseline. W2R93 calendar API dedup and Service DEV remain excluded pending their own evidence. No new physical TX or setting writes activated.
+- No public OEM/handshake/proprietary code published; README and `Write (Beta)/iTec Eco` unchanged.
+
+**CURRENT MILESTONE:** private, reproducible Write User production baseline. **REAL BLOCKER:** none for running existing W2R92; public redistribution still requires a licensing/privacy scrub. **ONE NEXT ACTION:** scope and implement only a demonstrated User-release defect or verified backport, without service feature creep or redundant write tests.
