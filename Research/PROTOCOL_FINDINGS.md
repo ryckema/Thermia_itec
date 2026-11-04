@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 owner CLEAN07 live log: source quality and 085F absence (not a new role)
+
+User ESPHome runtime excerpt 15:02:59–15:06:29 shows running build `USER-CLEAN07`, CM930 firmware 2.4.2, M6=5 CURRENT4/4 re-confirmed with controller 03E8/042E/0442/0546 receptions, native 0708 idle responses and V5 `CRC_DIFF=0`, RX drops0. Six operation source groups report fresh. Repeated `Thermia Write Runtime 085F ACKs=0` and `Diagnostic | Alarm Source=Missing | no controller 085F/5 page received` despite continuing FC16 page traffic. **LIVE PROVEN for this short window:** absence of qualified 085F alarm page and working fail-closed UI; **OPEN** whether a longer normal session, changed operating conditions or a separate refresh yields 085F. No evidence to declare current controller alarms all clear, no new register/role inference or autonomous polling authorization. The log is CLEAN07, not CLEAN08, regardless of owner-reported CLEAN08 compile success.
+
 ## 2026-11-04 CLEAN08 HA-only calendar dedup / compressor cycle derivation — no new protocol claim
 
 Write User CLEAN08 adds 36 change-only Home Assistant text publications for existing calendar pages and derives three additional read-only cycle metrics from existing CRC-valid 0x1E compressor frequency transitions. Initial compressor ON after ESP boot or observation gap is not claimed as an observed start; gap >30s excludes inferred start/stop/complete cycle. These are ESP uptime-local derived observations, NOT Thermia lifetime counters or proof that 0x1E always arrives within 30s. Native S92, M6, CRC, 0x0F FC03/FC16, CAL32, controller-origin write confirmation, single TX owner and ABORT unchanged. **SOURCE/OFFLINE TESTED only**, not ESPHome target compiled or LIVE. No additional register role, OEM cycle definition, retry or physical TX. 085F controller alarm refresh remains OPEN.
