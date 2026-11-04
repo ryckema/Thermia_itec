@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 USER-CLEAN02 — manufacturer English UI wording; protocol unchanged
+
+The official 2024 Thermia iTec XT/XTR User Guide AWIXT01UG0202 uses **Comfort/Eco/Away** for Hot Water and **Distribution Circuit 1/2**, **Heat Stop**, and **Setback Temp** in the user interface. Private User CLEAN02 normalizes corresponding HA labels and read-only status strings. The existing 0x042E Hot Water mode value **2 is still the same third controller mode**; only its label changed from Holiday/Vakantie Eco to Away. No new register/address inference and no new semantic write test. V5 RX/CRC, FC03/FC16 cache, S92 physical UART ownership, native M6, CAL32, abort and rollback unchanged in SOURCE/OFFLINE checks; not target compiled or live.
+
 ## 2026-11-04 WUCLEAN01 scope preservation — no new protocol finding
 
 Private Write User CLEAN01 uses exact owner-confirmed W2R92 source; presentation-only English HA labels and two zero-reference EXP394 global variables were cleaned. Full YAML AST comparison confirms no change to V5 CRC/RX framing, S92 exclusive TX/DE ownership, existing controller-origin FC16 confirmation, native FC03 refresh, M6 session/cold-start/hot-rejoin and calendar CAL32. **Evidence:** SOURCE / OFFLINE TESTED only; this does not establish a new Modbus role, register meaning, session acceptance, controller semantic write, or target LIVE behavior. W2R92 remains last owner-confirmed live source. No need to redo S62/S88/V4.1/S92.
