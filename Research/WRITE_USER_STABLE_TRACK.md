@@ -1,5 +1,9 @@
 # Write User Stable — XTR M
 
+## CLEAN03 — English UI and Diagnostic cleanup candidate (2026-11-04)
+
+Private `Thermia_XTR_WRITE_USER_CLEAN03_PRIVATE_20261104.zip` contains complete CLEAN03 source SHA256 `32d8bb2fb4bf3ea9ebb52d9e392390aff686633881c2cb2a380d883f0694bcd3`, plus exact owner-live W2R92 rollback `b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`. Source derived from CLEAN02; 67 UI label fixes (including `Calendar`/`Alarms` numbered prefix removal, XT Only Return Measured), 36 technical diagnostics and 2 legacy experimental buttons default-disabled, 8 physical telemetry entities moved out of Diagnostic. Historic 0x0870 word13 15462/16026 and user-reported 64800 are not verified duration minutes; show Unavailable for raw>60, not invented zero, preserve register cache. Offline AST confirms identical native bus TX ownership, scripts, UART, M6, FC03/FC16, CAL32, CRC, ABORT, all old IDs. **PREPARED / NOT RUN; NOT TARGET COMPILED / FLASHED / LIVE**. Owner-live W2R92 remains stable release line; Service DEV untouched. Public GitHub contains non-sensitive metadata only, no private firmware or protected flows. `README.md` and `Write (Beta)/iTec Eco` unchanged.
+
 ## USER-CLEAN02 — all-English release candidate (2026-11-04)
 
 Private full-source CLEAN02 SHA256 `ed6845858b5bdc5b58fb6bdda2d0c243604cba841765cb06db85300380827ba9` follows CLEAN01 and exact owner-confirmed W2R92. All 444 HA labels reviewed; 43 further display labels adapted to official English Thermia User Guide; controller Hot Water mode 2 shown as **Away** in HA select and readback (same numeric value), replaces previous Holiday Eco/Vakantie Eco. Offline YAML/IDs/UART and change whitelist PASS; one original S92 physical TX writer preserved. **PREPARED / NOT RUN**, no target compile/flash/live. Exact W2R92 rollback remains in private ZIP. Neither Service nor README nor Write (Beta)/iTec Eco changed.
