@@ -1,5 +1,15 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 RC09F1 one-shot delayed native source qualification — SOURCE/OFFLINE ONLY
+
+No new protocol message IDs or packet formats invented. RC09 live already proved a native controller-origin 0864/4 word1 bit 0x0004 asserted +21.237s after one manual D25 0430/15 word2 pulse; 042E command bit returned to zero. Correct semantic distinction: **command word is transient request, native 0864 is observed application runtime state**, thermal increase remains UNKNOWN.
+
+RC09F1 source implements a passive same-owner/epoch monitor in existing CRC/shape-qualified RX FC16 0864 handler and current OEMW physical-delivery success path. To report a post-pulse application-state edge: D25 exact 042E/15 word2 0→1, one delivered page, valid prior 0864 inactive receipt ≤45s, later native 0864 active receipt ≤90s, live CM930 2.4.2 and M6=5 epoch. Missing baseline, expired window, owner mismatch or aborted session cannot yield positive. New read-only text sensor; no altered physical TX sequence, retransmission or new session owner. Original OEMW persistent-result field remains INCONCLUSIVE when pulse word returns zero, avoiding incorrect acceptance of other write types. The OEM operation summary differentiates 042E request RESET/PULSE and 0864 ACTIVE/INACTIVE.
+
+RC09F1 also integrates source-level **RC08F1 D24 manual-only authorization correction** into the RC09 branch: removes unvalidated descriptor24 automatic lease path, preserving explicit one-edit manual ARM. No D24 semantic acceptance claimed.
+
+Status: SOURCE / OFFLINE TESTED, PREPARED / NOT RUN on owner target; no new LIVE finding beyond the RC09 result already recorded. Full firmware and rollback remain private. **ONE NEXT ACTION:** user target compiles/flashes RC09F1 and verifies original native runtime, not a repeated D25 test.
+
 ## 2026-11-04 RC09 one-shot D25 application-layer edge — LIVE / STRONGLY SUPPORTED
 
 Controller-origin XTR log confirms one user-initiated D25 0430/15 word2 one-shot pulse, exact one OEMW physical page TX at 22:31:42.706; FC16 0430 request word returned 0, so original persistent-setting comparator reported INCONCLUSIVE/NO_RETRY. Separate CRC-valid native controller 0x0F FC16 0864 count4 word1 bit 0x0004 (Hot Water TOP-UP Active) was 0 at 22:31:48.967 and 1 at 22:32:03.943, 21.237s after physical TX. Strong support that one-shot request was acted upon. Native status is not an echo from HA. Regular DHW Active had already risen at 22:29:32 (before pulse), so the effect on actual energy delivered was not proven in the observed window. Existing OEM operation summary DHW boost OFF uses the 042E one-shot request word, not the 0864 active flag; should be relabeled. Keep one-send/no-retry and explicit disabled-by-default ARM; do not infer long-term heating success or expand physical TX authorization. One 59ms UART warning with no proven CRC/RX issue. ONE NEXT ACTION: native source/epoch-guarded 0864 delayed one-shot completion status rather than a new physical trial.
