@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 RC09 one-shot D25 application-layer edge — LIVE / STRONGLY SUPPORTED
+
+Controller-origin XTR log confirms one user-initiated D25 0430/15 word2 one-shot pulse, exact one OEMW physical page TX at 22:31:42.706; FC16 0430 request word returned 0, so original persistent-setting comparator reported INCONCLUSIVE/NO_RETRY. Separate CRC-valid native controller 0x0F FC16 0864 count4 word1 bit 0x0004 (Hot Water TOP-UP Active) was 0 at 22:31:48.967 and 1 at 22:32:03.943, 21.237s after physical TX. Strong support that one-shot request was acted upon. Native status is not an echo from HA. Regular DHW Active had already risen at 22:29:32 (before pulse), so the effect on actual energy delivered was not proven in the observed window. Existing OEM operation summary DHW boost OFF uses the 042E one-shot request word, not the 0864 active flag; should be relabeled. Keep one-send/no-retry and explicit disabled-by-default ARM; do not infer long-term heating success or expand physical TX authorization. One 59ms UART warning with no proven CRC/RX issue. ONE NEXT ACTION: native source/epoch-guarded 0864 delayed one-shot completion status rather than a new physical trial.
+
 ## 2026-11-04 RC08F1 D24 authorization boundary (SOURCE, not a new protocol finding)
 
 **PROVEN from source:** RC08 preview contained `auto_d24` (enabled by W2R77 auto lease/request) and D24 in `routine_validated`, allowing a path that did not require new one-edit manual ARM. That was an authorization defect; default automatic writes were off, no live adverse event claimed.
