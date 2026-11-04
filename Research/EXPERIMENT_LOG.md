@@ -1,5 +1,9 @@
 # THERMIA EXPERIMENT LOG
 
+## WUCLEAN01 — English User labels and orphan-state cleanup — PREPARED / NOT RUN (2026-11-04)
+
+**Hypothesis:** Display-label translation and deletion of exactly two globally unreferenced EXP394 RAM variables do not change native bus behavior. **Baseline:** owner-confirmed live W2R92 private firmware SHA256 `b20d145018d0ac0de36410f8738054e0841a1bd8563d3bbdf7ba39a7b37d289f`. **One meaningful change family:** presentation/unused-state cleanup, with 71/444 entity names translated; 2 orphan EXP394 globals removed. **Offline actual:** YAML parsed, same native behavioral AST (outside allowed metadata/removals), unchanged UART/DE/S92, M6, FC03, FC16, CAL32, CRC and HA ID inventory. **Live actual:** NOT RUN; no new flash, session capture, parameter trial, accepted FC16 readback or rollback experiment. **Relevant frames:** existing 0x0F FC16/FC03 and 0x06 native session kept unchanged; no frame emitted or captured in this iteration. **ABORT:** original S92 Manual ABORT (DE LOW); **rollback:** byte-identical W2R92 source bundled. **Decision:** GO for target compile/normal read verification only; no unvalidated TX expansion.
+
 ## 2026-11-04 WRITE User/Service tracks separation — COMPLETE / POSITIVE (source/branch split)
 
 **ID:** 2026-11-04 WRITE-TRACK-SPLIT. **Hypothesis:** fixed User live baseline and separate private Service development source can be maintained without changing native UART/FC03/FC16/HA ownership or publicly disclosing protected firmware. **Baseline:** user-confirmed W2R92 working; W2R93 calendar API dedup SOURCE/OFFLINE, not LIVE. **ONE meaningful change:** separate User and Service ownership into dedicated branches and two complete independent firmware snapshots in ONE private ZIP; Service S0 modifies only firmware-build diagnostic/commentary relative to W2R93, no new Service writes.
