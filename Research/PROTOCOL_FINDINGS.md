@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-04 Current XTR alarm status confirmed None (user display, not 085F RX)
+
+User explicitly confirms no current alarms on the actual Thermia display: **None** (point-in-time human observation). The prior W2R88F3 XTR runtime log still has **zero qualified 085F ACKs** and OEM 085F evidence UNKNOWN: therefore this confirmation must NOT be described as independently observed 085F all-zero or a working periodic alarm read. W2R90F1 maps the manually confirmed baseline to user-facing `None` when fresh 085F unavailable; nonzero fresh alarm flags always override and stale prior nonzero flags remain flagged STALE. This change is presentation only, no protocol discovery, no write or alarm reset. Genuine future alarm event semantic mapping remains untested, with no deliberate alarm injection required.
+
 ## 2026-11-04 OEM alarm bit mapping and history readout — SOURCE / OFFLINE TESTED
 
 Local genuine XTR 2.4.2 UART parser already RX-caches controller-origin FC16 `0x085F/5` as registers2143–2147 and `0x0884/60` as 60-word history page. The original private Connect 2.1.105 version-matched CM930/2.3.0–2.4.3 metadata `alarms.json` gives 29 POSITIVE named bit conditions for 2143–2145 (sensor, pump, outdoor unit and communication faults); **2146–2147 and other bits are NOT assigned invented names**. Optional OEM conditions on some alarm flags depend on configured accessories; raw bit is kept even if model applicability remains unknown. The `2095.10` ODU-compressor-down condition is **outside 085F** and intentionally not misattributed to this page.
