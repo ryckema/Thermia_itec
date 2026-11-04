@@ -1,5 +1,13 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-04 W2R92 dead legacy state machine elimination — PREPARED / NOT RUN
+
+**Experiment/change ID:** MAIN04-W2R92. **Hypothesis:** removing the never-activated EXP410 and EXP455 parallel state machines has no runtime semantics on the existing native XTR firmware. **Baseline:** W2R91 SOURCE/OFFLINE; last user FLASHED/LIVE W2R88F3, with M6=5, CURRENT and owned CAL12 normal. **ONE change:** remove obsolete EXP410 and EXP455 branches instead of introducing a new engine or re-testing proven controller writes.
+
+**Prior evidence:** exact W2R91 RAM globals initialize `exp410_state=0` and `exp455_state=0`, both `restore_value: no`. Static audit of all associated writes found no transition to their start state 1. Other assignments and alternate 0708 / FC03 / FC16 sender branches depended on being activated; their zero-state guard comparisons are equivalent to literal zero. Removed **1,103 lines / 34 globals / 2 internal status sensors / 1 interval**, including obsolete competing TX branches. Active `native_transaction_state`, `native_legacy_lifecycle_state`, EXP445/EXP452, CAL32 and sole S92 owner preserved.
+
+**Expected:** identical native controller heartbeat/session/FC03/FC16, same calendar and HA controls, no TX delta. **Actual:** SOURCE/OFFLINE TESTED: YAML parse, unique IDs, AST preservation of controls/scripts/on_boot/UART config, 396 surviving C++ lambda delimiter checks, exact diff & rollback, ZIP SHA/CRC PASS. **TARGET COMPILE, FLASH, LIVE NOT RUN**. No physical TX or alarm injection performed; no claimed runtime performance gain. **Status:** PREPARED / NOT RUN for user target installation. **ABORT:** unchanged S92 Native DCM ABORT Session, rollback W2R88F3 last user live or W2R91 source. Firmware rollback cannot undo controller settings. **ONE NEXT ACTION:** target compile/flash and normal passive regression only; request compiler output if failed.
+
 ## 2026-11-04 W2R91 suppress duplicate alarm HA updates — PREPARED / NOT RUN
 
 **Experiment/change ID:** W2R91 single-purpose output-only optimization. **Hypothesis:** duplicate periodic alarm text publication causes avoidable ESPHome API/HA work while controller values remain unchanged. **Baseline:** exact private W2R90F1 (SOURCE/OFFLINE), W2R88F3 last FLASHED/LIVE production bus baseline; alarms user-display None confirmed. **ONE change:** 19 existing alarm text entities get a self-state equality filter; eight raw historical diagnostic sensor update intervals 10s→30s. The original raw/history/active lambdas' contents, source fresh/STALE checks, main UART RX/TX and all HA write paths remain byte-identical.
