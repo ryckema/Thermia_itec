@@ -1,5 +1,9 @@
 # THERMIA EXPERIMENT LOG
 
+## RC09 W2R65 TOP-UP one-shot native activation — COMPLETE / POSITIVE (2026-11-04)
+
+Hypothesis: one bounded D25 0430/15 word2=1 pulse can activate controller TOP-UP runtime flag despite 0430 returning to zero. Baseline: user LIVE RC09, M6 stage40, native CURRENT4/4, single S92/UART/DE owner, 45s manual ARM. ONE change: manual ARM followed by one deliberate TOP-UP button activation; no firmware modifications, no repeat. Expected: one TX, live controller 0864/4 word1 bit 0x0004 rises, no retry. Actual: ARM 22:31:29.894; action 22:31:37.351; one physical TX 22:31:42.706; 0430 controller return zero and W2R66 inconclusive persistent-comparator terminal 22:31:43.305; native TOP-UP active 0 at 22:31:48.967 to 1 at 22:32:03.943. CRC_DIFF=0, RX drops0, FC16 receipts continue. COMPLETE / POSITIVE for native activation flag; real additional heat not isolated (ordinary DHW had already started at 22:29:32). Confidence: status edge PROVEN, semantic association STRONGLY SUPPORTED, added heating UNKNOWN. ABORT/rollback: existing Native ABORT and W2R92; no automatic retry occurred. ONE NEXT ACTION: source-qualified 0864 post-pulse completion indicator in existing S92 engine, no repeated physical experiment.
+
 ## RC08F1 D24 manual-only authorization FIX — PREPARED / NOT RUN (2026-11-04)
 
 **Hypothesis:** existing RC08 W2R63 scoped trial permit is sufficient for exactly one novel D24 user edit; automatic W2R77 lease must never authorize D24 until controller semantic acceptance is locally demonstrated.
