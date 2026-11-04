@@ -1,5 +1,17 @@
 # THERMIA EXPERIMENT LOG
 
+## RC09F1 delayed TOP-UP feedback integration — PREPARED / NOT RUN (2026-11-04)
+
+**Hypothesis:** same-epoch controller-origin 0864/4 TOP-UP active bit following one physically sent D25 pulse can provide delayed native activation feedback, independent of the transient 042E command-word comparator. **Baseline / prior evidence:** owner-LIVE RC09 W2R65 single TX 22:31:42.706, 042E returned zero, 0864 active rose 0→1 at 22:32:03.943; earlier live experiment COMPLETE / POSITIVE for native activation, additional heat not proven.
+
+**ONE meaningful code change:** source-qualified 90s post-pulse observer added within existing single S92/RX engine, with 45s fresh inactive 0864 baseline, identical owner epoch, one D25 physical send, zero new UART writes/retries, existing ABORT. New read-only TOP-UP One-Shot Confirmation text sensor. Controller OEM summary now labels command word separately from runtime active bit. Integrates independent already documented RC08F1 D24 manual-only authorization root fix carried forward from later firmware branch.
+
+**Expected:** new RC09F1 boots with NOT RUN; normal M6/CURRENT/CAL/HA unchanged. At a future independent deliberate user use (not a repeat test), after one D25 0→1 send and fresh same-epoch native 0864 OFF→ON within 90s, one native ACTIVE OBSERVED result; otherwise INCONCLUSIVE/INVALIDATED with NO RETRY. W2R66 command-word zero terminal remains INCONCLUSIVE as a persistent compare, unlocks calendar. No physical retry.
+
+**Actual:** full private one-YAML ZIP assembled, strict YAML/AST/UI ID checks, one existing UART write, manifest and byte-exact W2R92 rollback PASS; original genuine XTR trace independently checked one ARM, one TX, 0864 0→1 after 21.237s. Target compile/flash NOT RUN, no new physical experiment. Status **PREPARED / NOT RUN**.
+
+**ABORT/rollback:** existing Native ABORT or Disable Write User; original W2R92 flash. No new physical authorizations. **ONE NEXT ACTION:** owner flash RC09F1; normal RX/CURRENT/CAL checks, no repeat of verified TOP-UP.
+
 ## RC09 W2R65 TOP-UP one-shot native activation — COMPLETE / POSITIVE (2026-11-04)
 
 Hypothesis: one bounded D25 0430/15 word2=1 pulse can activate controller TOP-UP runtime flag despite 0430 returning to zero. Baseline: user LIVE RC09, M6 stage40, native CURRENT4/4, single S92/UART/DE owner, 45s manual ARM. ONE change: manual ARM followed by one deliberate TOP-UP button activation; no firmware modifications, no repeat. Expected: one TX, live controller 0864/4 word1 bit 0x0004 rises, no retry. Actual: ARM 22:31:29.894; action 22:31:37.351; one physical TX 22:31:42.706; 0430 controller return zero and W2R66 inconclusive persistent-comparator terminal 22:31:43.305; native TOP-UP active 0 at 22:31:48.967 to 1 at 22:32:03.943. CRC_DIFF=0, RX drops0, FC16 receipts continue. COMPLETE / POSITIVE for native activation flag; real additional heat not isolated (ordinary DHW had already started at 22:29:32). Confidence: status edge PROVEN, semantic association STRONGLY SUPPORTED, added heating UNKNOWN. ABORT/rollback: existing Native ABORT and W2R92; no automatic retry occurred. ONE NEXT ACTION: source-qualified 0864 post-pulse completion indicator in existing S92 engine, no repeated physical experiment.
