@@ -1,5 +1,13 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-05 RC09 temporary Calendar/user-write BUSY distinction — LIVE observations, source fix OFFLINE only
+
+**Controller-origin facts (owner RC09 log):** Cooling Enabled D15 0442/13 word0 1→0 `CONTROLLER_ACCEPTED` 01:43:23.774, and 0→1 accepted 01:43:45.355. A rapid second request while F1 Calendar refresh was running produced `USER_WRITE_DENIED grant=0 session=1 profile=1 clean=1 NO_TX`, not an attempted bus packet or controller semantic rejection. Calendar source poll F1 started 01:43:27 and completed 01:43:29.588. Likewise D4 minimum edits while existing D1 Curve page awaited controller readback produced `PREVIEW_DENIED idle=0 NO_TX`; D1 curve 36→37 and 37→36 independently accepted after their respective single physical sends. M6 and RX CRC remained healthy. Hot Water Only (mode 4) remains NO TX unless expressly user-initiated W2R65 one-edit trial; no TRIAL_ARM was seen in this log.
+
+**Firmware implementation fact:** `user_grant` contains the `exp452_state==0` (Calendar) and `exp445_state==0` (history) ownership guards, beyond the ordinary `idle` predicate. In original RC09/RC09F1 the user-grant rejection erroneously followed OEMW ledger assignments, so a NO-TX denial could still invalidate shared descriptor/result/timestamps. Source-only RC09F2 checks the grant first, has specific BUSY status, and prevents queue supersession without grant. No protocol conjecture, new opcode, physical frame or slot. Existing 0442 native CURRENT 4page snapshot can lag a newer independent controller 0442 direct readback; do not claim both values are simultaneous.
+
+**Confidence:** accepted readbacks PROVEN, no-TX BUSY PROVEN, Calendar as immediate grant cause STRONGLY SUPPORTED by timing and source guards; RC09F2 functional correction SOURCE/OFFLINE TESTED only. **ONE NEXT ACTION:** owner target compiles/flashes RC09F2 and checks normal native runtime before further bounded manual operating-mode trials.
+
 ## 2026-11-04 RC09F1 one-shot delayed native source qualification — SOURCE/OFFLINE ONLY
 
 No new protocol message IDs or packet formats invented. RC09 live already proved a native controller-origin 0864/4 word1 bit 0x0004 asserted +21.237s after one manual D25 0430/15 word2 pulse; 042E command bit returned to zero. Correct semantic distinction: **command word is transient request, native 0864 is observed application runtime state**, thermal increase remains UNKNOWN.
