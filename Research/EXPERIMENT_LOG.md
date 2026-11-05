@@ -1,5 +1,15 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-05 RC09F2 live mode-grant discrepancy → private RC09F3 source fix — PREPARED / NOT RUN (new RC)
+
+**Hypothesis:** owner complaints are authorization/UI stale classification, not invalid native values or UART transport. **BASELINE/PRIOR EVIDENCE:** owner-LIVE RC09F2 02:11–02:15 OTA M6 2→4→5, exact CURRENT 4/4 at02:11:57, calendar12/12 at02:12:27, V5 CRC_DIFF0/RX drops0. Six D15/D3/D13 controller FC16 accepted (two edits each). Operation targets OFF0/AUX3/HOT WATER4 requested but denied `MODE_SOURCE_UNVALIDATED` without any preceding W2R65 TRIAL_ARM. D13 ECO1→AWAY2 denied `W2R63HW NO_TRIAL_ARM` despite W2R64HW earlier controller-FC16 validated enable ON/OFF and Comfort/Eco/Away (4/4). W2R63 trial ARM was internal:hidden, so no ordinary HA activation.
+
+**ONE CODE CHANGE / SOURCE FIX:** RC09F3 updates existing OEMW validation and its HA presentation: D24 0/1 and D13 0/1/2 locally XTR verified domain now normal Write User-granted, retaining D24/D13 exact one-edit physical TX marker created after valid user grant and all existing S92/CRC/epoch/source/FC16 readback; new/different Operation 0/3/4 stays behind one visible manual 45s W2R65 ARM (no per-packet permissions, one edit, NO RETRY), with accurate TRIAL ARM REQUIRED denial when absent. Single extra passive readiness/countdown text sensor, stale preflight/UI text corrected. Source-only from complete RC09F2. No new UART sender or engine.
+
+**EXPECTED:** ordinary owner-enabled validated HW changes accepted under same one-page controller-confirmed routine scope; novel Operation 0/3/4 refuse without fresh ARM, and user may initiate bounded manual test after enabling/pressing ARM. NO automatic trial sends. **ACTUAL:** strict full YAML/ID/critical AST/sole UART / auth truth checks / SHA ZIP rollback PASS. Not target compiled, not flashed; experiment RC09F3 **PREPARED / NOT RUN**. No new physical TX claims. W2R64HW earlier validation remains COMPLETE / POSITIVE; do not run it again merely to fill a log.
+
+**ABORT/rollback:** existing S92 Native ABORT/DE LOW and owner manual OEM-panel restore, exact original W2R92 for firmware regression. Firmware rollback alone does not revert changed physical controller settings. **ONE NEXT ACTION:** user compiles/flashes RC09F3, read-only runtime M6/CURRENT/CAL first.
+
 ## 2026-11-05 RC09F2 OEMW grant-before-ledger change — PREPARED / NOT RUN
 
 **Hypothesis:** the unexpected refusal after controller-confirmed D15 OFF is a temporary Calendar-owned busy guard (not bus failure); an invalid `user_grant` must be rejected BEFORE touching the single native OEMW ledger. **Baseline:** owner-LIVE RC09. Observed D15 OFF accepted 01:43:23.774, D15 grant=0 / no TX at 01:43:27.872 concurrent with F1 read 01:43:27–01:43:29.588, D15 ON accepted 01:43:45.355. Two D4 attempts during D1 writes received idle=0/no TX; D1 readbacks accepted. No CRC errors. RC09F1 remains source-only, preserving earlier live D25 TOP-UP result separately.
