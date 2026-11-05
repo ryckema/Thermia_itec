@@ -1,5 +1,15 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-05 RC09F3 LIVE W2R65 denial and routine writes — COMPLETE / POSITIVE for routine controls
+
+**Hypothesis:** RC09F3 source correction makes previously XTR-validated DHW D24 ON/OFF and D13 Comfort/Eco/Away available via normal Write User grants, keeping novel Operation0/3/4 strictly 45s manual trial-only. **Baseline:** owner-LIVE RC09F2 02:11–02:15 proved D13 ECO↔COMFORT and D3 AUTO↔COMPRESSOR, but D13 AWAY had `NO_TRIAL_ARM` due stale hidden permission; W2R64HW owner-LIVE already proved AWAY/D24 source semantics. No need to repeat more trials.
+
+**ONE meaningful change:** RC09F3 OEMW preview grant reconciliation and visible W2R65 45s Operation/TOP-UP ARM with readiness status, no new sender/retry. **Actual owner XTR log:** OTA version `USER-RC09F3` 02:29:41.917, native M6=5/CURRENT4of4 02:29:18.475, auto calendar12of12 02:29:48.511, CRC_DIFF=0 / RX drops=0, 5 parser resync skips early/stable. D3 0553 AUTO1→COMPRESSOR2 at02:30:59.496 and back AUTO1 at02:31:16.789, D13 042F ECO1→COMFORT0 at02:31:25.480, COMFORT0→AWAY2 at02:31:29.995, AWAY2→ECO1 at02:31:34.455, D24 042E ON1→OFF0 at02:31:38.857 and OFF0→ON1 at02:31:47.582; **seven `OEMW CONTROLLER_ACCEPTED` single physical one-page changes** without retries, positive controller semantic evidence and final all restored. **Status for corrected routine path: COMPLETE / POSITIVE, FLASHED/LIVE/LOCALLY VERIFIED.**
+
+**Separate W2R65 Operation trial:** Owner attempted OFF0 (02:30:44), AUX3 (02:31:04), HW ONLY4 (02:31:09) without pressing ARM, all `NO_TRIAL_ARM NO_TX`. Visible readiness said READY, not ARMED; no `TRIAL_ARM` in log. **Status: PREPARED / NOT RUN** for physical novel Operation semantics. Not a failed controller trial. Existing TOP-UP previously observed positive native activation; not re-run in RC09F3.
+
+**ABORT/rollback:** original S92 Native ABORT, OEM panel restores original AUTO on a future novel Operation test, original W2R92 firmware rollback; physical controller settings do not revert simply by reflashing. **ONE NEXT ACTION:** run RC09F3 normally; if deliberately testing novel Operation HOT WATER, user initiates bounded W2R65 ARM once then one mode edit, checks controller-origin readback and physical panel.
+
 ## 2026-11-05 RC09F2 live mode-grant discrepancy → private RC09F3 source fix — PREPARED / NOT RUN (new RC)
 
 **Hypothesis:** owner complaints are authorization/UI stale classification, not invalid native values or UART transport. **BASELINE/PRIOR EVIDENCE:** owner-LIVE RC09F2 02:11–02:15 OTA M6 2→4→5, exact CURRENT 4/4 at02:11:57, calendar12/12 at02:12:27, V5 CRC_DIFF0/RX drops0. Six D15/D3/D13 controller FC16 accepted (two edits each). Operation targets OFF0/AUX3/HOT WATER4 requested but denied `MODE_SOURCE_UNVALIDATED` without any preceding W2R65 TRIAL_ARM. D13 ECO1→AWAY2 denied `W2R63HW NO_TRIAL_ARM` despite W2R64HW earlier controller-FC16 validated enable ON/OFF and Comfort/Eco/Away (4/4). W2R63 trial ARM was internal:hidden, so no ordinary HA activation.
