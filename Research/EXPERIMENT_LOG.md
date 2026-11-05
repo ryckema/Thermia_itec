@@ -1,5 +1,13 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-05 RC09F2 OEMW grant-before-ledger change — PREPARED / NOT RUN
+
+**Hypothesis:** the unexpected refusal after controller-confirmed D15 OFF is a temporary Calendar-owned busy guard (not bus failure); an invalid `user_grant` must be rejected BEFORE touching the single native OEMW ledger. **Baseline:** owner-LIVE RC09. Observed D15 OFF accepted 01:43:23.774, D15 grant=0 / no TX at 01:43:27.872 concurrent with F1 read 01:43:27–01:43:29.588, D15 ON accepted 01:43:45.355. Two D4 attempts during D1 writes received idle=0/no TX; D1 readbacks accepted. No CRC errors. RC09F1 remains source-only, preserving earlier live D25 TOP-UP result separately.
+
+**ONE meaningful change:** private RC09F2 source updates the existing single `oemw_prepare_descriptor_preview` script: puts grant rejection before any shared ledger assignment; ensures queue supersession also requires grant; specific BUSY labels for Calendar/history refresh or existing setting owner. No new physical send, no retry and no change to accepted write descriptors or owner rules. **Expected:** attempts while Calendar or previous setting owns bus show BUSY/NO TX and leave current ledger intact; later deliberately initiated fresh request may succeed under original guards. **Actual:** full source and ZIP produced, strict YAML/AST/integrity checks PASS; owner target compile/flash NOT RUN. **Status:** PREPARED / NOT RUN, not a live-closed experiment.
+
+**ABORT / rollback:** existing Native ABORT, Thermia physical control and original W2R92 YAML byte-exact. **ONE NEXT ACTION:** flash RC09F2 and check native runtime health (not re-run validated parameter writes solely for testing).
+
 ## RC09F1 delayed TOP-UP feedback integration — PREPARED / NOT RUN (2026-11-04)
 
 **Hypothesis:** same-epoch controller-origin 0864/4 TOP-UP active bit following one physically sent D25 pulse can provide delayed native activation feedback, independent of the transient 042E command-word comparator. **Baseline / prior evidence:** owner-LIVE RC09 W2R65 single TX 22:31:42.706, 042E returned zero, 0864 active rose 0→1 at 22:32:03.943; earlier live experiment COMPLETE / POSITIVE for native activation, additional heat not proven.
