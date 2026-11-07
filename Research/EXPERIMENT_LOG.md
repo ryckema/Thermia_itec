@@ -1,5 +1,13 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-07 W2R65 Operation HOT WATER ONLY semantic trial — RUNNING / PARTIAL (return Auto pending)
+
+**Hypothesis:** with a single user-initiated 45s ARM, D3 `0x0553` operation AUTO=1 to HOT WATER ONLY=4 can be applied via sole native S92 writer and controller-origin FC16, without retry. **Baseline:** USER-RC09F3 M6=5/CURRENT4/4, RX CRC_DIFF=0, no queue, normal AUTO. P4 20:23–20:38 Mon/Fri/Sat/Sun confirmed correct (read-only check COMPLETE / POSITIVE).
+
+**One meaningful action / actual:** `NO_TRIAL_ARM` on earlier unarmed requested target4 at 11:29:40 (NO TX); manual ARM at 11:30:13.798; user requested mode4 at 11:30:21.997 (`ONE_EDIT_COMMITTED`); exact one desired page physical TX at 11:30:22.805; native controller `CONTROLLER_ACCEPTED d=3 reg=0553 actual=4 physicalAttempts=1 receipts=1` at 11:30:23.356; HA selector becomes Hot Water at 11:30:23.504. Positive source-backed semantic acceptance of AUTO1→HOT WATER4, **PROVEN**. Restoring AUTO attempted 11:30:35.102 but `NO_TRIAL_ARM d=3 old=4 target=1 NO_TX`. No restore TX was sent; actual controller final state is not yet confirmed Auto. Firmware RC09F3 classifies d3 with either source or target 0/3/4 as a manual 45s trial, so initial ARM is consumed. User is temporarily unable to reach OEM panel. **Status remains RUNNING / PARTIAL until AUTO return is verified.**
+
+**ABORT and rollback:** existing Native ABORT for anomalous TX; firmware rollback does not restore controller's actual mode. **One next action:** press the visible W2R65 ARM a second time in HA, verify ARMED, select Operation Auto within45s, require controller-origin exact `0x0553=1` confirmation; if denied/no TX, stop and provide short log. No automatic setting reset, no speculative new physical write.
+
 ## 2026-11-05 RC09F3 LIVE W2R65 denial and routine writes — COMPLETE / POSITIVE for routine controls
 
 **Hypothesis:** RC09F3 source correction makes previously XTR-validated DHW D24 ON/OFF and D13 Comfort/Eco/Away available via normal Write User grants, keeping novel Operation0/3/4 strictly 45s manual trial-only. **Baseline:** owner-LIVE RC09F2 02:11–02:15 proved D13 ECO↔COMFORT and D3 AUTO↔COMPRESSOR, but D13 AWAY had `NO_TRIAL_ARM` due stale hidden permission; W2R64HW owner-LIVE already proved AWAY/D24 source semantics. No need to repeat more trials.
