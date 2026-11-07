@@ -1,5 +1,11 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-07 Cooling BUSY NO_TX versus FC16 accepted controls — scheduler not protocol
+
+**LIVE XTR RC09F3:** D15 Cooling Enabled 0x0442 switch change was not transmitted due CURRENT4 refresh busy (11:48:41.779) and Calendar F1 grant busy (11:48:51.933), so controller Native Enabled stayed 1. D20 Cooling Room Hysteresis High 0x044E raw11->10 (1.1->1.0) was not transmitted at 11:49:59.296 because D2 Low 0x044D was physically in flight; D2 confirmed raw10 at 11:50:00.089. Later D20 raw12->10 physically transmitted once and exact controller FC16 accepted at 11:50:21.778. Other Cooling D16, D17, D18 and D20 receipts accepted in same capture. M6=5 / CRC_DIFF0 / drops0. **PROVEN** NO TX for denied edits, correct native semantic readbacks for successful edits. No evidence of invalid register, bus failure or physical retry.
+
+**SOURCE FIX RC09F4:** W2R78 existing request-only queue, previously gated to automatic opt-in, extended to explicit manual validated HA writes. Max 15s and one per controller page; no physical TX until original script revalidates owner/session/cache/FC16/CRC/idle; first physical send at most once; no new frame, scheduler, bus slot or proprietary code. Not target compiled or flashed. **ONE NEXT ACTION:** owner compiles/flashes and observes natural BUSY -> queue -> controller FC16 to establish LIVE result.
+
 ## 2026-11-07 XTR user-vs-service menu: Cooling Room Sensor and Hot Water Time
 
 Owner USER-RC09F3 source reads `Cooling | Room Sensor (Native)=1` and `Hot Water | Heating Time (Native)=30min` with M6=5 and CRC_DIFF0. HA switch `exp379_room_sensor_control` received `HA_SETTING_HELD noQueue=1 noTX=1` 11:51:10.888; DHW duration `exp378_verwarmingstijd_control` same at 11:53:01.777 and following intervals. NO physical TX: not controller semantic refusal or bus failure. iTec XT commissioning reference places ROOM SENSOR under **SERVICE/COOLING**, requiring a connected and active room sensor, and HOT WATER TIME under **SERVICE/HOT WATER**, timed priority of DHW under concurrent other demand (30min factory; 5–40min range). These do NOT belong to normal INFORMATION/user menu. **Decision NO-GO** routine write authorization/ordinary display setting, keep native read-only sensors and HOLD until separate evidence-backed service scope. No register/address or write profile proved by this log.
