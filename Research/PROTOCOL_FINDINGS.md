@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-07 RC09F5 live routine Operation 0553 mode1↔4 — PROVEN
+
+Authoritative XTR user-owner USER-RC09F5 FC16 receipt D3 reg`0x0553` AUTO1→HOTWATER4 at12:30:43.470 and HOTWATER4→AUTO1 at12:31:05.091, each one native desired page/one controller receipt/no retry. Both were ordinary Write User without W2R65 trial activation, demonstrating the new exact-pair OEMW/FC03/S92 grant logic works LIVE and returns controller to AUTO. **Confidence PROVEN** for these exact directions, plus prior RC09F3 one-arm proof. User attempts AUTO1→OFF0 at12:30:22.119 and AUTO1→AUX3 at12:30:34.894 each blocked by `NO_TRIAL_ARM NO_TX` and no `TRIAL_ARM` present. Hence mode0/3 semantic controller acceptance **OPEN**, no reason to infer invalid register or controller rejection. Existing RC09F5 `Configuration | ARM Operation 0/3/4 or TOP-UP Trial (45s)` gives bounded one-edit physical trial after owner interaction. Return from OFF0/AUX3 would itself need fresh ARM until pair confirmed. Single S92 sender, CRC/FC16 ownership unchanged. **ONE NEXT ACTION:** owner explicit one-mode bounded trial, controller FC16 and OEM panel observation, restore Auto.
+
 ## 2026-11-07 XTR Operation exact-pair authorization vs source return
 
 LIVE XTR `USER-RC09F4` 12:12:02.501 accepted `Operation 0x0553 AUTO1→COMPRESSOR2`; 12:12:15.464 accepted COMPRESSOR2→AUTO1, each one physical page and exact controller FC16. 12:12:04.257 selection AUX3 produced `W2R65 NO_TRIAL_ARM d3 old2 target3 NO_TX`, not physical controller refusal. No source evidence of OFF0 or AUX3 semantics, keep OPEN. Previously true XTR `USER-RC09F3` FC16 accepted AUTO1→HOTWATER4 11:30:23.356 and HOTWATER4→AUTO1 11:42:19.560; direct COMPRESSOR2↔HOTWATER4 remains unproven.
