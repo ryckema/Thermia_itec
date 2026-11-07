@@ -1,5 +1,17 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-07 RC09F5 Operation OFF AUX and return AUTO — COMPLETE / POSITIVE
+
+**Hypothesis:** genuine XTR CM930 2.4.2 will semantically accept user-initiated, bounded `0x0553` Operation changes to OFF0 and AUX3 without bypassing OEM logic; separate W2R65 45s ARMs grant one edit each; exact native FC16 verifies each and BUS/RX survives Off mode. **Baseline:** owner LIVE USER-RC09F5 M6=5/CURRENT4/4, Write User enabled, native owner idle, CRC_DIFF0, zero RX drops; prior Auto↔Compressor and Auto↔HotWater validated.
+
+**One bounded sequence, three deliberate user actions / OBSERVED:**
+- ARMED12:47:31.635 → Auto1→Off0 committed12:47:34.326 → S92 one page12:47:36.314 → exact controller FC16 `CONTROLLER_ACCEPTED d3 reg0553 actual=0 physicalAttempts=1 receipts=1`12:47:36.878 → HA Off12:47:36.958; outdoor run-enable OFF, outdoor Idle within several seconds.
+- Re-ARMED12:47:55.050 → Off0→Aux3 committed12:48:00.435 → S92 one page12:48:02.145 → exact controller FC16 `CONTROLLER_ACCEPTED ... actual=3`12:48:02.687 → HA Auxiliary Heater12:48:02.791. No evidence that electric auxiliary actually drew power; not a requirement of source acceptance without heat demand.
+- Re-ARMED12:48:15.719 → Aux3→Auto1 committed12:48:18.160 → S92 one page12:48:19.433 → exact controller FC16 `CONTROLLER_ACCEPTED ... actual=1`12:48:19.978 → HA Auto12:48:20.087. Controller and native session continue healthy through12:51, CRC_DIFF0 drops0, no physical retry.
+**Status COMPLETE / POSITIVE** for OFF0, AUX3 and original AUTO return; these are controller semantic receipts, not transport acknowledgements. Log/OEM summary stale Auto during Off/Aux is independent diagnostic defect to address only if material. Direct mode pairs not in this trace remain untested; don't claim all twenty combinations proven.
+
+**Resulting code decision / PREPARED / NOT RUN:** user explicitly requests routine OEM operation-menu values. RC09F6 SOURCE/OFFLINE TESTED implements manual enum0..4 in same OEMW/FC03/S92 owner, while automatic parameter write lease remains only exact prior proven mode pairs, TOP-UP stays 45s ARM. Only source promotion, not physical execution. **ABORT/rollback:** unchanged Native ABORT prevents later TX, not physical setting reversal; RC09F5 owner-LIVE YAML rollback supplied, also RC09F3/W2R92. **ONE NEXT ACTION:** owner compiles/flashes RC09F6; verify normal native session/readbacks, no repeat of proved mode experiment.
+
 ## 2026-11-07 RC09F5 live exact Operation pair and 0/3 trial remains prepared — COMPLETE / POSITIVE for pair1↔4
 
 **Hypothesis:** RC09F5 exact live-proven AUTO1↔HOTWATER4 pair can run under routine Write User without trial ARM; unvalidated OFF0 and AUX3 remain NO_TX without fresh W2R65 ARM. **Baseline:** RC09F3 separately proved 1→4 and 4→1 under ARM; RC09F5 SOURCE/OFFLINE prepared to promote exact pair in existing OEMW/FC03/S92.
