@@ -1,5 +1,15 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-07 W2R97 source-backed manual optional alarm-page refresh — PREPARED / NOT RUN
+
+**Hypothesis:** in a genuine XTR M6=5 retained native session, the original OEM-documented optional alarm read request (source: original Thermia Connect 2.1.105 930 mapping) may produce a fresh controller FC16 `0x085F/5` receipt even though no unsolicited page appeared in the RC09F6 capture. This is an OPTIONAL read-only experiment, not a setting write or accepted controller response yet.
+
+**Baseline and prior evidence:** RC09F6 USER owner live: M6=5/CURRENT4/4/Calendar12/12, CRC_DIFF0 and all five Operation modes accepted. Native `0x0884` history present but `0x085F` active alarm page absent. Genuine DCM startup captures do contain `0x085F/5` controller-origin FC16; original Connect request mapping defines its read capability. No locally verified new-page response to an already retained session request exists. **ONE meaningful protocol change in RC09F7:** an additional opt-in, disabled-by-default W2R97 alarm-read request as a single existing-owner response to a real controller read slot. Guards: same owner M6/epoch/current/cache/CRC/no collision/idle, one physical attempt per epoch, no auto/retry, exact FC16 receipt, 15s timeout, native ABORT. No new parameter writes and no extended routine automation. Separately fixed obsolete Operation UI text, source-only.
+
+**Expected:** deliberate user click ARMED / NO_TX, up to one single-OWNER alarm read, controller-origin FC16 exact 085F/5 → COMPLETE / POSITIVE; no reply by 15s → COMPLETE / INCONCLUSIVE, no future unsolicited retries; absence of qualifying read slot → INCONCLUSIVE / NO TX after45s. Not receiving the page is not proof of an alarm-free controller. **Actual so far:** SOURCE / OFFLINE TESTED static YAML, source frame/CRC and rollback audits PASS; **NOT TARGET COMPILED / NOT FLASHED / NOT LIVE**. **Status PREPARED / NOT RUN.** Do not mark complete without owner physical logs.
+
+**ABORT/rollback:** existing Native ABORT revokes pending request, never changes an OEM parameter; flash original live RC09F6 from same private ZIP on any regression. **ONE NEXT ACTION:** owner manual compile/flash then (if desired) explicitly activates only one alarm-page read and captures a short event/result log; if NO-GO or inconclusive, change hypothesis/implementation, do not blindly retry.
+
 ## 2026-11-07 RC09F6 manual all-mode no-ARM XTR live trial — COMPLETE / POSITIVE
 
 **Hypothesis:** RC09F6 promotion of enumerated Operation 0..4 into normal explicit HA Write User (OEMW + FC03 current validation + S92 physical native TX guard) works on true iTec XTR M CM930 2.4.2 without legacy 45s Operation ARM, while same one-TX-one-controller-FC16 semantics and native ownership persist. **Baseline:** RC09F5 owner-LIVE manual ARMed Auto→Off→Aux→Auto and all five enum values accepted, plus RC09F5 routine Auto↔Hot Water, earlier Auto↔Compressor. RC09F6 SOURCE/OFFLINE TESTED before this capture, no change to UART/DE/CRC/ABORT and TOP-UP still manual ARM.
