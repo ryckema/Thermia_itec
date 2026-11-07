@@ -1,5 +1,13 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-07 RC09F4L read-only calendar loading display — PREPARED / NOT RUN
+
+**Hypothesis:** negative-looking calendar `Unavailable - calendar pages incomplete or stale` while F1/EVU/silent/reduction pages load should read `Loading...` in Home Assistant. **Baseline:** RC09F3 owner XTR LIVE and locally verified; RC09F4 manual BUSY-queue integration source-only, still not target compiled or live.
+
+**ONE meaningful modification:** On already prepared RC09F4 source, change 32 calendar slot labels and 4 singleton calendar summaries to `Loading...`, extend each of 32 provisional cached-state guards to include `Loading` so a fresh owned receipt replaces the text. Preserve `Unavailable - calendar source from previous session` and all freshness checks. No change to TX or controller protocol. **Expected:** during initial incomplete reads `Loading...`, after correct CURRENT and Calendar receipt normal programmed slots; if stale persists, diagnostic freshness remains visible and `Loading...` may stay. **Actual:** strict YAML/AST/delta tests, ZIP CRC, two rollback hashes PASS. **Status PREPARED / NOT RUN** for owner target/live. Not a controller experiment; no physical parameter write or forced fault required.
+
+**ABORT/rollback:** existing Native ABORT unchanged; use byte-exact RC09F3 rollback for any firmware regression, no actual controller setting modified by this patch. **ONE NEXT ACTION:** owner compiles/flashes RC09F4L when ready, ordinary read-only calendar observation only.
+
 ## 2026-11-07 RC09F4 deferred explicit manual writes — PREPARED / NOT RUN
 
 **Hypothesis:** missing Cooling Enabled and first Cooling Hysteresis High 1.1->1.0 are temporary native BUSY NO_TX denials, not wrong register mappings; retaining explicit user intent up to 15 seconds permits one original native semantic send when free, with no retry. **Baseline:** real XTR USER-RC09F3 M6=5, CRC_DIFF=0, drops=0. D15 declined CURRENT refresh 11:48:41.779 and Calendar F1 11:48:51.933; D20 raw11->10 declined at 11:49:59.296 while D2 Low pending; D2 accepted 11:50:00.089, separate later D20 raw12->10 accepted 11:50:21.778.
