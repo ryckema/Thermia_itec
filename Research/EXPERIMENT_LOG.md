@@ -1,5 +1,13 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-07 RC09F6 manual all-mode no-ARM XTR live trial — COMPLETE / POSITIVE
+
+**Hypothesis:** RC09F6 promotion of enumerated Operation 0..4 into normal explicit HA Write User (OEMW + FC03 current validation + S92 physical native TX guard) works on true iTec XTR M CM930 2.4.2 without legacy 45s Operation ARM, while same one-TX-one-controller-FC16 semantics and native ownership persist. **Baseline:** RC09F5 owner-LIVE manual ARMed Auto→Off→Aux→Auto and all five enum values accepted, plus RC09F5 routine Auto↔Hot Water, earlier Auto↔Compressor. RC09F6 SOURCE/OFFLINE TESTED before this capture, no change to UART/DE/CRC/ABORT and TOP-UP still manual ARM.
+
+**Actual owner LIVE 2026-11-07:** Firmware `USER-RC09F6` confirmed 13:05:20.830; after native owned four-page `CURRENT_4PAGE_CONFIRMED`13:05:07.075 and user Write User grant13:05:08.639, five unarmed deliberate d3 0553 edits with exact XTR-origin FC16 and 1 physical attempt each: Auto1→Aux3 accepted13:09:13.897; Aux3→HotWater4 accepted13:09:18.285 (new formerly unverified pair); HotWater4→Auto1 accepted13:09:22.983; Auto1→Off0 accepted13:09:39.950; Off0→Auto1 accepted13:09:44.348. Original AUTO restored in HA13:09:44.439; M6=5, native CURRENT fresh, CRC_DIFF0, parser resync0, drops0 through capture end13:09:47. No retries. **Outcome COMPLETE / POSITIVE / LOCALLY VERIFIED** for five exact directed pairs under RC09F6 firmware; untested direct pairs not claimed. Confirmed owner authorization was manual Write User enabled; no 45s W2R65 trial used.
+
+**Other baseline checks:** Calendar 12-page owned ACK cycle13:05:09.805 and next13:08:39.752, P4 F1 fresh data; no calendar parameter write. Minor one API connection close and unspecified ESPHome warning without observed bus impact, no reason to expand tests. **ABORT/rollback:** existing Native ABORT and RC09F5 firmware rollback stay; no actual recovery needed because mode AUTO restored. **ONE NEXT ACTION:** operate RC09F6 as latest LOCALLY VERIFIED baseline, no repeat mode stress testing.
+
 ## 2026-11-07 RC09F5 Operation OFF AUX and return AUTO — COMPLETE / POSITIVE
 
 **Hypothesis:** genuine XTR CM930 2.4.2 will semantically accept user-initiated, bounded `0x0553` Operation changes to OFF0 and AUX3 without bypassing OEM logic; separate W2R65 45s ARMs grant one edit each; exact native FC16 verifies each and BUS/RX survives Off mode. **Baseline:** owner LIVE USER-RC09F5 M6=5/CURRENT4/4, Write User enabled, native owner idle, CRC_DIFF0, zero RX drops; prior Auto↔Compressor and Auto↔HotWater validated.
