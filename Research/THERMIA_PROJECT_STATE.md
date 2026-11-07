@@ -1,5 +1,17 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-07 RC09F4 manual BUSY-request retention — PREPARED / NOT RUN
+
+**OBSERVED FACTS (owner-LIVE RC09F3, 2026-11-07):** Cooling Enabled D15 was refused without TX during CURRENT read at 11:48:41.779 (PREVIEW_DENIED idle=0), then during Calendar F1 at 11:48:51.933 (USER_GRANT_REJECTED calendarRead=2). Controller value stayed 1. Cooling Room Hysteresis High D20 raw11->raw10 (1.1->1.0) was refused without TX at 11:49:59.296 while D2 Low raw11->raw10 was in flight; D2 was controller FC16 accepted at 11:50:00.089. A later independent D20 raw12->raw10 was controller accepted at 11:50:21.778. M6=5, CRC_DIFF=0, RX drops=0. No wrong register, collision or controller semantic rejection demonstrated.
+
+**ROOT CAUSE:** Manual HA edits dropped on temporary BUSY; existing W2R78 request queue was restricted to the disabled-by-default automatic-parameter mode.
+
+**IMPLEMENTATION / SOURCE AND OFFLINE TESTED:** Private integrated Thermia_XTR_WRITE_USER_RC09F4_MANUAL_BUSY_QUEUE_PRIVATE_20261107.zip; complete YAML SHA256 a6d7cec78b26f7535dff961ea0c661205f1427ec50ca25c3b7ee9ae340bbeb93. Reuse the SAME native W2R78 request-only queue for explicit, locally validated Write User edits blocked by another write or current/calendar/history read. Four page slots, one queued descriptor/page, manual TTL15s, same-descriptor newer request supersedes, conflicting descriptor rejected. Retain real source/current/session/profile/CRC/range checks on enqueue and at one-time dispatch; require prior authoritative FC16 accepted and idle bus. NO new sender, no physical transport retry, no new parameter scope, no new TX on enqueue. Abort, Disable and session change cancel pending requests. Existing 1215 IDs preserved plus one RAM-only queue-kind global. Strict duplicate-key YAML parser, component AST checks, exact UART ownership, ZIP CRC and RC09F3/W2R92 byte-exact rollbacks PASS.
+
+**NOT TARGET COMPILED / NOT FLASHED / NOT RC09F4 LIVE.** Existing RC09F3 remains locally LIVE verified. No new physical test claimed.
+
+**CURRENT MILESTONE:** RC09F4 correct temporary BUSY loss of explicit parameter-write intent. **DELIVERABLE:** one complete private full YAML ZIP, audit, RC09F3/W2R92 rollback. **REAL BLOCKER:** none in source; target compile/flash and observation of a naturally occurring BUSY interaction pending. **ONE NEXT ACTION:** user manually compiles/flashes RC09F4, checks M6/CURRENT4/CAL12/RX, then observes next naturally BUSY user edit for DEFERRED -> DISPATCH -> exact CONTROLLER_ACCEPTED, without forcing extra trials.
+
 ## 2026-11-07 Cooling Room Sensor / Hot Water Heating Time user-vs-service scope — NO-GO user write
 
 **LIVE SOURCE FACTS (USER-RC09F3 11:51–11:53):** Current native controller reads `Cooling | Room Sensor (Native)=1` and `Hot Water | Heating Time (Native)=30min`. Explicit HA edit to `exp379_room_sensor_control` at 11:51:10.888 logs `HA_SETTING_HELD noQueue=1 noTX=1`; `exp378_verwarmingstijd_control` attempts 11:53:01.777, 11:53:10.013, 11:53:21.677 log same `HA_SETTING_HELD noQueue=1 noTX=1`. No native TX, no controller rejection, no RS485 fault for either. Native CRC_DIFF0 and owner M6=5 during sample.
