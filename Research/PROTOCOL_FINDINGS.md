@@ -1,5 +1,9 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-07 RC09F4L calendar text labels no protocol change
+
+User-facing string `Unavailable - calendar pages incomplete or stale` originated in ESPHome 32 slot text_sensor lambdas; `Unavailable - calendar page missing or stale` in four calendar summaries. All are a **read-only presentation state**, not evidence of a failed physical TX. RC09F4L SOURCE/OFFLINE TESTED replaces these 36 label returns by `Loading...` and extends all 32 formatter short-circuit checks so a new owned FC16 Calendar receipt can replace provisional Loading with the actual configured slots. Separate `Unavailable - calendar source from previous session` remains 32x unchanged; no timeouts/epochs/acceptance semantics modified. No new protocol bytes/roles/auth or physical write scope. **NOT TARGET COMPILED/FLASHED/LIVE**; RC09F3 remains latest XTR locally verified baseline. Persistent Loading can still mean stale or absent page and should be checked against native freshness status. **ONE NEXT ACTION:** owner target compile/flash and natural read-only calendar transition observation.
+
 ## 2026-11-07 Cooling BUSY NO_TX versus FC16 accepted controls — scheduler not protocol
 
 **LIVE XTR RC09F3:** D15 Cooling Enabled 0x0442 switch change was not transmitted due CURRENT4 refresh busy (11:48:41.779) and Calendar F1 grant busy (11:48:51.933), so controller Native Enabled stayed 1. D20 Cooling Room Hysteresis High 0x044E raw11->10 (1.1->1.0) was not transmitted at 11:49:59.296 because D2 Low 0x044D was physically in flight; D2 confirmed raw10 at 11:50:00.089. Later D20 raw12->10 physically transmitted once and exact controller FC16 accepted at 11:50:21.778. Other Cooling D16, D17, D18 and D20 receipts accepted in same capture. M6=5 / CRC_DIFF0 / drops0. **PROVEN** NO TX for denied edits, correct native semantic readbacks for successful edits. No evidence of invalid register, bus failure or physical retry.
