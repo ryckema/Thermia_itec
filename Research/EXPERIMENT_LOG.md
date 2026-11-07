@@ -1,5 +1,15 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-07 RC09F4 live BUSY dispatch and RC09F5 exact Operation validation — PREPARED / NOT RUN (RC09F5)
+
+**Hypotheses:** A valid explicit HA write during another active OEMW transaction can be queued without TX and replayed ONCE only after previous controller acceptance; exact controller-confirmed Auto↔HotWater should not need experimental ARM.
+
+**BASELINE/LIVE:** `USER-RC09F4` 12:08–12:12 2026-11-07 owner log, M6=5, native CURRENT4/4, CRC_DIFF0, RX drops/resync0. D20 `0x044E` 10→12 entered 12:08:27.024, D2 `0x044D` 10→12 queued `USER_EDIT_DEFERRED kind=2 ttl15s NO_TX` 12:08:28.882; D20 controller accepted 12:08:31.400; D2 `USER_DEFER_DISPATCH / REVALIDATE SAME OEMW SCRIPT` 12:08:32.732; one desired page and controller accepted D2=12 12:08:35.845; restored each raw10 at12:08:40 and12:08:44. Physical grant path for this specific RC09F4 queue use is **COMPLETE / POSITIVE**, not merely offline. D3 `0x0553` 1→2 controller accepted12:12:02.501, 2→3 refused `NO_TRIAL_ARM NO_TX`12:12:04.257, 2→1 accepted12:12:15.464. Neither Off nor Aux were physically tried. Earlier RC09F3 true FC16 confirmation 1→4 and 4→1 is already COMPLETE/POSITIVE.
+
+**ONE RC09F5 SOURCE CHANGE:** based on previously prepared RC09F4L, grant only exact 1↔4 as routine in OEMW/FC03/S92, preserve 1↔2 and manual 0/3/2↔4 W2R65 45s. Preserve existing single owner, abort, 15s manual BUSY queue, 36 Calendar Loading UI texts, W2R92 rollback. Full YAML SHA256 `42f584a65422f56c52e0f40c2451a5b7c329f090c1e96ee306a3683abce176f6`; strict YAML/AST/whitelist matrix/ZIP checks PASS. **ACTUAL RC09F5:** SOURCE/OFFLINE TESTED, NOT TARGET COMPILED/FLASHED/LIVE. **Status: PREPARED / NOT RUN.** No unsolicited new mode physical experiment.
+
+**EXPECTED:** 1↔4 physical write executes under the same verified Write User owner/source/range/CRC/one-page controller-FC16 readback with no second ARM; 0/3 and 2↔4 refuse without deliberate manual trial; full prior routine controls work. **ABORT/rollback:** existing Native ABORT and original RC09F4L/RC09F3/W2R92 in private ZIP; a firmware rollback does not revert the physical controller mode. **ONE NEXT ACTION:** owner compiles/flashes RC09F5, verifies normal native idle/session; no repeat of already verified 1↔4 required.
+
 ## 2026-11-07 RC09F4L read-only calendar loading display — PREPARED / NOT RUN
 
 **Hypothesis:** negative-looking calendar `Unavailable - calendar pages incomplete or stale` while F1/EVU/silent/reduction pages load should read `Loading...` in Home Assistant. **Baseline:** RC09F3 owner XTR LIVE and locally verified; RC09F4 manual BUSY-queue integration source-only, still not target compiled or live.
