@@ -1,5 +1,13 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-07 RC09F4 deferred explicit manual writes — PREPARED / NOT RUN
+
+**Hypothesis:** missing Cooling Enabled and first Cooling Hysteresis High 1.1->1.0 are temporary native BUSY NO_TX denials, not wrong register mappings; retaining explicit user intent up to 15 seconds permits one original native semantic send when free, with no retry. **Baseline:** real XTR USER-RC09F3 M6=5, CRC_DIFF=0, drops=0. D15 declined CURRENT refresh 11:48:41.779 and Calendar F1 11:48:51.933; D20 raw11->10 declined at 11:49:59.296 while D2 Low pending; D2 accepted 11:50:00.089, separate later D20 raw12->10 accepted 11:50:21.778.
+
+**ONE meaningful source change:** RC09F4 extends existing W2R78 request-only queue to deliberately initiated validated manual HA edits during busy, tagged separate from automatic opt-in; one descriptor/page, four pages, TTL15s, no TX during enqueue, a single dispatch only when same native owner/epoch/source/integrity and all old OEMW safety requirements are satisfied. Prior physical setting write requires authoritative FC16 acceptance; on inconclusive, expiry, abort, disable or epoch change discard without TX. SAME S92 UART/DE/CRC/FC16 path, NO RETRY. Private full YAML SHA256 a6d7cec78b26f7535dff961ea0c661205f1427ec50ca25c3b7ee9ae340bbeb93; RC09F3 and W2R92 rollbacks byte-exact.
+
+**Expected:** at a naturally BUSY D15/D20 request, one USER_EDIT_DEFERRED, later one USER_DEFER_DISPATCH then ordinary W2R27 and exact controller CONTROLLER_ACCEPTED; otherwise explicit DEFER_DISCARDED and NO TX. **Actual:** strict YAML/IDs/source-diff/ZIP validations PASS, target compile/flash/live NOT RUN. **Status PREPARED / NOT RUN.** **ABORT:** Native ABORT synchronously clears queued intents and revokes TX; firmware rollback does not restore physical controller settings. **ONE NEXT ACTION:** owner target compile/flash, verify normal runtime, and observe next normal BUSY edit without artificially repeating already proven writes.
+
 ## 2026-11-07 W2R65 Operation HOT WATER ONLY and restore AUTO — COMPLETE / POSITIVE
 
 **Hypothesis:** controller accepts owner-authorized 0x0553 AUTO1→HOT WATER4 and independent HOT WATER4→AUTO1 one-edit physical writes with semantic controller-origin FC16 receipts. **Baseline:** owner RC09F3 M6=5/CURRENT4/4/S92 single sender, P4 intended Mon/Fri/Sat/Sun 20:23–20:38.
