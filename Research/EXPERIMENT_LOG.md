@@ -1,5 +1,13 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-07 RC09F5 live exact Operation pair and 0/3 trial remains prepared — COMPLETE / POSITIVE for pair1↔4
+
+**Hypothesis:** RC09F5 exact live-proven AUTO1↔HOTWATER4 pair can run under routine Write User without trial ARM; unvalidated OFF0 and AUX3 remain NO_TX without fresh W2R65 ARM. **Baseline:** RC09F3 separately proved 1→4 and 4→1 under ARM; RC09F5 SOURCE/OFFLINE prepared to promote exact pair in existing OEMW/FC03/S92.
+
+**Actual owner-XTR RC09F5:** User requested D3 0553 1→4 at12:30:41.636, owner sends exactly one desired page at12:30:42.964, controller `CONTROLLER_ACCEPTED actual=4 physicalAttempts=1 receipts=1` 12:30:43.470; HA Hot Water updated12:30:43.565. User requests 4→1 12:31:02.662 without ARM, one page at12:31:04.470, controller `CONTROLLER_ACCEPTED actual=1 physicalAttempts=1 receipts=1`12:31:05.091; HA Auto updated12:31:05.092. New RC09F5 exact grant semantics **FLASHED / LIVE / LOCALLY VERIFIED COMPLETE / POSITIVE**; original operation AUTO restored. Off0 requested12:30:22.119, Aux3 requested12:30:34.894 each `NO_TRIAL_ARM d=3 old=1 target=0/3 NO_TX`; no physical mode0/3 attempt or controller receipt. Status **PREPARED / NOT RUN** for mode0 and mode3. No repeated trials of mode4 required.
+
+**Future bounded trial scope:** one mode per 45s manual W2R65 ARM, exactly one native physical desired page and authoritative FC16, ABORT on unexpected bus behavior, new ARM for controller-confirmed return1, OEM panel access important if selecting Off. Native ABORT does not itself restore a controller-accepted Off mode. No automatic physical TX or per-packet approval, one user activation per experiment. **ONE NEXT ACTION:** user initiates OFF0 bounded trial when return-home path is available, checks receipt and returns AUTO1 via fresh ARM.
+
 ## 2026-11-07 RC09F4 live BUSY dispatch and RC09F5 exact Operation validation — PREPARED / NOT RUN (RC09F5)
 
 **Hypotheses:** A valid explicit HA write during another active OEMW transaction can be queued without TX and replayed ONCE only after previous controller acceptance; exact controller-confirmed Auto↔HotWater should not need experimental ARM.
