@@ -1,5 +1,15 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-07 W2R65 Operation HOT WATER ONLY and restore AUTO — COMPLETE / POSITIVE
+
+**Hypothesis:** controller accepts owner-authorized 0x0553 AUTO1→HOT WATER4 and independent HOT WATER4→AUTO1 one-edit physical writes with semantic controller-origin FC16 receipts. **Baseline:** owner RC09F3 M6=5/CURRENT4/4/S92 single sender, P4 intended Mon/Fri/Sat/Sun 20:23–20:38.
+
+**Prior partial:** one owner-initiated W2R65 ARM; D3 0553 AUTO1→HOT WATER4 `CONTROLLER_ACCEPTED` at11:30:23.356. Unarmed return4→1 denied at11:30:35 with `NO_TRIAL_ARM NO_TX` (not a controller rejection). No physical panel access; initial experiment RUNNING / PARTIAL.
+
+**Return-home actual (new owner log):** 11:42:08.852 `TRIAL_ARM`; 11:42:15.801 `ONE_EDIT_COMMITTED d3 reg0553 original4 target1`; one native S92 desired page 11:42:19.015; controller FC16 `CONTROLLER_ACCEPTED d=3 reg=0553 actual=1 physicalAttempts=1 receipts=1` at11:42:19.560; HA Operation Auto readback11:42:19.691. No retry, M6=5, CRC_DIFF0 and idle. **Outcome:** both transitions semantically proven, original Auto restored, experiment **COMPLETE / POSITIVE**.
+
+**Implementation lesson:** RC09F3 still requires one new 45s ARM to *leave* mode4. Because 4→1 is now XTR-proven, a future integrated source correction may simplify this exact return-home branch under existing Write User safeguards. No repeated physical proof required. **ABORT/rollback:** normal Native ABORT for future abnormal behavior, original W2R92 firmware rollback; user has already restored actual OEM mode Auto. **ONE NEXT ACTION:** preserve production baseline and implement source-level 4→1 return-home usability fix with no expanded unverified mode scope.
+
 ## 2026-11-07 W2R65 Operation HOT WATER ONLY semantic trial — RUNNING / PARTIAL (return Auto pending)
 
 **Hypothesis:** with a single user-initiated 45s ARM, D3 `0x0553` operation AUTO=1 to HOT WATER ONLY=4 can be applied via sole native S92 writer and controller-origin FC16, without retry. **Baseline:** USER-RC09F3 M6=5/CURRENT4/4, RX CRC_DIFF=0, no queue, normal AUTO. P4 20:23–20:38 Mon/Fri/Sat/Sun confirmed correct (read-only check COMPLETE / POSITIVE).
