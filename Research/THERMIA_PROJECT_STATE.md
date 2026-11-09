@@ -1,5 +1,12 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-09 RC09FC owner ESPHome target compile PASS; OTA incomplete in supplied excerpt
+
+**OBSERVED FACTS:** Owner supplied ESPHome 2026.9.0 / ESP-IDF5.5.5 real ESP32-S3 ninja output for private RC09FC source SHA256 `651e056df9d52d028af75b944fe8ce030cdebadf2a377c62c53880efab7367cd`: C++ compiled and `Successfully compiled program` after image generation. App image binary 0x1486b0 bytes, minimum app partition0x7c0000 with 0x677950 (~83%) free. RAM DIRAM172799/341760 (50.56%); image code size1345083. OTA host192.168.0.30 encrypted handshake succeeded, progress only to17% in provided text; **DO NOT mark flashed/live** until actual transfer completion/reboot and new build log. One compile warning at source line30125 `-Wempty-body` following `if(...) ESP_LOGI(...)`. Source logger level is WARN, so INFO macro disappears at compile time; the only conditional body is a diagnostic log, *not* the preceding `id(w2r97_alarm_read_once).press()` which executes unconditionally after scheduler eligibility. No functional branch or bus-safety bug; optional brace cleanup can wait for next material release, no new YAML required. 
+
+**STATUS:** RC09FC now **SOURCE / OFFLINE TESTED / TARGET COMPILED**, **FLASHED/LIVE NOT CONFIRMED** in excerpt. **DECISION GO for finishing same owner-initiated OTA**; no root cause code fix. **CURRENT MILESTONE:** RC09FC native alarm auto refresh production. **DELIVERABLE:** target compiled full private YAML, transfer initiated. **REAL BLOCKER:** none found; OTA transfer and native `085F/5` first auto receipt not yet observed. **ONE NEXT ACTION:** finish ongoing OTA and inspect M6/CURRENT+auto alarm page receipt and HA descriptions; no manual extra TX experiment required.
+
+
 ## 2026-11-09 RC09FC automatic native alarm snapshot refresh — PREPARED / NOT RUN
 
 **USER REQUEST:** `Alarms | Active Alarm Descriptions` and `Alarms | Alarm Flags (Raw)` should no longer indefinitely show missing 085F status despite normal M6+CURRENT. Earlier owner-LIVE RC09F7 W2R97 one manual read **COMPLETE / POSITIVE**: one read-only 0708 selector W4bit7=0080 and one qualified controller-origin FC16 0x085F/5 exactly five zero words; no setting TX. RC09FB does not automatically refresh 085F, with one-attempt-per-epoch limit and 300s cache freshness, hence these entites show UNKNOWN in later captures. **ONE ACTION: IMPLEMENT** under existing native engine, no new UART writer, no independent architecture or test-only ZIP.
