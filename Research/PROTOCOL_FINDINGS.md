@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-09 RC09FC XTR AUTO 085F real controller page: fully live verified
+
+Owner `Pasted text(20261109-154605).txt` 16:40:37–16:46:00, RC09FC firmware label and stable 3092→3392s uptime. Existing 085F/5 snapshot age crossed previous 300s freshness: at16:43:13.598 HA raw flags **STALE**, at16:43:14.304 descriptions **Last known ... stale; not a live all-clear**. Same native W2R97 selector read now auto-arms 16:43:13.619; real single 0708-slot selector `W4=0080 W0W1=0000 page=085F count=5 crc=9E9C epoch12439` TX16:43:14.999; **controller-origin** `COMPLETE_POSITIVE CONTROLLER_FC16_085F_5` 16:43:24.097, about9.15s after request, no retry. Runtime085F ACK counter10→11; HA `No active alarms` at16:43:29.301 and `RAW 085F=0000 0860=0000 0861=0000 0862=0000 0863=0000` at16:43:33.645. Thus automatic bounded W2R97 native owner scheduling, real controller FC16 receipt, mapping and stale-cache fail-close are **LOCALLY VERIFIED/COMPLETE POSITIVE**, not inferred from transport ACK alone. Raw Controller Evidence still `OEM 085F MAPPED BITS CLEAR / OTHER ALARMS UNKNOWN` by design; unobserved OEM alarm domains not cleared by these five zero words. M6=5 CURRENT4/4 twice, Calendar12/12, CRC_DIFF0, RX drops0, parser resync13 stable. No new protocol discovery, no native writable parameter edit or separate UART owner. No additional physical TX experiment needed.
+
+
 ## 2026-11-09 RC09FC target build succeeded; AUTO_ALARM_READ_ARMED INFO log compiled out
 
 Owner target build (ESPHome2026.9.0/IDF5.5.5) succeeds for RC09FC. Compiler `-Wempty-body` warning at source line30125 is a logging-only conditional with `ESP_LOGI` elided under `logger.level: WARN`, unrelated to the immediately preceding `w2r97_alarm_read_once.press()` scheduler action. Accordingly one should expect `[W2R97] ALARM_READ_ARMED` (WARN), then `ALARM_READ_ONESHOT_TX` (WARN) and `COMPLETE_POSITIVE CONTROLLER_FC16_085F_5` (WARN) for qualified automatic cycle, **not** `[W2RFC] AUTO_ALARM_READ_ARMED` (INFO) in normal logs. Build success does not establish OTA completion or response; physical/liveness evidence still pending. No protocol change or patch justified.
