@@ -1,5 +1,14 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 RC09FC release preflight — COMPLETE / POSITIVE private; public NO-GO
+
+**ID:** RC09FC-RELEASE-PREFLIGHT. **Hypothesis:** owner-live RC09FC and provided private ZIP can be frozen as production for local XTR M without further trials; publicly redistributable only if source provenance and exposed controls validated. **Baseline:** RC09FC source SHA256 `651e056df9d52d028af75b944fe8ce030cdebadf2a377c62c53880efab7367cd`, owner compile/flash/live 085F controller-origin 16:43:24, M6/CURRENT/calendar/CRC healthy, original RC09FB rollback SHA `b2b08529c804753bd1bc68be41a90a5fb6c20414b5424d2d806a3fe28db3a3ca`. **ONE meaningful action:** inspect full source/ZIP/checksums/HA exposed actions/privacy + regenerate private packaging docs without modifying validated firmware.
+
+**ACTUAL:** strict ESPHome YAML duplicate key parse and 1,224 IDs PASS, all 471 entity names unique, exact RC09FC source and RC09FB rollback bytes verified, API/WiFi references through secrets, one UART, log WARN intentionally. ZIP `Thermia_XTR_WRITE_USER_RC09FC_PRIVATE_RELEASE_CHECKED_20261109.zip` SHA256 `1b8cde746ccfbe6a4e989b6c3d0e9a2105f24d640f10b6624e5d2f8cea96e76f` includes accurate live validation, instructions, SHA, rollback; no firmware change. **PRIVATE outcome COMPLETE / POSITIVE** (GO). **PUBLIC outcome NO-GO**: private source contains protected OEM exact challenge/response material; not cleared under original repository MIT, and 32-slot calendar Write Changes visibly exposes unverified trial domains as normal controls. README public installation says Write User soon; cannot edit per owner instruction. Safety guards on private unit remain and do not require a new physical test.
+
+**ABORT:** existing Native Session ABORT; **ROLLBACK:** complete byte-identical previously live RC09FB. **ONE NEXT ACTION:** separate sanitize/scope public branch while retaining current private RC09FC installation unchanged.
+
+
 ## 2026-11-09 RC09FC AUTO-ALARM-SNAPSHOT owner live — COMPLETE / POSITIVE
 
 **ID:** RC09FC-AUTO-ALARM-SNAPSHOT. **Hypothesis:** existing single sender W2R97 qualified 085F/5 read can refresh HA alarm flags automatically without violating M6/Calendar/current and without false all-clear during stale interval. **Baseline:** exact user-LIVE RC09FB, RC09FC SHA256 `651e056df9d52d028af75b944fe8ce030cdebadf2a377c62c53880efab7367cd`, prior manual 085F/5 owner read COMPLETE/POSITIVE in RC09F7. **One change:** bounded 15s scheduler arms same no-setting-TX W2R97 0708 W4bit7 selector with >=240s shared attempt cooldown and existing source/epoch/CRC/DE/abort guards.
