@@ -1,5 +1,16 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-09 RC09F8 native Write User release UI cleanup — SOURCE / OFFLINE TESTED, PREPARED / NOT RUN
+
+**Locally verified baseline:** Exact user-provided RC09F7 ZIP `Thermia_XTR_WRITE_USER_RC09F7_ALARM_REFRESH_UI_PRIVATE_20261107(1).zip`, embedded `Thermia_WRITE_USER_RC09F7_SINGLE_FILE.yaml` SHA256 `425202dff1a32098866ab0f383888d19bad69840bbf4c6e67a2232e7c2a6bd15`. RC09F7 previously LIVE/LOCALLY VERIFIED for W2R97 one-shot 085F FC16 alarm read, native M6/CURRENT4/4; RC09F6 for 0..4 Operation manual writes.
+
+**IMPLEMENTED:** One complete RC09F8 single-file private ESPHome YAML and one companion private ZIP containing only updated YAML, original RC09F7 YAML rollback, concise flash/ABORT documentation and SHA256/audit. RC09F8 YAML SHA256 `a026ff08b8a8b50c73f7305dca967bb0776e975fba8585433030ce98cb0d1c20`. In ordinary Write User HA, service-only `Heating | Heating Time`, `Cooling | Room Sensor`, `Hot Water | Startup HT` write entities set `internal: true`, with matching `Hot Water | Heating Time (Native)`, `Hot Water | Startup HT (raw)`, `Cooling | Room Sensor (Native)` sensors also internal to hide existing registrations while retaining native data and IDs. Renamed original combined button and status to TOP-UP-only; only HA-facing diagnostic strings and build label RC09F8 changed; original 45s TOP-UP grant, ABORT, UART/TX/RX/session core and component IDs unchanged. Operation values 0..4 remain direct deliberate HA edits without ARM.
+
+**OFFLINE TESTED:** exact baseline SHA, YAML parsed, all component IDs and counts preserved, original critical YAML blocks (UART, ESP32, globals, API, OTA, Wi-Fi, parser-adjacent blocks) structurally unchanged, only known UI message in script modified, ZIP CRC integrity and byte-identical rollback validated. **NOT TARGET COMPILED; NOT FLASHED; NOT LIVE; NOT LOCALLY VERIFIED** for RC09F8. No further 085F or Operation semantic retests required.
+
+**CURRENT MILESTONE:** Write User Beta release cleanup. **DELIVERABLE:** complete private RC09F8 YAML and ZIP in the conversation (do not commit proprietary code). **REAL BLOCKER:** no blocker to owner build/flash; public source publication still requires OEM licensing/privacy review. **ONE NEXT ACTION:** owner compiles/flashes RC09F8, checks M6=5/CURRENT4/4/calendar12/12/CRC_DIFF0, absence of Service UI elements, TOP-UP-only ARM; sends compiler output only if build fails.
+
+
 ## 2026-11-09 RC09F7 Write User release cleanup patch mechanism — SOURCE / OFFLINE TESTED, PREPARED / NOT RUN
 
 **REQUEST:** remove ordinary HA Write User presentation/exposure of service-only `Heating | Heating Time`, `Cooling | Room Sensor`, `Hot Water | Startup HT` (also service-only `Hot Water | Heating Time` telemetry), and replace obsolete combined `ARM Operation 0/3/4 or TOP-UP Trial (45s)` label with TOP-UP-only while preserving its existing safety gate.
