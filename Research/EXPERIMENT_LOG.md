@@ -1,5 +1,10 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 RC09FC user target compile — PREPARED / NOT RUN live, build positive
+
+**Experiment:** RC09FC-AUTO-ALARM-SNAPSHOT. **Owner evidence:** ESPHome2026.9.0 ESP-IDF5.5.5 compiled, emitted firmware.ota.bin and `INFO Successfully compiled program`; RAM50.6%, free app partition83%. OTA encrypted to device established, upload17% shown, then transcript ends: actual flash and native runtime **NOT RUN / NOT YET EVIDENCED**. **Warning:** line30125 `-Wempty-body` is diagnostic-only, WARN logger elides ESP_LOGI from a one-statement conditional; scheduler action `.press()` is outside the conditional, so no functional fault. No new candidate/recompile needed. **STATUS:** original live experiment **PREPARED / NOT RUN**, now **TARGET COMPILED**. **ONE NEXT ACTION:** owner complete in-progress OTA and observe automatically requested native 085F/5.
+
+
 ## 2026-11-09 RC09FC auto alarm 085F/5 refresh — PREPARED / NOT RUN
 
 **ID:** RC09FC-AUTO-ALARM-SNAPSHOT. **Hypothesis:** make already proven manual W2R97 one-shot 085F/5 read part of normal owner M6 native refresh, so HA decoded alarms/raw flags become fresh while preserving controller/session semantic correctness. **Baseline:** exact user-live RC09FB `b2b08529c804753bd1bc68be41a90a5fb6c20414b5424d2d806a3fe28db3a3ca`; manual 085F response from genuine controller in owner RC09F7 2026-11-09 11:47:25.410 was **COMPLETE / POSITIVE**, all five words0000.
