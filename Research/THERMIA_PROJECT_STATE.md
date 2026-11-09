@@ -1,5 +1,16 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-09 RC09F7 owner-LIVE optional 085F alarm read — COMPLETE / POSITIVE; Write User release UI cleanup FIX
+
+**OBSERVED FACTS:** New owner ESPHome log `Pasted text(20261109-104800).txt` identifies flashed `Thermia USER-RC09F7 (W2R92)`. Native `M6=5` with CURRENT 4/4, ongoing real controller FC16 pages, `CRC_DIFF=0`, RX drops=0 and parser resync=0. At 11:47:20.017 owner deliberately ARMed W2R97; at 11:47:20.606 exactly one existing-owner optional 085F alarm read transmitted; at 11:47:25.410 controller-origin exact FC16 `085F/5` receipt yielded `COMPLETE_POSITIVE`, age=4801 ms, no retry. At 11:47:27 status reported qualified fresh 085F data; at 11:47:30 controller five-word alarm page `085F..0863=0000,0000,0000,0000,0000`. Mapped bits clear for this page; **other alarm families remain UNKNOWN**. Not proof of routine auto refresh or universal alarm semantics.
+
+**CONCLUSION:** RC09F7 is **TARGET COMPILED (inferred from flashed firmware) / FLASHED / LIVE / LOCALLY VERIFIED** for native runtime and a single owner-initiated optional alarm read. W2R97 **COMPLETE / POSITIVE**; no need to repeat. RC09F6 previously verified five manual Operation modes remain source baseline; this capture shows continuing native runtime, not fresh revalidation of all user write pairs.
+
+**RELEASE UI DECISION — FIX before public Write User Beta:** service-only Heating Time (Service/Heating), Cooling Room Sensor (Service/Cooling), Startup HT (Service/Heating), and the observed `Hot Water | Heating Time (Native)` (Service/Hot Water) should not be presented as ordinary Write User controls; preserve source telemetry read-only/internal or in future Service scope. Old combined `ARM Operation 0/3/4 or TOP-UP Trial (45s)` label is obsolete for Operation values 0..4 validated in RC09F6. **Retain actual manual 45-second TOP-UP trial authorization and safeguards, relabel UI to TOP-UP-only, preserve HA identity or migrate explicitly; do not silently delete the TOP-UP guard.** This is a release cleanup decision, **not an implemented firmware patch**. Exact current RC09F7 private YAML has not been provided in this GitHub repository; no private source published.
+
+**CURRENT MILESTONE:** RC09F7 positive live alarm-read and Write User Beta surface. **DELIVERABLE:** authoritative one-shot controller-origin 085F/5 receipt and clear release cleanup requirements. **REAL BLOCKER:** no remaining optional alarm-read protocol blocker; public release still needs source UI cleanup, private code licensing scrub, final package and owner build sanity. **ONE NEXT ACTION:** implement the scoped user/service entity and TOP-UP-only UI cleanup in the current private RC09F7 source (without changing S92/UART/CRC/TX semantics), then package the Beta. Do not retest W2R97 or Operation 0..4.
+
+
 ## 2026-11-07 RC09F7 diagnostic UI fix and optional alarm-read candidate — PREPARED / NOT RUN
 
 **LOCALLY VERIFIED BASELINE:** Owner RC09F6 live XTR M6=5, CURRENT4/4, Calendar12/12 and all five user Operation modes controller-FC16 confirmed; CRC_DIFF0, RX drops0. No material contradiction, no reason to re-run the validated modes.
