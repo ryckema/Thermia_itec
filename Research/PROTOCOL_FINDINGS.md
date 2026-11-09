@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-09 RC09FA live runtime, direct TOP-UP UI path not pressed
+
+Owner `Pasted text(20261109-131319).txt` live RC09FA build 14:07:38–14:13:11 confirms M6=5, controller CURRENT4/4 0F, 12/12 owned calendar twice, fresh F1 pages, FC16 ACKs 208→377, CRC_DIFF0, RX buffer drops0, parser resync0 since boot, ambiguous0, native one-sender RX working. `Configuration | TOP-UP Control Status` states direct Start Top-Up NO ARM with existing S92 guards. **No D25/0x0430 request occurred in this boot window**; native one-shot status stays NOT RUN and 0864 TOP-UP active0. Thus NO NEW semantic activation claim from RC09FA; prior 2026-11-04 D25 pulse followed by independently observed 0864 active0→1 remains locally verified. Runtime regression **COMPLETE / POSITIVE**, RC09FA direct-click test **PREPARED / NOT RUN**, HA registry visibility OPEN. No protocol or TX changes justified, no physical TOP-UP repeat needed. Public source distribution requires license/privacy review.
+
+
 ## 2026-11-09 RC09FA direct TOP-UP grant — unchanged validated wire protocol
 
 Previous 2026-11-04 genuine XTR one-shot D25 0x0430/15 word2 0→1 owner-TX and delayed controller 0x0864/4 TOP-UP active bit0→1 is **COMPLETE/POSITIVE** for native activation, while extra DHW thermal output independently remains UNKNOWN. RC09FA SHA256 `cf3b84af8cec3f744749dcdcc926cb1112b5783cc1134f57730949611dffa16a` implements the owner's direct-button UX without 45s W2R65 pre-ARM; no new register/role/CRC/epoch/session, no new UART writer, no change to existing S92 commit-marker physical one-shot guard or 0864 feedback, no automatic retry. Explicit enabled Write User still mandatory; routine automatic parameter writes still exclude D25. Source/epoch/controller profile/readback/one-TX and ABORT gates retained. **SOURCE/OFFLINE TESTED only**; RC09FA live observation pending, RC09F9 remains last locally FLASHED/LIVE. Public firmware remains PRIVATE pending OEM/privacy/license review.
