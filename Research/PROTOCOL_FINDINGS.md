@@ -1,5 +1,12 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-09 XTR M owner-LIVE optional alarm 085F/5 read — PROVEN one-shot response
+
+Owner-flashed USER-RC09F7 with retained native M6=5/CURRENT4/4 received an exact **controller-origin FC16 085F/count5** at 11:47:25.410 after one deliberately activated optional existing-owner read at 11:47:20.606. Qualified age4801ms; `085F..0863=0000,0000,0000,0000,0000` at 11:47:30, mapped alarm flags clear. `CRC_DIFF=0`, RX drops0, no retry; status COMPLETE / POSITIVE. This supersedes earlier status **PREPARED / NOT RUN** for W2R97 and **not yet locally verified** for a requested 085F read. It **does not establish automatic alarm refresh** or prove no unrelated alarm condition. Request serialization/private original OEM logic remains unpublished.
+
+Release UX scope: commissioning reference locates `VERWARMINGSTIJD` and `OPSTART_HT` in Service/Heating, `WARMWATERTIJD` in Service/Hot Water, and `KAMERSENSOR` in Service/Cooling. Do not label these as ordinary User write controls. Operation 0..4 manual edits were proven under RC09F6 with no ARM; the remaining W2R65 trial is TOP-UP-only until its semantic one-shot has separate live verification.
+
+
 ## 2026-11-07 optional XTR alarm page 085F retained-session read path status — HYPOTHESIS / source-backed
 
 **SOURCE:** genuine XTR DCM captures previously show controller-origin five-word FC16 at `0x085F`. Original Connect 2.1.105 930 read flags define a request mapping for this exact five-word block; hence a source-backed read-only one-shot is possible as firmware preparation. **LIVE latest RC09F6:** M6/CURRENT/CAL and bus healthy but this optional page **not observed**, while `0x0884` historical record page is available. Alarm history does not establish current alarm status; no active alarms may be inferred from a missing 085F. A retained-session read response is **not yet LOCALLY VERIFIED**, and does not justify automatic periodic TX.
