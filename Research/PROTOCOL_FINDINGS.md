@@ -1,5 +1,12 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-09 RC09F8 pre-production user/service scope finding — NO PROTOCOL CHANGE
+
+**SOURCE:** user supplied `THERMIA_iTec_XT_XTR_Inbedrijfstelling_AI.md`. `INFORMATIE/KOELING` lists a single `HYSTERESIS` user control (0..12 K) with XTR standalone write register still OPEN; `SERVICE/KOELING` instead lists separate `KOELTIJD` (5..40 min), `KLHYS.KAMSNS.LG` and `KLHYS.KAMSNS.HG` (each 0.5..5 K). In RC09F8 these **three separate Service controls** were ordinary exposed HA number entities even though `KAMERSENSOR` had previously been hidden. `INFORMATIE/VERWARMING MIN` documented 20..50 °C; RC09F8 UI control showed 10..50. This is a verified **UI scope/range mismatch**, **not** evidence that their previously source-mapped native registers are wrong or that the controller accepted unsupported ranges.
+
+**FIX SOURCE/OFFLINE TESTED:** private `RC09F9` SHA256 `30b10e7d88d6ddcb42d9037e2805cbd6b78fe041c82e61cff1686e118fde317a`; service-only HA controls and corresponding read-only telemetry mirrors hidden, heating minimum displayed as 20..50. Existing controller-derived register mapping, descriptor ledger and write validation, FC03/FC16, parser, one UART/TX/DE owner, CRC, ABORT and calendar do **not** change. No newly authorized physical TX. **RC09F8** remains latest LIVE; **RC09F9** requires target compile/flash/UI confirmation. Separate public licensing/privacy review remains necessary before publishing original Connect-derived sensitive code. **No protocol retest justified.**
+
+
 ## 2026-11-09 RC09F8 owner LIVE regression check — no protocol change
 
 RC09F8 private YAML is **TARGET COMPILED / FLASHED / LIVE**, based on owner ESPHome log 12:30:48–12:36:05. Existing single owner preserves M6=5, real controller FC16 CURRENT page receipts (two full 03E8/042E/0442/0546 sync cycles; ackMask=0F), and existing calendar read `W2=1FFE` returning 12/12 qualified controller pages on one bounded manual request. RX integrity `CRC_DIFF=0`, drops=0, ambiguous=0; parser resyncs since boot sampled 12 throughout window (no new deltas; earlier cause UNKNOWN). One AUTO operation mode remains displayed, no setting TX observed. `085F` current-session read was **NOT RUN**, consistent with optional on-demand design; prior W2R97 controller-origin 085F/5 PROVEN result stands. These facts support **GO for unchanged native runtime**, not fresh semantic write or public legal publication proof. Release HA visibility still pending confirmation; status **RUNNING / PARTIAL** for UI cleanup.
