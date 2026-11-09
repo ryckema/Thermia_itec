@@ -1,5 +1,16 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 RC09F9 pre-production UI scope fix — PREPARED / NOT RUN
+
+**Review ID:** RC09F8-PR01, exactly ONE pre-production review for this milestone. **Hypothesis:** hide previously exposed Service-only cooling controls and align user heating minimum range with documented OEM user menu while preserving locally verified RX/TX/DE, M6, FC03, FC16, calendar, operation 0..4 and TOP-UP guard.
+
+**Baseline:** owner-RC09F8 YAML SHA256 `a026ff08b8a8b50c73f7305dca967bb0776e975fba8585433030ce98cb0d1c20`, FLASHED/LIVE M6=5/CURRENT4/4/Calendar12/12/CRC_DIFF0/RXdrop0, parser resyncs 12 with no delta in capture. Manual sections: User Heating MIN20..50; Service Cooling KOELTIJD, KLHYS.KAMSNS.LG/HG. **ONE meaningful firmware change:** UI visibility and user-range alignment; source `RC09F9` SHA256 `30b10e7d88d6ddcb42d9037e2805cbd6b78fe041c82e61cff1686e118fde317a`. Set service-only cooling time/low/high controls and associated native sensor mirrors internal; adjust Heating Minimum GUI min10→20. No UART, script, lambda callback, RX/TX/guard/ABORT code changed; 1,222 IDs preserved.
+
+**Expected:** user-only HA controls; real controller M6/current pages remain qualified and normal telemetry/refresh works. **Actual OFFLINE:** YAML parse with duplicate-key detection, precise structural diff, unchanged critical blocks, SHA and ZIP integrity PASS. **Actual LIVE:** not run; **PREPARED / NOT RUN**. No repeat physical parameter-write or alarm experiment. **ABORT:** native session ABORT on anomaly; **ROLLBACK:** exact byte-identical owner-LIVE RC09F8 YAML inside private RC09F9 ZIP.
+
+**ONE NEXT ACTION:** owner compile/flash RC09F9 and observe normal native session plus HA User UI; compiler output only if compilation fails.
+
+
 ## 2026-11-09 RC09F8 Write User cleanup owner-LIVE — RUNNING / PARTIAL
 
 **Hypothesis:** UI-only RC09F8 changes preserve RC09F7 native runtime, authoritative FC16, calendar refresh and RX safeguards without new semantic TX. **Owner baseline:** exact RC09F7 private YAML SHA256 `425202dff1a32098866ab0f383888d19bad69840bbf4c6e67a2232e7c2a6bd15`; RC09F8 UI-only YAML SHA256 `a026ff08b8a8b50c73f7305dca967bb0776e975fba8585433030ce98cb0d1c20`.
