@@ -1,5 +1,14 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 RC09FA direct TOP-UP HA usability — PREPARED / NOT RUN
+
+**ID:** RC09FA-DIRECT-TOPUP. **Hypothesis:** Remove the redundant 45s pre-ARM from already owner-LIVE/CONTROLLER native TOP-UP one-shot, using only the existing deliberate HA button and native session/write guards. **Baseline:** owner FLASHED/LIVE RC09F9 SHA256 `30b10e7d88d6ddcb42d9037e2805cbd6b78fe041c82e61cff1686e118fde317a`; 2026-11-04 TOP-UP W2R65 genuine one-pulse/native 0864 active 0→1 previously COMPLETE / POSITIVE.
+
+**ONE implementation change:** Direct `thermia_hw_topup_oneshot` button enabled by default; hidden legacy W2R65 ARM button; D25 exemption from pre-ARM check only, but same one-edit commit marker, session/epoch, FC03/FC16, source, TX budget, no retry, S92 single physical writer, native 0864 observer and ABORT. Automatic parameter writes never extended. UI status updated. Full YAML RC09FA SHA256 `cf3b84af8cec3f744749dcdcc926cb1112b5783cc1134f57730949611dffa16a`, rollback exact RC09F9 in private ZIP.
+
+**EXPECTED:** With Enable Write User ON and native current session qualified, one direct button press can make at most one native D25 request; no pre-ARM, no automatic or repeated TX. **ACTUAL:** SOURCE/OFFLINE TESTED structural/component-ID/critical-guard and ZIP checks PASS; **NOT TARGET COMPILED / FLASHED / LIVE**. **STATUS PREPARED / NOT RUN** for new RC09FA build; do not confuse with past positive actual TOP-UP activation. **ABORT:** original native session abort; **ROLLBACK:** byte-identical RC09F9. **ONE NEXT ACTION:** owner compile/flash RC09FA and check HA button + native health, no redundant physical TOP-UP trial.
+
+
 ## 2026-11-09 TOP-UP status clarification — prior COMPLETE / POSITIVE retained
 
 **Existing genuine experiment (2026-11-04):** `RC09 W2R65 TOP-UP one-shot native activation` **COMPLETE / POSITIVE**, with 45s ARM22:31:29.894, user action22:31:37.351, one physical D25/0x0430 pulse22:31:42.706, subsequent controller 0x0430 transient command reset0 and live 0x0864 TOP-UP active status 0 at22:31:48.967 →1 at22:32:03.943. No retry/CRC issue. Status bit and temporal link proven; additional independent thermal boost UNKNOWN because ordinary DHW had already started. 2026-11-09 RC09F9 log says TOP-UP `NOT RUN` in current boot and shall **not** be misread as absence of prior live proof. Leave guarded 45s ARM unchanged, no redundant retransmission. Historical experiment statuses are preserved.
