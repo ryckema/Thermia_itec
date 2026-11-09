@@ -1,5 +1,12 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 RC09FA native runtime owner-live — COMPLETE / POSITIVE
+
+**ID:** RC09FA-RUNTIME. **Hypothesis:** newly compiled direct TOP-UP no-preARM UI/intent change preserves all already-proven M6/current, calendar, FC16, RX/CRC/ABORT functions. **Baseline:** RC09F9 owner LIVE; RC09FA private source SHA256 `cf3b84af8cec3f744749dcdcc926cb1112b5783cc1134f57730949611dffa16a`, ONE functional change to D25 preARM guard and HA button visibility, no PHY/UART/S92 commit handler expansion. **OWNER LIVE:** `Pasted text(20261109-131319).txt` 14:07:38–14:13:11, RC09FA build confirmed; native M6=5, CURRENT4/4 mask0F at14:09:53.988, FC16 receipts208→377, 12/12 calendar twice (14:08:40.847,14:12:11.335), F1 refresh complete14:11:31.915, CRC_DIFF0, RX drops0, parser resync0 since boot, ambiguous0, native write queue idle. Firmware announces `TOP-UP ... NO ARM`, Write User enabled, automatic parameter writes OFF. **RESULT:** **COMPLETE / POSITIVE** for RC09FA runtime regression.
+
+**SEPARATE RC09FA-DIRECT-TOPUP STATUS:** **PREPARED / NOT RUN** for *new no-preARM HA-click dispatch* in this capture: `Hot Water | TOP-UP One-Shot Confirmation=NOT RUN / no local D25 pulse since boot` throughout. This does not negate previous **COMPLETE / POSITIVE** 2026-11-04 one physical D25 + delayed 0864 active 0→1 experiment. No additional physical pulse mandated. **ABORT/rollback:** existing native abort, byte-identical RC09F9 private rollback. **ONE NEXT ACTION:** owner checks HA direct-button visibility and absence of old ARM; status-only verification is enough for private runtime signoff, no semantic reexperiment.
+
+
 ## 2026-11-09 RC09FA direct TOP-UP HA usability — PREPARED / NOT RUN
 
 **ID:** RC09FA-DIRECT-TOPUP. **Hypothesis:** Remove the redundant 45s pre-ARM from already owner-LIVE/CONTROLLER native TOP-UP one-shot, using only the existing deliberate HA button and native session/write guards. **Baseline:** owner FLASHED/LIVE RC09F9 SHA256 `30b10e7d88d6ddcb42d9037e2805cbd6b78fe041c82e61cff1686e118fde317a`; 2026-11-04 TOP-UP W2R65 genuine one-pulse/native 0864 active 0→1 previously COMPLETE / POSITIVE.
