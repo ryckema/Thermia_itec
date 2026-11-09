@@ -1,5 +1,10 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 HEAT-OBS01 — offline heating-cycle model, not a new physical experiment
+
+**ID:** HEAT-OBS01. **STATUS:** COMPLETE / POSITIVE **for offline model extraction only**, from already recorded XTR-LIVE HA `history-34.csv` (11:00–12:48 CET). **Hypothesis:** a repeatable start/stop command sequence is observable separately from PID and compressor telemetry. **Baseline:** existing user-LIVE RC09F8 monitoring; no additional TX, no flashed changes. **ONE meaningful change:** deterministic offline edge correlator, discarding CSV initial-state snapshots and transient unavailable markers. **Expected:** consistent lead/lag timing; **actual:** three Run Enable ON→compressor ON 73s each; three Run Enable OFF→compressor OFF 3–7s, fan OFF 74–82s, cycle request OFF 130–139s. PID at respective starts -49, at stops -19/-15/-10; real STOP criterion OPEN. Source-linked [HEATING_CONTROL_OBSERVATION_20261109.md](HEATING_CONTROL_OBSERVATION_20261109.md). **ABORT / rollback:** not applicable to offline read-only analysis; existing firmware unchanged. **Next:** use longer natural capture only if it discriminates competing stop-law hypotheses. Do not reopen validated S62/S88/V4.1/S92.
+
+
 ## 2026-11-09 RC09F9 owner LIVE runtime regression — COMPLETE / POSITIVE
 
 **Experiment ID:** RC09F8-PR01 / RC09F9 runtime regression. **Hypothesis:** only GUI visibility/range changes preserve previously verified native M6, controller CURRENT, FC03/FC16, Calendar and RX performance. **Baseline:** user-LIVE RC09F8 and exact private RC09F9 source SHA256 `30b10e7d88d6ddcb42d9037e2805cbd6b78fe041c82e61cff1686e118fde317a`. **ONE change:** Service cooling number controls/mirrors `internal:true`, Heating min GUI 10→20 °C, firmware text.
