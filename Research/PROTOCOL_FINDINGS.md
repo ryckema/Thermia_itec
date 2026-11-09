@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-09 RC09F8 presentation-only firmware — NO NEW PROTOCOL CLAIM
+
+RC09F8 source derived from byte-identical owner RC09F7 `425202dff1a32098866ab0f383888d19bad69840bbf4c6e67a2232e7c2a6bd15`; source SHA256 `a026ff08b8a8b50c73f7305dca967bb0776e975fba8585433030ce98cb0d1c20`. Changes are confined to Write User service-entity visibility, TOP-UP-only ARM button/status messages and diagnostic firmware label. Native M6, UART/RX/TX/DE, S92 FC03/FC16, CRC frame parser and 085F one-shot read implementation have not been modified. **SOURCE / OFFLINE TESTED only**; do not infer RC09F8 live validation from RC09F7. Previously verified 085F/5 positive controller-origin FC16 and manual Operation 0..4 remain the evidence basis.
+
+
 ## 2026-11-09 XTR M owner-LIVE optional alarm 085F/5 read — PROVEN one-shot response
 
 Owner-flashed USER-RC09F7 with retained native M6=5/CURRENT4/4 received an exact **controller-origin FC16 085F/count5** at 11:47:25.410 after one deliberately activated optional existing-owner read at 11:47:20.606. Qualified age4801ms; `085F..0863=0000,0000,0000,0000,0000` at 11:47:30, mapped alarm flags clear. `CRC_DIFF=0`, RX drops0, no retry; status COMPLETE / POSITIVE. This supersedes earlier status **PREPARED / NOT RUN** for W2R97 and **not yet locally verified** for a requested 085F read. It **does not establish automatic alarm refresh** or prove no unrelated alarm condition. Request serialization/private original OEM logic remains unpublished.
