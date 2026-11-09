@@ -1,5 +1,16 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 RC09F8 Write User cleanup owner-LIVE — RUNNING / PARTIAL
+
+**Hypothesis:** UI-only RC09F8 changes preserve RC09F7 native runtime, authoritative FC16, calendar refresh and RX safeguards without new semantic TX. **Owner baseline:** exact RC09F7 private YAML SHA256 `425202dff1a32098866ab0f383888d19bad69840bbf4c6e67a2232e7c2a6bd15`; RC09F8 UI-only YAML SHA256 `a026ff08b8a8b50c73f7305dca967bb0776e975fba8585433030ce98cb0d1c20`.
+
+**Owner LIVE evidence:** `Pasted text(20261109-113611).txt`, 12:30:48–12:36:05, build label `USER-RC09F8`; native `M6=5`; two distinct full CURRENT 4/4 authoritative cycles at 12:31:10 and 12:35:28 (`0F/0F`), 03E8 refresh count 3→4. One user-initiated calendar 12/12 request at 12:33:12 gave exact controller `APP_READ_OWNED_RECEIPT_COMPLETE requested=12 pages` at 12:33:23 (`pollTX=1`, not Online proof). `CRC_DIFF=0` with increasing CRC_CHECK, `RX drops=0`, `ambiguous frames=0`; parser resyncs since boot `12` at all 11 sampled times in this capture (time/origin before capture unknown). FC16 runtime ACKs increased 271→426. `Configuration | TOP-UP Trial Status` reports direct Operation 0..4 and TOP-UP 45s ARM. All unmodified service/write outcomes are not re-probed.
+
+**STATUS:** **RUNNING / PARTIAL** — TARGET COMPILED/FLASHED/LIVE/LOCALLY VERIFIED for session, CURRENT4/4, calendar12/12, CRC, and visible ESPHome TOP-UP-only status; not yet user-confirmed on Home Assistant entity registry/service-control visibility. No re-test of earlier positive optional 085F needed; its current-session counter 0 is `NOT RUN`, not negative. ABORT/rollback unchanged (byte-identical RC09F7 in private package).
+
+**ONE NEXT ACTION:** Owner confirms absence of Service controls and presence of TOP-UP-only ARM in HA; then close UI milestone. No additional physical TX.
+
+
 ## 2026-11-09 RC09F8 Write User UI cleanup — PREPARED / NOT RUN
 
 **Hypothesis:** hide service-only HA entities and relabel obsolete combined Operation/TOP-UP trial without disturbing locally validated RC09F7 native session and alarm read or RC09F6 routine manual Operation 0..4 controls.
