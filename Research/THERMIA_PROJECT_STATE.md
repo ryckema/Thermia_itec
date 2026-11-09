@@ -1,5 +1,16 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-09 Public release gate: DCM Read Only R1 is exact replay, not a universal handshake-free key
+
+**SOURCE REVIEW (not a new live test):** Owner points to 'R key' in published XTR DCM Read Only file. Fetched the public GitHub blob of `Thermia iTec XTR/thermia_itec_xtr_DCM_readonly_1.0.yaml` (blob SHA `2f33319bdaff57d4f9319a6116d0d2f28335bd1a`, size >1 MB, unavailable through normal content route but retrievable via blob API). It contains `build_native_fc23_response`, two exact recorded request/response byte arrays `known_challenge`/`known_response`, comparison of full 29-byte challenge with CRC, and a 21-byte recorded response **only on equality**; other challenges receive **NO TX**. This is historical **R1 / EXP374 single-capture replay**, not a general R-key, not handshake-free owner authentication, and not cross-device proof. File also contains original native S92 TX-capable session sender paths despite name 'DCM Read Only'. Those recorded bytes/protected paths are **already present in public repo** and must be included in source provenance and publication review; do not repeat/copy them into another public artifact. This review does not prove that existing public exposure grants redistribution rights.
+
+**DISTINCTION:** Source C5DF limited transport path permits some bounded controller-selected read-only pages without application handshake. Transport ACK/read pages do NOT grant authenticated Write User parameter TX; passive RX-only build is a separate firmware variant with no UART TX. Current owner-live RC09FC private M6/FC16/Calendar/085F and user-confirmed TOP-UP functionality are unaffected; no firmware modification, flash or physical test performed.
+
+**IMPLEMENTED SAFE PREPARATION:** Public GitHub staging branch `xtr-write-user-public-release-prep` (branched from main) contains **only** `Release/WRITE_USER_PUBLIC_BETA_GATE.md` (non-sensitive release requirements and R1 correction) and `Release/public_release_gate.py` (fail-closed source review check). No private RC09FC source, password, captured byte sequence, OEM internals or executable public Write User candidate committed. `README.md` and `Write (Beta)/iTec Eco` unchanged.
+
+**DECISION:** **GO** private RC09FC, **NO-GO** public Write User firmware until original independent legitimate native owner acquisition/write-acceptance source exists and OEM-restricted content cleared. **CURRENT MILESTONE:** public Write User release gate. **DELIVERABLE:** safe staging branch + local audit tool. **REAL BLOCKER:** public releasable authenticated session/Write User implementation not present; single-capture R1 does not remove that blocker. **ONE NEXT ACTION:** implement a non-secret and independently releasable owner/session core; keep HA writes disabled pending legitimate controller acceptance, or retain public NO-GO if source rights prevent it.
+
+
 ## 2026-11-09 RC09FC one-time release audit: PRIVATE GO / PUBLIC NO-GO
 
 **Scope/decision:** One release-readiness pass following owner-LIVE RC09FC automatic alarm verification. **GO** for existing private iTec XTR M/CM930 2.4.2 production; **NO-GO** for public GitHub distribution of THIS private source. Owner-flashed/live source must remain unchanged; no UART/TX or firmware code change warranted.
