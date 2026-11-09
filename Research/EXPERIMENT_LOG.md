@@ -1,5 +1,18 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 W2R97 optional alarm-page refresh — COMPLETE / POSITIVE
+
+**Hypothesis:** single owner-initiated optional read of 085F/5 in established native XTR session yields controller-origin FC16 with alarm state, rather than merely a transport ACK.
+
+**Baseline:** owner-RC09F6 locally verified M6/CURRENT4/4/calendar12/12 and Operation 0..4; RC09F7 source/offline preflight prepared optional 085F one-shot read. Native alarm page absent without request.
+
+**One meaningful action / actual owner evidence:** flashed RC09F7 log `Pasted text(20261109-104800).txt`: 11:47:20.017 W2R97 manually ARMED, 11:47:20.606 one optional read TX (no setting write), 11:47:25.410 exact controller-origin FC16 085F/5 `COMPLETE_POSITIVE` age4801ms, one request, no retry. At 11:47:27 fresh page, 11:47:30 raw `085F..0863=0000 0000 0000 0000 0000`; decoded status accurately says mapped OEM bits clear and other alarms unknown. Runtime RX `CRC_DIFF=0`, drops=0, resync=0, continued FC16 ownership.
+
+**Outcome:** **COMPLETE / POSITIVE / LOCALLY VERIFIED** for owner-initiated single alarm-page read and its exact controller response. No conclusion about periodic auto-refresh or alarms beyond 085F page. ABORT and RC09F6 rollback guards were available; none triggered. Do not repeat W2R97 without contradictory evidence.
+
+**ONE NEXT ACTION:** release-scope firmware UI cleanup of service-only parameters and obsolete Operation ARM wording, preserving TOP-UP-only 45s trial gate; no extra physical alarm probe.
+
+
 ## 2026-11-07 W2R97 source-backed manual optional alarm-page refresh — PREPARED / NOT RUN
 
 **Hypothesis:** in a genuine XTR M6=5 retained native session, the original OEM-documented optional alarm read request (source: original Thermia Connect 2.1.105 930 mapping) may produce a fresh controller FC16 `0x085F/5` receipt even though no unsolicited page appeared in the RC09F6 capture. This is an OPTIONAL read-only experiment, not a setting write or accepted controller response yet.
