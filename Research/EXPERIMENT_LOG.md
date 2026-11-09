@@ -1,5 +1,14 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 RC09FC AUTO-ALARM-SNAPSHOT owner live — COMPLETE / POSITIVE
+
+**ID:** RC09FC-AUTO-ALARM-SNAPSHOT. **Hypothesis:** existing single sender W2R97 qualified 085F/5 read can refresh HA alarm flags automatically without violating M6/Calendar/current and without false all-clear during stale interval. **Baseline:** exact user-LIVE RC09FB, RC09FC SHA256 `651e056df9d52d028af75b944fe8ce030cdebadf2a377c62c53880efab7367cd`, prior manual 085F/5 owner read COMPLETE/POSITIVE in RC09F7. **One change:** bounded 15s scheduler arms same no-setting-TX W2R97 0708 W4bit7 selector with >=240s shared attempt cooldown and existing source/epoch/CRC/DE/abort guards.
+
+**ACTUAL OWNER LIVE:** `Pasted text(20261109-154605).txt` 16:40:37–16:46:00 RC09FC reported by Firmware Build; uptime3092→3392 s. Existing qualified 085F snapshot ages past cache threshold; raw alarm sensor emits `STALE` at16:43:13.598, desc `Last known ... stale; not a live all-clear` at16:43:14.304. **16:43:13.619** `[W2R97] ALARM_READ_ARMED ... W4bit7=0080`; **16:43:14.999** `[W2R97] ALARM_READ_ONESHOT_TX ... page=085F count=5 ... noSettingTX=1 epoch=12439`; **16:43:24.097** `[W2R97] COMPLETE_POSITIVE CONTROLLER_FC16_085F_5 ... ONE_REQUEST NO_RETRY`. ACK counter10→11. HA descriptions `No active alarms` at16:43:29.301, raw `085F..0863=0000` at16:43:33.645, diagnostics Fresh qualified 085F/5. **M6=5**, CURRENT4/4 twice, Calendar12/12 at16:42:41.506, RX CRC_DIFF0, buffer drops0, resync13 stable. Controller snapshot supports no active **mapped 085F** bits only, no claim on unobserved alarm sources.
+
+**STATUS:** **COMPLETE / POSITIVE**, SOURCE/OFFLINE TESTED/TARGET COMPILED/FLASHED/LIVE/LOCALLY VERIFIED. **ABORT/ROLLBACK:** original native ABORT and byte-identical private RC09FB rollback preserved, not needed. **ONE NEXT ACTION:** retain RC09FC as private production baseline; no extra alarm test or new TX requested.
+
+
 ## 2026-11-09 RC09FC user target compile — PREPARED / NOT RUN live, build positive
 
 **Experiment:** RC09FC-AUTO-ALARM-SNAPSHOT. **Owner evidence:** ESPHome2026.9.0 ESP-IDF5.5.5 compiled, emitted firmware.ota.bin and `INFO Successfully compiled program`; RAM50.6%, free app partition83%. OTA encrypted to device established, upload17% shown, then transcript ends: actual flash and native runtime **NOT RUN / NOT YET EVIDENCED**. **Warning:** line30125 `-Wempty-body` is diagnostic-only, WARN logger elides ESP_LOGI from a one-statement conditional; scheduler action `.press()` is outside the conditional, so no functional fault. No new candidate/recompile needed. **STATUS:** original live experiment **PREPARED / NOT RUN**, now **TARGET COMPILED**. **ONE NEXT ACTION:** owner complete in-progress OTA and observe automatically requested native 085F/5.
