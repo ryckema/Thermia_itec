@@ -1,5 +1,12 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 R1 public-readonly source audit — COMPLETE / POSITIVE for classification; public Write User NO-GO
+
+**ID:** PUBLIC-R1-SOURCE-REVIEW. **Hypothesis:** the historical R-key from publicly linked `DCM_readonly_1.0.yaml` might allow public Write User without restricted OEM handshake. **Baseline:** owner-live RC09FC private; Read Only public blob SHA `2f33319bdaff57d4f9319a6116d0d2f28335bd1a`. **One action:** inspect actual GitHub blob source (source audit only, no bus TX). **OBSERVED:** R1/EXP374 implemented as full-byte equality of one recorded 29-byte CRC-inclusive FC23 challenge to release one recorded 21-byte response; other inputs fail closed, i.e. still challenge-response and not generalized key/authenticator. Native read-only transport scope (C5DF) does not establish permission to edit HA settings; DCM_READONLY public file contains recorded pair and TX owner paths, requires separate sensitive-code audit. **STATUS COMPLETE / POSITIVE** for source classification; proposal 'universal handshake-free Write User via R1' **DISPROVEN** from this code, no new live experiment.
+
+**DELIVERABLE:** Public staging branch `xtr-write-user-public-release-prep`, non-sensitive release gate doc + static local source scanner, no firmware/bytes published. Owner RC09FC intact. **PUBLIC release decision NO-GO**; no protocol test justified from this source finding. **ONE NEXT ACTION:** independently implement releasable native owner/session mechanism or keep public firmware HOLD.
+
+
 ## 2026-11-09 RC09FC release preflight — COMPLETE / POSITIVE private; public NO-GO
 
 **ID:** RC09FC-RELEASE-PREFLIGHT. **Hypothesis:** owner-live RC09FC and provided private ZIP can be frozen as production for local XTR M without further trials; publicly redistributable only if source provenance and exposed controls validated. **Baseline:** RC09FC source SHA256 `651e056df9d52d028af75b944fe8ce030cdebadf2a377c62c53880efab7367cd`, owner compile/flash/live 085F controller-origin 16:43:24, M6/CURRENT/calendar/CRC healthy, original RC09FB rollback SHA `b2b08529c804753bd1bc68be41a90a5fb6c20414b5424d2d806a3fe28db3a3ca`. **ONE meaningful action:** inspect full source/ZIP/checksums/HA exposed actions/privacy + regenerate private packaging docs without modifying validated firmware.
