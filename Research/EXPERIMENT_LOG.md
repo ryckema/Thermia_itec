@@ -1,5 +1,10 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 TOP-UP status clarification — prior COMPLETE / POSITIVE retained
+
+**Existing genuine experiment (2026-11-04):** `RC09 W2R65 TOP-UP one-shot native activation` **COMPLETE / POSITIVE**, with 45s ARM22:31:29.894, user action22:31:37.351, one physical D25/0x0430 pulse22:31:42.706, subsequent controller 0x0430 transient command reset0 and live 0x0864 TOP-UP active status 0 at22:31:48.967 →1 at22:32:03.943. No retry/CRC issue. Status bit and temporal link proven; additional independent thermal boost UNKNOWN because ordinary DHW had already started. 2026-11-09 RC09F9 log says TOP-UP `NOT RUN` in current boot and shall **not** be misread as absence of prior live proof. Leave guarded 45s ARM unchanged, no redundant retransmission. Historical experiment statuses are preserved.
+
+
 ## 2026-11-09 HEAT-OBS01 — offline heating-cycle model, not a new physical experiment
 
 **ID:** HEAT-OBS01. **STATUS:** COMPLETE / POSITIVE **for offline model extraction only**, from already recorded XTR-LIVE HA `history-34.csv` (11:00–12:48 CET). **Hypothesis:** a repeatable start/stop command sequence is observable separately from PID and compressor telemetry. **Baseline:** existing user-LIVE RC09F8 monitoring; no additional TX, no flashed changes. **ONE meaningful change:** deterministic offline edge correlator, discarding CSV initial-state snapshots and transient unavailable markers. **Expected:** consistent lead/lag timing; **actual:** three Run Enable ON→compressor ON 73s each; three Run Enable OFF→compressor OFF 3–7s, fan OFF 74–82s, cycle request OFF 130–139s. PID at respective starts -49, at stops -19/-15/-10; real STOP criterion OPEN. Source-linked [HEATING_CONTROL_OBSERVATION_20261109.md](HEATING_CONTROL_OBSERVATION_20261109.md). **ABORT / rollback:** not applicable to offline read-only analysis; existing firmware unchanged. **Next:** use longer natural capture only if it discriminates competing stop-law hypotheses. Do not reopen validated S62/S88/V4.1/S92.
