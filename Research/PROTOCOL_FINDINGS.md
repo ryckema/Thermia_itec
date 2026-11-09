@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-09 HEAT-OBS01 — OEM heat-demand sensor and owner-live heating sequencing
+
+**OEM SOURCE:** Connect 2.1.105 version-matched CM930 `sensors.json` defines `heat_demand_pid=-{2120}` (0x0848), wanted supply `{2121}`, measured supply `{2000}`, active building heat `{2149.0}`, queued building heat `{2150.0}`. These are data semantics, **not recovered internal compressor logic**. **XTR OWNER-LIVE DATA / OFFLINE TESTED analysis:** run-enable-on PID -49 at three starts; exact observed enable→compressor delay 73 s three times; run-enable-off preceded compressor stop 3–7 s three times; fan-off +74..82 s, cycle-request-off +130..139 s. A negative exported PID of -19/-15/-10 at all stop commands **disproves** the simple stop predicate `exported PID >= +50` in these captures. Exact controller alternative predicate OPEN; no source assertion of 73 s single timer. See [HEATING_CONTROL_OBSERVATION_20261109.md](HEATING_CONTROL_OBSERVATION_20261109.md). No protocol TX, no change to FC03/FC16, CRC, S92, 0x1E or settings mapping.
+
+
 ## 2026-11-09 RC09F9 owner LIVE release regression — no new protocol changes
 
 Owner uploaded RC09F9 ESPHome log 12:59:03–13:04:38. Exact controller FC16 CURRENT pages 03E8/042E/0442/0546 epoch11310 ackMask0F and M6=5, 12 owned Calendar APP pages and slot F1 refresh, CRC_DIFF0, drops0, parser resyncs0 SINCE BOOT, ambiguous0, continuing FC16 ACKs 75→243; **GO/COMPLETE/POSITIVE** runtime. The native source PHY/CRC/UART owner and existing read protocols were unchanged from RC09F8. Single HA API buffer-full/ping queued warning at 13:02:56 is nonblocking with continued native data. Optional alarm 085F and TOP-UP request not re-run; previous verified results unchanged. Full HA pre-existing entity registry state OPEN, though RC09F9 exact source has internal:true for all three outstanding Service cooling controls and Heating Minimum GUI 20–50. **No new TX protocol claims**, no automatic alarm polling, and transport ACK ≠ semantic acceptance. Public redistribution of private OEM-related code remains blocked pending licensing/privacy scrub.
