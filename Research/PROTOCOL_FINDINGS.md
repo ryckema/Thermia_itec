@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-09 TOP-UP native one-shot evidence clarification
+
+The 2026-11-04 genuine XTR `RC09 W2R65 TOP-UP one-shot native activation` is **COMPLETE / POSITIVE** for the independent native active bit at 0x0864 (controller-origin status 0→1 at22:32:03.943 after exactly one D25 0x0430 desired-page TX at22:31:42.706). The controller command-word 0x0430 resetting to zero after one-shot is **not** a persistent setting write failure. Do not treat this as standard FC16 equal-value parameter confirmation; the trustworthy semantics are the qualified delayed state change. Actual *additional* compressor/electric heat output is UNKNOWN because DHW was already underway. Later RC09F9 `TOP-UP NOT RUN since boot` does not overturn existing locally verified result. The existing manual 45s ARM guard is a scoped authorization, no new TX functionality needed.
+
+
 ## 2026-11-09 HEAT-OBS01 — OEM heat-demand sensor and owner-live heating sequencing
 
 **OEM SOURCE:** Connect 2.1.105 version-matched CM930 `sensors.json` defines `heat_demand_pid=-{2120}` (0x0848), wanted supply `{2121}`, measured supply `{2000}`, active building heat `{2149.0}`, queued building heat `{2150.0}`. These are data semantics, **not recovered internal compressor logic**. **XTR OWNER-LIVE DATA / OFFLINE TESTED analysis:** run-enable-on PID -49 at three starts; exact observed enable→compressor delay 73 s three times; run-enable-off preceded compressor stop 3–7 s three times; fan-off +74..82 s, cycle-request-off +130..139 s. A negative exported PID of -19/-15/-10 at all stop commands **disproves** the simple stop predicate `exported PID >= +50` in these captures. Exact controller alternative predicate OPEN; no source assertion of 73 s single timer. See [HEATING_CONTROL_OBSERVATION_20261109.md](HEATING_CONTROL_OBSERVATION_20261109.md). No protocol TX, no change to FC03/FC16, CRC, S92, 0x1E or settings mapping.
