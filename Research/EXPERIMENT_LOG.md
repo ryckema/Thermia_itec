@@ -1,5 +1,14 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 RC09F9 owner LIVE runtime regression — COMPLETE / POSITIVE
+
+**Experiment ID:** RC09F8-PR01 / RC09F9 runtime regression. **Hypothesis:** only GUI visibility/range changes preserve previously verified native M6, controller CURRENT, FC03/FC16, Calendar and RX performance. **Baseline:** user-LIVE RC09F8 and exact private RC09F9 source SHA256 `30b10e7d88d6ddcb42d9037e2805cbd6b78fe041c82e61cff1686e118fde317a`. **ONE change:** Service cooling number controls/mirrors `internal:true`, Heating min GUI 10→20 °C, firmware text.
+
+**OWNER OBSERVED LIVE:** `Pasted text(20261109-120444).txt` 12:59:03–13:04:38; build `USER-RC09F9`. Native M6=5; 13:01:39.154 current 4/4 exact controller FC16 ACK `mask=0F`; calendar single 12/12 owned read 13:01:13.543, individual F1 complete 13:02:30.089; FC16 ACKs 75→243, CRC_CHECK 1189→3671 and CRC_DIFF0, RX drops0, parser resyncs0 SINCE BOOT, ambiguous frames0. Manual writes idle/queue0. One nonblocking HA API `Buffer full, ping queued` 13:02:56, bus counters remain good. Second calendar read at 13:04:28 pending at log cutoff. No parameter write or optional alarm read performed.
+
+**STATUS:** **COMPLETE / POSITIVE for RC09F9 LIVE runtime regression** (SOURCE/OFFLINE TESTED/TARGET COMPILED inferred/FLASHED/LIVE/LOCALLY VERIFIED for M6/CURRENT/calendar/CRC). HA UI registry exposure check remains separate **RUNNING / PARTIAL**; absence from ESPHome status log and source `internal:true` do not prove removal of old HA entity registry entries. Known RC09F7 W2R97 alarm experiment remains independently COMPLETE/POSITIVE; TOP-UP one-shot NOT RUN. **ABORT/ROLLBACK:** existing native ABORT and private ZIP byte-verified RC09F8 rollback, unchanged. **ONE NEXT ACTION:** owner confirms HA User/Service visibility once; then freeze RC09F9 private production, not new physical TX.
+
+
 ## 2026-11-09 RC09F9 pre-production UI scope fix — PREPARED / NOT RUN
 
 **Review ID:** RC09F8-PR01, exactly ONE pre-production review for this milestone. **Hypothesis:** hide previously exposed Service-only cooling controls and align user heating minimum range with documented OEM user menu while preserving locally verified RX/TX/DE, M6, FC03, FC16, calendar, operation 0..4 and TOP-UP guard.
