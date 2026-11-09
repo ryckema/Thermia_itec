@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-09 RC09F8 owner LIVE regression check — no protocol change
+
+RC09F8 private YAML is **TARGET COMPILED / FLASHED / LIVE**, based on owner ESPHome log 12:30:48–12:36:05. Existing single owner preserves M6=5, real controller FC16 CURRENT page receipts (two full 03E8/042E/0442/0546 sync cycles; ackMask=0F), and existing calendar read `W2=1FFE` returning 12/12 qualified controller pages on one bounded manual request. RX integrity `CRC_DIFF=0`, drops=0, ambiguous=0; parser resyncs since boot sampled 12 throughout window (no new deltas; earlier cause UNKNOWN). One AUTO operation mode remains displayed, no setting TX observed. `085F` current-session read was **NOT RUN**, consistent with optional on-demand design; prior W2R97 controller-origin 085F/5 PROVEN result stands. These facts support **GO for unchanged native runtime**, not fresh semantic write or public legal publication proof. Release HA visibility still pending confirmation; status **RUNNING / PARTIAL** for UI cleanup.
+
+
 ## 2026-11-09 RC09F8 presentation-only firmware — NO NEW PROTOCOL CLAIM
 
 RC09F8 source derived from byte-identical owner RC09F7 `425202dff1a32098866ab0f383888d19bad69840bbf4c6e67a2232e7c2a6bd15`; source SHA256 `a026ff08b8a8b50c73f7305dca967bb0776e975fba8585433030ce98cb0d1c20`. Changes are confined to Write User service-entity visibility, TOP-UP-only ARM button/status messages and diagnostic firmware label. Native M6, UART/RX/TX/DE, S92 FC03/FC16, CRC frame parser and 085F one-shot read implementation have not been modified. **SOURCE / OFFLINE TESTED only**; do not infer RC09F8 live validation from RC09F7. Previously verified 085F/5 positive controller-origin FC16 and manual Operation 0..4 remain the evidence basis.
