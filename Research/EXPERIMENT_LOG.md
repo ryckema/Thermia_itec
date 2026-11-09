@@ -1,5 +1,16 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-09 RC09F8 Write User UI cleanup — PREPARED / NOT RUN
+
+**Hypothesis:** hide service-only HA entities and relabel obsolete combined Operation/TOP-UP trial without disturbing locally validated RC09F7 native session and alarm read or RC09F6 routine manual Operation 0..4 controls.
+
+**Baseline:** exact private owner-provided RC09F7 YAML SHA256 `425202dff1a32098866ab0f383888d19bad69840bbf4c6e67a2232e7c2a6bd15`. **ONE meaningful change:** Write User presentation/metadata only; internal Service entities, TOP-UP-only button/status wording, build label RC09F8. No TX guards or protocol frame generation edited. New YAML SHA256 `a026ff08b8a8b50c73f7305dca967bb0776e975fba8585433030ce98cb0d1c20`.
+
+**OFFLINE OBSERVED:** YAML parse, original IDs/entity counts, core blocks, ZIP integrity and exact original RC09F7 rollback pass. **LIVE OUTCOME:** no owner flash/readback yet; status **PREPARED / NOT RUN**. No retest of W2R97/085F or known Operation pairs.
+
+**ABORT / ROLLBACK:** existing firmware ABORT; reflash byte-identical RC09F7 YAML from private package. **ONE NEXT ACTION:** owner compile/flash RC09F8 and verify entity presentation/native health; compiler output only if failure.
+
+
 ## 2026-11-09 W2R97 optional alarm-page refresh — COMPLETE / POSITIVE
 
 **Hypothesis:** single owner-initiated optional read of 085F/5 in established native XTR session yields controller-origin FC16 with alarm state, rather than merely a transport ACK.
