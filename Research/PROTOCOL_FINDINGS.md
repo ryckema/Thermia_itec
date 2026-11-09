@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-09 RC09F9 owner LIVE release regression — no new protocol changes
+
+Owner uploaded RC09F9 ESPHome log 12:59:03–13:04:38. Exact controller FC16 CURRENT pages 03E8/042E/0442/0546 epoch11310 ackMask0F and M6=5, 12 owned Calendar APP pages and slot F1 refresh, CRC_DIFF0, drops0, parser resyncs0 SINCE BOOT, ambiguous0, continuing FC16 ACKs 75→243; **GO/COMPLETE/POSITIVE** runtime. The native source PHY/CRC/UART owner and existing read protocols were unchanged from RC09F8. Single HA API buffer-full/ping queued warning at 13:02:56 is nonblocking with continued native data. Optional alarm 085F and TOP-UP request not re-run; previous verified results unchanged. Full HA pre-existing entity registry state OPEN, though RC09F9 exact source has internal:true for all three outstanding Service cooling controls and Heating Minimum GUI 20–50. **No new TX protocol claims**, no automatic alarm polling, and transport ACK ≠ semantic acceptance. Public redistribution of private OEM-related code remains blocked pending licensing/privacy scrub.
+
+
 ## 2026-11-09 RC09F8 pre-production user/service scope finding — NO PROTOCOL CHANGE
 
 **SOURCE:** user supplied `THERMIA_iTec_XT_XTR_Inbedrijfstelling_AI.md`. `INFORMATIE/KOELING` lists a single `HYSTERESIS` user control (0..12 K) with XTR standalone write register still OPEN; `SERVICE/KOELING` instead lists separate `KOELTIJD` (5..40 min), `KLHYS.KAMSNS.LG` and `KLHYS.KAMSNS.HG` (each 0.5..5 K). In RC09F8 these **three separate Service controls** were ordinary exposed HA number entities even though `KAMERSENSOR` had previously been hidden. `INFORMATIE/VERWARMING MIN` documented 20..50 °C; RC09F8 UI control showed 10..50. This is a verified **UI scope/range mismatch**, **not** evidence that their previously source-mapped native registers are wrong or that the controller accepted unsupported ranges.
