@@ -1,5 +1,10 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-09 RC09FC target build succeeded; AUTO_ALARM_READ_ARMED INFO log compiled out
+
+Owner target build (ESPHome2026.9.0/IDF5.5.5) succeeds for RC09FC. Compiler `-Wempty-body` warning at source line30125 is a logging-only conditional with `ESP_LOGI` elided under `logger.level: WARN`, unrelated to the immediately preceding `w2r97_alarm_read_once.press()` scheduler action. Accordingly one should expect `[W2R97] ALARM_READ_ARMED` (WARN), then `ALARM_READ_ONESHOT_TX` (WARN) and `COMPLETE_POSITIVE CONTROLLER_FC16_085F_5` (WARN) for qualified automatic cycle, **not** `[W2RFC] AUTO_ALARM_READ_ARMED` (INFO) in normal logs. Build success does not establish OTA completion or response; physical/liveness evidence still pending. No protocol change or patch justified.
+
+
 ## 2026-11-09 RC09FC 085F existing owner auto refresh implementation — offline, not new wire protocol
 
 Already OWNER-LIVE PROVEN 2026-11-09 in RC09F7: one explicit FC03 selector `0x0F/03 W4=0080 W0W1=0` in real controller 0708 slot resulted in exact controller-origin FC16 `0x085F/5`, all five words0 and matching epoch; CRC clean. RC09FB historically does not auto-read optional 085F, so user-facing alarms default UNKNOWN after boot and become stale >=300000ms.
