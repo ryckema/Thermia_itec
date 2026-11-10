@@ -1,28 +1,10 @@
 # Public Write User beta: same exact-capture DCM FC23 replay as the published DCM Read Only 1.0; exact match only, no dynamic response computation.
-# RC09FC-UI1: Home Assistant controls wait for semantic FC16 readback; no intermediate stale-value republish.
-# RC09FC: qualified automatic 085F/5 alarm snapshot refresh every >=240s through existing W2R97/S92 read selector; no new bus owner.
-# RC09FB: single user TOP-UP button may defer <=25s in existing one-owner manual queue during calendar; no packet retry.
-# RC09FA: DIRECT TOP-UP one-shot after normal Write User enablement; no separate ARM; all native physical guards retained.
-# RC09F9 / PRE-PRODUCTION REVIEW: Service Cooling controls internal, Heating MIN user UI 20-50.
-# RC09F7 / XTR owner-LIVE RC09F6 baseline. Fix UI Operation claim; prepare explicit bounded alarm 085F read.
-# Alarm read W4 bit7 is sourced from original 930 modbus-flags.json, now auto-armed ONLY in qualified M6=5 owned idle sessions.
-# One existing S92 controller 0708 slot per >=240s, read-only selector, controller FC16, no per-request retry.
-# RC09F6 / XTR owner-LIVE proven 0553 modes 0,1,2,3,4; manual mode selection enabled with unchanged FC03/FC16/S92 guards.
-# RC09F2 / controller-verified busy-denial ledger fix, based on RC09F1.
-# RC09F1 — private, controller-origin delayed TOP-UP status; inherited RC08F1 D24 auth fix.
-# RC09 — user-facing status and retained cycle-source qualification, private.
-# No new UART TX, no RX parser/S92/M6/OEMW protocol changes; only HA RX-to-entity presentation filtering.
-# Thermia iTec XTR M — Write User RC08HW (HOT WATER ONE-SHOT UI, PRIVATE, 2026-11-04)
-# Source: byte-verified, owner-confirmed LIVE W2R92 User baseline.
-# RC05: shared 32-slot renderer, current-epoch freshness, adaptive history decoding and lighter diagnostics.
-# Preserve CLEAN06/CLEAN07 English UI, diagnostic cleanup and source freshness.
-# Existing S92 UART/RX/TX/DE, V5 CRC, M6/FC03/FC16/CAL32 and User write guards preserved.
 # Self-contained ESPHome YAML; no external header. Requires your existing secrets.yaml.
 
 # --- CONFIGURATION ---
 substitutions:
-  device_name: "thermia-itec-xtr-m"
-  friendly_name: "Thermia iTec XTR M"
+  device_name: "thermia-itec-xtr"
+  friendly_name: "Thermia iTec XTR"
   c5cv_export_join_tx_enabled: "true"  # Inherited, unchanged: existing user-armed C5DE transport
   c5az_0546_role_recovery_enabled: "false"
   w2r20_heating_group_enabled: "true"
