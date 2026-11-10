@@ -25767,7 +25767,7 @@ button:
     id: thermia_hw_topup_oneshot
     internal: false
     disabled_by_default: false
-    name: "Hot Water | Start Top-Up (One Shot)"
+    name: "Hot Water | Start Top-Up"
     entity_category: config
     icon: mdi:water-boiler-alert
     on_press:
@@ -26808,7 +26808,7 @@ button:
   - platform: template
     id: w2r33_trial_start_button
     internal: true
-    name: "Configuration | Trial Restore DCM Startup (One Shot)"
+    name: "Configuration | Trial Restore DCM Startup"
     entity_category: config
     disabled_by_default: true
     on_press:
