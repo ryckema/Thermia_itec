@@ -95,6 +95,20 @@ Some values depend on the heat pump configuration, available bus messages and fi
 - Local caching of selected controller settings
 
 
+
+## iTec Eco — separate Write Beta
+
+The repository also contains a **separate, experimental ESPHome integration for the Thermia iTec Eco** (Danfoss DHP-AQ controller family): [**Write (Beta) / iTec Eco**](Write%20(Beta)/iTec%20Eco/). This is **not** the iTec XTR Write User 1.0 firmware: the Eco profiles emulate the local **`0x0A` room sensor**, rather than providing the XTR's native DCM Write User control path.
+
+The iTec Eco beta provides a Home Assistant room thermostat (`climate`), indoor-temperature input, bidirectional room-setpoint requests and a one-shot domestic hot-water **top-up** control. The profiles also expose relevant controller settings and diagnostics. Two standalone YAML options are available:
+
+- **[Standard room sensor profile](Write%20(Beta)/iTec%20Eco/thermia_itec_eco_waveshare_room_sensor_v01.yaml):** `0x0A` room-sensor emulation with temperature, setpoint and top-up functions.
+- **[Extended `0x0F` ACK profile](Write%20(Beta)/iTec%20Eco/thermia_itec_eco_waveshare_room_sensor_0f_ack_v01.yaml):** the same room-sensor features plus optional `0x0F` Online/DCM transport acknowledgements and `0x0708` idle replies. These acknowledgements do **not** imply a complete Thermia Online authentication or cloud session.
+
+The emulation is designed to fail closed: the standard room-sensor response switch starts **OFF**, stale room-temperature input stops responses via a watchdog, and detection of a physical room sensor on the same bus blocks emulated replies. The extended profile adds a guard for an existing `0x0F` peer. The YAML source identifies iTec Eco 5 and Eco 8 as tested targets; **other Eco and XTR configurations are not automatically interchangeable**.
+
+For configuration, supported entities, hardware connections, safeguards and attribution, consult the [**iTec Eco README**](Write%20(Beta)/iTec%20Eco/README.md). The hardware and installation steps below primarily describe the **iTec XTR M** setup.
+
 ## Hardware requirements
 
 You only need a few inexpensive components to get started.
