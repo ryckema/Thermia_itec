@@ -17,7 +17,7 @@ The integration is organized into four firmware versions, each offering a differ
 |---|---|---|---|
 | **Passive** | Yes | No | Read-only, passive bus monitoring |
 | **DCM Read Only** | Yes | No | Read-only, using native DCM communication |
-| **Write User (soon)** | Yes | Yes | User-accessible settings |
+| **Write User 1.0 (public beta)** | Yes | Yes | Validated user-accessible settings; local XTR M |
 | **Write Service (soon)** | Yes | Yes | User and service-menu settings |
 
 ### 1. Passive
@@ -46,9 +46,9 @@ This version is intended to provide more complete monitoring by supporting nativ
 
 ### 3. Write User 
 
-**Beining tested at the moment and will be realeased soon**
+**Public beta available:** [`thermia_itec_xtr_write_user_1.0.yaml`](Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.0.yaml).
 
-**Monitoring and control of settings available through the heat pump's normal user interface.**
+**Monitoring and control of supported settings available through the heat pump's normal user interface.**
 
 This version is intended to allow Home Assistant to change user-accessible settings documented in the Thermia operating interface.
 
@@ -63,11 +63,13 @@ Examples include:
 - Heat pump operating mode
 - Other user-accessible settings supported by the controller
 
-These controls remain subject to protocol validation and controller support.
+**Write User 1.0 is deliberately distributed as one self-contained ESPHome YAML.** The complete local DCM session, RS485 handling, telemetry, Home Assistant entities and supported Write User / calendar controls are integrated in that file. You do not need to assemble separate project YAML packages, custom headers or a challenge-response CSV. Your personal network and API credentials still belong in your local ESPHome `secrets.yaml`.
+
+User-initiated setting changes are accepted only within their validated scope and require controller-origin feedback; an RS485 transport acknowledgement is not a confirmation that a setting changed. The UI2 Home Assistant state-bounce correction has been confirmed working on the development iTec XTR M. Compatibility and write semantics on other Thermia models/controller versions are not established.
 
 ### 4. Write Service
 
-**Beining tested at the moment and will be realeased soon**
+**In development — not publicly released.**
 
 **Integration of user-accessible settings and parameters available through the Thermia SERVICE menu.**
 
@@ -86,7 +88,7 @@ Examples include:
 
 Service-level access does not imply bypassing the controller's built-in safety functions. Functions requiring manual commissioning or special operating conditions retain those requirements.
 
-**Availability:** Passive and DCM Read Only configurations are currently published. Write User and Write Service are planned versions; controller parameter writes are not yet released as validated functionality.
+**Availability:** Passive, DCM Read Only and **Write User 1.0 (public beta)** configurations are published. Write User setting changes have been locally validated on the Thermia iTec XTR M / CM930 2.4.2 within the supported scope. Write Service remains in development; service-menu parameter writing is not part of the Write User release.
 
 ### Monitoring
 
@@ -195,6 +197,12 @@ The receive-only version, recommended as a starting point.
 [`thermia_itec_xtr_DCM_readonly_1.0.yaml`](Thermia%20iTec%20XTR/thermia_itec_xtr_DCM_readonly_1.0.yaml)
 
 The DCM-related development version. Review its operating requirements and supported functionality before use.
+
+**Write User 1.0 — public beta**
+
+[`thermia_itec_xtr_write_user_1.0.yaml`](Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.0.yaml)
+
+The **single-file ESPHome configuration** for local XTR M monitoring and supported Home Assistant user-setting/calendar control. All project-specific firmware components are contained in this one YAML; no extra project headers, packages, provisioning CSV or hand-assembled source files are needed. Configure your own `secrets.yaml` as described below. This beta has been tested on the development iTec XTR M; other controller variants have not been verified.
 
 ### Step 4 — Configure ESPHome
 
@@ -309,7 +317,7 @@ The ESP32 connects to Home Assistant through the native ESPHome API.
 
 Once correctly configured and running, the gateway can expose supported heat pump sensors and diagnostic information as Home Assistant entities.
 
-The objective is to support local dashboards, history, automations and, eventually, validated control functions without relying on Thermia Online.
+The integration supports local dashboards, history, automations and, with Write User 1.0, validated user-level control on the tested XTR M without relying on Thermia Online.
 
 The exact entity list depends on the chosen YAML configuration and the information available from the heat pump.
 
@@ -341,7 +349,7 @@ Communication with the internal bus can potentially interfere with normal heat p
 
 The project distinguishes passive monitoring, native protocol responses and controller parameter writes.
 
-Parameter writes from Home Assistant are not yet enabled as a generally supported feature.
+**Write User 1.0 (public beta)** enables deliberately initiated, validated Home Assistant **user-level** setting changes on the tested iTec XTR M, with native controller readback. Automatic parameter writes remain disabled by default, and unsupported/service-level parameter writes are not included. A confirmed transport response alone does not prove the controller applied a new value.
 
 The integration is intended to preserve the heat pump's own controller logic, interlocks and safety mechanisms rather than bypass them.
 
