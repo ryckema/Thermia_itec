@@ -17,7 +17,7 @@ The integration is organized into four firmware versions, each offering a differ
 |---|---|---|---|
 | **Passive** | Yes | No | Read-only, passive bus monitoring |
 | **DCM Read Only** | Yes | No | Read-only, using native DCM communication |
-| **Write User 1.0 ** | Yes | Yes | Validated user-accessible settings; local XTR M |
+| **Write User 1.0** | Yes | Yes | Validated user-accessible settings; local XTR M |
 
 ### 1. Passive
 
