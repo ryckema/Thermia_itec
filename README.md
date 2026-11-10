@@ -66,9 +66,6 @@ Examples include:
 
 User-initiated setting changes are accepted only within their validated scope and require controller-origin feedback; an RS485 transport acknowledgement is not a confirmation that a setting changed. The UI2 Home Assistant state-bounce correction has been confirmed working on the development iTec XTR M. Compatibility and write semantics on other Thermia models/controller versions are not established.
 
-
-**Availability:** Passive, DCM Read Only and **Write User 1.0** configurations are published. Write User setting changes have been locally validated on the Thermia iTec XTR M / CM930 2.4.2 within the supported scope. Write Service remains in development; service-menu parameter writing is not part of the Write User release.
-
 ### Monitoring
 
 Supported telemetry in the underlying development includes:
