@@ -1,5 +1,10 @@
 # Thermia iTec XTR M — Write User RC09FC-UI1 (Public Beta)
 
+## Known issue — UI1 Home Assistant state bounce (2026-11-10)
+
+**Owner LIVE report:** Despite stable native runtime, switching a supported user parameter (e.g. `Cooling | Enabled`) can show requested → old → requested in Home Assistant. **RC09FC-UI1 is therefore NOT verified UX-stable.** Source analysis finds a presentation race: the UI1 stale-value guard begins only in OEMW physical phases 1..3 and misses the existing bounded deferred user queue / pre-TX period, plus some older publication branches. This is **not evidence of failed semantic controller FC16 writes**. An integrated **RC09FC-UI2** fix is `PREPARED / NOT RUN`, SOURCE/OFFLINE TESTED, but **has not been target-compiled, flashed, or verified LIVE**. To avoid silently replacing a published firmware with unverified behavior, this UI1 download remains unchanged for now. **Next:** one previously validated HA edit on UI2; verify controller-origin FC16 confirmation and no visible bounce. The native session, Calendar and CRC/TX protections are unaffected by the reported display symptom.
+
+
 Local ESPHome / Home Assistant integration for **Thermia iTec XTR M 3N, controller CM930 2.4.2**. This is the XTR M Write User beta, **not** the iTec Eco firmware or Write Service firmware.
 
 ## Download
