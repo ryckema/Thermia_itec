@@ -45,8 +45,6 @@ This version is intended to provide more complete monitoring by supporting nativ
 
 ### 3. Write User 
 
-**Public beta available:** [`thermia_itec_xtr_write_user_1.0.yaml`](Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.0.yaml).
-
 **Monitoring and control of supported settings available through the heat pump's normal user interface.**
 
 This version is intended to allow Home Assistant to change user-accessible settings documented in the Thermia operating interface.
