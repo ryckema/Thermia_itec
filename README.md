@@ -17,8 +17,7 @@ The integration is organized into four firmware versions, each offering a differ
 |---|---|---|---|
 | **Passive** | Yes | No | Read-only, passive bus monitoring |
 | **DCM Read Only** | Yes | No | Read-only, using native DCM communication |
-| **Write User 1.0 (public beta)** | Yes | Yes | Validated user-accessible settings; local XTR M |
-| **Write Service (soon)** | Yes | Yes | User and service-menu settings |
+| **Write User 1.0 ** | Yes | Yes | Validated user-accessible settings; local XTR M |
 
 ### 1. Passive
 
@@ -67,28 +66,8 @@ Examples include:
 
 User-initiated setting changes are accepted only within their validated scope and require controller-origin feedback; an RS485 transport acknowledgement is not a confirmation that a setting changed. The UI2 Home Assistant state-bounce correction has been confirmed working on the development iTec XTR M. Compatibility and write semantics on other Thermia models/controller versions are not established.
 
-### 4. Write Service
 
-**In development — not publicly released.**
-
-**Integration of user-accessible settings and parameters available through the Thermia SERVICE menu.**
-
-This version is intended to expose supported service-level settings in addition to the normal user controls.
-
-Examples include:
-
-- All supported Write User functions
-- Heating system configuration
-- Auxiliary heating parameters
-- Hot water service settings
-- Cooling configuration
-- Circulation pump and Optimum settings
-- Shunt group configuration
-- Other available SERVICE menu parameters
-
-Service-level access does not imply bypassing the controller's built-in safety functions. Functions requiring manual commissioning or special operating conditions retain those requirements.
-
-**Availability:** Passive, DCM Read Only and **Write User 1.0 (public beta)** configurations are published. Write User setting changes have been locally validated on the Thermia iTec XTR M / CM930 2.4.2 within the supported scope. Write Service remains in development; service-menu parameter writing is not part of the Write User release.
+**Availability:** Passive, DCM Read Only and **Write User 1.0** configurations are published. Write User setting changes have been locally validated on the Thermia iTec XTR M / CM930 2.4.2 within the supported scope. Write Service remains in development; service-menu parameter writing is not part of the Write User release.
 
 ### Monitoring
 
