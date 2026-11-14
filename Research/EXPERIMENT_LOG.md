@@ -1,5 +1,10 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-14 — WU-1.01-PUBLIC release observation
+
+**Status:** `PREPARED / NOT RUN` for physical 1.01 firmware validation. Public GitHub committed the complete original Write User source with the 1.01 release banner and **unchanged** already-published exact-capture handshake plus existing UI2 pending-state guard. No new variable-response calculation was introduced publicly. GitHub source inspected for the owner's excluded confidential values and none matched. Expected on a known challenge: same behavior as previous published 1.0; different challenge: safely no response. **Private** 1.01 full ZIP remains local and not uploaded to private repo (private repo status page only). FIX19 live positive remains separate evidence; no reclassification of untested 1.01.
+
+
 ## 2026-11-14 WU-1.01-AUTO-COLD
 
 **Experiment ID:** WU-1.01-AUTO-COLD. **Status:** `PREPARED / NOT RUN`. **Hypothesis:** the previously FIX19-live-verified guarded variable FC23 cold-start handler can be armed by qualified controller restart automatically, allowing native DCM recovery without manually pressing any HA one-shot.
