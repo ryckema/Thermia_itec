@@ -1,4 +1,4 @@
-# Public Write User beta: same exact-capture DCM FC23 replay as the published DCM Read Only 1.0; exact match only, no dynamic response computation.
+# Write User 1.02 public: existing exact-capture DCM FC23; 24 mapped SVC4 Service diagnostics and 0410/22 mirror; no new parameter TX.
 # Self-contained ESPHome YAML; no external header. Requires your existing secrets.yaml.
 
 # --- CONFIGURATION ---
@@ -3457,6 +3457,23 @@ globals:
 
 
 
+  # WU1.02: one RX-only Service register mirror; index=address-0x03E8.
+  - id: svc102_words
+    type: std::array<uint16_t, 1200>
+    restore_value: no
+    initial_value: 'std::array<uint16_t, 1200>{}'
+  - id: svc102_word_ms
+    type: std::array<uint32_t, 1200>
+    restore_value: no
+    initial_value: 'std::array<uint32_t, 1200>{}'
+  - id: svc102_word_epoch
+    type: std::array<uint32_t, 1200>
+    restore_value: no
+    initial_value: 'std::array<uint32_t, 1200>{}'
+  - id: svc102_fc16_page_count
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
   - id: c5dn_shunt1_words
     type: std::array<uint16_t, 11>
     restore_value: no
@@ -5856,12 +5873,26 @@ uart:
                       // No second reader, no separate bus writer, no ACK or session state changes.
                       if (bytes[0]==0x0F) {
                         const uint32_t rx_now=millis();
+                        // WU1.02 SVC4 catalogue: only already CRC-validated and exact-shaped FC16.
+                        // Pure passive caching; no extra TX, ACK, session claim or writes.
+                        if (ct && st>=0x03E8u &&
+                            uint32_t(st)-0x03E8u+uint32_t(ct)<=1200u) {
+                          const uint32_t epoch=id(write_arm_ms);
+                          const uint32_t stamp=rx_now?rx_now:1u;
+                          for(unsigned i=0u;i<ct;i++) {
+                            const unsigned ix=unsigned(st-0x03E8u)+i;
+                            id(svc102_words)[ix]=(uint16_t(bytes[7u+2u*i])<<8)|uint16_t(bytes[8u+2u*i]);
+                            id(svc102_word_ms)[ix]=stamp;
+                            id(svc102_word_epoch)[ix]=epoch;
+                          }
+                          id(svc102_fc16_page_count)++;
+                        }
                         if (st==0x03FCu && ct==11u) {
                           for (unsigned i=0;i<11u;i++)
                             id(c5dn_shunt1_words)[i]=(uint16_t(bytes[7+2*i])<<8)|uint16_t(bytes[8+2*i]);
                           id(c5dn_shunt1_rx_ms)=rx_now ? rx_now : 1;
                         }
-                        if (st==0x0410u && ct==21u) {
+                        if (st==0x0410u && (ct==21u || ct==22u)) {
                           for (unsigned i=0;i<21u;i++)
                             id(c5dn_shunt2_dhw_pool_words)[i]=(uint16_t(bytes[7+2*i])<<8)|uint16_t(bytes[8+2*i]);
                           id(c5dn_shunt2_dhw_pool_rx_ms)=rx_now ? rx_now : 1;
@@ -22169,6 +22200,510 @@ text_sensor:
       disabled_by_default: true
 
 
+  # WU1.02 SVC4: 24 retained mapped parameters, 137 redundant/unmapped NOT reintroduced.
+  - platform: template
+    id: svc102_parameter_041d
+    name: "Service ⁄ Warmwater ⁄ START [041D]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=53u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_041e
+    name: "Service ⁄ Warmwater ⁄ WARMWATERTIJD [041E]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=54u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_041f
+    name: "Service ⁄ Warmwater ⁄ DOORV. INTERVAL [041F]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=55u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_0420
+    name: "Service ⁄ Warmwater ⁄ TOPVERW. TIJD [0420]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=56u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_0433
+    name: "Service ⁄ Verwarming ⁄ OPSTART HT [0433]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=75u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_0434
+    name: "Service ⁄ Verwarming ⁄ VERWARMINGSTIJD [0434]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=76u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_0446
+    name: "Service ⁄ Koeling ⁄ KOELING [0446]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=94u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_0449
+    name: "Service ⁄ Koeling ⁄ KOELTIJD [0449]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=97u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_044c
+    name: "Service ⁄ Koeling ⁄ KAMERSENSOR [044C]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=100u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_044d
+    name: "Service ⁄ Koeling ⁄ KLHYS.KAMSNS.LG [044D]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=101u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_044e
+    name: "Service ⁄ Koeling ⁄ KLHYS.KAMSNS.HG [044E]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=102u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_0456
+    name: "Service ⁄ Bijverwarming ⁄ MAX STAP [0456]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=110u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_0459
+    name: "Service ⁄ Bijverwarming ⁄ MAX STROOM [0459]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=113u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_045a
+    name: "Service ⁄ Bijverwarming ⁄ TOPVERW. EXT.BV. [045A]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=114u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_046a
+    name: "Service ⁄ Installatie ⁄ KALIBR SENSOR ⁄ BUITEN [046A]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=130u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_046b
+    name: "Service ⁄ Installatie ⁄ KALIBR SENSOR ⁄ AANV SYSTEEM [046B]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=131u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_046c
+    name: "Service ⁄ Installatie ⁄ KALIBR SENSOR ⁄ AANV LEIDING [046C]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=132u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_046e
+    name: "Service ⁄ Installatie ⁄ KALIBR SENSOR ⁄ WARMWATERSENSOR [046E]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=134u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_046f
+    name: "Service ⁄ Installatie ⁄ KALIBR SENSOR ⁄ WAT SENSOR BOVEN [046F]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=135u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_0829
+    name: "Service ⁄ Buitenunit ⁄ MAX FREQ VERH [0829]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=1089u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (XTR runtime; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_0830
+    name: "Service ⁄ Buitenunit ⁄ HOGE DRUK [0830]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=1096u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (XTR runtime; geen TX)"};
+
+  - platform: template
+    id: svc102_parameter_082a
+    name: "Service ⁄ Buitenunit ⁄ STROOM [082A]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=1090u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      const unsigned raw=unsigned(id(svc102_words)[ix]); return {std::to_string(raw/10u)+"."+std::to_string(raw%10u)+" A (raw="+std::to_string(raw)+")"};
+
+  - platform: template
+    id: svc102_parameter_082b
+    name: "Service ⁄ Buitenunit ⁄ VENT 1 TPM [082B]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=1091u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" rpm (controller-FC16)"};
+
+  - platform: template
+    id: svc102_parameter_082d
+    name: "Service ⁄ Buitenunit ⁄ EXP KLEPSTAPPEN [082D]"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    update_interval: 30s
+    lambda: |-
+      const unsigned ix=1093u;
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch)
+        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+      const uint32_t t=id(svc102_word_ms)[ix];
+      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
+         uint32_t(now-t)>600000u)
+        return {"Verouderd (geen actuele controllerwaarde)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" stappen (controller-FC16)"};
+
+  - platform: template
+    id: svc102_catalogue_status
+    name: "Service ⁄ Parameters Status"
+    entity_category: diagnostic
+    icon: mdi:database-check-outline
+    update_interval: 30s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(main01_m6_session_state)!=5u ||
+         id(main01_native_accepted_epoch)!=epoch || !id(thermia_bus_healthy).state)
+        return {"Niet beschikbaar (geen actuele native sessie)"};
+      unsigned fresh=0u;
+      for(unsigned i=0u;i<1200u;i++)
+        if(id(svc102_word_ms)[i] && id(svc102_word_epoch)[i]==epoch &&
+           uint32_t(now-id(svc102_word_ms)[i])<=600000u) ++fresh;
+      const auto ok=[&](uint32_t ts)->const char* {return ts && uint32_t(now-ts)<=300000u ? "OK" : "MISS";};
+      return {std::to_string(fresh)+" fresh register words / "+
+              std::to_string(id(svc102_fc16_page_count))+" FC16 pages | source "+
+              "03FC="+ok(id(c5dn_shunt1_rx_ms))+
+              " 0410="+ok(id(c5dn_shunt2_dhw_pool_rx_ms))+
+              " 04A6="+ok(id(c5dn_sg_rx_ms))+
+              " 0532="+ok(id(c5dn_capabilities_rx_ms))+" / NO NEW TX"};
+
   - platform: template
     id: w2r59_write_user_status
     name: "Diagnostic | Write Readiness"
@@ -22250,7 +22785,7 @@ text_sensor:
     entity_category: diagnostic
     update_interval: 60s
     lambda: |-
-      return {"Thermia WRITE USER 1.01 (RC09FC) | guarded native DCM exact-capture startup + UI2 HA pending-to-FC16 | PUBLIC | 2026-11-14"};
+      return {"Thermia WRITE USER 1.02 (RC09FC) | SVC4 clean Service catalogue + 0410/22 FC16 + UI2 HA pending | PUBLIC | 2026-11-14"};
 
   - platform: template
     name: "Heating Settings Source"
