@@ -1,5 +1,14 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-14 — variable FC23 and automatic cold DCM
+
+**PROVEN / LIVE on FIX19 only:** A variable controller FC23 challenge received after user-armed physical restart was answered, followed by real controller FC16 03E8/14 and full configuration synchronization, CURRENT 4/4, M6=5 and continuing FC03 0708 traffic. An FC23 transport response alone is not proof of session acceptance; the subsequent controller-origin pages and native runtime are the decisive evidence.
+
+**STRONGLY SUPPORTED:** Four captured request/response handshake examples are useful as offline comparison vectors, but not operational runtime prerequisites when a validated dynamic derivation uses the correct private fixed key and complete algorithm. Merely storing a key without the calculation, formatting, authenticated response handling and controller guards does not implement a handshake. Neither the key nor protected details are fit for public source distribution.
+
+**SOURCE / OFFLINE TESTED:** Write User 1.01 replaces the manual experiment-only arm condition with the existing verified controller cold-restart qualification, preserving bounded session/epoch, CRC/bus and sole-UART-owner constraints. **OPEN:** live automatic restart and subsequent M6=5 / CURRENT 4/4 / FC03 0708 on this exact build; `PREPARED / NOT RUN`.
+
+
 ## 2026-11-13 SVC4/SVC5 — 0532 live evidence and 0410 geometry mismatch
 
 **LIVE / PROVEN for native read on the local XTR M 3N CM930 2.4.2:** SVC4 owner's log shows manual `0532` read arm at 00:37:55, existing S92 native W3 bit15 request at 00:37:57 and later `CONFIRMED / fresh controller FC16 0532/18 received / no setting write`. The installation `0543` value was 0. As named in the original CM930 parameter map, `0543=energy_performance_enabled` is an enable/configuration bit, **not** an energy/COP measurement. Positive source evidence applies to this single `0532/18` receipt; does not prove auto-refresh longevity or unrelated pages.
