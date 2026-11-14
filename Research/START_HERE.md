@@ -1,5 +1,10 @@
 # THERMIA — START HERE
 
+## 2026-11-14 — Write User 1.01 publication
+
+**Public standalone YAML is on GitHub:** [thermia_itec_xtr_write_user_1.01.yaml](../Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.01.yaml). This preserves public exact-capture FC23 and existing UI2 user controls; it does **not** include the private variable handshake and cannot guarantee cold-start for changed challenges. **Private full 1.01 firmware** is a complete local ZIP; automatic cold-start awaits the owner physical test (`PREPARED / NOT RUN`). The private GitHub repository contains a status note, not the full YAML/ZIP. No sensitive material was committed to public GitHub.
+
+
 ## 2026-11-14 — Write User 1.01 private auto-start handoff
 
 **Latest matching owner-live evidence:** FIX19 user-armed controller restart reached full native session (M6=5, CURRENT 4/4, sustained FC03 0708 after variable FC23 and FC16 sync). **New integrated private candidate:** Write User 1.01 automatically arms the identical guarded cold-response path upon controller restart, without a HA button. Full YAML and FIX19 rollback are in one private ZIP. **STATUS: PREPARED / NOT RUN** (SOURCE / OFFLINE TESTED, not TARGET COMPILED/FLASHED/LIVE). No unvalidated parameter write TX was added. Four fixed captured handshake examples are not required at runtime; cryptographic key/algorithm remain private.
