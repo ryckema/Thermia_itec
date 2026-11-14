@@ -1,5 +1,14 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-14 — Write User 1.01 public release and private-build boundary
+
+**PUBLIC GITHUB VERIFIED:** `Thermia iTec XTR/thermia_itec_xtr_write_user_1.01.yaml` published as complete standalone public ESPHome source. Release identifies 1.01, retains UI2 HA display correction and existing public exact-capture FC23 handshake. GitHub blob checked: none of the owner's five excluded private values present. **Source reused:** existing published 1.0 functional source, without adding private dynamic handshake. A new controller challenge can still fail closed; public 1.01 is not equivalent to private 1.01 for guaranteed cold-start. **STATUS:** SOURCE / OFFLINE TESTED; public GitHub committed, not newly FLASHED/LIVE.
+
+**PRIVATE:** full integrated automatic-cold 1.01 ZIP exists as local owner download, SOURCE / OFFLINE TESTED and PREPARED / NOT RUN. Private repo `ryckema/Thermia_itec_private` now contains status instructions only; **full private firmware ZIP/YAML NOT uploaded there** through current connector. FIX19 user-armed dynamic cold path is owner LIVE and positive, but the exact 1.01 automatic trigger still awaits a live run. No sensitive handshake code, key or samples placed in public GitHub. No changes to iTec Eco.
+
+**CURRENT MILESTONE:** owner-live automatic DCM after restart. **DELIVERABLE:** public 1.01 GitHub YAML and private 1.01 local ZIP. **REAL BLOCKER:** private GitHub file transfer unavailable through current connector, plus 1.01 live validation outstanding. **ONE NEXT ACTION:** owner flash private 1.01 and verify zero-button restart reaches M6=5 / CURRENT4/4 / FC03 0708.
+
+
 ## 2026-11-14 — Write User 1.01 automatic cold DCM (private)
 
 **OBSERVED FACTS / LIVE (FIX19):** User-initiated 90s dynamic handshake trial after physical controller restart proceeded past varying FC23, controller FC16 03E8/14, full FC16 sync and CURRENT 4/4; M6=5 and 20 FC03 0708 replies were observed through 02:16:46. This proves native XTR transport/session on FIX19, not Thermia cloud service or semantic parameter-write acceptance.
