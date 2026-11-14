@@ -18,6 +18,7 @@ The integration is organized into four firmware versions, each offering a differ
 | **Passive** | Yes | No | Read-only, passive bus monitoring |
 | **DCM Read Only** | Yes | No | Read-only, using native DCM communication |
 | **Write User 1.0** | Yes | Yes | Validated user-accessible settings; local XTR M |
+| **[Write User 1.01 (private development)](Write%20(Beta)/iTec%20XTR%20M/WRITE_USER_1.01_PRIVATE_STATUS.md)** | Yes | Yes | Automatic DCM after controller restart — prepared, not yet live-verified; private firmware |
 
 ### 1. Passive
 
