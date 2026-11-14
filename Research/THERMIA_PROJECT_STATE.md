@@ -1,5 +1,16 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-14 — Write User 1.01 automatic cold DCM (private)
+
+**OBSERVED FACTS / LIVE (FIX19):** User-initiated 90s dynamic handshake trial after physical controller restart proceeded past varying FC23, controller FC16 03E8/14, full FC16 sync and CURRENT 4/4; M6=5 and 20 FC03 0708 replies were observed through 02:16:46. This proves native XTR transport/session on FIX19, not Thermia cloud service or semantic parameter-write acceptance.
+
+**SOURCE / OFFLINE TESTED (Write User 1.01):** Complete private integrated YAML/ZIP derived from FIX19; same guarded variable-response handler is automatically armed by the existing qualified cold controller-restart episode, without pressing a Home Assistant button. One UART/RX/TX/DE owner, V5 CRC/RX, FC16, FC03, runtime, HA controls, ABORT, 90s scope and collision/epoch guards remain. Four captured handshake examples are not required as runtime lookup when a validated dynamic calculation is used; private cryptographic material remains private. **Status: PREPARED / NOT RUN**; not TARGET COMPILED, FLASHED or LIVE.
+
+**Distribution:** Public GitHub records evidence/status only, in `Write (Beta)/iTec XTR M/WRITE_USER_1.01_PRIVATE_STATUS.md`; full 1.01 source and private handshake not published. Public Write User 1.0 remains unchanged. Root README link only; iTec Eco untouched.
+
+**CURRENT MILESTONE:** Zero-button DCM after Thermia controller restart. **DELIVERABLE:** one full private Write User 1.01 ZIP, and public non-sensitive documentation. **REAL BLOCKER:** no known source blocker; owner-live validation of exact automatic 1.01 build outstanding. **ONE NEXT ACTION:** owner flash 1.01 and restart Thermia controller without HA button, inspect M6=5, CURRENT 4/4 and sustained FC03 0708; ABORT/rollback on failure.
+
+
 ## 2026-11-13 SVC4/SVC5 — native Service read milestone
 
 **OBSERVED FACTS / LIVE — SVC4:** Owner log `Pasted text(20261112-233941).txt` identifies exact `Thermia WRITE-SERVICE SVC4 (RC09FC)` firmware, qualified M6 stage40 and CURRENT 4/4, sampled V5 CRC_DIFF=0, RX drops=0, original Write User intact. At 00:37:55 the native `0532` one-shot was manually armed; at 00:37:57 its existing owner requested W3 bit15; by 00:38:15 status reported `CONFIRMED / fresh controller FC16 0532/18 received`. `Installation | Energy Performance (OEM)` read `0`: register `0543` is an enable flag, not COP. **SVC4-0532-SCOPED-READ: COMPLETE / POSITIVE for controller-origin 0532/18**, not proof of endless auto-refresh. SVC4 also removed 137 redundant/unmapped HA catalogue entities (122 unmapped + 15 duplicate User mirrors) while keeping 24 mapped Service statuses and all established controls. **SVC4 is owner FLASHED/LIVE**, not a declaration that every ancillary parameter is present. Live status still `03FC=MISS 0410=MISS 04A6=MISS 0532=OK`.
