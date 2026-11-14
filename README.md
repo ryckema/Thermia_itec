@@ -18,7 +18,7 @@ The integration is organized into four firmware versions, each offering a differ
 | **Passive** | Yes | No | Read-only, passive bus monitoring |
 | **DCM Read Only** | Yes | No | Read-only, using native DCM communication |
 | **Write User 1.0** | Yes | Yes | Validated user-accessible settings; local XTR M |
-| **[Write User 1.01 (private development)](Write%20(Beta)/iTec%20XTR%20M/WRITE_USER_1.01_PRIVATE_STATUS.md)** | Yes | Yes | Automatic DCM after controller restart — prepared, not yet live-verified; private firmware |
+| **[Write User 1.01](Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.01.yaml)** | Yes | Yes | Public user controls and guarded native DCM; known-challenge cold start only |
 
 ### 1. Passive
 
@@ -61,7 +61,7 @@ Examples include:
 - Heat pump operating mode
 - Other user-accessible settings supported by the controller
 
-**Write User 1.0 is deliberately distributed as one self-contained ESPHome YAML.** The complete local DCM session, RS485 handling, telemetry, Home Assistant entities and supported Write User / calendar controls are integrated in that file. You do not need to assemble separate project YAML packages, custom headers or a challenge-response CSV. Your personal network and API credentials still belong in your local ESPHome `secrets.yaml`.
+**Write User 1.01 is distributed as one self-contained ESPHome YAML.** The complete local DCM session, RS485 handling, telemetry, Home Assistant entities and supported Write User / calendar controls are integrated in that file. You do not need to assemble separate project YAML packages, custom headers or a challenge-response CSV. Your personal network and API credentials still belong in your local ESPHome `secrets.yaml`.
 
 User-initiated setting changes are accepted only within their validated scope and require controller-origin feedback; an RS485 transport acknowledgement is not a confirmation that a setting changed. The UI2 Home Assistant state-bounce correction has been confirmed working on the development iTec XTR M. Compatibility and write semantics on other Thermia models/controller versions are not established.
 
