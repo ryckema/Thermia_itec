@@ -1,21 +1,19 @@
-# Write User 1.01 — private development build
+# Write User 1.01 — release and validation status
 
-**Status (2026-11-14):** SOURCE / OFFLINE TESTED — `PREPARED / NOT RUN`. The 1.01 image is **not** a public firmware download, and has **not** been target-compiled, flashed, or live tested.
+**Public standalone firmware:** [Thermia iTec XTR / thermia_itec_xtr_write_user_1.01.yaml](../../Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.01.yaml)
 
-Write User 1.01 is a private, integrated ESPHome candidate for automatic native DCM session restoration after a physical iTec XTR M controller restart, **without a Home Assistant start button**. It is based on the owner's full FIX19 development firmware, retaining Write User controls, calendar, telemetry, CRC, single RS485/UART/DE ownership, FC16 synchronization, native FC03 refresh, ABORT, and validated parameter-write scope. The private build also retains Service diagnostic entities; it is not identical to the smaller public 1.0 YAML.
+The public Write User 1.01 contains the complete existing user controls, calendar, telemetry, HA pending-state UI2 fix, V5/CRC, sole RS485/UART owner, guarded FC16/FC03, ABORT and the already-public exact-capture startup response from 1.0. It contains **no additional controller handshake secrets or variable-response key**. As with 1.0, a controller restart presenting a *different* challenge is **not guaranteed to establish DCM**. Do not mistake the new 1.01 build label for evidence of a new cryptographic method in the public firmware.
 
-## Evidence and scope
+A separate **private Write User 1.01 build** uses the same local Home Assistant / user control scope and adds automatic native cold-start after a real, qualified controller restart. Its implementation and fixed-key material are not part of the public distribution.
 
-- **FIX19 owner LIVE / LOCALLY VERIFIED for the user-armed route:** a different FC23 controller challenge was answered, followed by short/long-aware cold-start FC16 synchronization, fresh CURRENT 4/4, M6=5 transport qualification and repeated FC03 0708 native responses. This establishes the local transport/session behavior, **not** Thermia cloud connectivity.
-- **1.01 change (SOURCE / OFFLINE TESTED only):** after a genuinely observed controller bus-loss/return, the existing cold-start engine arms the same one-reply native handshake automatically in the qualified cold episode. No manual trial button. The 90-second lease, same-controller-epoch checks, A80E/A80F cold guard, bus-idle/CRC, sole TX owner, no-peer and ABORT protections remain.
-- **Not proven yet:** this exact automatic 1.01 build on the owner's controller. Controller-origin response after a real restart, M6=5, CURRENT 4/4 and continuing 0708 must all be observed for live completion.
+## Evidence
 
-## Build distribution and privacy
+- **FIX19 user-armed, owner LIVE:** variable FC23 response, controller continuation through FC16 startup, CURRENT 4/4, M6=5, and repeated FC03 0708 responses on the user's XTR M.
+- **Private Write User 1.01 automatic trigger:** SOURCE / OFFLINE TESTED; `PREPARED / NOT RUN`; not target compiled or owner flashed.
+- **Public Write User 1.01:** existing public Write User source with release banner revised and unchanged exact-capture handshake and UI2 fix; not newly owner-live tested as version 1.01. It is not interchangeable with the private automatic implementation.
 
-The verified variable handshake implementation depends on private/protected material from the owner's original Thermia Connect firmware. **The complete private 1.01 YAML/ZIP, handshake constants and implementation are intentionally not published in this public repository.** The prior public [Write User 1.0](./) remains the public firmware download and does not gain the private 1.01 capability from this document. No separate external YAML, cryptographic secret or unverified response has been substituted into the public version.
+No new parameter-write permissions have been authorized. A transport acknowledgement is not a controller-semantic setting confirmation.
 
-The owner's private 1.01 ZIP contains the full YAML, exact FIX19 rollback, concise build/flash/ABORT instructions and manifest. The owner flashes the firmware manually. In anomalous operation: use `Configuration | ABORT Native Session` and restore the private known-working FIX19 rollback; no autonomous flashing or expansion of parameter-write permissions.
-
-**Milestone:** automatic DCM after controller restart.
-**Real blocker:** the private 1.01 auto-trigger still awaits one owner-initiated live run.
-**Next action:** owner flashes private 1.01, restarts only the Thermia controller and checks automatic M6=5 / CURRENT 4/4 / 0708 without pressing HA buttons.
+**Current milestone:** native DCM after controller restart.
+**Real blocker:** newly assembled automatic 1.01 still requires an owner-initiated real controller restart observation.
+**One next action:** flash the private 1.01 build, restart only Thermia controller (no HA button), inspect M6=5, CURRENT 4/4 and sustained FC03 0708; ABORT and restore FIX19 if required.
