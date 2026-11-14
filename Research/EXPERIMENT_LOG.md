@@ -1,5 +1,16 @@
 # THERMIA EXPERIMENT LOG
 
+## 2026-11-14 WU-1.01-AUTO-COLD
+
+**Experiment ID:** WU-1.01-AUTO-COLD. **Status:** `PREPARED / NOT RUN`. **Hypothesis:** the previously FIX19-live-verified guarded variable FC23 cold-start handler can be armed by qualified controller restart automatically, allowing native DCM recovery without manually pressing any HA one-shot.
+
+**Baseline:** Owner-live FIX19 after manual one-shot: physical dynamic response, controller FC16 short/long cold synchronization, qualified M6=5, CURRENT 4/4, repeated FC03 0708. SVC4 and earlier Write User failed on nonmatching fixed challenge. **ONE meaningful change:** automatic guarded cold-start arming in existing native session engine instead of manual button. No unvalidated parameter writes or new UART owner.
+
+**Expected:** physical controller restart -> qualified cold guard -> one variable FC23 reply -> controller-origin FC16 sync -> M6=5 / CURRENT 4/4 -> sustained FC03 0708. **Actual:** no 1.01 owner-live run supplied, so result OPEN, not completed.
+
+**ABORT:** Configuration | ABORT Native Session; preserves DE LOW and RX-only stop. **ROLLBACK:** exact private FIX19 YAML included in full 1.01 ZIP. **Privacy:** fixed cryptographic key and protected handshake algorithm remain in private owner ZIP, not GitHub; four reference handshake samples are not required as runtime lookup. **ONE NEXT ACTION:** flash and observe one normal controller restart, without any HA trial button.
+
+
 ## 2026-11-13 SVC4-0532-SCOPED-READ — owner LIVE
 
 **Experiment ID:** SVC4-0532-SCOPED-READ. **Status:** `COMPLETE / POSITIVE` **for one native controller-origin 0532/18 read only**, not for unlimited automatic refresh. **Hypothesis:** reuse the Write User native 33-page OEM map with an owner-initiated scoped W3 bit15 read to obtain a fresh `0x0532/18` installation snapshot without a parameter write. **Baseline:** SVC3 FIX1 source, existing V5/S92 single bus owner and 4/4 CURRENT, but missing/stale 0532 capability data; original Write User lineage already handled 0532 geometry. **Prior evidence:** original CM930 source mapping and previously verified S92 owned controller communication. **ONE meaningful change:** bounded, user-enabled 0532 read scheduling in existing native owner (separate GUI catalogue cleanup removed 122 unmapped + 15 duplicate User menu entities).
