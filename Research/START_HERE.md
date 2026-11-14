@@ -1,5 +1,14 @@
 # THERMIA — START HERE
 
+## 2026-11-14 — Write User 1.01 private auto-start handoff
+
+**Latest matching owner-live evidence:** FIX19 user-armed controller restart reached full native session (M6=5, CURRENT 4/4, sustained FC03 0708 after variable FC23 and FC16 sync). **New integrated private candidate:** Write User 1.01 automatically arms the identical guarded cold-response path upon controller restart, without a HA button. Full YAML and FIX19 rollback are in one private ZIP. **STATUS: PREPARED / NOT RUN** (SOURCE / OFFLINE TESTED, not TARGET COMPILED/FLASHED/LIVE). No unvalidated parameter write TX was added. Four fixed captured handshake examples are not required at runtime; cryptographic key/algorithm remain private.
+
+**GitHub:** [Write User 1.01 private status](../Write%20(Beta)/iTec%20XTR%20M/WRITE_USER_1.01_PRIVATE_STATUS.md) only; public Write User 1.0 remains the downloadable source. Root README receives only a status link, iTec Eco stays untouched.
+
+**CURRENT MILESTONE:** zero-button native DCM after controller restart. **DELIVERABLE:** one complete private 1.01 firmware ZIP. **REAL BLOCKER:** owner-live 1.01 automatic cold-start evidence not yet available. **ONE NEXT ACTION:** flash private 1.01 and restart controller without HA button; assess M6=5 / CURRENT 4/4 / 0708, ABORT or rollback FIX19 on failure.
+
+
 ## 2026-11-13 SVC5 — Write Service native hot-water page handoff
 
 **LATEST OWNER-LIVE PRIVATE BUILD:** **SVC4 (RC09FC)** as identified in the 2026-11-12/13 owner log. Existing Write User, M6 stage40, 4/4 CURRENT, 0 sampled CRC disagreements/RX drops operational. Owner-triggered 0532 scoped read W3 bit15 returned controller-origin `FC16 0532/18` and status `CONFIRMED`: experiment SVC4-0532-SCOPED-READ **COMPLETE / POSITIVE**, *only* for this bounded read. `Energy Performance (0543)=0` means feature enable flag OFF, not COP. The 137 removed unverified/duplicate menu entities remain removed (122 unmapped, 15 duplicate); 24 mapped Service statuses retained. `0410` stays missing, and warm-water Service fields remain stale.
