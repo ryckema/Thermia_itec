@@ -1,5 +1,17 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-15 — CM930 native RTC: confirmed seven-register clock page and semantic write
+
+**PROVEN / LIVE (local iTec XTR M 3N, CM930 2.4.2):** Controller-origin FC16 `06EA/7` carries one seven-word system clock record; genuine XTR data match seconds (`06EA`), minutes (`06EB`), 24-hour hour (`06EC`), calendar day (`06ED`), month (`06EE`), year minus 2000 (`06EF`), and Monday-zero weekday (`06F0`). Original Connect configuration independently identifies the fields as clock parameters; the local FC16 proves the local read encoding. An **automatic read** through the existing native session was observed; the seven words are presented as **one** HA clock entity. Separate calendar-program slots are not the RTC.
+
+**PROVEN / LIVE (manual setting on this controller only):** Service-dev006 provided one explicit owner-initiated UTC-based native clock correction on 2026-11-15. Clock page physically sent at **13:31:40.304**; a genuine **controller-origin FC16 `06EA/7`** at **13:31:40.885** confirmed the corrected time. HA-minus-controller difference shifted from **-3629 s to +30 s**. Therefore semantic acceptance is demonstrated for the specific manual clock operation, not inferred from any transport ACK. Service-dev005's earlier local-wall-time encoding left about one hour of residual error; the UTC-payload interpretation is locally supported, not assumed universal.
+
+**SOURCE / OFFLINE TESTED, not LIVE (Service-dev007):** 24-hour automatic checker, HA time/timezone input, fresh controller clock prerequisite, >60 s correction threshold, persisted one-write-per-24h limit, opt-in HA enable switch (default OFF), exact existing native write route, controller FC16 confirmation and fail-stop/no autonomous retry. No second UART/RX/TX/DE owner; keep CRC/slot/session protections, existing ABORT and private dev006 rollback. Do not treat this scheduler as locally validated until owner runs it.
+
+**PUBLIC/PRIVATE:** This public Research file intentionally documents register meaning and outcome only; the proprietary selector, payload framing/implementation, protected Connect logic, keys and raw captured frames stay private. See [full clock milestone record](SERVICE_NATIVE_CLOCK_SYNC_2026-11-15.md). **ONE NEXT ACTION:** one dev007 owner-live automatic check, preserving manual dev006 LIVE proof separately.
+
+
+
 ## 2026-11-14 — variable FC23 and automatic cold DCM
 
 **PROVEN / LIVE on FIX19 only:** A variable controller FC23 challenge received after user-armed physical restart was answered, followed by real controller FC16 03E8/14 and full configuration synchronization, CURRENT 4/4, M6=5 and continuing FC03 0708 traffic. An FC23 transport response alone is not proof of session acceptance; the subsequent controller-origin pages and native runtime are the decisive evidence.
