@@ -1,5 +1,17 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-15 — Service-dev007 native heat-pump clock (manual LIVE, automatic PREPARED)
+
+**OBSERVED FACTS / LIVE (Service-dev006 on iTec XTR M 3N CM930 2.4.2):** The native clock page `06EA/7` was received from the controller and exported as one moving Home Assistant clock entity. A user-initiated UTC-payload clock correction physically sent at **13:31:40.304** was followed at **13:31:40.885** by a genuine controller-origin FC16 `06EA/7` and `CLOCK_SEMANTIC_CONFIRM confirmed=1`. Sync status became `COMPLETE / POSITIVE`; HA minus Thermia moved from **-3629 s** to **+30 s**, within the 60-second tolerance. The earlier local-time write left ~1 hour offset; UTC-based manual write on this controller fixed it. Not cross-model proof.
+
+**SOURCE / OFFLINE TESTED (Service-dev007):** A persistent opt-in HA switch enables **one check every 24h**, with **NO RTC write for <=60 s** deviation. Eligible out-of-tolerance readings reuse the validated one-shot native S92/UTC/FC16 readback path, limited to one automatic attempt per 24h. HA time and timezone must be ready; session/clock snapshot must be fresh; idle, CRC/DE and sole-TX-owner safeguards stay intact. No automatic retry after an unconfirmed attempt: self-disable and report outcome. Read-only clock refresh remains ~4 minutes. **Status: PREPARED / NOT RUN**, not target compiled, not flashed and not live tested as automatic firmware.
+
+**Private/public boundary:** complete Service YAML, firmware ZIP, proprietary code and sensitive captures are PRIVATE, not uploaded here. Only [non-sensitive clock research](SERVICE_NATIVE_CLOCK_SYNC_2026-11-15.md) was added; protected root README and iTec Eco remain unchanged. The existing Write User 1.01 and other research milestones below remain historical/independent.
+
+**CURRENT MILESTONE:** Service native RTC sync. **DELIVERABLE:** private Service-dev007 package and public research note. **REAL BLOCKER:** no real blocker for manual clock writes; automated 24h scheduler still needs one user LIVE check. **ONE NEXT ACTION:** user flash dev007, enable HA auto clock switch and observe first qualified scheduled check (no-write when within tolerance) or one exact controller-confirmed automatic correction.
+
+
+
 ## 2026-11-14 — Write User 1.01 public release and private-build boundary
 
 **PUBLIC GITHUB VERIFIED:** `Thermia iTec XTR/thermia_itec_xtr_write_user_1.01.yaml` published as complete standalone public ESPHome source. Release identifies 1.01, retains UI2 HA display correction and existing public exact-capture FC23 handshake. GitHub blob checked: none of the owner's five excluded private values present. **Source reused:** existing published 1.0 functional source, without adding private dynamic handshake. A new controller challenge can still fail closed; public 1.01 is not equivalent to private 1.01 for guaranteed cold-start. **STATUS:** SOURCE / OFFLINE TESTED; public GitHub committed, not newly FLASHED/LIVE.
