@@ -1,5 +1,15 @@
 # THERMIA — START HERE
 
+## 2026-11-15 — Service native heat-pump clock: manual LIVE; automatic 24h PREPARED
+
+**Start with [Service native RTC research / Service-dev001–dev007](SERVICE_NATIVE_CLOCK_SYNC_2026-11-15.md).** On the real iTec XTR M 3N, controller 2.4.2, seven-word native clock page `06EA/7` and periodic read (~4m) have been observed LIVE. A user-initiated Service-dev006 UTC-based manual clock correction was physically transmitted at 13:31:40.304 and **semantically confirmed by controller-origin FC16 `06EA/7` at 13:31:40.885**; HA−Thermia changed **-3629 s → +30 s**, status `COMPLETE / POSITIVE`. Earlier local-wall-time dev005 write was not accurate (approximately one-hour remaining offset).
+
+**Current private candidate:** `Service-dev007_PRIVATE.zip`, distributed to owner only (not on public GitHub). Adds persisted HA opt-in **Automatic Heat Pump Clock Sync (24h)** switch, default OFF; one check per 24h; only send one native correction if absolute drift >60s and session, HA clock and genuine RTC page are qualified; exact controller FC16 confirms, otherwise fail-stop/disable with no automatic retry. Manual sync and read-only clock entity remain. **Status: SOURCE / OFFLINE TESTED; PREPARED / NOT RUN** — no dev007 ESPHome target compile, flash, or automatic-mode live proof as of this handoff.
+
+**CURRENT MILESTONE:** Native RTC automation. **DELIVERABLE:** private Service-dev007 bundle and updated non-sensitive Research. **REAL BLOCKER:** none for manual clock correction; dev007 automatic scheduler awaits local live verification. **ONE NEXT ACTION:** owner flashes dev007, enables auto-sync once in HA and observes first qualified automatic check (or one controller-confirmed auto correction if drift >60s). **ABORT:** disable HA switch for new attempts, use `ABORT Native Session` for a running one; rollback private dev006. Protected README and `Write (Beta)/iTec Eco` unchanged.
+
+
+
 ## 2026-11-14 — Write User 1.01 publication
 
 **Public standalone YAML is on GitHub:** [thermia_itec_xtr_write_user_1.01.yaml](../Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.01.yaml). This preserves public exact-capture FC23 and existing UI2 user controls; it does **not** include the private variable handshake and cannot guarantee cold-start for changed challenges. **Private full 1.01 firmware** is a complete local ZIP; automatic cold-start awaits the owner physical test (`PREPARED / NOT RUN`). The private GitHub repository contains a status note, not the full YAML/ZIP. No sensitive material was committed to public GitHub.
