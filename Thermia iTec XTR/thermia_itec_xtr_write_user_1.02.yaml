@@ -1,21 +1,6 @@
 # Thermia iTec XTR — WRITE USER 1.02 (PUBLIC)
 # Self-contained ESPHome YAML; requires your existing secrets.yaml.
-#
-# ==================== WRITE USER CHANGELOG ====================
-# Write User 1.02 — 2026-11-17
-#   - Controller 0x02 loss >=5s with living room-sensor 0x0A: automatic
-#     one-episode transition into the EXISTING S92 cold-start state machine.
-#   - >=5s full-bus-loss controller-restart detection preserved.
-#   - Automatic recovery rearm moved from FC16+0708 transport ACK to
-#     same-epoch M6=5, native accepted ownership and CURRENT 4/4.
-#   - No HA arm button needed; ABORT, TX ownership and semantic guards retained.
-#   - No new physical TX primitive, FC23 algorithm or parameter write type.
-#   - PUBLIC LIMITATION: only pre-existing exact-capture FC23 replay is included.
-#     Private variable challenge-response is NOT published: this release does
-#     NOT claim live-validated DCM startup with variable challenges.
-#   - Existing Write User, calendar, SVC4 and HA entity IDs preserved.
-# Write User 1.01 — previous public release baseline.
-# ================= END WRITE USER CHANGELOG ===================
+
 
 # --- CONFIGURATION ---
 substitutions:
