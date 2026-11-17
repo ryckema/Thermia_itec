@@ -15,7 +15,7 @@ The repository currently provides three public XTR firmware configurations, each
 
 | Version | Monitoring | Control | Access level |
 |---|---|---|---|
-| **[Passive 1.3](Thermia%20iTec%20XTR/thermia_itec_xtr_passive_1.3.yaml)** | Yes | No | RX-only bus monitoring, OEM alarm decoding, source freshness and memory diagnostics |
+| **[Passive 1.1](Thermia%20iTec%20XTR/thermia_itec_xtr_passive_1.1.yaml)** | Yes | No | RX-only bus monitoring, OEM alarm decoding, source freshness and memory diagnostics |
 | **[DCM Read Only 1.0](Thermia%20iTec%20XTR/thermia_itec_xtr_DCM_readonly_1.0.yaml)** | Yes | No | Native DCM communication without parameter writes (transmits protocol traffic) |
 | **[Write User 1.01](Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.01.yaml)** | Yes | Yes | Public user controls and guarded native DCM; known-challenge cold start only |
 
@@ -36,7 +36,7 @@ This version listens to existing RS485 communication and extracts available sens
 
 **Alarm availability:** The passive firmware does not request `0x085F` or any other page. A valid controller-origin alarm page is decoded when seen, but pages may be absent without a native DCM peer/session. Missing or stale data must not be presented as *no active alarms*. Historical raw alarm identifiers are not assumed to be UI error codes.
 
-See the [iTec XTR firmware changelog](Thermia%20iTec%20XTR/CHANGELOG.md) for the Passive 1.0–1.3 release history and validation scope.
+See the [iTec XTR firmware changelog](Thermia%20iTec%20XTR/CHANGELOG.md) for the Passive 1.0–1.1 release history and validation scope.
 
 ### 2. DCM Read Only
 
@@ -181,9 +181,9 @@ If you're already running Home Assistant, using the ESPHome Device Builder is ge
 
 Choose one of the YAML configurations from the [Thermia iTec XTR](Thermia%20iTec%20XTR/) directory.
 
-**Passive read-only — 1.3**
+**Passive read-only — 1.1**
 
-[`thermia_itec_xtr_passive_1.3.yaml`](Thermia%20iTec%20XTR/thermia_itec_xtr_passive_1.3.yaml)
+[`thermia_itec_xtr_passive_1.1.yaml`](Thermia%20iTec%20XTR/thermia_itec_xtr_passive_1.1.yaml)
 
 The receive-only version, recommended as a starting point. It includes OEM-sourced alarm decoding, source-freshness handling, raw alarm history where observed, and heap/PSRAM diagnostics. See the [changelog](Thermia%20iTec%20XTR/CHANGELOG.md) for details and validation status.
 

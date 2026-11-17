@@ -1,57 +1,49 @@
 # Thermia iTec XTR — Firmware Changelog
 
-This file records the public **Passive** firmware development from 1.0 through 1.3. The other public XTR firmware variants have separate functionality and version numbers; Passive 1.3 is **not** an upgrade to DCM Read Only or Write User.
+This file records the public **Passive** firmware development from the original 1.0 baseline to the consolidated **Passive 1.1** release. The DCM Read Only and Write User variants have separate functionality and version numbers; Passive 1.1 is **not** an upgrade to either.
 
-For the latest firmware and setup instructions, see the [main README](../README.md). All entries below describe source changes and the verification available at the time, **not a guarantee of compilation or live operation on another Thermia controller**.
-
-## Passive 1.3 — 2026-11-17
-
-**Firmware:** [`thermia_itec_xtr_passive_1.3.yaml`](thermia_itec_xtr_passive_1.3.yaml)
-
-### Fixed
-- Removed five duplicated `disabled_by_default` YAML keys that prevented strict configuration parsing.
-
-### Improved
-- Reduced transient receive-parser allocations by reusing the frame buffer and using a fixed-size frame-length table; preserved the RX-only UART, CRC checks, bus-health tracking and existing Home Assistant identities.
-- Exposed the `0x0848` heat-demand value as a **raw, freshness-checked** diagnostic. Its precise PID/integral semantics are not yet verified on the local XTR; it is not assigned a fabricated unit or interpreted setpoint.
-
-### Added
-- ESP32 memory diagnostics: minimum free heap, largest contiguous free heap block, heap fragmentation and free PSRAM, in addition to existing free-heap monitoring.
-
-## Passive 1.2 — 2026-11-17
-
-### Added
-- Source-specific telemetry freshness so expired controller/outdoor-unit measurements become unavailable rather than silently retaining stale live values.
-- Home Assistant source/data-quality diagnostics to distinguish live and partial/unavailable telemetry.
-- Explicit distinction between restored/cached heating settings and fresh runtime observations.
-
-### Refined
-- Remaining internal operating-mode text translated into English and diagnostic presentation cleaned up.
-- Kept existing Home Assistant entity IDs, the alarm decoder and receive-only behaviour.
+For the current firmware and installation instructions, see the [main README](../README.md). Entries describe source changes and the verification available at the time; they are **not** a guarantee of full ESPHome compilation or live behaviour on another Thermia controller.
 
 ## Passive 1.1 — 2026-11-17
 
+**Firmware:** [`thermia_itec_xtr_passive_1.1.yaml`](thermia_itec_xtr_passive_1.1.yaml)
+
+This release combines the alarm decoding, data-freshness improvements, Home Assistant presentation fixes and memory optimizations into **one RX-only version**.
+
 ### Added
-- **30 OEM-profile-backed active-alarm predicates**: 29 based on the current alarm status registers `0x085F–0x0861`, and one outdoor-unit flag from `0x082F`. Optional/conditional predicates depend on their relevant source configuration fields.
-- Per-alarm Home Assistant sensors, aggregate alarm presentation and an alarm-data availability indication.
-- Passive decoding of controller-origin `0x0884/60` alarm-history pages, distinguishing legacy 10 × 6-word and newer 8 × 7-word record layouts when the received content permits. Raw history identifiers are **not** automatically mapped to current-alarm bits or UI E-codes.
-- Passive controller clock decoding from controller-origin `0x06EA/7` when received.
 
-### Corrected
-- Defrost field labels from `0x087B` (count), `0x087C` (minutes since previous defrost) and `0x087D` (previous duration in minutes), with invalid values left unavailable.
+- **30 OEM-profile-backed active-alarm predicates:** 29 from the current-alarm registers `0x085F–0x0861` and one outdoor-unit flag from `0x082F`. Conditional alarm predicates use their relevant configuration fields.
+- Individual Home Assistant alarm entities, an aggregate current-alarm summary and alarm-source availability diagnostics.
+- Passive decoding of controller-origin `0x0884/60` alarm-history pages. Supports legacy 10 × 6-word and newer 8 × 7-word layouts when the received record content permits; raw record identifiers are **not** equated with current-alarm bits or UI E-codes.
+- Passive decoding of the controller clock from `0x06EA/7`, when received.
+- Source-specific telemetry freshness and Home Assistant data-quality/source status indicators. Expired live controller, outside-unit and other source-based measurements become unavailable instead of silently showing stale values.
+- Explicit distinction between restored/cached heating settings and fresh controller observations.
+- ESP32-S3 memory diagnostics: minimum free heap, largest contiguous free heap block, heap fragmentation and free PSRAM, alongside existing free heap.
+- Freshness-checked raw heat-demand register `0x0848` as a diagnostic, without assigning unverified PID/integral semantics, units or a controller setpoint interpretation.
 
-### Data-availability limitation
-- Current-alarm `0x085F/5` frames have been observed on the local XTR bus with an existing DCM/Online communication peer. An RX-only ESP cannot force a missing alarm page to appear. Stale or never-seen alarm source pages remain unavailable; absence of data is **not** proof of zero alarms.
-- OEM alarm definitions are source-backed; individual real-fault semantics have not been validated for every alarm on the local XTR.
+### Fixed and improved
 
-## Passive 1.0 — earlier public baseline
+- Removed five duplicated `disabled_by_default` YAML keys, correcting strict YAML parsing.
+- Reduced receive-parser temporary allocations by reusing the frame buffer and using a fixed-size frame-length table.
+- Corrected defrost labels: `0x087B` is the counter, `0x087C` is minutes since the previous defrost, and `0x087D` is the previous duration in minutes. Invalid values remain unavailable.
+- Finished English translations of internal operating-mode values and cleaned up Home Assistant diagnostic visibility.
+- Preserved existing Home Assistant IDs, the validated RX parser/CRC checks, bus health/watchdog and **no-TX** UART architecture.
 
-- Initial public XTR receive-only ESPHome YAML, using one RS485 receiver, Modbus RTU-style CRC validation, passive temperature/operating telemetry, selected settings caching and Home Assistant entities.
-- Baseline preserved as the starting point for Passive 1.1–1.3. Release date not asserted here.
+### Availability and verification
 
-## Other currently published XTR firmware variants
+- Current-alarm `0x085F/5` frames have been observed on the local XTR bus when a DCM/Online communication peer was active. A passive ESP does not request those pages; stale or never-seen alarm sources stay unavailable. **No data is not the same as no active alarm.**
+- The OEM definitions are source-backed; real-fault behaviour for all 30 predicates has not been tested on the local XTR.
+- **SOURCE / OFFLINE TESTED:** strict YAML structure/duplicate-key checks, alarm-formula comparison and receive-parser equivalence on captured bus data (2,476 valid frames decoded identically).
+- These offline checks are **not** a full ESPHome target compile or an independent LIVE firmware test. No physical TX, active reads, alarm acknowledgements or parameter writes were added.
 
-- [DCM Read Only 1.0](thermia_itec_xtr_DCM_readonly_1.0.yaml) — native DCM read-only integration; unlike Passive, it can transmit protocol traffic but does not make parameter changes.
-- [Write User 1.01](thermia_itec_xtr_write_user_1.01.yaml) — public native user-setting control variant. It has different controller/session requirements and should not be confused with RX-only Passive.
+## Passive 1.0 — original public baseline
 
-**Scope:** No private handshake algorithms, keys, authenticated captures or controller secrets are included in this public changelog.
+- Initial public XTR receive-only ESPHome YAML with one RS485 receiver, Modbus RTU-like CRC checking, passive temperature and operating telemetry, selected heating-settings cache and Home Assistant integration.
+- Serves as the baseline for the consolidated Passive 1.1 release. Original release date is not asserted here.
+
+## Other published iTec XTR firmware variants
+
+- [DCM Read Only 1.0](thermia_itec_xtr_DCM_readonly_1.0.yaml) — native DCM read-only integration. Unlike Passive, it can transmit protocol traffic but does not change controller parameters.
+- [Write User 1.01](thermia_itec_xtr_write_user_1.01.yaml) — public native user-setting-control variant with distinct controller/session requirements.
+
+**Scope:** This public changelog contains no proprietary handshake algorithms, keys, authenticated captures or controller secrets.
