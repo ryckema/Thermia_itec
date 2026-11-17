@@ -1,5 +1,5 @@
 # Thermia iTec XTR M — PASSIVE READ-ONLY / ENGLISH PRODUCTION CANDIDATE
-# Build: XTR-PASSIVE-EN-01 (SOURCE/OFFLINE REVIEW; PREPARED / NOT RUN)
+# Build: XTR-PASSIVE-FULLRX-01 (SOURCE/OFFLINE TESTED; PREPARED / NOT RUN)
 # Parent: 9b9fc5a9d2812ebbba00df627713a2039817868c — public XTR v31 FIX4 RX-only YAML.
 # HA: experimental/raw/disabled diagnostics INTERNAL (not registered as HA entities).
 # No UART TX pin, no read/write injection, no handshakes, no test controls.
@@ -265,6 +265,68 @@ globals:
     restore_value: no
     initial_value: '-1'
 
+
+  # Controller-origin optional page mirrors; RX only, never restored as current data.
+  - id: passive_alarm_words
+    type: 'std::array<uint16_t, 5>'
+    restore_value: no
+    initial_value: 'std::array<uint16_t, 5>{}'
+  - id: passive_alarm_rx_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: passive_history_words
+    type: 'std::array<uint16_t, 60>'
+    restore_value: no
+    initial_value: 'std::array<uint16_t, 60>{}'
+  - id: passive_history_rx_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: passive_0870_words
+    type: 'std::array<uint16_t, 17>'
+    restore_value: no
+    initial_value: 'std::array<uint16_t, 17>{}'
+  - id: passive_0870_rx_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: passive_0848_rx_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: passive_comp_initialized
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: passive_comp_last_running
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: passive_comp_sample_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: passive_comp_run_start_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: passive_comp_starts
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: passive_comp_completed
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: passive_comp_last_run_seconds
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: passive_comp_total_seconds
+    type: uint64_t
+    restore_value: no
+    initial_value: '0'
 
 uart:
   id: thermia_uart
@@ -861,6 +923,33 @@ uart:
                     compressor_frequency > 0.0f && compressor_current < 0.2f;
                   const bool fan_running = fan_speed > 0.0f;
 
+                  // RX-only observed compressor cycles using the existing CRC-validated 0x1E FC04.
+                  if (compressor_frequency >= 0.0f && compressor_frequency < 200.0f) {
+                    const uint32_t now=millis()?millis():1u;
+                    const uint32_t prev=id(passive_comp_sample_ms);
+                    const bool contiguous=prev && uint32_t(now-prev)<=30000u;
+                    id(passive_comp_sample_ms)=now;
+                    if(!id(passive_comp_initialized)||!contiguous) {
+                      id(passive_comp_initialized)=true;
+                      id(passive_comp_last_running)=compressor_running;
+                      id(passive_comp_run_start_ms)=0u; // first ON sample is not a proven start
+                    } else {
+                      if(compressor_running&&!id(passive_comp_last_running)) {
+                        ++id(passive_comp_starts);
+                        id(passive_comp_run_start_ms)=now;
+                      } else if(!compressor_running&&id(passive_comp_last_running)) {
+                        const uint32_t start_ms=id(passive_comp_run_start_ms);
+                        if(start_ms) {
+                          const uint32_t seconds=uint32_t(now-start_ms)/1000u;
+                          id(passive_comp_last_run_seconds)=seconds;
+                          id(passive_comp_total_seconds)+=uint64_t(seconds);
+                          ++id(passive_comp_completed);
+                        }
+                        id(passive_comp_run_start_ms)=0u;
+                      }
+                      id(passive_comp_last_running)=compressor_running;
+                    }
+                  }
                   publish_bool_if_changed(
                     id(thermia_compressor_running),
                     compressor_running
@@ -1899,11 +1988,27 @@ uart:
                   // Native heating/DHW/cooling status remains published independently.
                 }
 
+                // Optional controller-origin FC16 pages, NEVER a request/response.
+                if (slave==0x0F && start==0x085F && count==5) {
+                  for(unsigned k=0;k<5u;k++)
+                    id(passive_alarm_words)[k]=uint16_t(reg_s(uint16_t(0x085F+k)));
+                  id(passive_alarm_rx_ms)=millis()?millis():1u;
+                }
+                if (slave==0x0F && start==0x0884 && count==60) {
+                  for(unsigned k=0;k<60u;k++)
+                    id(passive_history_words)[k]=uint16_t(reg_s(uint16_t(0x0884+k)));
+                  id(passive_history_rx_ms)=millis()?millis():1u;
+                }
                 // 0870/count17 family. Firmware names are authoritative for
                 // register ownership; human labels for 087C/087D remain alpha
                 // until a local natural defrost gives direct temporal proof.
                 if (slave == 0x0F && start == 0x0870 && count >= 14) {
                   id(thermia_native_page_seen_mask) |= (1UL << 12);  // RX source 0x0870
+                  if(count>=17) {
+                    for(unsigned k=0;k<17u;k++)
+                      id(passive_0870_words)[k]=uint16_t(reg_s(uint16_t(0x0870+k)));
+                    id(passive_0870_rx_ms)=millis()?millis():1u;
+                  }
 
                   const int16_t defrost_count = reg_s(0x087B);
                   const int16_t previous_interval = reg_s(0x087C);
@@ -2358,6 +2463,7 @@ uart:
 
                 if (slave == 0x0F && start == 0x0848 && count >= 23) {
                   id(thermia_native_page_seen_mask) |= (1UL << 10);  // RX source 0x0848
+                  id(passive_0848_rx_ms)=millis()?millis():1u;
 
                   const int16_t heat_demand_raw = reg_s(0x0848);
                   const int16_t supply_wanted = reg_s(0x0849);
@@ -3457,7 +3563,7 @@ sensor:
   - platform: template
     internal: true
     id: thermia_previous_defrost_interval
-    name: "Previous Defrost Interval"
+    name: "Minutes Since Last Defrost (Legacy Internal)"
     unit_of_measurement: "min"
     accuracy_decimals: 0
     entity_category: diagnostic
@@ -3466,7 +3572,7 @@ sensor:
   - platform: template
     internal: true
     id: thermia_time_since_last_defrost
-    name: "Time Since Last Defrost"
+    name: "Last Defrost Duration Raw (Legacy Internal, Unverified)"
     unit_of_measurement: "min"
     accuracy_decimals: 0
     entity_category: diagnostic
@@ -5292,6 +5398,268 @@ binary_sensor:
     entity_category: diagnostic
 
 
+  # Complete optional readouts; only real controller FC16 pages qualify.
+  - platform: template
+    id: passive_heat_demand_pid
+    name: "Operation Data | Heat Demand PID"
+    update_interval: 15s
+    accuracy_decimals: 0
+    lambda: |-
+      const uint32_t t=id(passive_0848_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      if(!id(thermia_heat_demand_raw_0848)->has_state()) return NAN;
+      const float raw=id(thermia_heat_demand_raw_0848)->state;
+      if(raw==-100.0f) return NAN;
+      return -raw; // verified XTR M CM930 2.4.2 profile
+  - platform: template
+    id: passive_hours_compressor
+    name: "Operation Time and Defrost | Compressor Hours"
+    update_interval: 15s
+    accuracy_decimals: 0
+    unit_of_measurement: "h"
+    device_class: duration
+    state_class: total_increasing
+    lambda: |-
+      const uint32_t t=id(passive_0870_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      const uint16_t word=id(passive_0870_words)[0u];
+      const uint16_t v=word;
+      return float(v);
+  - platform: template
+    id: passive_hours_heating
+    name: "Operation Time and Defrost | Heating Hours"
+    update_interval: 15s
+    accuracy_decimals: 0
+    unit_of_measurement: "h"
+    device_class: duration
+    state_class: total_increasing
+    lambda: |-
+      const uint32_t t=id(passive_0870_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      const uint16_t word=id(passive_0870_words)[2u];
+      const uint16_t v=word;
+      return float(v);
+  - platform: template
+    id: passive_hours_cooling
+    name: "Operation Time and Defrost | Cooling Hours"
+    update_interval: 15s
+    accuracy_decimals: 0
+    unit_of_measurement: "h"
+    device_class: duration
+    state_class: total_increasing
+    lambda: |-
+      const uint32_t t=id(passive_0870_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      const uint16_t word=id(passive_0870_words)[3u];
+      const uint16_t v=word;
+      return float(v);
+  - platform: template
+    id: passive_hours_dhw
+    name: "Operation Time and Defrost | Hot Water Hours"
+    update_interval: 15s
+    accuracy_decimals: 0
+    unit_of_measurement: "h"
+    device_class: duration
+    state_class: total_increasing
+    lambda: |-
+      const uint32_t t=id(passive_0870_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      const uint16_t word=id(passive_0870_words)[6u];
+      const uint16_t v=word;
+      return float(v);
+  - platform: template
+    id: passive_hours_aux1
+    name: "Operation Time and Defrost | Auxiliary Heater 1 Hours"
+    update_interval: 15s
+    accuracy_decimals: 0
+    unit_of_measurement: "h"
+    device_class: duration
+    state_class: total_increasing
+    lambda: |-
+      const uint32_t t=id(passive_0870_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      const uint16_t word=id(passive_0870_words)[7u];
+      const uint16_t v=word;
+      return float(v);
+  - platform: template
+    id: passive_hours_aux2
+    name: "Operation Time and Defrost | Auxiliary Heater 2 Hours"
+    update_interval: 15s
+    accuracy_decimals: 0
+    unit_of_measurement: "h"
+    device_class: duration
+    state_class: total_increasing
+    lambda: |-
+      const uint32_t t=id(passive_0870_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      const uint16_t word=id(passive_0870_words)[8u];
+      const uint16_t v=word;
+      return float(v);
+  - platform: template
+    id: passive_hours_aux3
+    name: "Operation Time and Defrost | Auxiliary Heater 3 Hours"
+    update_interval: 15s
+    accuracy_decimals: 0
+    unit_of_measurement: "h"
+    device_class: duration
+    state_class: total_increasing
+    lambda: |-
+      const uint32_t t=id(passive_0870_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      const uint16_t word=id(passive_0870_words)[9u];
+      const uint16_t v=word;
+      return float(v);
+  - platform: template
+    id: passive_hours_external
+    name: "Operation Time and Defrost | External Auxiliary Hours"
+    update_interval: 15s
+    accuracy_decimals: 0
+    unit_of_measurement: "h"
+    device_class: duration
+    state_class: total_increasing
+    lambda: |-
+      const uint32_t t=id(passive_0870_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      const uint16_t word=id(passive_0870_words)[10u];
+      const uint16_t v=word;
+      return float(v);
+  - platform: template
+    id: passive_defrost_cycles
+    name: "Operation Time and Defrost | Defrost Cycles"
+    update_interval: 15s
+    accuracy_decimals: 0
+    state_class: total_increasing
+    lambda: |-
+      const uint32_t t=id(passive_0870_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      const uint16_t word=id(passive_0870_words)[11u];
+      const int16_t v=int16_t(word);
+      if(v<0)return NAN;
+      return float(v);
+  - platform: template
+    id: passive_minutes_since_defrost
+    name: "Operation Time and Defrost | Minutes Since Last Defrost"
+    update_interval: 15s
+    accuracy_decimals: 0
+    unit_of_measurement: "min"
+    state_class: measurement
+    lambda: |-
+      const uint32_t t=id(passive_0870_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      const uint16_t word=id(passive_0870_words)[12u];
+      const int16_t v=int16_t(word);
+      if(v<0)return NAN;
+      return float(v);
+  - platform: template
+    id: passive_last_defrost_unverified
+    name: "Operation Time and Defrost | Last Defrost Duration (Unverified)"
+    update_interval: 15s
+    accuracy_decimals: 0
+    unit_of_measurement: "min"
+    state_class: measurement
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t t=id(passive_0870_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      const uint16_t word=id(passive_0870_words)[13u];
+      const int16_t v=int16_t(word);
+      if(v<0||v>60)return NAN;
+      return float(v);
+  - platform: template
+    id: passive_last_defrost_raw
+    name: "Operation Time and Defrost | Last Defrost Raw 087D"
+    update_interval: 15s
+    accuracy_decimals: 0
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t t=id(passive_0870_rx_ms), now=millis();
+      if(!t||uint32_t(now-t)>=300000u||
+         !id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u) return NAN;
+      const uint16_t word=id(passive_0870_words)[13u];
+      const int16_t v=int16_t(word);
+      return float(v);
+  - platform: template
+    id: passive_compressor_starts
+    name: "Compressor Starts Since Boot"
+    update_interval: 30s
+    accuracy_decimals: 0
+    lambda: |-
+      if(!id(passive_comp_initialized)||!id(passive_comp_sample_ms)||
+         uint32_t(millis()-id(passive_comp_sample_ms))>30000u)return NAN;
+      return float(id(passive_comp_starts));
+  - platform: template
+    id: passive_compressor_run_now
+    name: "Observed Compressor Run Duration"
+    update_interval: 10s
+    accuracy_decimals: 0
+    unit_of_measurement: "s"
+    device_class: duration
+    state_class: measurement
+    lambda: |-
+      const uint32_t ts=id(passive_comp_sample_ms), now=millis();
+      if(!id(passive_comp_initialized)||!ts||uint32_t(now-ts)>30000u)return NAN;
+      if(!id(passive_comp_last_running))return 0.0f;
+      const uint32_t start=id(passive_comp_run_start_ms);
+      return start?float(uint32_t(now-start))/1000.0f:NAN;
+  - platform: template
+    id: passive_compressor_completed
+    name: "Compressor Cycles | Completed Runs Since Boot"
+    update_interval: 30s
+    accuracy_decimals: 0
+    lambda: |-
+      if(!id(passive_comp_initialized)||!id(passive_comp_sample_ms)||
+         uint32_t(millis()-id(passive_comp_sample_ms))>30000u)return NAN;
+      return float(id(passive_comp_completed));
+  - platform: template
+    id: passive_compressor_last_run
+    name: "Compressor Cycles | Last Completed Run"
+    update_interval: 30s
+    accuracy_decimals: 1
+    unit_of_measurement: "min"
+    device_class: duration
+    state_class: measurement
+    lambda: |-
+      if(!id(passive_comp_completed))return NAN;
+      return float(id(passive_comp_last_run_seconds))/60.0f;
+  - platform: template
+    id: passive_compressor_avg_run
+    name: "Compressor Cycles | Mean Completed Run Since Boot"
+    update_interval: 30s
+    accuracy_decimals: 1
+    unit_of_measurement: "min"
+    device_class: duration
+    state_class: measurement
+    lambda: |-
+      const uint32_t n=id(passive_comp_completed);
+      return n?float(id(passive_comp_total_seconds))/(float(n)*60.0f):NAN;
+
 text_sensor:
   # Observability only, no transport requests. Shows whether 0442/count13 was seen.
   - platform: template
@@ -5363,6 +5731,655 @@ text_sensor:
 # =============================================================================
 # PERIODIC BUS HEALTH CHECK
 # =============================================================================
+
+  # Alarm, history and optional-page freshness — RX only, no DCM owner.
+  - platform: template
+    id: passive_alarm_active
+    name: "Alarms | Active Alarm Descriptions"
+    update_interval: 15s
+    lambda: |-
+      const uint32_t t=id(passive_alarm_rx_ms),now=millis();
+      if(!t)return {"Unknown | no controller 085F/5 snapshot"};
+      if(uint32_t(now-t)>=300000u)return {"Stale | last alarm snapshot expired"};
+      if(!id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u)
+        return {"Unknown | Thermia bus stale"};
+      struct NamedBit {unsigned word;unsigned bit;const char *name;};
+      static const NamedBit named[]={
+        {0u,2u,"Auxiliary heater fault"},
+        {0u,10u,"Condenser circulation pump fault"},
+        {0u,11u,"Heating system circulation pump fault"},
+        {0u,12u,"Circulation pump fault"},
+        {0u,13u,"Outdoor temperature sensor fault"},
+        {0u,14u,"Tank temperature sensor fault (EQ only)"},
+        {0u,15u,"Supply line temperature sensor fault"},
+        {1u,0u,"System supply temperature sensor fault"},
+        {1u,1u,"Return line temperature sensor fault"},
+        {1u,2u,"Four-way valve issue"},
+        {1u,3u,"Buffer tank sensor fault"},
+        {1u,5u,"Hot water temperature sensor fault"},
+        {1u,6u,"Hot water tank top sensor fault"},
+        {1u,9u,"Condenser inlet sensor flag (SPLIT condition unverified)"},
+        {1u,10u,"Condenser outlet sensor flag (SPLIT condition unverified)"},
+        {1u,11u,"REF1 sensor flag (SPLIT condition unverified)"},
+        {1u,13u,"Outdoor compressor alarm"},
+        {1u,14u,"Outdoor unit alarm"},
+        {1u,15u,"Outdoor communication kit alarm"},
+        {2u,1u,"Room temperature sensor fault"},
+        {2u,2u,"Unsupported old HUB card version"},
+        {2u,3u,"Distribution circuit 1 sensor fault"},
+        {2u,4u,"Distribution circuit 2 sensor flag (config unverified)"},
+        {2u,5u,"Pool sensor flag (config unverified)"},
+        {2u,7u,"Outdoor unit compatibility flag (condition unverified)"},
+        {2u,8u,"Indoor I/O HUB communication fault"},
+        {2u,9u,"Communication kit communication fault"},
+        {2u,10u,"Expansion card communication fault"},
+        {2u,11u,"Internet gateway communication flag"},
+      };
+      const auto &w=id(passive_alarm_words);
+      std::string msg;unsigned n=0;
+      for(const auto &a:named) {
+        if(!(w[a.word]&(uint16_t(1u)<<a.bit)))continue;
+        if(a.word==0u&&a.bit==10u&&(w[0]&0x0200u))continue;
+        if(a.word==0u&&a.bit==12u&&(w[1]&0x0010u))continue;
+        if(n++)msg+="; ";
+        msg+=a.name;
+      }
+      if(!n){
+        bool other=false;
+        for(unsigned k=0;k<5u;k++)other|=(w[k]!=0u);
+        return {other?"No mapped active alarms; other/unknown flags present":
+                      "No active 085F flags (not an all-system alarm clear)"};
+      }
+      if(msg.size()>230u){msg.resize(227u);msg+="...";}
+      return {msg};
+  - platform: template
+    id: passive_alarm_raw
+    name: "Alarms | Alarm Flags (Passive Raw)"
+    update_interval: 15s
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t t=id(passive_alarm_rx_ms),now=millis();
+      if(!t)return {"Unknown | no controller 085F/5 snapshot"};
+      if(uint32_t(now-t)>=300000u)return {"Stale | last alarm snapshot expired"};
+      if(!id(thermia_last_valid_frame_ms)||
+         uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u)
+        return {"Unknown | Thermia bus stale"};
+      const auto &w=id(passive_alarm_words);char b[145];
+      snprintf(b,sizeof(b),"RAW 085F=%04X 0860=%04X 0861=%04X 0862=%04X 0863=%04X",
+        unsigned(w[0]),unsigned(w[1]),unsigned(w[2]),unsigned(w[3]),unsigned(w[4]));
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_1
+    name: "Alarms | History 1"
+    update_interval: 30s
+    lambda: |-
+      const uint32_t stamp=id(passive_history_rx_ms),now=millis();
+      if(!stamp)return {"Unknown | no controller 0884/60 received"};
+      if(uint32_t(now-stamp)>=300000u)return {"Stale | history older than 5 min"};
+      if(!id(thermia_last_valid_frame_ms)||
+        uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u)
+        return {"Unknown | Thermia bus stale"};
+      const auto &w=id(passive_history_words);
+      auto valid=[](unsigned mi,unsigned h,unsigned day,unsigned mo,unsigned yr)->bool {
+        if(mi>59u||h>23u||mo<1u||mo>12u||day<1u||yr>99u)return false;
+        static const unsigned nd[]={31,28,31,30,31,30,31,31,30,31,30,31};
+        const unsigned year=2000u+yr;
+        return day<=nd[mo-1u]+((mo==2u&&year%4u==0u&&(year%100u!=0u||year%400u==0u))?1u:0u);
+      };
+      unsigned good6=0,bad6=0,good7=0,bad7=0;
+      for(unsigned n=0;n<10u;n++){
+        const unsigned o=n*6u;bool full=false;
+        for(unsigned k=0;k<6u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+1u],w[o+2u],w[o+3u],w[o+4u],w[o+5u]))good6++;
+        else bad6++;
+      }
+      for(unsigned n=0;n<8u;n++){
+        const unsigned o=n*7u;bool full=false;
+        for(unsigned k=0;k<7u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+2u],w[o+3u],w[o+4u],w[o+5u],w[o+6u]))good7++;
+        else bad7++;
+      }
+      unsigned stride=0u;
+      if(good6>=6u&&good6>good7+2u)stride=6u;
+      else if(good7>=5u&&good7>good6+2u)stride=7u;
+      else if(good6>0u&&bad6==0u&&good7==0u&&bad7>0u)stride=6u;
+      else if(good7>0u&&bad7==0u&&good6==0u&&bad6>0u)stride=7u;
+      if(!stride)return {"Unknown / ambiguous history record layout"};
+      const unsigned idx=0u;
+      if(idx>=(stride==6u?10u:8u))return {"Not present in this record layout"};
+      const unsigned o=idx*stride,shift=stride==7u?2u:1u;
+      const unsigned code=w[o],mi=w[o+shift],h=w[o+shift+1u];
+      const unsigned day=w[o+shift+2u],mo=w[o+shift+3u],yr=w[o+shift+4u];
+      if(!(code|mi|h|day|mo|yr))return {"No history entry (zero record)"};
+      if(!valid(mi,h,day,mo,yr))return {"Unknown | history timestamp invalid"};
+      char b[132];
+      if(stride==7u)
+        snprintf(b,sizeof(b),"Event 0x%04X / detail 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,unsigned(w[o+1u]),2000u+yr,mo,day,h,mi);
+      else
+        snprintf(b,sizeof(b),"Event 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,2000u+yr,mo,day,h,mi);
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_2
+    name: "Alarms | History 2"
+    update_interval: 30s
+    lambda: |-
+      const uint32_t stamp=id(passive_history_rx_ms),now=millis();
+      if(!stamp)return {"Unknown | no controller 0884/60 received"};
+      if(uint32_t(now-stamp)>=300000u)return {"Stale | history older than 5 min"};
+      if(!id(thermia_last_valid_frame_ms)||
+        uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u)
+        return {"Unknown | Thermia bus stale"};
+      const auto &w=id(passive_history_words);
+      auto valid=[](unsigned mi,unsigned h,unsigned day,unsigned mo,unsigned yr)->bool {
+        if(mi>59u||h>23u||mo<1u||mo>12u||day<1u||yr>99u)return false;
+        static const unsigned nd[]={31,28,31,30,31,30,31,31,30,31,30,31};
+        const unsigned year=2000u+yr;
+        return day<=nd[mo-1u]+((mo==2u&&year%4u==0u&&(year%100u!=0u||year%400u==0u))?1u:0u);
+      };
+      unsigned good6=0,bad6=0,good7=0,bad7=0;
+      for(unsigned n=0;n<10u;n++){
+        const unsigned o=n*6u;bool full=false;
+        for(unsigned k=0;k<6u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+1u],w[o+2u],w[o+3u],w[o+4u],w[o+5u]))good6++;
+        else bad6++;
+      }
+      for(unsigned n=0;n<8u;n++){
+        const unsigned o=n*7u;bool full=false;
+        for(unsigned k=0;k<7u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+2u],w[o+3u],w[o+4u],w[o+5u],w[o+6u]))good7++;
+        else bad7++;
+      }
+      unsigned stride=0u;
+      if(good6>=6u&&good6>good7+2u)stride=6u;
+      else if(good7>=5u&&good7>good6+2u)stride=7u;
+      else if(good6>0u&&bad6==0u&&good7==0u&&bad7>0u)stride=6u;
+      else if(good7>0u&&bad7==0u&&good6==0u&&bad6>0u)stride=7u;
+      if(!stride)return {"Unknown / ambiguous history record layout"};
+      const unsigned idx=1u;
+      if(idx>=(stride==6u?10u:8u))return {"Not present in this record layout"};
+      const unsigned o=idx*stride,shift=stride==7u?2u:1u;
+      const unsigned code=w[o],mi=w[o+shift],h=w[o+shift+1u];
+      const unsigned day=w[o+shift+2u],mo=w[o+shift+3u],yr=w[o+shift+4u];
+      if(!(code|mi|h|day|mo|yr))return {"No history entry (zero record)"};
+      if(!valid(mi,h,day,mo,yr))return {"Unknown | history timestamp invalid"};
+      char b[132];
+      if(stride==7u)
+        snprintf(b,sizeof(b),"Event 0x%04X / detail 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,unsigned(w[o+1u]),2000u+yr,mo,day,h,mi);
+      else
+        snprintf(b,sizeof(b),"Event 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,2000u+yr,mo,day,h,mi);
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_3
+    name: "Alarms | History 3"
+    update_interval: 30s
+    lambda: |-
+      const uint32_t stamp=id(passive_history_rx_ms),now=millis();
+      if(!stamp)return {"Unknown | no controller 0884/60 received"};
+      if(uint32_t(now-stamp)>=300000u)return {"Stale | history older than 5 min"};
+      if(!id(thermia_last_valid_frame_ms)||
+        uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u)
+        return {"Unknown | Thermia bus stale"};
+      const auto &w=id(passive_history_words);
+      auto valid=[](unsigned mi,unsigned h,unsigned day,unsigned mo,unsigned yr)->bool {
+        if(mi>59u||h>23u||mo<1u||mo>12u||day<1u||yr>99u)return false;
+        static const unsigned nd[]={31,28,31,30,31,30,31,31,30,31,30,31};
+        const unsigned year=2000u+yr;
+        return day<=nd[mo-1u]+((mo==2u&&year%4u==0u&&(year%100u!=0u||year%400u==0u))?1u:0u);
+      };
+      unsigned good6=0,bad6=0,good7=0,bad7=0;
+      for(unsigned n=0;n<10u;n++){
+        const unsigned o=n*6u;bool full=false;
+        for(unsigned k=0;k<6u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+1u],w[o+2u],w[o+3u],w[o+4u],w[o+5u]))good6++;
+        else bad6++;
+      }
+      for(unsigned n=0;n<8u;n++){
+        const unsigned o=n*7u;bool full=false;
+        for(unsigned k=0;k<7u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+2u],w[o+3u],w[o+4u],w[o+5u],w[o+6u]))good7++;
+        else bad7++;
+      }
+      unsigned stride=0u;
+      if(good6>=6u&&good6>good7+2u)stride=6u;
+      else if(good7>=5u&&good7>good6+2u)stride=7u;
+      else if(good6>0u&&bad6==0u&&good7==0u&&bad7>0u)stride=6u;
+      else if(good7>0u&&bad7==0u&&good6==0u&&bad6>0u)stride=7u;
+      if(!stride)return {"Unknown / ambiguous history record layout"};
+      const unsigned idx=2u;
+      if(idx>=(stride==6u?10u:8u))return {"Not present in this record layout"};
+      const unsigned o=idx*stride,shift=stride==7u?2u:1u;
+      const unsigned code=w[o],mi=w[o+shift],h=w[o+shift+1u];
+      const unsigned day=w[o+shift+2u],mo=w[o+shift+3u],yr=w[o+shift+4u];
+      if(!(code|mi|h|day|mo|yr))return {"No history entry (zero record)"};
+      if(!valid(mi,h,day,mo,yr))return {"Unknown | history timestamp invalid"};
+      char b[132];
+      if(stride==7u)
+        snprintf(b,sizeof(b),"Event 0x%04X / detail 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,unsigned(w[o+1u]),2000u+yr,mo,day,h,mi);
+      else
+        snprintf(b,sizeof(b),"Event 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,2000u+yr,mo,day,h,mi);
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_4
+    name: "Alarms | History 4"
+    update_interval: 30s
+    lambda: |-
+      const uint32_t stamp=id(passive_history_rx_ms),now=millis();
+      if(!stamp)return {"Unknown | no controller 0884/60 received"};
+      if(uint32_t(now-stamp)>=300000u)return {"Stale | history older than 5 min"};
+      if(!id(thermia_last_valid_frame_ms)||
+        uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u)
+        return {"Unknown | Thermia bus stale"};
+      const auto &w=id(passive_history_words);
+      auto valid=[](unsigned mi,unsigned h,unsigned day,unsigned mo,unsigned yr)->bool {
+        if(mi>59u||h>23u||mo<1u||mo>12u||day<1u||yr>99u)return false;
+        static const unsigned nd[]={31,28,31,30,31,30,31,31,30,31,30,31};
+        const unsigned year=2000u+yr;
+        return day<=nd[mo-1u]+((mo==2u&&year%4u==0u&&(year%100u!=0u||year%400u==0u))?1u:0u);
+      };
+      unsigned good6=0,bad6=0,good7=0,bad7=0;
+      for(unsigned n=0;n<10u;n++){
+        const unsigned o=n*6u;bool full=false;
+        for(unsigned k=0;k<6u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+1u],w[o+2u],w[o+3u],w[o+4u],w[o+5u]))good6++;
+        else bad6++;
+      }
+      for(unsigned n=0;n<8u;n++){
+        const unsigned o=n*7u;bool full=false;
+        for(unsigned k=0;k<7u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+2u],w[o+3u],w[o+4u],w[o+5u],w[o+6u]))good7++;
+        else bad7++;
+      }
+      unsigned stride=0u;
+      if(good6>=6u&&good6>good7+2u)stride=6u;
+      else if(good7>=5u&&good7>good6+2u)stride=7u;
+      else if(good6>0u&&bad6==0u&&good7==0u&&bad7>0u)stride=6u;
+      else if(good7>0u&&bad7==0u&&good6==0u&&bad6>0u)stride=7u;
+      if(!stride)return {"Unknown / ambiguous history record layout"};
+      const unsigned idx=3u;
+      if(idx>=(stride==6u?10u:8u))return {"Not present in this record layout"};
+      const unsigned o=idx*stride,shift=stride==7u?2u:1u;
+      const unsigned code=w[o],mi=w[o+shift],h=w[o+shift+1u];
+      const unsigned day=w[o+shift+2u],mo=w[o+shift+3u],yr=w[o+shift+4u];
+      if(!(code|mi|h|day|mo|yr))return {"No history entry (zero record)"};
+      if(!valid(mi,h,day,mo,yr))return {"Unknown | history timestamp invalid"};
+      char b[132];
+      if(stride==7u)
+        snprintf(b,sizeof(b),"Event 0x%04X / detail 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,unsigned(w[o+1u]),2000u+yr,mo,day,h,mi);
+      else
+        snprintf(b,sizeof(b),"Event 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,2000u+yr,mo,day,h,mi);
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_5
+    name: "Alarms | History 5"
+    update_interval: 30s
+    lambda: |-
+      const uint32_t stamp=id(passive_history_rx_ms),now=millis();
+      if(!stamp)return {"Unknown | no controller 0884/60 received"};
+      if(uint32_t(now-stamp)>=300000u)return {"Stale | history older than 5 min"};
+      if(!id(thermia_last_valid_frame_ms)||
+        uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u)
+        return {"Unknown | Thermia bus stale"};
+      const auto &w=id(passive_history_words);
+      auto valid=[](unsigned mi,unsigned h,unsigned day,unsigned mo,unsigned yr)->bool {
+        if(mi>59u||h>23u||mo<1u||mo>12u||day<1u||yr>99u)return false;
+        static const unsigned nd[]={31,28,31,30,31,30,31,31,30,31,30,31};
+        const unsigned year=2000u+yr;
+        return day<=nd[mo-1u]+((mo==2u&&year%4u==0u&&(year%100u!=0u||year%400u==0u))?1u:0u);
+      };
+      unsigned good6=0,bad6=0,good7=0,bad7=0;
+      for(unsigned n=0;n<10u;n++){
+        const unsigned o=n*6u;bool full=false;
+        for(unsigned k=0;k<6u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+1u],w[o+2u],w[o+3u],w[o+4u],w[o+5u]))good6++;
+        else bad6++;
+      }
+      for(unsigned n=0;n<8u;n++){
+        const unsigned o=n*7u;bool full=false;
+        for(unsigned k=0;k<7u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+2u],w[o+3u],w[o+4u],w[o+5u],w[o+6u]))good7++;
+        else bad7++;
+      }
+      unsigned stride=0u;
+      if(good6>=6u&&good6>good7+2u)stride=6u;
+      else if(good7>=5u&&good7>good6+2u)stride=7u;
+      else if(good6>0u&&bad6==0u&&good7==0u&&bad7>0u)stride=6u;
+      else if(good7>0u&&bad7==0u&&good6==0u&&bad6>0u)stride=7u;
+      if(!stride)return {"Unknown / ambiguous history record layout"};
+      const unsigned idx=4u;
+      if(idx>=(stride==6u?10u:8u))return {"Not present in this record layout"};
+      const unsigned o=idx*stride,shift=stride==7u?2u:1u;
+      const unsigned code=w[o],mi=w[o+shift],h=w[o+shift+1u];
+      const unsigned day=w[o+shift+2u],mo=w[o+shift+3u],yr=w[o+shift+4u];
+      if(!(code|mi|h|day|mo|yr))return {"No history entry (zero record)"};
+      if(!valid(mi,h,day,mo,yr))return {"Unknown | history timestamp invalid"};
+      char b[132];
+      if(stride==7u)
+        snprintf(b,sizeof(b),"Event 0x%04X / detail 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,unsigned(w[o+1u]),2000u+yr,mo,day,h,mi);
+      else
+        snprintf(b,sizeof(b),"Event 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,2000u+yr,mo,day,h,mi);
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_6
+    name: "Alarms | History 6"
+    update_interval: 30s
+    lambda: |-
+      const uint32_t stamp=id(passive_history_rx_ms),now=millis();
+      if(!stamp)return {"Unknown | no controller 0884/60 received"};
+      if(uint32_t(now-stamp)>=300000u)return {"Stale | history older than 5 min"};
+      if(!id(thermia_last_valid_frame_ms)||
+        uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u)
+        return {"Unknown | Thermia bus stale"};
+      const auto &w=id(passive_history_words);
+      auto valid=[](unsigned mi,unsigned h,unsigned day,unsigned mo,unsigned yr)->bool {
+        if(mi>59u||h>23u||mo<1u||mo>12u||day<1u||yr>99u)return false;
+        static const unsigned nd[]={31,28,31,30,31,30,31,31,30,31,30,31};
+        const unsigned year=2000u+yr;
+        return day<=nd[mo-1u]+((mo==2u&&year%4u==0u&&(year%100u!=0u||year%400u==0u))?1u:0u);
+      };
+      unsigned good6=0,bad6=0,good7=0,bad7=0;
+      for(unsigned n=0;n<10u;n++){
+        const unsigned o=n*6u;bool full=false;
+        for(unsigned k=0;k<6u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+1u],w[o+2u],w[o+3u],w[o+4u],w[o+5u]))good6++;
+        else bad6++;
+      }
+      for(unsigned n=0;n<8u;n++){
+        const unsigned o=n*7u;bool full=false;
+        for(unsigned k=0;k<7u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+2u],w[o+3u],w[o+4u],w[o+5u],w[o+6u]))good7++;
+        else bad7++;
+      }
+      unsigned stride=0u;
+      if(good6>=6u&&good6>good7+2u)stride=6u;
+      else if(good7>=5u&&good7>good6+2u)stride=7u;
+      else if(good6>0u&&bad6==0u&&good7==0u&&bad7>0u)stride=6u;
+      else if(good7>0u&&bad7==0u&&good6==0u&&bad6>0u)stride=7u;
+      if(!stride)return {"Unknown / ambiguous history record layout"};
+      const unsigned idx=5u;
+      if(idx>=(stride==6u?10u:8u))return {"Not present in this record layout"};
+      const unsigned o=idx*stride,shift=stride==7u?2u:1u;
+      const unsigned code=w[o],mi=w[o+shift],h=w[o+shift+1u];
+      const unsigned day=w[o+shift+2u],mo=w[o+shift+3u],yr=w[o+shift+4u];
+      if(!(code|mi|h|day|mo|yr))return {"No history entry (zero record)"};
+      if(!valid(mi,h,day,mo,yr))return {"Unknown | history timestamp invalid"};
+      char b[132];
+      if(stride==7u)
+        snprintf(b,sizeof(b),"Event 0x%04X / detail 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,unsigned(w[o+1u]),2000u+yr,mo,day,h,mi);
+      else
+        snprintf(b,sizeof(b),"Event 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,2000u+yr,mo,day,h,mi);
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_7
+    name: "Alarms | History 7"
+    update_interval: 30s
+    lambda: |-
+      const uint32_t stamp=id(passive_history_rx_ms),now=millis();
+      if(!stamp)return {"Unknown | no controller 0884/60 received"};
+      if(uint32_t(now-stamp)>=300000u)return {"Stale | history older than 5 min"};
+      if(!id(thermia_last_valid_frame_ms)||
+        uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u)
+        return {"Unknown | Thermia bus stale"};
+      const auto &w=id(passive_history_words);
+      auto valid=[](unsigned mi,unsigned h,unsigned day,unsigned mo,unsigned yr)->bool {
+        if(mi>59u||h>23u||mo<1u||mo>12u||day<1u||yr>99u)return false;
+        static const unsigned nd[]={31,28,31,30,31,30,31,31,30,31,30,31};
+        const unsigned year=2000u+yr;
+        return day<=nd[mo-1u]+((mo==2u&&year%4u==0u&&(year%100u!=0u||year%400u==0u))?1u:0u);
+      };
+      unsigned good6=0,bad6=0,good7=0,bad7=0;
+      for(unsigned n=0;n<10u;n++){
+        const unsigned o=n*6u;bool full=false;
+        for(unsigned k=0;k<6u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+1u],w[o+2u],w[o+3u],w[o+4u],w[o+5u]))good6++;
+        else bad6++;
+      }
+      for(unsigned n=0;n<8u;n++){
+        const unsigned o=n*7u;bool full=false;
+        for(unsigned k=0;k<7u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+2u],w[o+3u],w[o+4u],w[o+5u],w[o+6u]))good7++;
+        else bad7++;
+      }
+      unsigned stride=0u;
+      if(good6>=6u&&good6>good7+2u)stride=6u;
+      else if(good7>=5u&&good7>good6+2u)stride=7u;
+      else if(good6>0u&&bad6==0u&&good7==0u&&bad7>0u)stride=6u;
+      else if(good7>0u&&bad7==0u&&good6==0u&&bad6>0u)stride=7u;
+      if(!stride)return {"Unknown / ambiguous history record layout"};
+      const unsigned idx=6u;
+      if(idx>=(stride==6u?10u:8u))return {"Not present in this record layout"};
+      const unsigned o=idx*stride,shift=stride==7u?2u:1u;
+      const unsigned code=w[o],mi=w[o+shift],h=w[o+shift+1u];
+      const unsigned day=w[o+shift+2u],mo=w[o+shift+3u],yr=w[o+shift+4u];
+      if(!(code|mi|h|day|mo|yr))return {"No history entry (zero record)"};
+      if(!valid(mi,h,day,mo,yr))return {"Unknown | history timestamp invalid"};
+      char b[132];
+      if(stride==7u)
+        snprintf(b,sizeof(b),"Event 0x%04X / detail 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,unsigned(w[o+1u]),2000u+yr,mo,day,h,mi);
+      else
+        snprintf(b,sizeof(b),"Event 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,2000u+yr,mo,day,h,mi);
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_8
+    name: "Alarms | History 8"
+    update_interval: 30s
+    lambda: |-
+      const uint32_t stamp=id(passive_history_rx_ms),now=millis();
+      if(!stamp)return {"Unknown | no controller 0884/60 received"};
+      if(uint32_t(now-stamp)>=300000u)return {"Stale | history older than 5 min"};
+      if(!id(thermia_last_valid_frame_ms)||
+        uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u)
+        return {"Unknown | Thermia bus stale"};
+      const auto &w=id(passive_history_words);
+      auto valid=[](unsigned mi,unsigned h,unsigned day,unsigned mo,unsigned yr)->bool {
+        if(mi>59u||h>23u||mo<1u||mo>12u||day<1u||yr>99u)return false;
+        static const unsigned nd[]={31,28,31,30,31,30,31,31,30,31,30,31};
+        const unsigned year=2000u+yr;
+        return day<=nd[mo-1u]+((mo==2u&&year%4u==0u&&(year%100u!=0u||year%400u==0u))?1u:0u);
+      };
+      unsigned good6=0,bad6=0,good7=0,bad7=0;
+      for(unsigned n=0;n<10u;n++){
+        const unsigned o=n*6u;bool full=false;
+        for(unsigned k=0;k<6u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+1u],w[o+2u],w[o+3u],w[o+4u],w[o+5u]))good6++;
+        else bad6++;
+      }
+      for(unsigned n=0;n<8u;n++){
+        const unsigned o=n*7u;bool full=false;
+        for(unsigned k=0;k<7u;k++)full|=w[o+k]!=0u;
+        if(!full)continue;
+        if(valid(w[o+2u],w[o+3u],w[o+4u],w[o+5u],w[o+6u]))good7++;
+        else bad7++;
+      }
+      unsigned stride=0u;
+      if(good6>=6u&&good6>good7+2u)stride=6u;
+      else if(good7>=5u&&good7>good6+2u)stride=7u;
+      else if(good6>0u&&bad6==0u&&good7==0u&&bad7>0u)stride=6u;
+      else if(good7>0u&&bad7==0u&&good6==0u&&bad6>0u)stride=7u;
+      if(!stride)return {"Unknown / ambiguous history record layout"};
+      const unsigned idx=7u;
+      if(idx>=(stride==6u?10u:8u))return {"Not present in this record layout"};
+      const unsigned o=idx*stride,shift=stride==7u?2u:1u;
+      const unsigned code=w[o],mi=w[o+shift],h=w[o+shift+1u];
+      const unsigned day=w[o+shift+2u],mo=w[o+shift+3u],yr=w[o+shift+4u];
+      if(!(code|mi|h|day|mo|yr))return {"No history entry (zero record)"};
+      if(!valid(mi,h,day,mo,yr))return {"Unknown | history timestamp invalid"};
+      char b[132];
+      if(stride==7u)
+        snprintf(b,sizeof(b),"Event 0x%04X / detail 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,unsigned(w[o+1u]),2000u+yr,mo,day,h,mi);
+      else
+        snprintf(b,sizeof(b),"Event 0x%04X / candidate %04u-%02u-%02u %02u:%02u",
+          code,2000u+yr,mo,day,h,mi);
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_raw_1
+    name: "Alarm History | Raw Seven-Word Chunk 1"
+    update_interval: 30s
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t t=id(passive_history_rx_ms),now=millis();
+      if(!t)return {"Unknown | no history page"};
+      if(uint32_t(now-t)>=300000u)return {"Stale | history page expired"};
+      const auto &w=id(passive_history_words);const unsigned o=0u*7u;
+      char b[112];snprintf(b,sizeof(b),"RAW %04X %04X %04X %04X %04X %04X %04X",
+        unsigned(w[o]),unsigned(w[o+1]),unsigned(w[o+2]),unsigned(w[o+3]),
+        unsigned(w[o+4]),unsigned(w[o+5]),unsigned(w[o+6]));
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_raw_2
+    name: "Alarm History | Raw Seven-Word Chunk 2"
+    update_interval: 30s
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t t=id(passive_history_rx_ms),now=millis();
+      if(!t)return {"Unknown | no history page"};
+      if(uint32_t(now-t)>=300000u)return {"Stale | history page expired"};
+      const auto &w=id(passive_history_words);const unsigned o=1u*7u;
+      char b[112];snprintf(b,sizeof(b),"RAW %04X %04X %04X %04X %04X %04X %04X",
+        unsigned(w[o]),unsigned(w[o+1]),unsigned(w[o+2]),unsigned(w[o+3]),
+        unsigned(w[o+4]),unsigned(w[o+5]),unsigned(w[o+6]));
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_raw_3
+    name: "Alarm History | Raw Seven-Word Chunk 3"
+    update_interval: 30s
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t t=id(passive_history_rx_ms),now=millis();
+      if(!t)return {"Unknown | no history page"};
+      if(uint32_t(now-t)>=300000u)return {"Stale | history page expired"};
+      const auto &w=id(passive_history_words);const unsigned o=2u*7u;
+      char b[112];snprintf(b,sizeof(b),"RAW %04X %04X %04X %04X %04X %04X %04X",
+        unsigned(w[o]),unsigned(w[o+1]),unsigned(w[o+2]),unsigned(w[o+3]),
+        unsigned(w[o+4]),unsigned(w[o+5]),unsigned(w[o+6]));
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_raw_4
+    name: "Alarm History | Raw Seven-Word Chunk 4"
+    update_interval: 30s
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t t=id(passive_history_rx_ms),now=millis();
+      if(!t)return {"Unknown | no history page"};
+      if(uint32_t(now-t)>=300000u)return {"Stale | history page expired"};
+      const auto &w=id(passive_history_words);const unsigned o=3u*7u;
+      char b[112];snprintf(b,sizeof(b),"RAW %04X %04X %04X %04X %04X %04X %04X",
+        unsigned(w[o]),unsigned(w[o+1]),unsigned(w[o+2]),unsigned(w[o+3]),
+        unsigned(w[o+4]),unsigned(w[o+5]),unsigned(w[o+6]));
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_raw_5
+    name: "Alarm History | Raw Seven-Word Chunk 5"
+    update_interval: 30s
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t t=id(passive_history_rx_ms),now=millis();
+      if(!t)return {"Unknown | no history page"};
+      if(uint32_t(now-t)>=300000u)return {"Stale | history page expired"};
+      const auto &w=id(passive_history_words);const unsigned o=4u*7u;
+      char b[112];snprintf(b,sizeof(b),"RAW %04X %04X %04X %04X %04X %04X %04X",
+        unsigned(w[o]),unsigned(w[o+1]),unsigned(w[o+2]),unsigned(w[o+3]),
+        unsigned(w[o+4]),unsigned(w[o+5]),unsigned(w[o+6]));
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_raw_6
+    name: "Alarm History | Raw Seven-Word Chunk 6"
+    update_interval: 30s
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t t=id(passive_history_rx_ms),now=millis();
+      if(!t)return {"Unknown | no history page"};
+      if(uint32_t(now-t)>=300000u)return {"Stale | history page expired"};
+      const auto &w=id(passive_history_words);const unsigned o=5u*7u;
+      char b[112];snprintf(b,sizeof(b),"RAW %04X %04X %04X %04X %04X %04X %04X",
+        unsigned(w[o]),unsigned(w[o+1]),unsigned(w[o+2]),unsigned(w[o+3]),
+        unsigned(w[o+4]),unsigned(w[o+5]),unsigned(w[o+6]));
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_raw_7
+    name: "Alarm History | Raw Seven-Word Chunk 7"
+    update_interval: 30s
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t t=id(passive_history_rx_ms),now=millis();
+      if(!t)return {"Unknown | no history page"};
+      if(uint32_t(now-t)>=300000u)return {"Stale | history page expired"};
+      const auto &w=id(passive_history_words);const unsigned o=6u*7u;
+      char b[112];snprintf(b,sizeof(b),"RAW %04X %04X %04X %04X %04X %04X %04X",
+        unsigned(w[o]),unsigned(w[o+1]),unsigned(w[o+2]),unsigned(w[o+3]),
+        unsigned(w[o+4]),unsigned(w[o+5]),unsigned(w[o+6]));
+      return {std::string(b)};
+  - platform: template
+    id: passive_history_raw_8
+    name: "Alarm History | Raw Seven-Word Chunk 8"
+    update_interval: 30s
+    entity_category: diagnostic
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t t=id(passive_history_rx_ms),now=millis();
+      if(!t)return {"Unknown | no history page"};
+      if(uint32_t(now-t)>=300000u)return {"Stale | history page expired"};
+      const auto &w=id(passive_history_words);const unsigned o=7u*7u;
+      char b[112];snprintf(b,sizeof(b),"RAW %04X %04X %04X %04X %04X %04X %04X",
+        unsigned(w[o]),unsigned(w[o+1]),unsigned(w[o+2]),unsigned(w[o+3]),
+        unsigned(w[o+4]),unsigned(w[o+5]),unsigned(w[o+6]));
+      return {std::string(b)};
+  - platform: template
+    id: passive_optional_sources
+    name: "Diagnostic | Passive Optional Pages"
+    update_interval: 15s
+    entity_category: diagnostic
+    lambda: |-
+      char b[190];const uint32_t now=millis();
+      auto status=[&](uint32_t t)->const char* {
+       if(!t)return "MISSING";
+       if(uint32_t(now-t)>=300000u)return "STALE";
+       if(!id(thermia_last_valid_frame_ms)||
+          uint32_t(now-id(thermia_last_valid_frame_ms))>=10000u)return "BUS_STALE";
+       return "FRESH";
+      };
+      snprintf(b,sizeof(b),"RX-only | 085F:%s 0884:%s 0870:%s 0848:%s | no TX",
+       status(id(passive_alarm_rx_ms)),status(id(passive_history_rx_ms)),
+       status(id(passive_0870_rx_ms)),status(id(passive_0848_rx_ms)));
+      return {std::string(b)};
 
 interval:
   - interval: 5s
