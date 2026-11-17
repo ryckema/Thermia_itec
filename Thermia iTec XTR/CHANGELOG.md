@@ -18,11 +18,6 @@ For the latest firmware and setup instructions, see the [main README](../README.
 ### Added
 - ESP32 memory diagnostics: minimum free heap, largest contiguous free heap block, heap fragmentation and free PSRAM, in addition to existing free-heap monitoring.
 
-### Verification
-- SOURCE / OFFLINE TESTED: strict YAML key/structure checks, alarm-formula consistency and receive-parser comparison on captured traffic (2,476 valid frames decoded identically).
-- Full ESPHome target compilation and live device behaviour were **not** established by these offline checks.
-- No TX pin, active reads, alarm acknowledgement or parameter writes added.
-
 ## Passive 1.2 — 2026-11-17
 
 ### Added
