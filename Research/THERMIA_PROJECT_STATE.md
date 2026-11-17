@@ -1,5 +1,17 @@
 # THERMIA PROJECT STATE
 
+## 2026-11-17 — Passive 1.1 Full RX-only release branch (SOURCE / OFFLINE STATIC CHECKED)
+
+**OBSERVED FACTS:** No new physical XTR run in this milestone. Verified public 1.0 Git blob `6a16eae17ea5e4dc8e82d1dc013e8c91b41fb22b`; original Passive 1.0 restored unchanged on the release branch and provided as byte-identical ZIP rollback. Genuine historical controller 0x0F FC16 pages do not prove they will appear without a DCM peer.
+
+**IMPLEMENTED:** `Thermia iTec XTR/thermia_itec_xtr_passive_1.1.yaml` on branch `passive-fullrx-20261117`, derived from the Full RX source, adds V5 longest-CRC-valid receive framing, one UART/RX owner, separate 0x1E and controller-source ages, 0x1E stale-state invalidation, OEM 085F named/unmapped alarms, unified timestamp-guarded 0884 10x6 XTR or 8x7 Eco history (ten candidate slots and complete raw data), existing 0870 operating-hours/defrost and 0848 PID, observational compressor run counts with gap guard. No TX pin, selector, FC03/FC16 acknowledgement, authentication or DCM emulation. `README.md`, `Write (Beta)/iTec Eco/` and `main` not changed.
+
+**SOURCE / OFFLINE STATIC CHECKED:** source 294 unique IDs, one UART and no TX, 10x6 / 8x7 / empty history-layout vectors positive, ZIP four-entry CRC and central directory checked; source Git blob `bbdb812de02cc53be1d4bc54d8714a7d4f660c6e`, package Git blob `75a13010305934c856ef28a1f5014200a24a5b77`. **PREPARED / NOT RUN:** no target ESPHome compilation, flashing or LIVE XTR receipt of optional pages on this exact build.
+
+**CURRENT MILESTONE:** Passive 1.1 complete package. **DELIVERABLE:** `Thermia_iTec_XTR_Passive_1.1_FullRX.zip` on release branch. **REAL BLOCKER:** no source blocker; target compile/flash and controller-source optional page availability not yet observed. **ONE NEXT ACTION:** user manually compile/flash Passive 1.1; inspect source freshness, RX integrity and naturally offered 085F/0884/0870/0848 without DCM.
+
+
+
 ## 2026-11-15 — Service-dev007 native heat-pump clock (manual LIVE, automatic PREPARED)
 
 **OBSERVED FACTS / LIVE (Service-dev006 on iTec XTR M 3N CM930 2.4.2):** The native clock page `06EA/7` was received from the controller and exported as one moving Home Assistant clock entity. A user-initiated UTC-payload clock correction physically sent at **13:31:40.304** was followed at **13:31:40.885** by a genuine controller-origin FC16 `06EA/7` and `CLOCK_SEMANTIC_CONFIRM confirmed=1`. Sync status became `COMPLETE / POSITIVE`; HA minus Thermia moved from **-3629 s** to **+30 s**, within the 60-second tolerance. The earlier local-time write left ~1 hour offset; UTC-based manual write on this controller fixed it. Not cross-model proof.

@@ -1,5 +1,13 @@
 # THERMIA EXPERIMENT LOG
 
+## PASSIVE11-RX-20261117 — native RX-only V5/parser/decoder consolidation
+
+**STATUS: PREPARED / NOT RUN.** **Hypothesis:** Passive 1.1 preserves original no-TX outdoor telemetry while correctly decoding naturally received alarm/history/operating-hour frames and refusing to interpret missing or expired optional pages as current. **Baseline:** GitHub Passive 1.0 `6a16eae17ea5e4dc8e82d1dc013e8c91b41fb22b`; existing Full RX candidate `371940792dda1a5a80ae958d5e79c1d396339e2b`. **Prior evidence:** XTR native 0x1E FC04 compressor status; genuine 085F/5 flags, 0884/60 layouts and 0870/17 OEM counters previously captured with DCM and independent Eco no-ACK 085F offers. **Meaningful change:** integrate one improved V5 RX/optional page presentation/expiry engine, without any TX, into original passive architecture.
+
+**Expected observations:** 0x1E FRESH during normal heat-pump operation, no phantom compressor cycles across >30s gaps, 085F text only when fresh and source-backed, six/seven-word history layout only when timestamp evidence permits, 0870/0848 unknown if not transmitted. **Actual:** NOT RUN on physical controller. **Offline static tests:** 294 unique IDs, one UART and no TX, sample 10x6 / 8x7 / empty history-geometry checks positive; ZIP CRC verified. **Relevant registers/frames:** 0x1E FC04 000B; 0x0F FC16 085F/5, 0884/60, 0870/17, 0848/23. **ABORT:** as RX-only, no bus abort possible/needed; if telemetry regresses, stop observing and reflash original Passive 1.0 supplied in rollback subfolder. **Rollback:** original main 1.0 Git blob above. **NEXT ACTION:** user compile/flash then check source/CRC diagnostics and naturally received pages; no artificial fault injection or TX needed.
+
+
+
 ## 2026-11-15 — SVC-CLOCK-READ / SVC-CLOCK-WRITE-DEV006 / SVC-CLOCK-AUTO-DEV007
 
 **Platform/baseline:** private FIX19-derived Service engine, iTec XTR M 3N / CM930 2.4.2, unchanged S92 physical UART/DE owner and native session. Owner-provided live log: `Pasted text(20261115-123245).txt` (private; not uploaded). Dedicated [non-sensitive research record](SERVICE_NATIVE_CLOCK_SYNC_2026-11-15.md).

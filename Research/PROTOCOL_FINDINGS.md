@@ -1,5 +1,15 @@
 # THERMIA PROTOCOL FINDINGS
 
+## 2026-11-17 — Passive 1.1 RX-only source implementation, NO new protocol proof
+
+**SOURCE / OFFLINE STATIC CHECKED (not XTR LIVE):** From public Passive 1.0, Full RX candidate and locally verified CM930 2.4.2 mapping, prepared a complete single-UART RX-only Passive 1.1. V5 framing selects the longest CRC-valid complete request/response candidate, retaining split bytes; per-source 0x1E vs 0x0F/0x02/0x0A ages avoid presenting stale outside-unit values as live. Alarm 085F/5 decoder includes 29 known 2143–2145 flags and unmapped bits, obeys two OEM cross-bit predicates (2143.10 conditional on NOT 2143.9, 2143.12 on NOT 2144.4), and never interprets five zero words as an OEM-wide alarm clear. History 0884/60 uses the same guarded geometry for visible/raw records: 10x6 XTR or 8x7 Eco plus four remaining words. The historical event ID mapping is still unproven, especially XTR History6 variation.
+
+**NO NEW WIRE CONCLUSIONS:** 0870/17 hours and 0848 PID can only be decoded if controller sends those pages; the read-only ESP does not request them. Known Eco 085F retry without ACK supports passive reception on that model, not guaranteed steady XTR M intervals. 0x1E FC04 compressor transitions permit observed starts/runs since boot but are not OEM lifetime starts. 087D duration remains unverified; no new CRC, roles or authentication semantics asserted.
+
+**PREPARED / NOT RUN:** release branch `passive-fullrx-20261117`; no target compilation/flash/live. User next action is one manual flash and passive diagnostics review.
+
+
+
 ## 2026-11-15 — CM930 native RTC: confirmed seven-register clock page and semantic write
 
 **PROVEN / LIVE (local iTec XTR M 3N, CM930 2.4.2):** Controller-origin FC16 `06EA/7` carries one seven-word system clock record; genuine XTR data match seconds (`06EA`), minutes (`06EB`), 24-hour hour (`06EC`), calendar day (`06ED`), month (`06EE`), year minus 2000 (`06EF`), and Monday-zero weekday (`06F0`). Original Connect configuration independently identifies the fields as clock parameters; the local FC16 proves the local read encoding. An **automatic read** through the existing native session was observed; the seven words are presented as **one** HA clock entity. Separate calendar-program slots are not the RTC.
