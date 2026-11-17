@@ -4,6 +4,11 @@ This file records the public **Passive** firmware development from the original 
 
 For the current firmware and installation instructions, see the [main README](../README.md). Entries describe source changes and the verification available at the time; they are **not** a guarantee of full ESPHome compilation or live behaviour on another Thermia controller.
 
+# Write User 1.02 — 2026-11-17
+- Controller 0x02 loss >=5s with living room-sensor 0x0A: automatic one-episode transition into the EXISTING S92 cold-start state machine.
+- Automatic recovery rearm moved from FC16+0708 transport ACK to same-epoch M6=5, native accepted ownership and CURRENT 4/4.
+
+
 ## Passive 1.1 — 2026-11-17
 
 **Firmware:** [`thermia_itec_xtr_passive_1.1.yaml`](thermia_itec_xtr_passive_1.1.yaml)
