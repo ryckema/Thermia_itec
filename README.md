@@ -9,15 +9,14 @@ The integration is developed and tested on a Thermia iTec XTR M with Total Compa
 
 ## Features
 
-The integration is organized into four firmware versions, each offering a different level of access to the heat pump.
+The repository currently provides three public XTR firmware configurations, each offering a different level of access to the heat pump.
 
 ### Firmware versions
 
 | Version | Monitoring | Control | Access level |
 |---|---|---|---|
-| **Passive** | Yes | No | Read-only, passive bus monitoring |
-| **DCM Read Only** | Yes | No | Read-only, using native DCM communication |
-| **Write User 1.0** | Yes | Yes | Validated user-accessible settings; local XTR M |
+| **[Passive 1.3](Thermia%20iTec%20XTR/thermia_itec_xtr_passive_1.3.yaml)** | Yes | No | RX-only bus monitoring, OEM alarm decoding, source freshness and memory diagnostics |
+| **[DCM Read Only 1.0](Thermia%20iTec%20XTR/thermia_itec_xtr_DCM_readonly_1.0.yaml)** | Yes | No | Native DCM communication without parameter writes (transmits protocol traffic) |
 | **[Write User 1.01](Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.01.yaml)** | Yes | Yes | Public user controls and guarded native DCM; known-challenge cold start only |
 
 ### 1. Passive
@@ -26,11 +25,18 @@ The integration is organized into four firmware versions, each offering a differ
 
 This version listens to existing RS485 communication and extracts available sensor readings and controller information.
 
-- No RS485 transmission
-- Temperature and operational monitoring
-- Heating settings and status where available
-- Home Assistant sensor integration
-- Suitable for basic monitoring
+- **No RS485 transmission**: no UART TX pin, native requests or parameter writes
+- Temperature, compressor and operating telemetry where corresponding bus frames are present
+- Source-specific freshness and Home Assistant data-quality diagnostics; stale live readings become unavailable
+- 30 OEM-sourced alarm predicates (29 from the `0x085F` current-alarm block and one outdoor-unit alarm flag from `0x082F`)
+- Alarm status and raw history (`0x0884`) when those controller-origin frames are present
+- Passive controller clock (`0x06EA`) and corrected defrost counter labels where source frames are available
+- ESP32-S3 heap/PSRAM diagnostics and reduced temporary receive-parser allocations
+- Validated heating settings cached separately from fresh runtime telemetry
+
+**Alarm availability:** The passive firmware does not request `0x085F` or any other page. A valid controller-origin alarm page is decoded when seen, but pages may be absent without a native DCM peer/session. Missing or stale data must not be presented as *no active alarms*. Historical raw alarm identifiers are not assumed to be UI error codes.
+
+See the [iTec XTR firmware changelog](Thermia%20iTec%20XTR/CHANGELOG.md) for the Passive 1.0–1.3 release history and validation scope.
 
 ### 2. DCM Read Only
 
@@ -99,7 +105,7 @@ Some values depend on the heat pump configuration, available bus messages and fi
 
 ## iTec Eco — separate Write Beta
 
-The repository also contains a **separate, experimental ESPHome integration for the Thermia iTec Eco** (Danfoss DHP-AQ controller family): [**Write (Beta) / iTec Eco**](Write%20(Beta)/iTec%20Eco/). This is **not** the iTec XTR Write User 1.0 firmware: the Eco profiles emulate the local **`0x0A` room sensor**, rather than providing the XTR's native DCM Write User control path.
+The repository also contains a **separate, experimental ESPHome integration for the Thermia iTec Eco** (Danfoss DHP-AQ controller family): [**Write (Beta) / iTec Eco**](Write%20(Beta)/iTec%20Eco/). This is **not** the iTec XTR Write User 1.01 firmware: the Eco profiles emulate the local **`0x0A` room sensor**, rather than providing the XTR's native DCM Write User control path.
 
 The iTec Eco beta provides a Home Assistant room thermostat (`climate`), indoor-temperature input, bidirectional room-setpoint requests and a one-shot domestic hot-water **top-up** control. The profiles also expose relevant controller settings and diagnostics. Two standalone YAML options are available:
 
@@ -175,11 +181,11 @@ If you're already running Home Assistant, using the ESPHome Device Builder is ge
 
 Choose one of the YAML configurations from the [Thermia iTec XTR](Thermia%20iTec%20XTR/) directory.
 
-**Passive read-only**
+**Passive read-only — 1.3**
 
-[`thermia_itec_xtr_passive_1.0.yaml`](Thermia%20iTec%20XTR/thermia_itec_xtr_passive_1.0.yaml)
+[`thermia_itec_xtr_passive_1.3.yaml`](Thermia%20iTec%20XTR/thermia_itec_xtr_passive_1.3.yaml)
 
-The receive-only version, recommended as a starting point.
+The receive-only version, recommended as a starting point. It includes OEM-sourced alarm decoding, source-freshness handling, raw alarm history where observed, and heap/PSRAM diagnostics. See the [changelog](Thermia%20iTec%20XTR/CHANGELOG.md) for details and validation status.
 
 **DCM read-only**
 
@@ -187,9 +193,9 @@ The receive-only version, recommended as a starting point.
 
 The DCM-related development version. Review its operating requirements and supported functionality before use.
 
-**Write User 1.0 — public beta**
+**Write User 1.01 — public beta**
 
-[`thermia_itec_xtr_write_user_1.0.yaml`](Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.0.yaml)
+[`thermia_itec_xtr_write_user_1.01.yaml`](Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.01.yaml)
 
 The **single-file ESPHome configuration** for local XTR M monitoring and supported Home Assistant user-setting/calendar control. All project-specific firmware components are contained in this one YAML; no extra project headers, packages, provisioning CSV or hand-assembled source files are needed. Configure your own `secrets.yaml` as described below. This beta has been tested on the development iTec XTR M; other controller variants have not been verified.
 
@@ -306,7 +312,7 @@ The ESP32 connects to Home Assistant through the native ESPHome API.
 
 Once correctly configured and running, the gateway can expose supported heat pump sensors and diagnostic information as Home Assistant entities.
 
-The integration supports local dashboards, history, automations and, with Write User 1.0, validated user-level control on the tested XTR M without relying on Thermia Online.
+The integration supports local dashboards, history, automations and, with Write User 1.01, validated user-level control on the tested XTR M without relying on Thermia Online.
 
 The exact entity list depends on the chosen YAML configuration and the information available from the heat pump.
 
@@ -338,7 +344,7 @@ Communication with the internal bus can potentially interfere with normal heat p
 
 The project distinguishes passive monitoring, native protocol responses and controller parameter writes.
 
-**Write User 1.0 (public beta)** enables deliberately initiated, validated Home Assistant **user-level** setting changes on the tested iTec XTR M, with native controller readback. Automatic parameter writes remain disabled by default, and unsupported/service-level parameter writes are not included. A confirmed transport response alone does not prove the controller applied a new value.
+**Write User 1.01 (public beta)** enables deliberately initiated, validated Home Assistant **user-level** setting changes on the tested iTec XTR M, with native controller readback. Automatic parameter writes remain disabled by default, and unsupported/service-level parameter writes are not included. A confirmed transport response alone does not prove the controller applied a new value.
 
 The integration is intended to preserve the heat pump's own controller logic, interlocks and safety mechanisms rather than bypass them.
 
