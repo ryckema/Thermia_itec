@@ -290,6 +290,14 @@ Once connected, the available Thermia sensors should appear as Home Assistant en
 
 The exact number of sensors depends on the firmware variant and the data available on the bus.
 
+## Starting DCM session
+In order to start an active session where the ESP can request information from the heat pump and write parameters a DCM session needs to be established.
+You can do this by simply powering down the heat pump for at least 5 seconds while the ESP is powered, when the heatpump is powered on again a session will be started.
+
+The ESP kan rejoin an existing session after a short interruption (A update for example) but when disconnected for a longer time (several minutes) the sessions breaks and the heat pump will need to be restarted again.
+
+Known issue : If an alarm is active the ESP might have issues starting the session, restarting the HP once to reset the alarm and a second time to start the session works
+
 ## Supported hardware
 
 ### Heat pump
