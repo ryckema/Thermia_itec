@@ -1,4 +1,5 @@
 # Thermia iTec XTR — WRITE USER 1.02 (PUBLIC)
+# WU103 (2026-11-19): opt-in automatic bounded retained/CURRENT recovery; no new TX owner.
 # WU102-R1 (2026-11-19): one guarded recovery action delegates retained W2R33 or owned CURRENT M3; no direct TX.
 # Self-contained ESPHome YAML; requires your existing secrets.yaml.
 
@@ -153,6 +154,22 @@ logger:
 
 # --- HA SWITCHES / DE CONTROL ---
 switch:
+  # WU103: opt-in unattended recovery. OFF at every ESP boot; enabling is
+  # the user-initiated scope for ONE retained trial per epoch and bounded
+  # controller-0708 CURRENT maintenance. Neither path sends directly here.
+  - platform: template
+    id: wu103_native_auto_recovery
+    name: "Configuration | Automatic Native Session Recovery"
+    entity_category: config
+    icon: mdi:connection
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    turn_on_action:
+      - lambda: |-
+          ESP_LOGW("thermia_write","[WU103] AUTO_RECOVERY_ENABLED / existing S92 W2R33 and MAIN01-M3 only / no direct TX");
+    turn_off_action:
+      - lambda: |-
+          ESP_LOGW("thermia_write","[WU103] AUTO_RECOVERY_DISABLED / no NEW automatic arms; current in-flight native replies follow S92 guards");
   - platform: template
     id: cal32_day_monday
     name: "Calendar | Monday"
@@ -28714,6 +28731,72 @@ interval:
                   "[C5BP] AUTO_OTA_REJOIN_NOT_ARMED / RX_ONLY / NO RETRY");
               }
             }
+          }
+  # WU103: native recovery supervision, using ONLY previously existing
+  # W2R33 and MAIN01-M3. An opted-in, controller-requested response is not
+  # a semantic parameter write. No new UART sender or no-owner permissions.
+  - interval: 15s
+    then:
+      - lambda: |-
+          if (!id(wu103_native_auto_recovery).state || id(w2r36_abort_latched))
+            return;
+          const uint32_t now=millis(), epoch=id(write_arm_ms);
+          static uint32_t observed_epoch=0u;
+          static bool retained_attempted=false;
+          static uint32_t last_refresh_arm_ms=0u;
+          if(epoch!=observed_epoch) {
+            observed_epoch=epoch;
+            retained_attempted=false;
+            last_refresh_arm_ms=0u;
+          }
+          if(epoch==0u || !id(write_active) || id(write_stage)!=40u ||
+             id(main01_m6_session_epoch)!=epoch ||
+             id(write_write_state)!=0u || id(write_pending_valid) ||
+             id(write_dirty_mask)!=0u || id(exp378_dirty_mask)!=0u ||
+             id(exp379_dirty_mask)!=0u || id(exp380_dirty) ||
+             id(exp383_link_dirty) || id(write_recovery_in_progress) ||
+             id(write_hot_rejoin_in_progress) ||
+             id(write_hot_rejoin_wait_runtime) ||
+             id(thermia_parser_resync_count)!=id(write_resync_baseline) ||
+             id(thermia_rx_buffer_drop_count)!=id(write_drop_baseline) ||
+             id(write_peer_fc17_count)!=0u ||
+             id(write_peer_fc16_ack_count)!=0u ||
+             id(write_runtime_unknown_fc16_count)!=0u ||
+             id(write_runtime_unknown_fc03_count)!=0u) return;
+          // C5CF already handles passive M6=0 entry. This closes only the
+          // retained M6=2 gap; W2R33 independently validates all its gates.
+          if(id(main01_m6_session_state)==2u &&
+             id(c5bo_auto_rejoin_attempted) &&
+             id(main01_native_accepted_epoch)==0u &&
+             !retained_attempted && !id(w2r33_trial_used) &&
+             now>=epoch && now-epoch>=10000u && now-epoch<40000u) {
+            retained_attempted=true; // consumed even when delegated trial denies
+            ESP_LOGW("thermia_write","[WU103] AUTO_RETAINED_ONCE / W2R33 existing S92 engine / NO_DIRECT_TX");
+            id(w2r33_trial_start_button).press();
+            return;
+          }
+          // A still-proven owner may refresh stale CURRENT pages without
+          // falsely asserting controller restart or allocating a second owner.
+          const bool owner=id(main01_native_accepted_epoch)==epoch &&
+            (id(main01_m6_session_state)==4u ||
+             id(main01_m6_session_state)==5u);
+          const bool current_fresh=id(m6s_epoch)==epoch &&
+            id(m6s_generation)!=0u && id(m6s_oldest_ms)!=0u &&
+            now>=id(m6s_oldest_ms) &&
+            now-id(m6s_oldest_ms)<240000u &&
+            !id(main01_native_sync_needed);
+          if(owner && !current_fresh &&
+             id(write_runtime_fc16_ack_count)>0u &&
+             id(write_runtime_0708_reply_count)>0u &&
+             now>=epoch && now-epoch>=20000u &&
+             (!last_refresh_arm_ms ||
+              now-last_refresh_arm_ms>=240000u) &&
+             !id(main01_m6_refresh_active) &&
+             !id(main01_m3_refresh_armed_ms) &&
+             !id(main01_m6_app_sync_active)) {
+            last_refresh_arm_ms=now?now:1u;
+            ESP_LOGW("thermia_write","[WU103] AUTO_CURRENT_REFRESH / owner epoch proven / MAIN01-M3 delegate NO_DIRECT_TX");
+            id(main01_m3_arm_current_refresh).press();
           }
   - interval: 250ms
     then:
