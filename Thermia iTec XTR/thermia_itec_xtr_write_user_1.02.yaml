@@ -1,4 +1,5 @@
 # Thermia iTec XTR — WRITE USER 1.02 (PUBLIC)
+# WU102-R1 (2026-11-19): one guarded recovery action delegates retained W2R33 or owned CURRENT M3; no direct TX.
 # Self-contained ESPHome YAML; requires your existing secrets.yaml.
 
 
@@ -27392,6 +27393,66 @@ button:
           ESP_LOGE("thermia_write",
             "[W2R33] USER_RECOVERY_ARMED epoch=%u state=M6_2 / ONE_SHOT / <=55s / ONLY_REAL_085F_0884_0708 / NO_PARAM_WRITES",
             unsigned(id(write_arm_ms)));
+
+  # WU102-R1: one explicit entry for already existing native recovery paths.
+  # LIVE precedent: Service-dev018 regained M6=5/CURRENT4 after a retained
+  # start. This button delegates ONLY to W2R33 or MAIN01-M3, never to UART.
+  # No new protocol frames, TX owner, owner evidence or automatic retry.
+  - platform: template
+    id: wu102_recover_retained_dcm
+    name: "Configuration | Recover Retained DCM (One-Shot)"
+    icon: mdi:connection
+    entity_category: config
+    disabled_by_default: false
+    on_press:
+      - lambda: |-
+          const uint32_t epoch=id(write_arm_ms);
+          const uint32_t now=millis();
+          const bool active=id(write_active) && id(write_stage)==40u;
+          const bool owner=active && epoch!=0u &&
+            id(main01_m6_session_epoch)==epoch &&
+            id(main01_native_accepted_epoch)==epoch &&
+            (id(main01_m6_session_state)==4u ||
+             id(main01_m6_session_state)==5u);
+          const bool current_fresh=owner &&
+            id(m6s_epoch)==epoch &&
+            id(m6s_generation)!=0u &&
+            id(m6s_oldest_ms)!=0u &&
+            now>=id(m6s_oldest_ms) &&
+            (now-id(m6s_oldest_ms))<300000UL &&
+            !id(main01_native_sync_needed);
+          // Existing owner: refresh data, do NOT abandon a valid epoch.
+          // MAIN01-M3 has its own profile, clean bus, idle, cooldown, owner
+          // and subsequent genuine-controller-0708 physical TX guards.
+          if (owner) {
+            if (current_fresh) {
+              ESP_LOGI("thermia_write","[WU102-R1] RECOVERY_NOT_NEEDED M6_CURRENT_FRESH NO_TX");
+              return;
+            }
+            ESP_LOGW("thermia_write","[WU102-R1] CURRENT_STALE_OWNER_VALID / delegate MAIN01-M3 NO_DIRECT_TX");
+            id(main01_m3_arm_current_refresh).press();
+            return;
+          }
+          // No accepted owner: only passive M6=0/7 or retained M6=2.
+          // The existing W2R33 consumes its own one-shot and enforces abort,
+          // clean parser, idle bus, epoch and original real-FC16/0708 guards.
+          const bool passive=!id(write_active) &&
+            (id(write_stage)==0u || id(write_stage)==99u) &&
+            (id(main01_m6_session_state)==0u ||
+             id(main01_m6_session_state)==7u);
+          const bool retained=active &&
+            id(main01_m6_session_state)==2u &&
+            id(main01_native_accepted_epoch)==0u;
+          if (passive || retained) {
+            ESP_LOGW("thermia_write","[WU102-R1] RETAINED_ONE_SHOT / delegate existing W2R33 NO_DIRECT_TX");
+            id(w2r33_trial_start_button).press();
+            return;
+          }
+          // M6=4 without accepted current-epoch owner is NOT a recovery
+          // license. Keep ABORT and cold-start fallback protections.
+          ESP_LOGW("thermia_write","[WU102-R1] RECOVERY_DENIED state=%u stage=%u active=%u owner=0 NO_TX DE_LOW",
+            unsigned(id(main01_m6_session_state)),
+            unsigned(id(write_stage)),unsigned(id(write_active)));
 
   - platform: template
     id: s92_manual_04a6_resume
