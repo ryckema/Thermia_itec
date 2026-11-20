@@ -29445,8 +29445,9 @@ interval:
           // physical request still needs a fresh controller 0708 and all S92 guards.
           id(w2r97_alarm_read_once).press();
           if(id(w2r97_alarm_read_state)==1u &&
-             id(w2r97_alarm_read_epoch)==epoch)
+             id(w2r97_alarm_read_epoch)==epoch) {
             ESP_LOGI("thermia_alarm","[W2RFC] AUTO_ALARM_READ_ARMED epoch=%u oneRequestPer240s=1 W4=0080 NO_TX_YET",unsigned(epoch));
+          }
 
   # W2R97: read-only TX remains 0708-owned. Timer only observes timeout/ABORT.
   - interval: 2s
