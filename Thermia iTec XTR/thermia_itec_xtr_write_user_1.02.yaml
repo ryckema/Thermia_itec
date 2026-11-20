@@ -1,4 +1,5 @@
 # Thermia iTec XTR — WRITE USER 1.02 (PUBLIC)
+# WU105 (2026-11-20): prune 67 legacy Thermia Write HA entities and presentation-only publications; preserve native owner and counters.
 # WU106 (2026-11-20): repair missing calendar button IDs; F1 apply fails closed pending handler restoration, NO TX.
 # WU104 (2026-11-20): remove unused internal entities; native TX/session behavior unchanged.
 # WU103 (2026-11-19): opt-in automatic bounded retained/CURRENT recovery; no new TX owner.
@@ -5453,18 +5454,18 @@ uart:
                   id(thermia_write_runtime_active_sensor)->publish_state(false);
                   id(thermia_write_status)->publish_state(status);
                   id(thermia_write_stage_text)->publish_state("stage 99 / stopped / DE LOW"); id(thermia_write_last_event)->publish_state(event);
-                  id(thermia_write_challenges)->publish_state(float(id(write_challenge_count)));
-                  id(thermia_write_post_tx_challenges)->publish_state(float(id(write_post_tx_challenge_count)));
+                  
+                  
                   id(thermia_write_fc16_seen_sensor)->publish_state(float(id(write_fc16_seen)));
-                  id(thermia_write_03e8_seen_sensor)->publish_state(float(id(write_03e8_seen)));
-                  id(thermia_write_03fc_seen_sensor)->publish_state(float(id(write_03fc_seen)));
-                  id(thermia_write_0410_seen_sensor)->publish_state(float(id(write_0410_seen)));
-                  id(thermia_write_042e_seen_sensor)->publish_state(float(id(write_042e_seen)));
-                  id(thermia_write_same_0410_after_ack_sensor)->publish_state(float(id(write_same_0410_after_ack)));
-                  id(thermia_write_same_03fc_after_ack_sensor)->publish_state(float(id(write_same_03fc_after_ack)));
-                  id(thermia_write_same_03e8_after_ack_sensor)->publish_state(float(id(write_same_03e8_after_ack)));
-                  id(thermia_write_peer_fc17)->publish_state(float(id(write_peer_fc17_count)));
-                  id(thermia_write_peer_fc16_ack)->publish_state(float(id(write_peer_fc16_ack_count)));
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
                   ESP_LOGE("thermia_write","\033[31m[WRITE] ===== STOP status=%s event=%s challenges=%u postR1=%u r1Used=%u initFC16=%u runtimeFC16ACK=%u idle0708=%u rt085F=%u rt04A6=%u unknown16=%u unknown03=%u peer17=%u peer16ack=%u runtimeEcho=%u resync=%u drops=%u DE=LOW =====\033[0m",
                     status,event,unsigned(id(write_challenge_count)),unsigned(id(write_post_tx_challenge_count)),unsigned(id(write_tx_used)),
                     unsigned(id(write_fc16_seen)),unsigned(id(write_runtime_fc16_ack_count)),unsigned(id(write_runtime_0708_reply_count)),
@@ -5504,7 +5505,7 @@ uart:
                       bytes[2]==0x07 && bytes[3]==0x30 && bytes[4]==0x00 && bytes[5]==0x08 &&
                       bytes[6]==0x07 && bytes[7]==0x1C && bytes[8]==0x00 && bytes[9]==0x08 && bytes[10]==0x10) {
                     id(write_challenge_count)++;
-                    id(thermia_write_challenges)->publish_state(float(id(write_challenge_count)));
+                    
                     if (id(write_hot_rejoin_in_progress) || id(write_hot_rejoin_wait_runtime)) {
                       ESP_LOGE("thermia_write","\033[31m[WRITE] ===== HOT_REJOIN_ABORT_CHALLENGE n=%u NO_R1 NO_TX DE=LOW RAW=%s =====\033[0m",
                         unsigned(id(write_challenge_count)),raw325);
@@ -5629,7 +5630,7 @@ uart:
                             // the OEM rule; physical owner gates remain unchanged.
                             if (id(c5_oem_internal_acceptance)!=2u)
                               id(c5_oem_internal_acceptance)=1u;
-                            id(thermia_write_tx_used_sensor)->publish_state(true);
+                            
                             id(thermia_write_status)->publish_state("RUNNING / exact-capture FC23 response sent / wait exact 03E8-count14");
                             id(thermia_write_stage_text)->publish_state("stage 3 / fixed FC23 replay / wait exact 03E8-count14");
                             id(thermia_write_last_event)->publish_state("guarded challenge answered with fixed DCM Read Only response");
@@ -5673,7 +5674,7 @@ uart:
                             // the OEM rule; physical owner gates remain unchanged.
                             if (id(c5_oem_internal_acceptance)!=2u)
                               id(c5_oem_internal_acceptance)=1u;
-                          id(thermia_write_tx_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / exact-capture FC23 response sent / first post-response FC16 must be exact 03E8-count14");
                           id(thermia_write_stage_text)->publish_state("stage 3 / fixed FC23 replay / wait exact first 03E8-count14");
                           id(thermia_write_last_event)->publish_state("one-shot fixed DCM Read Only response transmitted on exact request");
@@ -5682,7 +5683,7 @@ uart:
                       }
                     } else if (id(write_tx_used)) {
                       id(write_post_tx_challenge_count)++;
-                      id(thermia_write_post_tx_challenges)->publish_state(float(id(write_post_tx_challenge_count)));
+                      
                       ESP_LOGE("thermia_write","\033[38;5;130m[WRITE] POST_TX_CHALLENGE n=%u total=%u after=%ums NO_TX RAW=%s\033[0m",
                         unsigned(id(write_post_tx_challenge_count)),unsigned(id(write_challenge_count)),unsigned(millis()-id(write_tx_ms)),raw325);
                     }
@@ -5695,7 +5696,7 @@ uart:
                       ESP_LOGE("thermia_write","\033[38;5;130m[WRITE] SELF_ECHO_CANDIDATE n=%u after=%ums RAW=%s\033[0m",
                         unsigned(id(write_self_echo_count)),unsigned(now_ms-id(write_tx_ms)),raw325);
                     } else {
-                      id(write_peer_fc17_count)++; id(thermia_write_peer_fc17)->publish_state(float(id(write_peer_fc17_count)));
+                      id(write_peer_fc17_count)++; 
                       ESP_LOGE("thermia_write","\033[31m[WRITE] ===== ABORT external 0F FC17 16-byte response RAW=%s =====\033[0m",raw325);
                       write_stop("ABORTED / external 0x0F FC17 responder detected","peer FC17 response-shaped frame");
                     }
@@ -5818,7 +5819,7 @@ uart:
                         unsigned(id(write_self_echo_0410_ack_count)),unsigned(now_ms-id(write_0410_ack_ms)),raw325);
                     } else if (echo_runtime) {
                       id(write_runtime_self_echo_ack_count)++;
-                      id(thermia_write_runtime_self_echo_sensor)->publish_state(float(id(write_runtime_self_echo_ack_count)));
+                      
                       ESP_LOGE("thermia_write","\033[38;5;130m[WRITE] RUNTIME_SELF_ECHO_ACK n=%u start=%04X count=%u after=%ums RAW=%s\033[0m",
                         unsigned(id(write_runtime_self_echo_ack_count)),
                         unsigned(id(write_runtime_last_ack_start)),unsigned(id(write_runtime_last_ack_count)),
@@ -5830,7 +5831,7 @@ uart:
                       ESP_LOGE("thermia_write","\033[38;5;130m[WRITE] SELF_ECHO_BATCH_ACK RAW=%s\033[0m",raw325);
                     } else {
                       id(write_peer_fc16_ack_count)++;
-                      id(thermia_write_peer_fc16_ack)->publish_state(float(id(write_peer_fc16_ack_count)));
+                      
                       ESP_LOGE("thermia_write","\033[31m[WRITE] ===== ABORT external 0F FC16 ACK RAW=%s =====\033[0m",raw325);
                       write_stop("ABORTED / external 0x0F FC16 responder detected","unexpected 8-byte FC16 ACK observed");
                     }
@@ -7399,9 +7400,9 @@ uart:
                             unsigned(id(write_page_w06)),unsigned(id(write_page_w07)),unsigned(id(write_page_w08)),unsigned(id(write_page_w12)));
                           ESP_LOGE("thermia_write","\033[38;5;130m[WRITE] 03E8_CACHE_INITIAL room=%u cacheAge=0ms source=controller_FC16_same_session\033[0m",
                             unsigned(id(write_page_w12)));
-                          id(write_03e8_seen)++; id(thermia_write_03e8_seen_sensor)->publish_state(float(id(write_03e8_seen)));
+                          id(write_03e8_seen)++; 
                           id(write_ack_used)=true; id(write_ack_ms)=millis(); id(write_stage)=4;
-                          id(thermia_write_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("CAPTURE / one 03E8 ACK sent / wait next 0x0F FC16-FC03");
                           id(thermia_write_stage_text)->publish_state("stage 4 / 03E8 ACK sent / wait 03FC");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 03E8_ACK_TX_INTENT frame=0F1003E8000EC093 latch=CLOSED =====\033[0m");
@@ -7414,16 +7415,16 @@ uart:
                       } else if (id(write_stage)==4) {
                         if (st==0x03E8 && ct==14) {
                           id(write_same_03e8_after_ack)++;
-                          id(thermia_write_same_03e8_after_ack_sensor)->publish_state(float(id(write_same_03e8_after_ack)));
+                          
                         } else if (st==0x03FC && ct==11 && bc==22 && bytes.size()==31 &&
                                    !id(write_03fc_ack_used) &&
                                    id(write_ack_ms) && (now_ms-id(write_ack_ms))<=5000UL) {
                           id(write_03fc_seen)++;
-                          id(thermia_write_03fc_seen_sensor)->publish_state(float(id(write_03fc_seen)));
+                          
                           id(write_03fc_ack_used)=true;  // latch before DE HIGH
                           id(write_03fc_ack_ms)=millis();
                           id(write_stage)=5;
-                          id(thermia_write_03fc_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("CAPTURE / one 03FC ACK sent / wait next 0x0F FC16-FC03");
                           id(thermia_write_stage_text)->publish_state("stage 5 / 03FC ACK sent / wait 0410");
                           id(thermia_write_last_event)->publish_state("one standard 03FC/count11 address-count ACK transmitted");
@@ -7442,18 +7443,18 @@ uart:
                       } else if (id(write_stage)==5) {
                         if (st==0x03FC && ct==11) {
                           id(write_same_03fc_after_ack)++;
-                          id(thermia_write_same_03fc_after_ack_sensor)->publish_state(float(id(write_same_03fc_after_ack)));
+                          
                           ESP_LOGE("thermia_write","\033[38;5;130m[WRITE] SAME_03FC_AFTER_ACK n=%u sinceACK=%ums NO_TX RAW=%s\033[0m",
                             unsigned(id(write_same_03fc_after_ack)),unsigned(now_ms-id(write_03fc_ack_ms)),raw325);
                         } else if (st==0x0410 && ct==22 && bc==44 && bytes.size()==53 &&
                                    !id(write_0410_ack_used) &&
                                    id(write_03fc_ack_ms) && (now_ms-id(write_03fc_ack_ms))<=5000UL) {
                           id(write_0410_seen)++;
-                          id(thermia_write_0410_seen_sensor)->publish_state(float(id(write_0410_seen)));
+                          
                           id(write_0410_ack_used)=true;  // latch before DE HIGH
                           id(write_0410_ack_ms)=millis();
                           id(write_stage)=6;
-                          id(thermia_write_0410_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("CAPTURE / one 0410 ACK sent / wait next 0x0F FC16-FC03");
                           id(thermia_write_stage_text)->publish_state("stage 6 / 0410 ACK sent / wait 042E");
                           id(thermia_write_last_event)->publish_state("one standard 0410/count22 address-count ACK transmitted");
@@ -7472,13 +7473,13 @@ uart:
                       } else if (id(write_stage)==6) {
                         if (st==0x0410 && ct==22) {
                           id(write_same_0410_after_ack)++;
-                          id(thermia_write_same_0410_after_ack_sensor)->publish_state(float(id(write_same_0410_after_ack)));
+                          
                           ESP_LOGE("thermia_write","\033[38;5;130m[WRITE] SAME_0410_AFTER_ACK n=%u NO_TX RAW=%s\033[0m",unsigned(id(write_same_0410_after_ack)),raw325);
                         } else if (st==0x042E && ct==15 && bc==30 && bytes.size()==39 &&
                                    !id(write_042e_ack_used) && id(write_0410_ack_ms) && (now_ms-id(write_0410_ack_ms))<=5000UL) {
-                          id(write_042e_seen)++; id(thermia_write_042e_seen_sensor)->publish_state(float(id(write_042e_seen)));
+                          id(write_042e_seen)++; 
                           id(write_042e_ack_used)=true; id(write_042e_ack_ms)=millis(); id(write_stage)=7;
-                          id(thermia_write_042e_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 042E ACK sent / wait 0442-count13");
                           id(thermia_write_stage_text)->publish_state("stage 7 / 042E ACK sent / wait 0442");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 042E_ACK_TX_INTENT frame=0F10042E000FE01A latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7497,7 +7498,7 @@ uart:
                         } else if (st==0x0442 && ct==13 && bc==26 && bytes.size()==35 &&
                                    !id(write_0442_ack_used) && id(write_042e_ack_ms) && (now_ms-id(write_042e_ack_ms))<=5000UL) {
                           id(write_0442_ack_used)=true; id(write_0442_ack_ms)=millis(); id(write_stage)=8;
-                          id(thermia_write_0442_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 0442 ACK sent / wait 0456-count12");
                           id(thermia_write_stage_text)->publish_state("stage 8 / 0442 ACK sent / wait 0456");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 0442_ACK_TX_INTENT frame=0F100442000DA1C6 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7516,7 +7517,7 @@ uart:
                         } else if (st==0x0456 && ct==12 && bc==24 && bytes.size()==33 &&
                                    !id(write_0456_ack_used) && id(write_0442_ack_ms) && (now_ms-id(write_0442_ack_ms))<=5000UL) {
                           id(write_0456_ack_used)=true; id(write_0456_ack_ms)=millis(); id(write_stage)=9;
-                          id(thermia_write_0456_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("CAPTURE / 0456 ACK sent / wait next FC16-FC03");
                           id(thermia_write_stage_text)->publish_state("stage 9 / 0456 ACK sent / wait 046A");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 0456_ACK_TX_INTENT frame=0F100456000C2002 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7536,7 +7537,7 @@ uart:
                                    !id(write_046a_ack_used) && id(write_0456_ack_ms) &&
                                    (now_ms-id(write_0456_ack_ms))<=5000UL) {
                           id(write_046a_ack_used)=true; id(write_046a_ack_ms)=millis(); id(write_stage)=10;
-                          id(thermia_write_046a_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 046A ACK sent / wait 047E-count19");
                           id(thermia_write_stage_text)->publish_state("stage 10 / 046A ACK sent / wait 047E");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 046A_ACK_TX_INTENT frame=0F10046A00126006 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7556,7 +7557,7 @@ uart:
                                    !id(write_047e_ack_used) && id(write_046a_ack_ms) &&
                                    (now_ms-id(write_046a_ack_ms))<=5000UL) {
                           id(write_047e_ack_used)=true; id(write_047e_ack_ms)=millis(); id(write_stage)=11;
-                          id(thermia_write_047e_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 047E ACK sent / wait 0492-count11");
                           id(thermia_write_stage_text)->publish_state("stage 11 / 047E ACK sent / wait 0492");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 047E_ACK_TX_INTENT frame=0F10047E0013E1C2 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7576,7 +7577,7 @@ uart:
                                    !id(write_0492_ack_used) && id(write_047e_ack_ms) &&
                                    (now_ms-id(write_047e_ack_ms))<=5000UL) {
                           id(write_0492_ack_used)=true; id(write_0492_ack_ms)=millis(); id(write_stage)=12;
-                          id(thermia_write_0492_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 0492 ACK sent / wait exact 04A6-count13");
                           id(thermia_write_stage_text)->publish_state("stage 12 / 0492 ACK sent / wait 04A6");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 0492_ACK_TX_INTENT frame=0F100492000B203D latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7596,7 +7597,7 @@ uart:
                                    !id(write_04a6_ack_used) && id(write_0492_ack_ms) &&
                                    (now_ms-id(write_0492_ack_ms))<=5000UL) {
                           id(write_04a6_ack_used)=true; id(write_04a6_ack_ms)=millis(); id(write_stage)=13;
-                          id(thermia_write_04a6_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 04A6 ACK sent / wait 04BA-count22");
                           id(thermia_write_stage_text)->publish_state("stage 13 / 04A6 ACK sent / wait 04BA");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 04A6_ACK_TX_INTENT frame=0F1004A6000DE1F1 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7616,7 +7617,7 @@ uart:
                                    !id(write_04ba_ack_used) && id(write_04a6_ack_ms) &&
                                    (now_ms-id(write_04a6_ack_ms))<=5000UL) {
                           id(write_04ba_ack_used)=true; id(write_04ba_ack_ms)=millis(); id(write_stage)=14;
-                          id(thermia_write_04ba_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 04BA ACK sent / wait 04D8-count27");
                           id(thermia_write_stage_text)->publish_state("stage 14 / 04BA ACK sent / wait 04D8");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 04BA_ACK_TX_INTENT frame=0F1004BA0016603C latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7636,7 +7637,7 @@ uart:
                                    !id(write_04d8_ack_used) && id(write_04ba_ack_ms) &&
                                    (now_ms-id(write_04ba_ack_ms))<=5000UL) {
                           id(write_04d8_ack_used)=true; id(write_04d8_ack_ms)=millis(); id(write_stage)=15;
-                          id(thermia_write_04d8_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 04D8 ACK sent / wait 04F6-count14");
                           id(thermia_write_stage_text)->publish_state("stage 15 / 04D8 ACK sent / wait 04F6");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 04D8_ACK_TX_INTENT frame=0F1004D8001B0027 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7656,7 +7657,7 @@ uart:
                                    !id(write_04f6_ack_used) && id(write_04d8_ack_ms) &&
                                    (now_ms-id(write_04d8_ack_ms))<=5000UL) {
                           id(write_04f6_ack_used)=true; id(write_04f6_ack_ms)=millis(); id(write_stage)=16;
-                          id(thermia_write_04f6_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 04F6 ACK sent / wait 050A-count19");
                           id(thermia_write_stage_text)->publish_state("stage 16 / 04F6 ACK sent / wait 050A");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 04F6_ACK_TX_INTENT frame=0F1004F6000EA1E1 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7676,7 +7677,7 @@ uart:
                                    !id(write_050a_ack_used) && id(write_04f6_ack_ms) &&
                                    (now_ms-id(write_04f6_ack_ms))<=5000UL) {
                           id(write_050a_ack_used)=true; id(write_050a_ack_ms)=millis(); id(write_stage)=17;
-                          id(thermia_write_050a_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 050A ACK sent / wait 051E-count10");
                           id(thermia_write_stage_text)->publish_state("stage 17 / 050A ACK sent / wait 051E");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 050A_ACK_TX_INTENT frame=0F10050A0013A024 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7696,7 +7697,7 @@ uart:
                                    !id(write_051e_ack_used) && id(write_050a_ack_ms) &&
                                    (now_ms-id(write_050a_ack_ms))<=5000UL) {
                           id(write_051e_ack_used)=true; id(write_051e_ack_ms)=millis(); id(write_stage)=18;
-                          id(thermia_write_051e_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 051E ACK sent / wait 0532-count18");
                           id(thermia_write_stage_text)->publish_state("stage 18 / 051E ACK sent / wait 0532");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 051E_ACK_TX_INTENT frame=0F10051E000A21EA latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7716,7 +7717,7 @@ uart:
                                    !id(write_0532_ack_used) && id(write_051e_ack_ms) &&
                                    (now_ms-id(write_051e_ack_ms))<=5000UL) {
                           id(write_0532_ack_used)=true; id(write_0532_ack_ms)=millis(); id(write_stage)=19;
-                          id(thermia_write_0532_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 0532 ACK sent / wait 0546-count20");
                           id(thermia_write_stage_text)->publish_state("stage 19 / 0532 ACK sent / wait 0546");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 0532_ACK_TX_INTENT frame=0F1005320012E029 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7736,7 +7737,7 @@ uart:
                                    !id(write_0546_ack_used) && id(write_0532_ack_ms) &&
                                    (now_ms-id(write_0532_ack_ms))<=5000UL) {
                           id(write_0546_ack_used)=true; id(write_0546_ack_ms)=millis(); id(write_stage)=20;
-                          id(thermia_write_0546_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 0546 ACK sent / wait 055A-count33");
                           id(thermia_write_stage_text)->publish_state("stage 20 / 0546 ACK sent / wait 055A");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 0546_ACK_TX_INTENT frame=0F10054600142031 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7758,7 +7759,7 @@ uart:
                           id(write_055a_ack_used)=true;
                           id(write_055a_ack_ms)=millis();
                           id(write_stage)=21;
-                          id(thermia_write_055a_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 055A ACK sent / wait 057B-count33");
                           id(thermia_write_stage_text)->publish_state("stage 21 / 055A ACK sent / wait 057B");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 055A_ACK_TX_INTENT frame=0F10055A002121E0 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7782,7 +7783,7 @@ uart:
                           id(write_057b_ack_used)=true;
                           id(write_057b_ack_ms)=millis();
                           id(write_stage)=22;
-                          id(thermia_write_057b_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 057B ACK sent / wait 059C-count33");
                           id(thermia_write_stage_text)->publish_state("stage 22 / 057B ACK sent / wait 059C");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 057B_ACK_TX_INTENT frame=0F10057B002171EA latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7806,7 +7807,7 @@ uart:
                           id(write_059c_ack_used)=true;
                           id(write_059c_ack_ms)=millis();
                           id(write_stage)=23;
-                          id(thermia_write_059c_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 059C ACK sent / wait 05BD-count33");
                           id(thermia_write_stage_text)->publish_state("stage 23 / 059C ACK sent / wait 05BD");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 059C_ACK_TX_INTENT frame=0F10059C0021C1DD latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7830,7 +7831,7 @@ uart:
                           id(write_05bd_ack_used)=true;
                           id(write_05bd_ack_ms)=millis();
                           id(write_stage)=24;
-                          id(thermia_write_05bd_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 05BD ACK sent / wait 05DE-count33");
                           id(thermia_write_stage_text)->publish_state("stage 24 / 05BD ACK sent / wait 05DE");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 05BD_ACK_TX_INTENT frame=0F1005BD002191D7 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7854,7 +7855,7 @@ uart:
                           id(write_05de_ack_used)=true;
                           id(write_05de_ack_ms)=millis();
                           id(write_stage)=25;
-                          id(thermia_write_05de_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 05DE ACK sent / wait 05FF-count33");
                           id(thermia_write_stage_text)->publish_state("stage 25 / 05DE ACK sent / wait 05FF");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 05DE_ACK_TX_INTENT frame=0F1005DE002161C9 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7878,7 +7879,7 @@ uart:
                           id(write_05ff_ack_used)=true;
                           id(write_05ff_ack_ms)=millis();
                           id(write_stage)=26;
-                          id(thermia_write_05ff_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 05FF ACK sent / wait 0620-count33");
                           id(thermia_write_stage_text)->publish_state("stage 26 / 05FF ACK sent / wait 0620");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 05FF_ACK_TX_INTENT frame=0F1005FF002131C3 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7902,7 +7903,7 @@ uart:
                           id(write_0620_ack_used)=true;
                           id(write_0620_ack_ms)=millis();
                           id(write_stage)=27;
-                          id(thermia_write_0620_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 0620 ACK sent / wait 0641-count33");
                           id(thermia_write_stage_text)->publish_state("stage 27 / 0620 ACK sent / wait 0641");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 0620_ACK_TX_INTENT frame=0F1006200021007D latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7926,7 +7927,7 @@ uart:
                           id(write_0641_ack_used)=true;
                           id(write_0641_ack_ms)=millis();
                           id(write_stage)=28;
-                          id(thermia_write_0641_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 0641 ACK sent / wait 0662-count33");
                           id(thermia_write_stage_text)->publish_state("stage 28 / 0641 ACK sent / wait 0662");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 0641_ACK_TX_INTENT frame=0F100641002151A3 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7950,7 +7951,7 @@ uart:
                           id(write_0662_ack_used)=true;
                           id(write_0662_ack_ms)=millis();
                           id(write_stage)=29;
-                          id(thermia_write_0662_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 0662 ACK sent / wait 0683-count33");
                           id(thermia_write_stage_text)->publish_state("stage 29 / 0662 ACK sent / wait 0683");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 0662_ACK_TX_INTENT frame=0F1006620021A069 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7974,7 +7975,7 @@ uart:
                           id(write_0683_ack_used)=true;
                           id(write_0683_ack_ms)=millis();
                           id(write_stage)=30;
-                          id(thermia_write_0683_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 0683 ACK sent / wait 06A4-count33");
                           id(thermia_write_stage_text)->publish_state("stage 30 / 0683 ACK sent / wait 06A4");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 0683_ACK_TX_INTENT frame=0F1006830021F05F latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -7997,7 +7998,7 @@ uart:
                           id(write_06a4_ack_used)=true;
                           id(write_06a4_ack_ms)=millis();
                           id(write_stage)=31;
-                          id(thermia_write_06a4_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 06A4 ACK sent / wait 06C5-count33");
                           id(thermia_write_stage_text)->publish_state("stage 31 / 06A4 ACK sent / wait 06C5");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 06A4_ACK_TX_INTENT frame=0F1006A400214054 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -8021,7 +8022,7 @@ uart:
                           id(write_06c5_ack_used)=true;
                           id(write_06c5_ack_ms)=millis();
                           id(write_stage)=32;
-                          id(thermia_write_06c5_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 06C5 ACK sent / wait 06EA-count7");
                           id(thermia_write_stage_text)->publish_state("stage 32 / 06C5 ACK sent / wait 06EA");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 06C5_ACK_TX_INTENT frame=0F1006C50021118A latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -8043,7 +8044,7 @@ uart:
                                    !id(write_06ea_ack_used) && id(write_06c5_ack_ms) &&
                                    (now_ms-id(write_06c5_ack_ms))<=5000UL) {
                           id(write_06ea_ack_used)=true; id(write_06ea_ack_ms)=millis(); id(write_stage)=33;
-                          id(thermia_write_06ea_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_status)->publish_state("RUNNING / 06EA ACK sent / wait exact 06F1-count3");
                           id(thermia_write_stage_text)->publish_state("stage 33 / 06EA ACK sent / wait 06F1");
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 06EA_ACK_TX_INTENT frame=0F1006EA0007A199 latch=CLOSED RAW=%s =====\033[0m",raw325);
@@ -8063,7 +8064,7 @@ uart:
                                    !id(write_06f1_ack_used) && id(write_06ea_ack_ms) &&
                                    (now_ms-id(write_06ea_ack_ms))<=5000UL) {
                           id(write_06f1_ack_used)=true; id(write_06f1_ack_ms)=millis();
-                          id(thermia_write_06f1_ack_used_sensor)->publish_state(true);
+                          
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== 06F1_ACK_TX_INTENT frame=0F1006F10003D05D latch=CLOSED RAW=%s =====\033[0m",raw325);
                           static const uint8_t a06f1[8]={0x0F,0x10,0x06,0xF1,0x00,0x03,0xD0,0x5D};
                           /* S92: DE owned centrally */ delay_microseconds_safe(1000);
@@ -8086,9 +8087,9 @@ uart:
                             id(write_drop_baseline)=id(thermia_rx_buffer_drop_count);
                             id(thermia_write_runtime_fc16_ack_sensor)->publish_state(0);
                             id(thermia_write_runtime_0708_reply_sensor)->publish_state(0);
-                            id(thermia_write_runtime_unknown_fc16_sensor)->publish_state(0);
-                            id(thermia_write_runtime_unknown_fc03_sensor)->publish_state(0);
-                            id(thermia_write_runtime_self_echo_sensor)->publish_state(0);
+                            
+                            
+                            
                             id(thermia_write_runtime_active_sensor)->publish_state(false);
                             id(thermia_write_status)->publish_state("RUNNING / 31 requested pages exported through 06F1 / requalifying runtime");
                             id(thermia_write_stage_text)->publish_state("stage 40 / post-hot-rejoin runtime qualification");
@@ -8135,7 +8136,7 @@ uart:
                           // Validate this separate one-shot recovery provenance BEFORE
                           // the final ACK, not after physical transmission. Never
                           // grant generic retained/hot-rejoin permission on return.
-                          id(thermia_write_06f4_ack_used_sensor)->publish_state(true);
+                          
                           id(thermia_write_runtime_active_sensor)->publish_state(false);
                           if (id(write_recovery_in_progress)) {
                             id(thermia_write_status)->publish_state("RUNNING / Thermia Write initial sync complete / wait fresh runtime FC16 + 0708");
@@ -8469,7 +8470,7 @@ uart:
                             }
                             if (ws==6) {
                               id(write_refresh_confirmed_count)++;
-                              id(thermia_write_refresh_confirmed_count_sensor)->publish_state(float(id(write_refresh_confirmed_count)));
+                              
                               const uint32_t refresh_latency=id(write_refresh_request_ms)?now_ms-id(write_refresh_request_ms):0;
                               id(write_refresh_request_ms)=0;
                               ESP_LOGE("thermia_write","\033[31m[WRITE] ===== REFRESH_CONFIRMED refreshNo=%u reg=%04X word=%u current=%u target=%u latency=%ums source=controller_FC16_03E8_14 NO_DESIRED_PULL=1 CACHE_FRESH=1 =====\033[0m",
@@ -8515,7 +8516,7 @@ uart:
                               id(write_write_state)=0;
                                   id(write_queue_not_before_ms)=now_ms; // W2R69Q: previous transaction ended; let idle guards decide next dispatch
                               id(thermia_write_write_confirmed_sensor)->publish_state(true);
-                              id(thermia_write_confirmed_write_count_sensor)->publish_state(float(id(write_confirmed_write_count)));
+                              
                               if (wi==0) ([&](){ if (!ha_oemw_value_pending(0x03E8u,0u)) id(thermia_write_heating_curve_target_control).publish_state(got[wi]); }());
                               else if (wi==1) ([&](){ if (!ha_oemw_value_pending(0x03E8u,1u)) id(thermia_write_heating_min_target_control).publish_state(got[wi]); }());
                               else if (wi==2) ([&](){ if (!ha_oemw_value_pending(0x03E8u,2u)) id(thermia_write_heating_max_target_control).publish_state(got[wi]); }());
@@ -8552,7 +8553,7 @@ uart:
                               // Legacy single 03E8 confirmation path is untouched
                               // outside an explicitly user-armed four-page cycle.
                               id(write_refresh_confirmed_count)++;
-                              id(thermia_write_refresh_confirmed_count_sensor)->publish_state(float(id(write_refresh_confirmed_count)));
+                              
                               id(write_refresh_request_ms)=0;
                               id(write_write_state)=0;
                               id(write_queue_not_before_ms)=now_ms; // W2R69Q: previous transaction ended; let idle guards decide next dispatch
@@ -10326,7 +10327,7 @@ uart:
                             id(write_resume_pages_acked)=0;
                             id(write_resume_runtime_interleaves)=0;
                             id(write_runtime_04a6_acked)++;
-                            id(thermia_write_runtime_04a6_acked_sensor)->publish_state(float(id(write_runtime_04a6_acked)));
+                            
                             id(thermia_write_status)->publish_state("RUNNING / 04A6 TX sent / wait 04BA..06F4");
                             id(thermia_write_last_event)->publish_state("04A6 TX_SENT: wait controller 04BA; not yet config synced");
                             ESP_LOGE("thermia_write","\033[31m[WRITE] EXPORT_RESUME_04A6_TX_SENT DE=LOW timeout=60s expectedNext=04BA\033[0m");
@@ -10347,7 +10348,7 @@ uart:
                           }
                         } else if (runtime_0834_unsupported) {
                           id(write_runtime_unknown_fc16_count)++;
-                          id(thermia_write_runtime_unknown_fc16_sensor)->publish_state(float(id(write_runtime_unknown_fc16_count)));
+                          
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== RUNTIME_0834_UNSUPPORTED NO_ACK FAIL_CLOSED RAW=%s =====\033[0m",raw325);
                           write_stop("STOPPED / unsupported runtime 0834/count18",
                                       "0834/count18 capture-only locally; no ACK transmitted");
@@ -10420,7 +10421,7 @@ uart:
                           id(write_runtime_fc16_ack_count)++;
                           id(write_runtime_085f_acked)++;
                           id(thermia_write_runtime_fc16_ack_sensor)->publish_state(float(id(write_runtime_fc16_ack_count)));
-                          id(thermia_write_runtime_085f_acked_sensor)->publish_state(float(id(write_runtime_085f_acked)));
+                          
                           id(thermia_write_last_event)->publish_state("C5AN OEM 085F answered at first offer; not accepted; wait controller continuation");
                           ESP_LOGE("thermia_write","[C5AN] OEM_FIRST_085F_ACK_EXECUTED owner=UNPROVEN FC03=LOCKED HA_WRITES=HOLD DE=LOW");
                         } else if (local_085f_zero &&
@@ -10477,7 +10478,7 @@ uart:
                           id(write_runtime_fc16_ack_count)++;
                           id(write_runtime_085f_acked)++;
                           id(thermia_write_runtime_fc16_ack_sensor)->publish_state(float(id(write_runtime_fc16_ack_count)));
-                          id(thermia_write_runtime_085f_acked_sensor)->publish_state(float(id(write_runtime_085f_acked)));
+                          
                           id(thermia_write_last_event)->publish_state("C5AF FIRST 085F ACK: owner NOT QUALIFIED, FC03 locked");
                           ESP_LOGE("thermia_write","[C5AF] FIRST_085F_ACK_EXECUTED session=UNQUALIFIED FC03=LOCKED HA_WRITES=HOLD DE=LOW");
                         } else if (local_085f_known &&
@@ -10536,7 +10537,7 @@ uart:
                           id(write_runtime_fc16_ack_count)++;
                           id(write_runtime_085f_acked)++;
                           id(thermia_write_runtime_fc16_ack_sensor)->publish_state(float(id(write_runtime_fc16_ack_count)));
-                          id(thermia_write_runtime_085f_acked_sensor)->publish_state(float(id(write_runtime_085f_acked)));
+                          
                           id(thermia_write_last_event)->publish_state("C5AE guarded one-shot 085F cold-join ACK; owner still NOT QUALIFIED");
                           ESP_LOGE("thermia_write","[C5AE] JOIN_085F_ACK_EXECUTED pages=%u owner=UNPROVEN FC03=LOCKED HA_WRITES=HOLD DE=LOW",unsigned(id(write_resume_pages_acked)));
                         } else if (exp419_085f_stable_retained_no_context) {
@@ -10563,7 +10564,7 @@ uart:
                             unsigned(id(exp419_085f_no_context_count)),raw325);
                         } else if (st==0x085F && ct==5 && !local_085f_known) {
                           id(write_runtime_unknown_fc16_count)++;
-                          id(thermia_write_runtime_unknown_fc16_sensor)->publish_state(float(id(write_runtime_unknown_fc16_count)));
+                          
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== RUNTIME_085F_UNKNOWN_PAYLOAD NO_ACK FAIL_CLOSED RAW=%s =====\033[0m",raw325);
                           write_stop("STOPPED / unknown runtime 085F/count5 payload",
                                       "only all-zero and 0861=0800 payloads are locally ACK-proven");
@@ -11274,7 +11275,7 @@ uart:
                                   id(main04b_retry_pending_generation)=0u;
                                   id(main04b_auto_inflight_kind)=0u;
                                   id(main04b_retry_consumed)=false;
-                                  id(thermia_write_refresh_confirmed_count_sensor)->publish_state(float(id(write_refresh_confirmed_count)));
+                                  
                                   id(main01_refresh_last_result)="CONFIRMED / FOUR CURRENT PAGES ACKED";
                                   id(thermia_write_status)->publish_state("RUNTIME / Four controller CURRENT pages received and ACKed / no parameter writes");
                                   id(main01_m6_transition).execute(5);
@@ -11312,7 +11313,7 @@ uart:
                                 unsigned(id(write_resume_started) && !id(write_resume_done)));
                             }
                             id(thermia_write_runtime_fc16_ack_sensor)->publish_state(float(id(write_runtime_fc16_ack_count)));
-                            id(thermia_write_runtime_085f_acked_sensor)->publish_state(float(id(write_runtime_085f_acked)));
+                            
                             if(resume_page) ESP_LOGE("thermia_write","[WRITE] EXPORT_RESUME_PAGE_ACK_EXECUTED start=%04X count=%u DE=LOW",unsigned(st),unsigned(ct));
                             else { ESP_LOGD("thermia_write","[WRITE] RUNTIME_FC16_ACK_EXECUTED start=%04X count=%u DE=LOW",unsigned(st),unsigned(ct)); }
 
@@ -11446,7 +11447,7 @@ uart:
                               unsigned(st),unsigned(ct));
                         } else {
                           id(write_runtime_unknown_fc16_count)++;
-                          id(thermia_write_runtime_unknown_fc16_sensor)->publish_state(float(id(write_runtime_unknown_fc16_count)));
+                          
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== RUNTIME_UNKNOWN_FC16 start=%04X count=%u bc=%u len=%u NO_ACK RAW=%s =====\033[0m",
                             unsigned(st),unsigned(ct),unsigned(bc),unsigned(bytes.size()),raw325);
                           write_stop("COMPLETE / INCONCLUSIVE / unknown runtime FC16 shape",
@@ -12514,7 +12515,7 @@ uart:
                               id(main01_m6_app_page_ms)[i]=0;
                           }
                           id(write_refresh_request_count)++;
-                          id(thermia_write_refresh_request_count_sensor)->publish_state(float(id(write_refresh_request_count)));
+                          
                           id(write_write_state)=8;
                           // Invalidate old receipts only AFTER successful send.
                           id(m6p_heating_ms)=0; id(m6p_heating_epoch)=0;
@@ -13605,7 +13606,7 @@ uart:
                           }
                           id(write_refresh_request_ms)=millis();
                           id(write_refresh_request_count)++;
-                          id(thermia_write_refresh_request_count_sensor)->publish_state(float(id(write_refresh_request_count)));
+                          
                           id(write_write_state)=6;
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== REFRESH_0708_TX_EXECUTED DE=LOW wait=controller_FC16_03E8_14 NO_SEMANTIC_PAGE_TX=1 =====\033[0m");
                         } else if (ws==7 && id(write_delayed_refresh_pending)) {
@@ -13634,7 +13635,7 @@ uart:
                           id(write_delayed_refresh_pending)=false;
                           id(write_refresh_request_ms)=millis();
                           id(write_refresh_request_count)++;
-                          id(thermia_write_refresh_request_count_sensor)->publish_state(float(id(write_refresh_request_count)));
+                          
                           id(write_write_state)=6;
                           id(thermia_write_status)->publish_state("RUNNING / delayed 0708 arrived / fresh 03E8 requested / no setting TX");
                           id(thermia_write_last_event)->publish_state("EXP387_DELAYED_0708_REARM: request fresh authoritative 03E8 before semantic write");
@@ -14229,7 +14230,7 @@ uart:
                             return;
                           }
                           id(write_semantic_response_count)++; id(write_desired_ms)=millis(); id(write_write_state)=3;
-                          id(thermia_write_semantic_response_count_sensor)->publish_state(float(id(write_semantic_response_count)));
+                          
                           ESP_LOGE("thermia_write","\033[31m[WRITE] ===== DESIRED_PAGE_TX_INTENT reg=%04X word=%u original=%u desired=%u deltaWords=1 semanticResponseThisTx=%u/1 crc=%04X frame=%s RAWREQ=%s =====\033[0m",
                             unsigned(id(write_write_register)),unsigned(wi),unsigned(original),unsigned(id(write_target_value)),unsigned(id(write_semantic_response_count)),unsigned(crc),rsphex,raw325);
                           if (!exp421_tx_desired_page(rsp,rsp_len,0x03E8,14)) return;
@@ -14239,7 +14240,7 @@ uart:
 
                       } else {
                         id(write_runtime_unknown_fc03_count)++;
-                        id(thermia_write_runtime_unknown_fc03_sensor)->publish_state(float(id(write_runtime_unknown_fc03_count)));
+                        
                         ESP_LOGE("thermia_write","\033[31m[WRITE] ===== RUNTIME_UNEXPECTED_FC03 start=%04X count=%u writeState=%u NO_TX RAW=%s =====\033[0m",
                           unsigned(st),unsigned(ct),unsigned(ws),raw325);
                         // A read request without an outstanding application response
@@ -17479,15 +17480,6 @@ sensor:
       return snapshot?4.0f:0.0f;
 
   - platform: template
-    id: thermia_write_dirty_mask_sensor
-    disabled_by_default: true
-    name: "Thermia Write Dirty Queue Mask"
-    entity_category: diagnostic
-    update_interval: 5s
-    lambda: |-
-      return float(id(write_dirty_mask));
-
-  - platform: template
     id: thermia_write_pending_write_count_sensor
     disabled_by_default: true
     name: "Thermia Write Pending Write Count"
@@ -18137,71 +18129,12 @@ sensor:
 
 
   - platform: template
-    id: thermia_write_challenges
-    disabled_by_default: true
-    name: "Thermia Write 071C-0730 Challenge Count"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-  - platform: template
-    id: thermia_write_post_tx_challenges
-    disabled_by_default: true
-    name: "Thermia Write Post-R1 Challenge Count"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-  - platform: template
     id: thermia_write_fc16_seen_sensor
     disabled_by_default: true
     name: "Thermia Write FC16 Pages Seen"
     accuracy_decimals: 0
     entity_category: diagnostic
     update_interval: never
-  - platform: template
-    id: thermia_write_03e8_seen_sensor
-    disabled_by_default: true
-    name: "Thermia Write 03E8 Count14 Seen"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-  - platform: template
-    id: thermia_write_03fc_seen_sensor
-    disabled_by_default: true
-    name: "Thermia Write 03FC Count11 Seen"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-  - platform: template
-    id: thermia_write_0410_seen_sensor
-    disabled_by_default: true
-    name: "Thermia Write 0410 Count22 Seen"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-  - platform: template
-    id: thermia_write_042e_seen_sensor
-    disabled_by_default: true
-    name: "Thermia Write 042E Count15 Seen"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-
-  - platform: template
-    id: thermia_write_runtime_085f_acked_sensor
-    disabled_by_default: true
-    name: "Thermia Write Runtime 085F ACKs"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-
-  - platform: template
-    id: thermia_write_runtime_04a6_acked_sensor
-    disabled_by_default: true
-    name: "Thermia Write Runtime 04A6 ACKs"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-
   - platform: template
     id: thermia_write_runtime_fc16_ack_sensor
     disabled_by_default: true
@@ -18218,213 +18151,6 @@ sensor:
     entity_category: diagnostic
     update_interval: never
 
-  - platform: template
-    id: thermia_write_runtime_unknown_fc16_sensor
-    disabled_by_default: true
-    name: "Thermia Write Runtime Unknown FC16"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-
-  - platform: template
-    id: thermia_write_runtime_unknown_fc03_sensor
-    disabled_by_default: true
-    name: "Thermia Write Runtime Unknown FC03"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-
-  - platform: template
-    id: thermia_write_runtime_self_echo_sensor
-    disabled_by_default: true
-    name: "Thermia Write Runtime ACK Self Echoes"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-
-  - platform: template
-    name: "Thermia Write Runtime Age"
-    disabled_by_default: true
-    unit_of_measurement: "s"
-    accuracy_decimals: 1
-    entity_category: diagnostic
-    update_interval: 10s
-    lambda: |-
-      if (!id(write_active) || id(write_stage)!=40 || id(write_runtime_enter_ms)==0) return NAN;
-      return float(millis()-id(write_runtime_enter_ms))/1000.0f;
-  - platform: template
-    id: thermia_write_same_0410_after_ack_sensor
-    disabled_by_default: true
-    name: "Thermia Write Same 0410 After ACK"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-  - platform: template
-    id: thermia_write_same_03fc_after_ack_sensor
-    disabled_by_default: true
-    name: "Thermia Write Same 03FC After ACK"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-  - platform: template
-    id: thermia_write_same_03e8_after_ack_sensor
-    disabled_by_default: true
-    name: "Thermia Write Same 03E8 After ACK"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-  - platform: template
-    id: thermia_write_peer_fc17
-    disabled_by_default: true
-    name: "Thermia Write External FC17 Responses"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-  - platform: template
-    id: thermia_write_peer_fc16_ack
-    disabled_by_default: true
-    name: "Thermia Write External FC16 ACKs"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-  - platform: template
-    name: "Thermia Write Elapsed Age"
-    disabled_by_default: true
-    unit_of_measurement: "s"
-    accuracy_decimals: 1
-    entity_category: diagnostic
-    update_interval: 10s
-    lambda: |-
-      if (!id(write_active) || id(write_arm_ms)==0) return NAN;
-      return float(millis()-id(write_arm_ms))/1000.0f;
-  - platform: template
-    name: "Thermia Write Boot Age"
-    disabled_by_default: true
-    unit_of_measurement: "s"
-    accuracy_decimals: 1
-    entity_category: diagnostic
-    update_interval: 10s
-    lambda: |-
-      if (!id(write_active) || id(write_boot_ms)==0) return NAN;
-      return float(millis()-id(write_boot_ms))/1000.0f;
-  - platform: template
-    name: "Thermia Write Post-R1 Age"
-    disabled_by_default: true
-    unit_of_measurement: "s"
-    accuracy_decimals: 1
-    entity_category: diagnostic
-    update_interval: 10s
-    lambda: |-
-      if (!id(write_active) || id(write_tx_ms)==0) return NAN;
-      return float(millis()-id(write_tx_ms))/1000.0f;
-
-  - platform: template
-    id: thermia_write_semantic_response_count_sensor
-    disabled_by_default: true
-    name: "Thermia Write Semantic Page Responses"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-
-  - platform: template
-    id: thermia_write_confirmed_write_count_sensor
-    disabled_by_default: true
-    name: "Thermia Write Confirmed Selected Writes"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-
-  - platform: template
-    id: thermia_write_refresh_request_count_sensor
-    disabled_by_default: true
-    name: "Thermia Write 03E8 Refresh Requests"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-
-  - platform: template
-    id: thermia_write_refresh_confirmed_count_sensor
-    disabled_by_default: true
-    name: "Thermia Write 03E8 Refresh Confirmed"
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: never
-
-  - platform: template
-    name: "Thermia Write Cached Heating Curve"
-    disabled_by_default: true
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: 5s
-    lambda: |-
-      // Cached values are diagnostic only and must not survive their freshness
-      // window as a seemingly current controller setting. No bus action here.
-      const uint32_t stamp=id(write_page_cache_ms);
-      if (!id(write_page_cache_valid) || !stamp ||
-          (millis()-stamp)>=300000UL) return NAN;
-      return float(id(write_page_w00));
-
-  - platform: template
-    name: "Thermia Write Original Selected Value"
-    disabled_by_default: true
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: 5s
-    lambda: |-
-      if (id(write_confirmed_write_count)==0 && id(write_write_state)==0) return NAN;
-      return float(id(write_original_value));
-
-  - platform: template
-    name: "Thermia Write Target Selected Value"
-    disabled_by_default: true
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: 5s
-    lambda: |-
-      if (id(write_write_state)==0) return NAN;
-      return float(id(write_target_value));
-
-  - platform: template
-    name: "Thermia Write Queue Pending"
-    disabled_by_default: true
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: 5s
-    lambda: |-
-      return id(write_pending_valid) ? 1.0f : 0.0f;
-
-  - platform: template
-    name: "Thermia Write Queued Register"
-    disabled_by_default: true
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: 5s
-    lambda: |-
-      if (!id(write_pending_valid)) return NAN;
-      return float(id(write_pending_register));
-
-  - platform: template
-    name: "Thermia Write Queued Word"
-    disabled_by_default: true
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: 5s
-    lambda: |-
-      if (!id(write_pending_valid)) return NAN;
-      return float(id(write_pending_word_index));
-
-  - platform: template
-    name: "Thermia Write Queued Raw Value"
-    disabled_by_default: true
-    accuracy_decimals: 0
-    entity_category: diagnostic
-    update_interval: 5s
-    lambda: |-
-      if (!id(write_pending_valid)) return NAN;
-      return float(id(write_pending_target));
-
-
-# --- BINARY SENSORS ---
   - platform: template
     id: user_pool_start_temp
     disabled_by_default: true
@@ -18584,14 +18310,6 @@ binary_sensor:
         id(main01_m6_session_epoch)==id(write_arm_ms) &&
         id(main01_native_accepted_epoch)==id(write_arm_ms);
   - platform: template
-    id: thermia_write_dirty_pending_sensor
-    disabled_by_default: true
-    name: "Thermia Write Dirty Queue Pending"
-    entity_category: diagnostic
-    lambda: |-
-      return id(write_dirty_mask)!=0;
-
-  - platform: template
     id: thermia_write_config_synced_sensor
     name: "Diagnostic | Controller Settings Synced"
     entity_category: diagnostic
@@ -18703,245 +18421,9 @@ binary_sensor:
     name: "Diagnostic | Native Session Armed"
     entity_category: diagnostic
   - platform: template
-    id: thermia_write_tx_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write R1 One-Shot TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 03E8 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_03fc_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 03FC ACK TX Used"
-    entity_category: diagnostic
-  - platform: template
-    id: thermia_write_0410_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 0410 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_042e_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 042E ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_0442_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 0442 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_0456_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 0456 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_046a_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 046A ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_047e_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 047E ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_0492_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 0492 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_04a6_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 04A6 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_04ba_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 04BA ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_04d8_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 04D8 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_04f6_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 04F6 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_050a_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 050A ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_051e_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 051E ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_0532_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 0532 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_0546_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 0546 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_055a_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 055A ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_057b_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 057B ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_059c_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 059C ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_05bd_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 05BD ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_05de_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 05DE ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_05ff_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 05FF ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_0620_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 0620 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_0641_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 0641 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_0662_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 0662 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_0683_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 0683 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_06a4_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 06A4 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_06c5_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 06C5 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_06ea_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 06EA ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_06f1_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 06F1 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_06f4_ack_used_sensor
-    internal: true
-    disabled_by_default: true
-    name: "Thermia Write 06F4 ACK TX Used"
-    entity_category: diagnostic
-
-  - platform: template
     id: thermia_write_runtime_active_sensor
     disabled_by_default: true
     name: "Thermia Write Persistent Runtime Active"
-    entity_category: diagnostic
-
-  - platform: template
-    id: thermia_write_soak_15m_passed_sensor
-    disabled_by_default: true
-    name: "Thermia Write Soak 15m Passed"
     entity_category: diagnostic
 
   - platform: template
@@ -24299,7 +23781,7 @@ script:
           // Thermia Write supports words 0..8 and 12 with per-setting bounds; no +/-1 or one-shot write limit.
           // Counters used as per-transaction guards are reset here; confirmedWrites stays cumulative.
           id(write_semantic_response_count)=0;
-          id(thermia_write_semantic_response_count_sensor)->publish_state(0);
+          
           id(write_original_value)=0;
           id(write_target_value)=id(write_requested_target);
           id(thermia_write_write_confirmed_sensor)->publish_state(false);
@@ -29107,8 +28589,8 @@ interval:
             id(write_refresh_request_ms)=0;
             id(write_refresh_request_count)=0;
             id(write_refresh_confirmed_count)=0;
-            id(thermia_write_refresh_request_count_sensor)->publish_state(0);
-            id(thermia_write_refresh_confirmed_count_sensor)->publish_state(0);
+            
+            
             id(exp418_0870_token)=false;
             id(exp418_0870_token_source)=0;
 
@@ -29208,9 +28690,9 @@ interval:
             // This resets bookkeeping only; physical TX remains behind the
             // existing user-initiated session and S92 TX-owner guards.
             id(write_refresh_request_count)=0;
-            id(thermia_write_refresh_request_count_sensor)->publish_state(0);
+            
             id(write_refresh_confirmed_count)=0;
-            id(thermia_write_refresh_confirmed_count_sensor)->publish_state(0);
+            
 
             // Session-scoped diagnostics / qualification must be earned again.
             id(write_runtime_enter_ms)=0;
@@ -29264,10 +28746,10 @@ interval:
             id(thermia_write_runtime_active_sensor)->publish_state(false);
             id(thermia_write_runtime_fc16_ack_sensor)->publish_state(0);
             id(thermia_write_runtime_0708_reply_sensor)->publish_state(0);
-            id(thermia_write_runtime_unknown_fc16_sensor)->publish_state(0);
-            id(thermia_write_runtime_unknown_fc03_sensor)->publish_state(0);
-            id(thermia_write_runtime_self_echo_sensor)->publish_state(0);
-            id(thermia_write_tx_used_sensor)->publish_state(false);
+            
+            
+            
+            
             id(thermia_write_write_confirmed_sensor)->publish_state(false);
 
             id(thermia_write_status)->publish_state("RUNNING / Thermia Write controller power-loss detected / wait boot return");
@@ -29751,7 +29233,7 @@ interval:
               !id(write_soak_15m_passed) &&
               (now-id(write_runtime_enter_ms))>=900000UL) {
             id(write_soak_15m_passed)=true;
-            id(thermia_write_soak_15m_passed_sensor)->publish_state(true);
+            
             id(thermia_write_status)->publish_state("SOAK 15 MIN PASS / persistent DCM service still active");
             id(thermia_write_last_event)->publish_state("15-minute runtime milestone passed; emulator continues");
             ESP_LOGE("thermia_write","\033[31m[WRITE] ===== SOAK_15M_PASS runtimeFC16ACK=%u idle0708=%u rt085F=%u rt04A6=%u unknown16=%u unknown03=%u peer17=%u peer16ack=%u resync=%u drops=%u CONTINUE_RUNNING=1 DE=LOW =====\033[0m",
