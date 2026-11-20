@@ -1,4 +1,5 @@
 # Thermia iTec XTR — WRITE USER 1.02 (PUBLIC)
+# WU106 (2026-11-20): repair missing calendar button IDs; F1 apply fails closed pending handler restoration, NO TX.
 # WU104 (2026-11-20): remove unused internal entities; native TX/session behavior unchanged.
 # WU103 (2026-11-19): opt-in automatic bounded retained/CURRENT recovery; no new TX owner.
 # WU102-R1 (2026-11-19): one guarded recovery action delegates retained W2R33 or owned CURRENT M3; no direct TX.
@@ -25653,6 +25654,65 @@ button:
           id(cal32_stop_hour).publish_state(float(id(cal32_stage)[3]));
           id(cal32_loaded)=false;id(cal32_need_hydrate)=true;
           id(cal32_status)->publish_state("DISCARDED / shared stage reset, awaiting fresh controller read / NO TX");
+  # WU106: Restore missing calendar authorization identifier. This action
+  # only scopes a one-shot authorization; it never transmits on its own.
+  - platform: template
+    id: cal32_arm
+    internal: true
+    disabled_by_default: true
+    name: "Calendar | Internal Scoped Write Arm"
+    entity_category: config
+    icon: mdi:calendar-lock
+    on_press:
+      - if:
+          condition:
+            lambda: 'return id(cal32_selected)<=8u;'
+          then:
+            - button.press: w2r85_calendar_arm_extended_trial
+          else:
+            - lambda: |-
+                id(cal32_arm_ms)=0u; // Invalidate any earlier trial first.
+                const uint32_t now=millis(),epoch=id(write_arm_ms);
+                const bool owner=id(write_active) && id(write_stage)==40u &&
+                  id(write_config_synced) && epoch!=0u &&
+                  id(main01_m6_session_state)==5u &&
+                  id(main01_m6_session_epoch)==epoch &&
+                  id(main01_native_accepted_epoch)==epoch &&
+                  id(m6s_epoch)==epoch &&
+                  id(main01_cm930_shadow_epoch)==epoch &&
+                  id(main01_cm930_shadow_version)==242u &&
+                  (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u);
+                const bool fresh=id(cal32_selected)>=9u && id(cal32_selected)<=32u &&
+                  id(cal32_loaded) && id(cal32_programmed) && id(cal32_mode)==1u &&
+                  id(cal32_source_epoch)==epoch && id(cal32_source_ms)!=0u &&
+                  uint32_t(now-id(cal32_source_ms))<300000u;
+                if(!owner || !fresh || id(cal32_batch_active) || id(w2r56_batch_active)){
+                  id(cal32_status)->publish_state("ARM DENIED / no current owned weekly source or batch active / NO TX");
+                  return;
+                }
+                for(unsigned k=0u;k<5u;k++)id(cal32_arm_targets)[k]=id(cal32_stage)[k];
+                id(cal32_arm_selected)=id(cal32_selected);
+                id(cal32_arm_source_ms)=id(cal32_source_ms);
+                id(cal32_arm_epoch)=epoch;
+                id(cal32_arm_ms)=now?now:1u;
+                ESP_LOGW("thermia_cal32","[WU106] NONF1_SCOPED_ARM slot=%u ttl45s noTX=1",unsigned(id(cal32_selected)));
+
+  # WU106: The earlier W2R56 F1 apply handler is absent from this release.
+  # Fail closed rather than silently routing a calendar write to a different
+  # native operation; retain its ID so the existing UI passes ESPHome validation.
+  - platform: template
+    id: w2r56_calendar_apply_staged_p4
+    internal: true
+    disabled_by_default: true
+    name: "Calendar | F1 Apply Unavailable"
+    entity_category: diagnostic
+    icon: mdi:calendar-alert
+    on_press:
+      - lambda: |-
+          id(exp452_status)->publish_state("F1 APPLY UNAVAILABLE / W2R56 handler missing from Write User 1.02 / NO TX");
+          id(cal32_status)->publish_state("F1 APPLY UNAVAILABLE / calendar write intentionally held / NO TX");
+          ESP_LOGW("thermia_calendar","[WU106] F1_APPLY_NOT_IMPLEMENTED missing W2R56 handler; NO TX");
+
   - platform: template
     id: cal32_apply
     name: "Calendar | Write Changes"
