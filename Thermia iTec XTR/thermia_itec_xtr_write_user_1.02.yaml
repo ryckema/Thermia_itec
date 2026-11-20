@@ -1,5 +1,4 @@
 # Thermia iTec XTR — WRITE USER 1.02 (PUBLIC)
-# WU105 (2026-11-20): auto-sync time preference toggle, ALWAYS_OFF; controller clock write not implemented, NO TX.
 # WU104 (2026-11-20): remove unused internal entities; native TX/session behavior unchanged.
 # WU103 (2026-11-19): opt-in automatic bounded retained/CURRENT recovery; no new TX owner.
 # WU102-R1 (2026-11-19): one guarded recovery action delegates retained W2R33 or owned CURRENT M3; no direct TX.
@@ -156,23 +155,6 @@ logger:
 
 # --- HA SWITCHES / DE CONTROL ---
 switch:
-  # WU105 (2026-11-20): opt-in time auto-sync preference. This switch
-  # defaults OFF on every boot and does NOT transmit clock-setting frames.
-  # Controller clock writes are intentionally unavailable pending validation
-  # of a guarded native time-write protocol; do not assume enabled = synced.
-  - platform: template
-    id: wu105_auto_sync_time
-    name: "Time | Auto-sync (not implemented)"
-    entity_category: config
-    icon: mdi:clock-sync-outline
-    optimistic: true
-    restore_mode: ALWAYS_OFF
-    turn_on_action:
-      - lambda: |-
-          ESP_LOGW("thermia_write","[WU105] AUTO_TIME_SYNC_PREFERENCE_ON / controller time-write unsupported / NO TX");
-    turn_off_action:
-      - lambda: |-
-          ESP_LOGW("thermia_write","[WU105] AUTO_TIME_SYNC_PREFERENCE_OFF / no controller time-write / NO TX");
   # WU103: opt-in unattended recovery. OFF at every ESP boot; enabling is
   # the user-initiated scope for ONE retained trial per epoch and bounded
   # controller-0708 CURRENT maintenance. Neither path sends directly here.
