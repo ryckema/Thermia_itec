@@ -4,6 +4,20 @@ This file records the public **Passive** firmware development from the original 
 
 For the current firmware and installation instructions, see the [main README](../README.md). Entries describe source changes and the verification available at the time; they are **not** a guarantee of full ESPHome compilation or live behaviour on another Thermia controller.
 # Write version
+## Write User 1.03 — 2026-11-22
+
+**Firmware:** [`thermia_itec_xtr_write_user_1.03.yaml`](thermia_itec_xtr_write_user_1.03.yaml)
+
+- Built from the public Write User 1.02 source through FAMILY02/FAMILY03, preserving the existing S92 sole UART/RX/TX/DE owner, V5 CRC parser, native FC16/FC03, session epoch and freshness guards, controller-confirmed user writes, ABORT and rollback behavior.
+- **CM930 software 2.4.0, 2.4.1, 2.4.2 and 2.4.3:** allow the existing native session/refresh/write-gate paths for this controller family. **Only local XTR M 3N / CM930 2.4.2 is live-confirmed**; the other versions are enabled by user decision, not separately field-validated. An unmatched recorded authentication challenge remains a compatibility limit.
+- **Automatic native session recovery:** no Home Assistant enable toggle required after ESP reboot; retained W2R33 and native M3/CURRENT recovery reuse existing bounded S92 owner paths, with existing bus/epoch/ABORT checks.
+- **Calendar F1 Apply repaired:** reconnect the common calendar editor to existing guarded W2R56 → OEMW23 → S92; bounded explicit edits require fresh source and controller FC16 acceptance, followed by exact native F1 readback. No separate TX writer.
+- Removed two unreferenced RAM variables; retained dependent internal legacy/test functions and established protections.
+
+**LIVE evidence — 2026-11-22, local XTR M 3N, CM930 2.4.2:** ESP OTA reboot followed by retained native session rejoin, M6=5 and controller-confirmed CURRENT 4/4; Write User automatically ENABLED. On one explicit calendar apply, slot 4 stop minute **38→30** at register `0x0584` and weekday mask **0x71→0x31** at `0x0589` each received genuine `CONTROLLER_ACCEPTED` with one physical attempt. Final F1 readback reported `BATCH_DONE f1Exact=1 pages=2 count=2`, slot 4 **20:23–20:30**, Monday/Friday/Saturday. RX CRC discrepancy **0**, parser resync **0**, observed through the captured window. **COMPLETE / POSITIVE** for that bounded calendar edit and resumed operation; not proof of every calendar operation or of other CM930 versions.
+
+**Validation:** ESPHome 2026.9.0 running on the user ESP32-S3 and LIVE log as above. No independent fresh build was executed here. The previous `1.02` file remains in the repository as rollback.
+
 ## Write User 1.02 — 2026-11-17
 - Controller 0x02 loss >=5s with living room-sensor 0x0A: automatic one-episode transition into the EXISTING S92 cold-start state machine.
 - Automatic recovery rearm moved from FC16+0708 transport ACK to same-epoch M6=5, native accepted ownership and CURRENT 4/4.
@@ -49,6 +63,6 @@ This release combines the alarm decoding, data-freshness improvements, Home Assi
 ## Other published iTec XTR firmware variants
 
 - [DCM Read Only 1.0](thermia_itec_xtr_DCM_readonly_1.0.yaml) — native DCM read-only integration. Unlike Passive, it can transmit protocol traffic but does not change controller parameters.
-- [Write User 1.01](thermia_itec_xtr_write_user_1.01.yaml) — public native user-setting-control variant with distinct controller/session requirements.
+- [Write User 1.03](thermia_itec_xtr_write_user_1.03.yaml) — current public native user-setting-control variant; 1.02 retained as rollback.
 
 **Scope:** This public changelog contains no proprietary handshake algorithms, keys, authenticated captures or controller secrets.
