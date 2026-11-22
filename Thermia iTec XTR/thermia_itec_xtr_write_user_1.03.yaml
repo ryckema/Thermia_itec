@@ -18686,9 +18686,25 @@ text_sensor:
       if (id(main01_cm930_info_product_epoch)!=epoch)
         return {"CM930 2.4.x native access / product identity pending"};
       const unsigned model=id(main01_cm930_info_product_code);
-      if (model==22u && id(main01_cm930_shadow_version)>=242u) return {"CM930 2.4.x / XTR M 1N / access enabled; profile evidence version-dependent"};
-      if (model==23u && id(main01_cm930_shadow_version)>=242u) return {"CM930 2.4.x / XTR M 3N / access enabled; profile evidence version-dependent"};
-      return {"CM930 2.4.x / native access enabled / product mapping differs by controller version"};
+      const char *product=nullptr;
+      // OEM CM930 configured product code (0x0539): XT 10/14/16 = 15..20.
+      // 2.4.1 reuses some higher IDs; XTR M 22/23 is mapped only on 2.4.2+.
+      switch (model) {
+        case 15u: product="XT 10 1N"; break;
+        case 16u: product="XT 10 3N"; break;
+        case 17u: product="XT 14 1N"; break;
+        case 18u: product="XT 14 3N"; break;
+        case 19u: product="XT 16 1N"; break;
+        case 20u: product="XT 16 3N"; break;
+        case 22u: if(id(main01_cm930_shadow_version)>=242u) product="XTR M 1N"; break;
+        case 23u: if(id(main01_cm930_shadow_version)>=242u) product="XTR M 3N"; break;
+        default: break;
+      }
+      if (!product)
+        return {"CM930 2.4.x / native access enabled / product mapping differs by controller version"};
+      char result[144];
+      snprintf(result,sizeof(result),"CM930 2.4.x / %s / access enabled; model map OEM / XT live unverified",product);
+      return {std::string(result)};
   - platform: template
     id: cal32_status
     name: "Calendar | Shared Editor Status"
@@ -21103,11 +21119,28 @@ text_sensor:
         (id(main01_cm930_shadow_version)>=240u && id(main01_cm930_shadow_version)<=243u) &&
         id(main01_cm930_info_product_epoch)==epoch;
       if (!owned) return {"UNAVAILABLE / OWNER OR PROFILE UNPROVEN"};
+      const unsigned v=id(main01_cm930_shadow_version);
+      const char *product=nullptr;
       switch (id(main01_cm930_info_product_code)) {
-        case 22: return {"iTec XTR M 1N / Controller 2.4.2 / OBSERVED"};
-        case 23: return {"iTec XTR M 3N / Controller 2.4.2 / OBSERVED"};
-        default: return {"UNKNOWN XTR MODEL / Controller 2.4.2"};
+        case 15u: product="iTec XT 10 1N"; break;
+        case 16u: product="iTec XT 10 3N"; break;
+        case 17u: product="iTec XT 14 1N"; break;
+        case 18u: product="iTec XT 14 3N"; break;
+        case 19u: product="iTec XT 16 1N"; break;
+        case 20u: product="iTec XT 16 3N"; break;
+        case 22u: if(v>=242u) product="iTec XTR M 1N"; break;
+        case 23u: if(v>=242u) product="iTec XTR M 3N"; break;
+        default: break;
       }
+      char result[120];
+      if (product)
+        snprintf(result,sizeof(result),"%s / Controller %u.%u.%u / OBSERVED",
+                 product,unsigned(v/100u),unsigned((v/10u)%10u),unsigned(v%10u));
+      else
+        snprintf(result,sizeof(result),"UNKNOWN PRODUCT CODE %u / Controller %u.%u.%u / OBSERVED",
+                 unsigned(id(main01_cm930_info_product_code)),
+                 unsigned(v/100u),unsigned((v/10u)%10u),unsigned(v%10u));
+      return {std::string(result)};
 
   - platform: template
     id: thermia_cm930_local_alarm_evidence
