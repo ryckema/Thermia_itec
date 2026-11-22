@@ -16,7 +16,7 @@ For the current firmware and installation instructions, see the [main README](..
 
 **LIVE evidence — 2026-11-22, local XTR M 3N, CM930 2.4.2:** ESP OTA reboot followed by retained native session rejoin, M6=5 and controller-confirmed CURRENT 4/4; Write User automatically ENABLED. On one explicit calendar apply, slot 4 stop minute **38→30** at register `0x0584` and weekday mask **0x71→0x31** at `0x0589` each received genuine `CONTROLLER_ACCEPTED` with one physical attempt. Final F1 readback reported `BATCH_DONE f1Exact=1 pages=2 count=2`, slot 4 **20:23–20:30**, Monday/Friday/Saturday. RX CRC discrepancy **0**, parser resync **0**, observed through the captured window. **COMPLETE / POSITIVE** for that bounded calendar edit and resumed operation; not proof of every calendar operation or of other CM930 versions.
 
-**Validation:** ESPHome 2026.9.0 running on the user ESP32-S3 and LIVE log as above. No independent fresh build was executed here. The previous `1.02` file remains in the repository as rollback.
+**Validation:** ESPHome 2026.9.0 running on the user ESP32-S3 and LIVE log as above. No independent fresh build was executed here. The superseded `1.02` source file was removed from the current repository tree on 2026-11-22; its history remains available through Git commits. Future Write User releases update the existing firmware path instead of adding separate versioned YAML files.
 
 ## Write User 1.02 — 2026-11-17
 - Controller 0x02 loss >=5s with living room-sensor 0x0A: automatic one-episode transition into the EXISTING S92 cold-start state machine.
