@@ -1,4 +1,6 @@
-# Thermia iTec XTR — WRITE USER 1.03 (PUBLIC)
+# Thermia iTec XTR — WRITE USER 1.04 (PUBLIC RELEASE CANDIDATE)
+# PREPARED / NOT RUN: RC1 baseline; persistent scoped read refresh and opt-in daily UTC RTC correction.
+# New scoped reads and opt-in RTC correction ONLY on locally observed XTR M 3N CM930 2.4.2. Existing public handshake unchanged.
 # WU105 (2026-11-20): prune 67 legacy Thermia Write HA entities and presentation-only publications; preserve native owner and counters.
 # WU107 (2026-11-22): automatic guarded native recovery at every boot; no WU103 HA toggle required, existing ABORT/S92 owner preserved.
 # 1.03 (2026-11-22): FAMILY03 F1 apply validated LIVE on XTR M 2.4.2, two controller-confirmed writes + exact F1 readback; existing W2R56/OEMW23/S92 owner.
@@ -161,8 +163,59 @@ logger:
 
 
 
+time:
+  - platform: homeassistant
+    id: service_ha_time
+    on_time_sync:
+      then:
+        - lambda: |-
+            id(service_ha_time_synced)=true;
+            id(service_ha_time_synced_ms)=millis()?millis():1u;
+            ESP_LOGI("service_clock","HA time & timezone synchronized; Thermia RTC unchanged");
+
 # --- HA SWITCHES / DE CONTROL ---
 switch:
+  - platform: template
+    id: svcclk_auto_sync_enable
+    name: "Configuration | Automatic Time Sync"
+    entity_category: config
+    icon: mdi:clock-sync
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    turn_on_action:
+      - lambda: |-
+          id(svcclk_daily_last_check_epoch)=0u;
+          if(!id(svcclk_daily_pending))id(svcclk_state)=0u;
+          id(service_clock_sync_status)->publish_state("ENABLED / wait qualified fresh RTC / daily comparison / 60s tolerance");
+    turn_off_action:
+      - lambda: |-
+          if(id(svcclk_state)==1u || id(svcclk_state)==2u) {
+            id(svcclk_state)=5u;
+            id(svcclk_daily_pending)=false;
+          }
+          id(service_clock_sync_status)->publish_state("DISABLED / no new clock write; sent data may still be confirmed");
+  - platform: template
+    id: svc28_refresh_enable
+    name: "Configuration | Enable Extended Automatic Parameter Refresh"
+    entity_category: config
+    icon: mdi:database-sync
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action:
+      - lambda: |-
+          // WU104: exact local XTR M 3N 2.4.2 only; other profiles retain existing reads.
+          id(svc28_failed)=0u;
+          ESP_LOGW("svc28", "EXTENDED_REFRESH_ENABLED / 14 scoped read-only pages / one outstanding / no setting writes");
+    turn_off_action:
+      - lambda: |-
+          // Cancel only our own unsent intent. A sent request may finish its ACK.
+          if(id(svc28_index)<14u && id(svc28_epoch)==id(write_arm_ms) &&
+             id(main01_m6_app_sync_arm_ms)==id(svc28_arm_ms) && !id(main01_m6_app_sync_active) &&
+             id(main01_m6_app_requested)==(uint64_t(1)<<id(svc28_ledger_index))) {
+            id(main01_m6_app_sync_arm_ms)=0u;
+            id(main01_m6_app_requested)=0u;id(main01_m6_app_pending)=0u;
+            id(main04d_app_receipt_state)=3u;id(svc28_index)=255u;
+          }
   # WU107: native session recovery is built-in (not a user-facing enable switch).
   # The existing single S92/M6 owner, retained W2R33 one-shot, CURRENT M3
   # bounds, epoch checks, collision/CRC guards, and ABORT latch remain intact.
@@ -1047,6 +1100,48 @@ switch:
           return;
 # --- NATIVE STATE ---
 globals:
+  - { id: svcclk_state, type: uint8_t, restore_value: no, initial_value: '0' }
+  - { id: svcclk_epoch, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: svcclk_arm_ms, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: svcclk_selector_ms, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: svcclk_sent_ms, type: uint32_t, restore_value: no, initial_value: '0' }
+  - { id: svcclk_attempts, type: uint8_t, restore_value: no, initial_value: '0' }
+  - id: svcclk_desired
+    type: std::array<uint16_t, 7>
+    restore_value: no
+    initial_value: '{0}'
+  - { id: svcclk_daily_last_write_epoch, type: uint32_t, restore_value: yes, initial_value: '0' }
+  - { id: svcclk_daily_last_check_epoch, type: uint32_t, restore_value: yes, initial_value: '0' }
+  - { id: svcclk_daily_pending, type: bool, restore_value: no, initial_value: 'false' }
+  - {id: svc28_index, type: uint8_t, restore_value: no, initial_value: '255'}
+  - {id: svc28_ledger_index, type: uint8_t, restore_value: no, initial_value: '255'}
+  - {id: svc28_epoch, type: uint32_t, restore_value: no, initial_value: '0'}
+  - {id: svc28_arm_ms, type: uint32_t, restore_value: no, initial_value: '0'}
+  - {id: svc28_failed, type: uint16_t, restore_value: no, initial_value: '0'}
+  - {id: svc28_confirmed, type: uint16_t, restore_value: no, initial_value: '0'}
+  - {id: svc28_cursor, type: uint8_t, restore_value: no, initial_value: '0'}
+  - {id: svc28_last_end_ms, type: uint32_t, restore_value: no, initial_value: '0'}
+  - id: service_ha_time_synced
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: service_ha_time_synced_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+  - id: svc27_wall_seconds
+    type: 'std::function<int64_t(unsigned,unsigned,unsigned,unsigned,unsigned,unsigned)>'
+    restore_value: no
+    initial_value: |-
+      [](unsigned y,unsigned m,unsigned d,unsigned h,unsigned min,unsigned sec)->int64_t {
+        if(y<2000u || y>2099u || m<1u || m>12u || d<1u || h>23u || min>59u || sec>59u)return -1;
+        static constexpr unsigned md[12]={31,28,31,30,31,30,31,31,30,31,30,31};
+        if(d>md[m-1u]+(m==2u && y%4u==0u?1u:0u))return -1;
+        int64_t days=10957; // 2000-01-01 on a timezone-free civil axis
+        for(unsigned yr=2000u;yr<y;yr++)days+=365+(yr%4u==0u?1:0);
+        for(unsigned mo=1u;mo<m;mo++)days+=md[mo-1u]+(mo==2u && y%4u==0u?1:0);
+        return (days+d-1u)*86400LL+h*3600LL+min*60LL+sec;
+      }
   # Pure presentation helper; callable from template lambdas; no physical bus access.
   - id: thermia_inline_calendar_formatter
     type: "std::function<std::string(unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned,unsigned)>"
@@ -2044,7 +2139,7 @@ globals:
   - id: main01_m6_app_page_ms
     type: 'std::vector<uint32_t>'
     restore_value: no
-    initial_value: 'std::vector<uint32_t>(33, 0)'
+    initial_value: 'std::vector<uint32_t>(39, 0)'
   - id: main01_m6_app_sync_arm_ms
     type: uint32_t
     restore_value: no
@@ -4025,7 +4120,7 @@ uart:
                 id(main01_m6_app_requested)=0;
                 id(main01_m6_app_received)=0;
                 id(main01_m6_app_pending)=0;
-                id(main01_m6_app_page_ms).assign(33,0);
+                id(main01_m6_app_page_ms).assign(39,0);
                 id(main01_m6_app_sync_arm_ms)=0;
                 id(main01_m6_app_sync_active)=false;
                 id(main01_m6_app_sync_start_ms)=0;
@@ -4927,6 +5022,75 @@ uart:
                     if(got!=expected) {w1_editor_whole_page_matches=false;break;}
                   }
                 }
+                // Service-dev004 CLOCK: exact OEM930 W0(bit13) + W2(bit13) selector
+                // and exactly one full seven-word 06EA desired page. No generic
+                // register writes, no separate UART driver, no background TX.
+                const uint32_t clk_now=millis();
+                const bool svcclk_wire_owner=!id(w2r36_abort_latched) && !id(w2r79f_write_user_manual_lockout) &&
+                  id(svcclk_auto_sync_enable).state && id(svc28_refresh_enable).state && id(svcclk_daily_pending) &&
+                  id(main01_cm930_shadow_epoch)==id(write_arm_ms) && id(main01_cm930_shadow_version)==242u &&
+                  id(main01_cm930_info_product_epoch)==id(write_arm_ms) && id(main01_cm930_info_product_code)==23u &&
+                  id(write_config_synced) && id(m6s_epoch)==id(write_arm_ms) && id(m6s_oldest_ms) &&
+                  uint32_t(millis()-id(m6s_oldest_ms))<300000u &&
+                  id(thermia_bus_healthy).state && id(thermia_last_valid_frame_ms) &&
+                  uint32_t(millis()-id(thermia_last_valid_frame_ms))<=2000u &&
+                  id(write_runtime_fc16_ack_count)>0u && id(write_runtime_0708_reply_count)>0u &&
+                  id(svc28_index)==255u && !id(main01_m6_app_sync_active) && !id(main01_m6_app_sync_arm_ms) && !id(main01_m6_app_pending) &&
+                  !id(main01_m6_refresh_active) && !id(main01_m3_refresh_armed_ms) && !id(c5dk_auto_current_pending_kind) &&
+                  !id(main04b_retry_pending_kind) && !id(c5ds_cal_auto_waiting) &&
+                  id(w2r97_alarm_read_state)!=1u && id(w2r97_alarm_read_state)!=2u &&
+                  !id(w2r83_auto_f1_pending) && !id(cal32_batch_active) && !id(w2r56_batch_active) &&
+                  !id(write_write_state) && !id(write_pending_valid) && !id(write_dirty_mask) && !id(write_delayed_refresh_pending) &&
+                  !id(native_transaction_state)[0] && !id(native_transaction_state)[1] && !(id(native_transaction_state)[2]>=1u && id(native_transaction_state)[2]<=4u) &&
+                  !id(oemw_alert_pending) && !id(oemw_read_pending) && !id(w1_curve_armed) && !id(w2_curve_desired_pending) &&
+                  !id(exp445_state) && !id(exp452_state) && !id(exp378_dirty_mask) && !id(exp379_dirty_mask) && !id(exp380_dirty) && !id(exp383_link_dirty) &&
+                  !id(write_recovery_in_progress) && !id(write_hot_rejoin_in_progress) && !id(write_hot_rejoin_wait_runtime) &&
+                  !(id(write_resume_started) && !id(write_resume_done)) &&
+                  ([&](){for(auto q:id(w2r78_queue_descriptor))if(q)return false;return true;}()) &&
+                  id(svcclk_epoch)!=0u &&
+                  id(svcclk_epoch)==id(write_arm_ms) &&
+                  id(write_active) && id(write_stage)==40u &&
+                  id(main01_m6_session_state)==5u &&
+                  id(main01_m6_session_epoch)==id(write_arm_ms) &&
+                  id(main01_native_accepted_epoch)==id(write_arm_ms) &&
+                  id(svcclk_arm_ms)!=0u &&
+                  uint32_t(clk_now-id(svcclk_arm_ms))<=60000u &&
+                  id(svcclk_attempts)==0u &&
+                  id(s92_v5_crc_shadow_disagreements)==0u &&
+                  id(s92_v5_ambiguous_count)==0u &&
+                  id(thermia_parser_resync_count)==id(write_resync_baseline) &&
+                  id(thermia_rx_buffer_drop_count)==id(write_drop_baseline) &&
+                  id(write_peer_fc17_count)==0u &&
+                  id(write_peer_fc16_ack_count)==0u &&
+                  id(write_runtime_unknown_fc03_count)==0u &&
+                  id(write_runtime_unknown_fc16_count)==0u;
+                const bool svcclk_wire_selector=svcclk_wire_owner &&
+                  id(svcclk_state)==1u &&
+                  slave==0x0Fu && fc==0x03u && bytes.size()==8u &&
+                  bytes[2]==0x07u && bytes[3]==0x08u &&
+                  bytes[4]==0u && bytes[5]==6u &&
+                  length==17u && payload[0]==0x0Fu && payload[1]==0x03u &&
+                  payload[2]==12u && payload[3]==0x20u && payload[4]==0u &&
+                  payload[5]==0u && payload[6]==0u &&
+                  payload[7]==0x20u && payload[8]==0u &&
+                  payload[9]==0u && payload[10]==0u &&
+                  payload[11]==0u && payload[12]==0u &&
+                  payload[13]==0u && payload[14]==6u;
+                bool svcclk_wire_page=svcclk_wire_owner &&
+                  id(svcclk_state)==2u &&
+                  id(svcclk_selector_ms)!=0u &&
+                  uint32_t(clk_now-id(svcclk_selector_ms))<=15000u &&
+                  slave==0x0Fu && fc==0x03u && bytes.size()==8u &&
+                  bytes[2]==0x06u && bytes[3]==0xEAu &&
+                  bytes[4]==0u && bytes[5]==7u &&
+                  length==19u && payload[0]==0x0Fu && payload[1]==0x03u &&
+                  payload[2]==14u;
+                if (svcclk_wire_page) {
+                  for (unsigned i=0u;i<7u;i++) {
+                    const uint16_t v=(uint16_t(payload[3u+2u*i])<<8) | payload[4u+2u*i];
+                    if (v!=id(svcclk_desired)[i]) {svcclk_wire_page=false;break;}
+                  }
+                }
                 const bool w1_scoped_desired_page=w1_whole_page_matches || w1_hw_whole_page_matches || w1_cool_whole_page_matches || w1_mode_whole_page_matches || w1_cal_whole_page_matches || w1_editor_whole_page_matches;
                 // MAIN01-M4 SAFETY FIX: all *other* HA setting/parameter writes remain ON HOLD.
                 // Final fail-closed wire boundary, reached by every existing native
@@ -5107,7 +5271,7 @@ uart:
                     payload[9]==0u && payload[10]==0u &&
                     payload[11]==0u && payload[12]==0u &&
                     payload[13]==0u && payload[14]==6u;
-                  if (!w1_scoped_desired_page && !w1_cal_scoped_selector && !w1_editor_scoped_selector &&
+                  if (!w1_scoped_desired_page && !svcclk_wire_page && !svcclk_wire_selector && !w1_cal_scoped_selector && !w1_editor_scoped_selector &&
                       (!exact_0708_request || !owned_fc16_precedes_0708)) {
                     s92_rx_revoke_authority();
                     id(thermia_write_status)->publish_state(
@@ -5190,7 +5354,7 @@ uart:
                     payload[9]==0u && payload[10]==0u && // W3 zero
                     payload[11]==0u && payload[12]==0u &&
                     payload[13]==0u && payload[14]==6u;
-                  if (!w1_scoped_desired_page && !no_desired_alert_bits &&
+                  if (!w1_scoped_desired_page && !svcclk_wire_page && !svcclk_wire_selector && !no_desired_alert_bits &&
                       !w1_scoped_selector && !w1_hw_scoped_selector && !w1_cool_scoped_selector && !w1_mode_scoped_selector && !w1_cal_scoped_selector && !w1_editor_scoped_selector) {
                     // Do not transmit or commit any other semantic desired-page response.
                     // Latch the existing fail-closed stop state; DE is LOW.
@@ -5407,6 +5571,34 @@ uart:
                   out[p]='\0';
                 };
                 static char raw325[360]; write_hex(bytes,raw325,sizeof(raw325)); // W2R84: serial RX scratch in .bss, not 360B loopTask stack
+
+                if (id(svcclk_state)==3u && slave==0x0Fu && fc==0x10u &&
+                    bytes.size()==23u && bytes[2]==0x06u && bytes[3]==0xEAu &&
+                    bytes[4]==0u && bytes[5]==7u && bytes[6]==14u &&
+                    id(svcclk_attempts)==1u &&
+                    id(svcclk_epoch)==id(write_arm_ms) && !id(w2r36_abort_latched) &&
+                    id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==id(write_arm_ms) &&
+                    id(main01_cm930_shadow_epoch)==id(write_arm_ms) && id(main01_cm930_shadow_version)==242u &&
+                    id(main01_cm930_info_product_epoch)==id(write_arm_ms) && id(main01_cm930_info_product_code)==23u &&
+                    id(main01_native_accepted_epoch)==id(write_arm_ms) &&
+                    id(svcclk_sent_ms)!=0u &&
+                    uint32_t(millis()-id(svcclk_sent_ms))<=180000u) {
+                  uint16_t got[7]={};
+                  for(unsigned j=0u;j<7u;j++)
+                    got[j]=uint16_t((uint16_t(bytes[7u+2u*j])<<8)|bytes[8u+2u*j]);
+                  if(got[0]<=59u && got[1]<=59u && got[2]<=23u &&
+                     got[3]>=1u && got[3]<=31u && got[4]>=1u && got[4]<=12u &&
+                     got[5]<=99u && got[6]<=6u) {
+                    const int64_t local=id(svc27_wall_seconds)(2000u+got[5],got[4],got[3],got[2],got[1],got[0]);
+                    const auto ha=id(service_ha_time).now();
+                    if(local>=0 && ha.is_valid() && id(svc27_wall_seconds)(ha.year,ha.month,ha.day_of_month,ha.hour,ha.minute,ha.second)>=0 &&
+                       llabs(id(svc27_wall_seconds)(ha.year,ha.month,ha.day_of_month,ha.hour,ha.minute,ha.second)-local)<=60LL) {
+                      id(svcclk_state)=4u;
+                      id(service_clock_sync_status)->publish_state("COMPLETE / POSITIVE / native RTC readback matches HA local time within 60 s; panel not independently checked");
+                      ESP_LOGW("service_clock","[Service-dev004] CLOCK_SEMANTIC_CONFIRM controller-origin FC16 06EA/7 / confirmed=1");
+                    }
+                  }
+                }
 
                 // W2R52: when room-sensor traffic continued through an
                 // observed controller-0x02 outage, ONLY a new CRC-valid
@@ -6600,7 +6792,36 @@ uart:
                         !id(write_recovery_in_progress) &&
                         !(id(write_resume_started) && !id(write_resume_done));
 
+                      // Dev028: exact page only, after a physically sent scoped request. No general config ACK grant.
+                      const bool svc28_ack_owner=[&]()->bool {
+                        static constexpr uint16_t starts[14]={0x0532,0x0456,0x03FC,0x046A,0x04BA,0x04A6,0x047E,0x0492,0x04D8,0x04F6,0x050A,0x051E,0x0410,0x06EA};
+                      static constexpr uint8_t counts[14]={18,12,11,18,22,13,19,11,27,14,19,10,22,7};
+                      static constexpr uint8_t indices[14]={9,5,1,6,8,7,33,34,35,36,37,38,2,23};
+                        const unsigned k=id(svc28_index);
+                        if(k>=14u || id(svc28_ledger_index)!=indices[k])return false;
+                        const uint64_t scope=uint64_t(1)<<indices[k];
+                        const uint32_t epoch=id(write_arm_ms),sent=id(main01_m6_app_sync_start_ms);
+                        return st==starts[k] && ct==counts[k] && bc==2u*ct && bytes.size()==9u+bc &&
+                          epoch && id(svc28_epoch)==epoch && id(main01_m6_app_epoch)==epoch &&
+                          id(main01_m6_app_sync_epoch)==epoch && id(main01_m6_session_epoch)==epoch &&
+                          id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+                          id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+                          (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+                          id(write_active) && id(write_stage)==40u && id(main01_m6_session_state)==5u &&
+                          id(write_config_synced) && !id(w2r36_abort_latched) &&
+                          id(main01_m6_app_requested)==scope && (id(main01_m6_app_pending)&scope) &&
+                          id(main04d_app_receipt_state)==1u && id(main01_m6_app_sync_polls)==1u &&
+                          sent && int32_t(sent-id(svc28_arm_ms))>=0 && uint32_t(now_ms-sent)<=20000u &&
+                          id(thermia_rx_buffer_drop_count)==id(write_drop_baseline) &&
+                          id(thermia_parser_resync_count)==id(write_resync_baseline) &&
+                          !id(s92_v5_crc_shadow_disagreements) && !id(s92_v5_ambiguous_count) &&
+                          !id(write_runtime_unknown_fc16_count) && !id(write_runtime_unknown_fc03_count) &&
+                          !id(write_peer_fc17_count) && !id(write_peer_fc16_ack_count) &&
+                          !id(write_recovery_in_progress) && !id(write_hot_rejoin_in_progress) &&
+                          !(id(write_resume_started) && !id(write_resume_done));
+                      }();
                       const bool exp420_config_owned =
+                        svc28_ack_owner ||
                         cal6_scoped_owned_ack ||
                         exp420_m6_refresh_owner ||
                         exp420_03e8_transaction_owner ||
@@ -6615,7 +6836,8 @@ uart:
                         exp420_resume_owner;
 
                       uint8_t exp420_owner_code=0;
-                      if (cal6_scoped_owned_ack) exp420_owner_code=12;
+                      if (svc28_ack_owner) exp420_owner_code=15;
+                      else if (cal6_scoped_owned_ack) exp420_owner_code=12;
                       else if (exp420_m6_refresh_owner) exp420_owner_code=11;
                       else if (exp420_03e8_transaction_owner) exp420_owner_code=1;
                       else if (exp431_generic_owner) exp420_owner_code=8;
@@ -6719,7 +6941,7 @@ uart:
                           id(main01_m6_app_requested)=app_generic_requestable;
                           id(main01_m6_app_received)=0;
                           id(main01_m6_app_pending)=app_generic_requestable;
-                          id(main01_m6_app_page_ms).assign(33,0);
+                          id(main01_m6_app_page_ms).assign(39,0);
                         }
                         // Follow the SOURCE version gate, not a local FC16 ACK.
                         const bool app_profile=id(main01_cm930_shadow_epoch)==app_epoch &&
@@ -7293,14 +7515,17 @@ uart:
                         if (!id(write_active) || id(write_arm_ms)==0 ||
                             id(main01_m6_session_epoch)!=id(write_arm_ms) ||
                             id(main01_m6_app_epoch)!=id(write_arm_ms) ||
-                            id(main01_m6_app_page_ms).size()!=33 ||
+                            id(main01_m6_app_page_ms).size()!=39 ||
                             bytes[0]!=0x0F || bytes[1]!=0x10 ||
                             bc!=uint16_t(ct*2U) ||
                             bytes.size()!=size_t(9U+bc)) return;
-                        static constexpr uint16_t starts[33]={0x03E8,0x03FC,0x0410,0x042E,0x0442,0x0456,0x046A,0x04A6,0x04BA,0x0532,0x0546,0x055A,0x057B,0x059C,0x05BD,0x05DE,0x05FF,0x0620,0x0641,0x0662,0x0683,0x06A4,0x06C5,0x06EA,0x06F4,0x07D0,0x07E4,0x07F8,0x080C,0x0820,0x0848,0x0864,0x0870};
-                        static constexpr uint8_t counts[33]={14,11,22,15,13,12,18,13,22,18,20,33,33,33,33,33,33,33,33,33,33,33,33,7,19,19,17,17,18,18,23,4,17};
-                        for (unsigned i=0;i<33;i++) {
+                        static constexpr uint16_t starts[39]={0x03E8,0x03FC,0x0410,0x042E,0x0442,0x0456,0x046A,0x04A6,0x04BA,0x0532,0x0546,0x055A,0x057B,0x059C,0x05BD,0x05DE,0x05FF,0x0620,0x0641,0x0662,0x0683,0x06A4,0x06C5,0x06EA,0x06F4,0x07D0,0x07E4,0x07F8,0x080C,0x0820,0x0848,0x0864,0x0870,0x047E,0x0492,0x04D8,0x04F6,0x050A,0x051E};
+                        static constexpr uint8_t counts[39]={14,11,22,15,13,12,18,13,22,18,20,33,33,33,33,33,33,33,33,33,33,33,33,7,19,19,17,17,18,18,23,4,17,19,11,27,14,19,10};
+                        for (unsigned i=0;i<39;i++) {
                           if (st!=starts[i] || ct!=counts[i]) continue;
+                          if(i>=33u && (!svc28_ack_owner || id(svc28_ledger_index)!=i))continue;
+                          if(id(svc28_index)<14u && id(svc28_epoch)==id(write_arm_ms) &&
+                             id(svc28_ledger_index)==i && !svc28_ack_owner)continue;
                           id(main01_m6_app_page_ms)[i]=millis();
                           const bool verified_profile=
                             id(main01_cm930_shadow_epoch)==id(write_arm_ms) &&
@@ -9196,10 +9421,10 @@ uart:
                           }
                         }
 
-                        const bool runtime_04a6_capture_only=(st==0x04A6 && ct==13);
+                        const bool runtime_04a6_capture_only=(st==0x04A6 && ct==13 && !svc28_ack_owner);
                         const bool runtime_0834_unsupported=(st==0x0834 && ct==18);
 
-                        const bool local_config=exp420_config_shape;
+                        const bool local_config=exp420_config_shape || svc28_ack_owner;
                         // One native session engine, one common proven XTR export
                         // geometry table. FIRST FC16 config offers are acknowledged
                         // like OEM Connect, without a duplicate-request protocol stage.
@@ -9781,13 +10006,13 @@ uart:
                             (st==0x0456u && ct==12u) ||
                             (st==0x046Au && ct==18u) ||
                             (st==0x047Eu && ct==19u) ||
-                            (st==0x0492u && ct==9u) ||
+                            (st==0x0492u && (ct==9u || ct==11u)) ||
                             (st==0x04A6u && ct==13u) ||
                             (st==0x04BAu && ct==22u) ||
                             (st==0x04D8u && ct==27u) ||
                             (st==0x04F6u && ct==14u) ||
                             (st==0x050Au && ct==19u) ||
-                            (st==0x051Eu && ct==9u) ||
+                            (st==0x051Eu && (ct==9u || ct==10u)) ||
                             (st==0x0532u && ct==18u) ||
                             (st==0x0546u && ct==20u) ||
                             (st==0x055Au && ct==33u) ||
@@ -11311,6 +11536,7 @@ uart:
                                 id(exp420_config_autonomous_03e8_count)++;
 
                               const char *owner=
+                                exp420_owner_code==15 ? "SCOPED_SERVICE_READ" :
                                 exp420_owner_code==12 ? "M6_CALENDAR_6PAGE" :
                                 exp420_owner_code==11 ? "M6_CURRENT_4PAGE" :
                                 exp420_owner_code==1 ? "03E8_TRANSACTION" :
@@ -11466,6 +11692,187 @@ uart:
                       ESP_LOGE("thermia_write","\033[31m[WRITE] ===== ALTERNATE_AFTER_03FC_ACK FC03 start=%04X count=%u sinceACK=%ums NO_TX RAW=%s =====\033[0m",
                         unsigned(st),unsigned(ct),unsigned(now_ms-id(write_03fc_ack_ms)),raw325);
                       write_stop("COMPLETE / INCONCLUSIVE / FC03 appeared after 03FC ACK","post-03FC-ACK FC03 captured; no response");
+                    } else if (id(write_stage)==40 &&
+                               id(svcclk_state)==1u && st==0x0708u && ct==6u &&
+                               !id(main01_m6_app_sync_active) &&
+                               id(main01_m6_app_pending)==0u) {
+                      // One controller-offered 0708 slot, one OEM request-bit
+                      // selector. NO unsolicited TX. The S92 sender independently
+                      // verifies exact selector, CRC, session and one-shot budget.
+                      const uint32_t epoch=id(write_arm_ms);
+                      const uint32_t t=millis();
+                      const bool ok=!id(w2r36_abort_latched) && !id(w2r79f_write_user_manual_lockout) &&
+                        !id(w2r36_abort_latched) && !id(w2r79f_write_user_manual_lockout) &&
+                  id(svcclk_auto_sync_enable).state && id(svc28_refresh_enable).state && id(svcclk_daily_pending) &&
+                  id(main01_cm930_shadow_epoch)==id(write_arm_ms) && id(main01_cm930_shadow_version)==242u &&
+                  id(main01_cm930_info_product_epoch)==id(write_arm_ms) && id(main01_cm930_info_product_code)==23u &&
+                  id(write_config_synced) && id(m6s_epoch)==id(write_arm_ms) && id(m6s_oldest_ms) &&
+                  uint32_t(millis()-id(m6s_oldest_ms))<300000u &&
+                  id(thermia_bus_healthy).state && id(thermia_last_valid_frame_ms) &&
+                  uint32_t(millis()-id(thermia_last_valid_frame_ms))<=2000u &&
+                  id(write_runtime_fc16_ack_count)>0u && id(write_runtime_0708_reply_count)>0u &&
+                  id(svc28_index)==255u && !id(main01_m6_app_sync_active) && !id(main01_m6_app_sync_arm_ms) && !id(main01_m6_app_pending) &&
+                  !id(main01_m6_refresh_active) && !id(main01_m3_refresh_armed_ms) && !id(c5dk_auto_current_pending_kind) &&
+                  !id(main04b_retry_pending_kind) && !id(c5ds_cal_auto_waiting) &&
+                  id(w2r97_alarm_read_state)!=1u && id(w2r97_alarm_read_state)!=2u &&
+                  !id(w2r83_auto_f1_pending) && !id(cal32_batch_active) && !id(w2r56_batch_active) &&
+                  !id(write_write_state) && !id(write_pending_valid) && !id(write_dirty_mask) && !id(write_delayed_refresh_pending) &&
+                  !id(native_transaction_state)[0] && !id(native_transaction_state)[1] && !(id(native_transaction_state)[2]>=1u && id(native_transaction_state)[2]<=4u) &&
+                  !id(oemw_alert_pending) && !id(oemw_read_pending) && !id(w1_curve_armed) && !id(w2_curve_desired_pending) &&
+                  !id(exp445_state) && !id(exp452_state) && !id(exp378_dirty_mask) && !id(exp379_dirty_mask) && !id(exp380_dirty) && !id(exp383_link_dirty) &&
+                  !id(write_recovery_in_progress) && !id(write_hot_rejoin_in_progress) && !id(write_hot_rejoin_wait_runtime) &&
+                  !(id(write_resume_started) && !id(write_resume_done)) &&
+                  ([&](){for(auto q:id(w2r78_queue_descriptor))if(q)return false;return true;}()) &&
+                        id(svcclk_epoch)==epoch && epoch!=0u &&
+                        id(main01_m6_session_state)==5u &&
+                        id(main01_m6_session_epoch)==epoch &&
+                        id(main01_native_accepted_epoch)==epoch &&
+                        id(svcclk_arm_ms)!=0u && uint32_t(t-id(svcclk_arm_ms))<=45000u &&
+                        id(svcclk_attempts)==0u &&
+                        id(native_transaction_state)[1]==0u &&
+                        !id(oemw_alert_pending) && !id(oemw_read_pending) &&
+                        !id(main01_m6_app_sync_active) &&
+                        id(main01_m6_app_pending)==0u &&
+                        !id(main01_m6_refresh_active) &&
+                        !id(write_pending_valid) && id(write_write_state)==0u &&
+                        id(write_dirty_mask)==0u &&
+                        !id(write_recovery_in_progress) &&
+                        !id(write_hot_rejoin_in_progress) &&
+                        id(thermia_parser_resync_count)==id(write_resync_baseline) &&
+                        id(thermia_rx_buffer_drop_count)==id(write_drop_baseline) &&
+                        id(s92_v5_crc_shadow_disagreements)==0u && id(s92_v5_ambiguous_count)==0u &&
+                        id(write_peer_fc17_count)==0u && id(write_peer_fc16_ack_count)==0u &&
+                        id(write_runtime_unknown_fc03_count)==0u && id(write_runtime_unknown_fc16_count)==0u;
+                      if (!ok) {
+                        id(svcclk_state)=5u;
+                        id(service_clock_sync_status)->publish_state("COMPLETE / INCONCLUSIVE / clock selector guards failed / NO TX");
+                        return;
+                      }
+                      uint8_t f[17]={0x0F,0x03,0x0C,0x20,0,0,0,0x20,0,0,0,0,0,0,6,0,0};
+                      const uint16_t crc=crc16_modbus(f,15);
+                      f[15]=uint8_t(crc); f[16]=uint8_t(crc>>8);
+                      delay_microseconds_safe(1000);
+                      const bool sent=s92_tx_owner_send(f,sizeof(f));
+                      delay_microseconds_safe(1000); id(waveshare_rs485_direction).turn_off();
+                      if (!sent) {
+                        id(svcclk_state)=5u;
+                        id(service_clock_sync_status)->publish_state("COMPLETE / INCONCLUSIVE / S92 denied clock selector");
+                        return;
+                      }
+                      id(svcclk_state)=2u;
+                      id(svcclk_selector_ms)=millis();
+                      id(service_clock_sync_status)->publish_state("RUNNING / W0+W2 bit13 selector sent / waiting exact 06EA/7 pull");
+                      ESP_LOGW("service_clock","[Service-dev004] CLOCK_SELECTOR_TX W0=2000 W2=2000 S92=SOLE noRTCConfirmation=1");
+                      return;
+                    } else if (id(write_stage)==40 &&
+                               id(svcclk_state)==2u && st==0x06EAu && ct==7u) {
+                      // OEM asks for the seven clock words after our scoped selector.
+                      // Return exactly one user-frozen local HA time image.
+                      const uint32_t t=millis();
+                      const bool ok=!id(w2r36_abort_latched) && !id(w2r79f_write_user_manual_lockout) &&
+                        !id(w2r36_abort_latched) && !id(w2r79f_write_user_manual_lockout) &&
+                  id(svcclk_auto_sync_enable).state && id(svc28_refresh_enable).state && id(svcclk_daily_pending) &&
+                  id(main01_cm930_shadow_epoch)==id(write_arm_ms) && id(main01_cm930_shadow_version)==242u &&
+                  id(main01_cm930_info_product_epoch)==id(write_arm_ms) && id(main01_cm930_info_product_code)==23u &&
+                  id(write_config_synced) && id(m6s_epoch)==id(write_arm_ms) && id(m6s_oldest_ms) &&
+                  uint32_t(millis()-id(m6s_oldest_ms))<300000u &&
+                  id(thermia_bus_healthy).state && id(thermia_last_valid_frame_ms) &&
+                  uint32_t(millis()-id(thermia_last_valid_frame_ms))<=2000u &&
+                  id(write_runtime_fc16_ack_count)>0u && id(write_runtime_0708_reply_count)>0u &&
+                  id(svc28_index)==255u && !id(main01_m6_app_sync_active) && !id(main01_m6_app_sync_arm_ms) && !id(main01_m6_app_pending) &&
+                  !id(main01_m6_refresh_active) && !id(main01_m3_refresh_armed_ms) && !id(c5dk_auto_current_pending_kind) &&
+                  !id(main04b_retry_pending_kind) && !id(c5ds_cal_auto_waiting) &&
+                  id(w2r97_alarm_read_state)!=1u && id(w2r97_alarm_read_state)!=2u &&
+                  !id(w2r83_auto_f1_pending) && !id(cal32_batch_active) && !id(w2r56_batch_active) &&
+                  !id(write_write_state) && !id(write_pending_valid) && !id(write_dirty_mask) && !id(write_delayed_refresh_pending) &&
+                  !id(native_transaction_state)[0] && !id(native_transaction_state)[1] && !(id(native_transaction_state)[2]>=1u && id(native_transaction_state)[2]<=4u) &&
+                  !id(oemw_alert_pending) && !id(oemw_read_pending) && !id(w1_curve_armed) && !id(w2_curve_desired_pending) &&
+                  !id(exp445_state) && !id(exp452_state) && !id(exp378_dirty_mask) && !id(exp379_dirty_mask) && !id(exp380_dirty) && !id(exp383_link_dirty) &&
+                  !id(write_recovery_in_progress) && !id(write_hot_rejoin_in_progress) && !id(write_hot_rejoin_wait_runtime) &&
+                  !(id(write_resume_started) && !id(write_resume_done)) &&
+                  ([&](){for(auto q:id(w2r78_queue_descriptor))if(q)return false;return true;}()) &&
+                        id(svcclk_epoch)!=0u &&
+                        id(svcclk_epoch)==id(write_arm_ms) &&
+                        id(svcclk_selector_ms)!=0u &&
+                        uint32_t(t-id(svcclk_selector_ms))<=15000u &&
+                        id(svcclk_attempts)==0u &&
+                        id(main01_m6_session_state)==5u &&
+                        id(main01_native_accepted_epoch)==id(write_arm_ms) &&
+                        id(thermia_parser_resync_count)==id(write_resync_baseline) &&
+                        id(thermia_rx_buffer_drop_count)==id(write_drop_baseline) &&
+                        id(s92_v5_crc_shadow_disagreements)==0u && id(s92_v5_ambiguous_count)==0u &&
+                        id(write_peer_fc17_count)==0u && id(write_peer_fc16_ack_count)==0u &&
+                        id(write_runtime_unknown_fc03_count)==0u && id(write_runtime_unknown_fc16_count)==0u;
+                      if (!ok) {
+                        id(svcclk_state)=5u;
+                        id(service_clock_sync_status)->publish_state("COMPLETE / INCONCLUSIVE / clock page pull guard denied / NO TX");
+                        return;
+                      }
+                      // Refresh clock right at the real OEM data pull rather
+                      // than using the earlier HA click as a timestamp.
+                      const auto ha_live=id(service_ha_time).now();
+                      if (!id(service_ha_time_synced) || !ha_live.is_valid() ||
+                          ha_live.year<2000 || ha_live.year>2099 ||
+                          ha_live.month<1 || ha_live.month>12 ||
+                          ha_live.day_of_month<1 || ha_live.day_of_month>31 ||
+                          ha_live.hour>23 || ha_live.minute>59 || ha_live.second>59 ||
+                          ha_live.day_of_week<1 || ha_live.day_of_week>7) {
+                        id(svcclk_state)=5u;
+                        id(service_clock_sync_status)->publish_state("COMPLETE / INCONCLUSIVE / HA time became invalid / NO CLOCK DATA TX");
+                        return;
+                      }
+                      // Service-dev006: ONLY the physical write payload uses
+                      // UTC fields. In dev005 the native controller returned a
+                      // +1h30s local time after the HA local-hour payload on a
+                      // UTC+1 installation. UTC input is a bounded hypothesis,
+                      // NOT proof of how other controllers/timezones behave.
+                      // The existing independent controller FC16 semantic
+                      // comparison still uses local wall-clock time.
+                      const time_t ha_epoch_utc=ha_live.timestamp;
+                      struct tm ha_utc{};
+                      if(gmtime_r(&ha_epoch_utc,&ha_utc)==nullptr ||
+                         ha_utc.tm_year<100 || ha_utc.tm_year>199 ||
+                         ha_utc.tm_sec<0 || ha_utc.tm_sec>59 ||
+                         ha_utc.tm_min<0 || ha_utc.tm_min>59 ||
+                         ha_utc.tm_hour<0 || ha_utc.tm_hour>23 ||
+                         ha_utc.tm_mday<1 || ha_utc.tm_mday>31 ||
+                         ha_utc.tm_mon<0 || ha_utc.tm_mon>11 ||
+                         ha_utc.tm_wday<0 || ha_utc.tm_wday>6) {
+                        id(svcclk_state)=5u;
+                        id(service_clock_sync_status)->publish_state("COMPLETE / INCONCLUSIVE / invalid UTC clock input / NO CLOCK DATA TX");
+                        return;
+                      }
+                      id(svcclk_desired)[0]=uint16_t(ha_utc.tm_sec);
+                      id(svcclk_desired)[1]=uint16_t(ha_utc.tm_min);
+                      id(svcclk_desired)[2]=uint16_t(ha_utc.tm_hour);
+                      id(svcclk_desired)[3]=uint16_t(ha_utc.tm_mday);
+                      id(svcclk_desired)[4]=uint16_t(ha_utc.tm_mon+1);
+                      id(svcclk_desired)[5]=uint16_t(ha_utc.tm_year-100);
+                      id(svcclk_desired)[6]=uint16_t((ha_utc.tm_wday+6)%7);
+                      uint8_t rsp[19]={0x0F,0x03,0x0E};
+                      for(unsigned i=0;i<7u;i++) {
+                        const uint16_t v=id(svcclk_desired)[i];
+                        rsp[3u+2u*i]=uint8_t(v>>8);
+                        rsp[4u+2u*i]=uint8_t(v);
+                      }
+                      const uint16_t crc=crc16_modbus(rsp,17);
+                      rsp[17]=uint8_t(crc); rsp[18]=uint8_t(crc>>8);
+                      delay_microseconds_safe(1000);
+                      const bool sent=s92_tx_owner_send(rsp,sizeof(rsp));
+                      delay_microseconds_safe(1000); id(waveshare_rs485_direction).turn_off();
+                      if (!sent) {
+                        id(svcclk_state)=5u;
+                        id(service_clock_sync_status)->publish_state("COMPLETE / INCONCLUSIVE / S92 denied clock data page");
+                        return;
+                      }
+                      id(svcclk_attempts)=1u;
+                      id(svcclk_sent_ms)=millis();
+                      id(svcclk_state)=3u;
+                      id(service_clock_sync_status)->publish_state("RUNNING / one seven-word clock page physically sent / waiting controller FC16");
+                      ESP_LOGW("service_clock", "[Service-dev021] CLOCK_PAGE_TX_UTC_RESTORED 06EA/7 hour=%u minute=%u second=%u date=%u-%02u-%02u singleShot=1 wait=CONTROLLER_FC16",
+                        unsigned(id(svcclk_desired)[2]),unsigned(id(svcclk_desired)[1]),unsigned(id(svcclk_desired)[0]),
+                        unsigned(2000u+id(svcclk_desired)[5]),unsigned(id(svcclk_desired)[4]),unsigned(id(svcclk_desired)[3]));
+                      return;
                     } else if (id(write_stage)==40) {
                       const uint8_t ws=id(write_write_state);
 
@@ -12224,7 +12631,17 @@ uart:
                         const bool app_continue=id(main01_m6_app_sync_active) &&
                           id(main01_m6_app_sync_start_ms)!=0 &&
                           (m6_now-id(main01_m6_app_sync_start_ms))<=60000UL;
+                        const bool scoped_read=id(svc28_index)<14u && id(svc28_epoch)==id(write_arm_ms) &&
+                          id(svc28_ledger_index)<39u && id(main01_m6_app_requested)==(uint64_t(1)<<id(svc28_ledger_index));
+                        bool scoped_queue_clear=true;
+                        for(const auto q:id(w2r78_queue_descriptor))if(q)scoped_queue_clear=false;
+                        const bool scoped_idle=!id(w2r36_abort_latched) && !id(cal32_batch_active) && !id(w2r56_batch_active) &&
+                          !id(oemw_alert_pending) && !id(oemw_read_pending) && !id(w2r83_auto_f1_pending) &&
+                          id(native_transaction_state)[1]==0u && !(id(native_transaction_state)[2]>=1u && id(native_transaction_state)[2]<=4u) &&
+                          !id(s92_v5_crc_shadow_disagreements) && !id(s92_v5_ambiguous_count) && scoped_queue_clear &&
+                          id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==id(write_arm_ms) && id(main01_cm930_info_product_code)==23u;
                         const bool app_owner=(app_new || app_continue) &&
+                          (!scoped_read || (app_new && id(main01_m6_app_sync_polls)==0u && id(svc28_refresh_enable).state && scoped_idle)) &&
                           id(main01_m6_app_sync_epoch)==id(write_arm_ms) &&
                           id(main01_m6_app_epoch)==id(write_arm_ms) &&
                           id(main01_m6_app_sync_polls)<48 &&
@@ -12291,11 +12708,12 @@ uart:
                         if (app_owner) {
                           // Verified exact original 1802-1804 package-to-bit map.
                           // Original request_read_all_registers skips W4 bit8.
-                          static constexpr uint8_t word[33]={3,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,4,4,4,4,4,4,4};
-                          static constexpr uint8_t bit[33]={0,1,2,3,4,5,6,9,10,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,15,0,1,2,3,4,6,8,9};
+                          static constexpr uint8_t word[39]={3,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,4,4,4,4,4,4,4,3,3,3,3,3,3};
+                          static constexpr uint8_t bit[39]={0,1,2,3,4,5,6,9,10,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,15,0,1,2,3,4,6,8,9,7,8,11,12,13,14};
                           uint16_t w2=0,w3=0,w4=0;
                           const uint64_t pending=id(main01_m6_app_pending);
-                          for (unsigned k=0;k<33;k++) {
+                          for (unsigned k=0;k<39;k++) {
+                            if(k>=33u && (!scoped_read || id(svc28_ledger_index)!=k || pending!=(uint64_t(1)<<k)))continue;
                             if ((pending&(uint64_t(1)<<k))==0) continue;
                             if (word[k]==4 && bit[k]==8) continue;
                             const uint16_t flag=uint16_t(1U<<bit[k]);
@@ -12492,7 +12910,7 @@ uart:
                           // W2bit0 and W3bits0/3/4 are pending until real FC16
                           // ACK after this manual request; do NOT promote cache.
                           if (id(main01_m6_app_epoch)==id(write_arm_ms) &&
-                              id(main01_m6_app_page_ms).size()==33) {
+                              id(main01_m6_app_page_ms).size()==39) {
                             constexpr uint64_t four=(uint64_t(1)<<0)|
                               (uint64_t(1)<<3)|(uint64_t(1)<<4)|(uint64_t(1)<<10);
                             id(main01_m6_app_requested)|=four;
@@ -15725,7 +16143,7 @@ uart:
             if (v[0]==0x0Fu && s92_frame.fc16_request()) {
               const uint16_t page=s92_frame.start();
               const uint16_t words=s92_frame.count();
-              uint16_t expected=0u;
+              uint16_t expected=0u, expected_alt=0u;
               bool export_phase=false;
               bool runtime_phase=false;
               bool normal_entry_phase=false; // validated C5AZ 042E/0442 only
@@ -15747,11 +16165,11 @@ uart:
                 case 0x0456u: expected=12u; export_phase=true; shape_audit=true; break;
                 case 0x046Au: expected=18u; export_phase=true; shape_audit=true; break;
                 case 0x047Eu: expected=19u; export_phase=true; shape_audit=true; break;
-                case 0x0492u: expected=9u; export_phase=true; shape_audit=true; break;
+                case 0x0492u: expected=11u; expected_alt=9u; export_phase=true; shape_audit=true; break;
                 case 0x04D8u: expected=27u; export_phase=true; shape_audit=true; break;
                 case 0x04F6u: expected=14u; export_phase=true; shape_audit=true; break;
                 case 0x050Au: expected=19u; export_phase=true; shape_audit=true; break;
-                case 0x051Eu: expected=9u; export_phase=true; shape_audit=true; break;
+                case 0x051Eu: expected=10u; expected_alt=9u; export_phase=true; shape_audit=true; break;
                 case 0x0532u: expected=18u; export_phase=true; shape_audit=true; break;
                 case 0x055Au: expected=33u; export_phase=true; shape_audit=true; break;
                 case 0x057Bu: expected=33u; export_phase=true; shape_audit=true; break;
@@ -15779,7 +16197,8 @@ uart:
                 default: break;
               }
               // A mismatched count never votes for a retained or cold page.
-              if (words==expected && expected!=0u) {
+              const bool shape_matches=expected!=0u && (words==expected || (expected_alt!=0u && words==expected_alt));
+              if (shape_matches) {
                 // C5CW: a same-epoch, PHYSICALLY SENT first INFO read
                 // reclassifies the subsequently offered 0532/18 and 06F1/3
                 // as INFO receipts, NOT a NEW setup/export phase. C5CV
@@ -15908,10 +16327,10 @@ uart:
               // Preserve V5 diagnostics' original scope and counters exactly.
               if (shape_audit) {
                 ++id(s92_v5_known_fc16_shape_checked);
-                if (words!=expected) {
+                if (!shape_matches) {
                   ++id(s92_v5_known_fc16_shape_other);
-                  ESP_LOGW("thermia_v5_diag","\033[38;5;130m[S92-V5] FC16_SHAPE_OTHER page=%04X observed=%u expected=%u / OBSERVE_ONLY\033[0m",
-                    unsigned(page),unsigned(words),unsigned(expected));
+                  ESP_LOGW("thermia_v5_diag","\033[38;5;130m[S92-V5] FC16_SHAPE_OTHER page=%04X observed=%u expected=%u alt=%u / OBSERVE_ONLY\033[0m",
+                    unsigned(page),unsigned(words),unsigned(expected),unsigned(expected_alt));
                 }
               }
             }
@@ -15947,7 +16366,7 @@ uart:
                   // last-good cache/timestamps separately; clear only ledger.
                   id(main01_m6_app_requested)|=requestable;
                   id(main01_m6_app_received)&=~requestable;
-                  id(main01_m6_app_page_ms).assign(33,0);
+                  id(main01_m6_app_page_ms).assign(39,0);
                   id(main01_m6_app_pending)=id(main01_m6_app_requested) &
                     ~id(main01_m6_app_received);
                   // Reuse existing guarded 12s arm / 60s / 48-poll sync.
@@ -15989,6 +16408,860 @@ uart:
 
 # --- TELEMETRY ---
 sensor:
+  - platform: template
+    id: w104_heat_demand_integral_raw
+    name: "Operation Data | Heat Demand Integral Raw (OEM Candidate)"
+    entity_category: diagnostic
+    disabled_by_default: true
+    accuracy_decimals: 0
+    state_class: measurement
+    icon: mdi:chart-line
+    update_interval: 15s
+    lambda: |-
+      const uint32_t epoch=id(write_arm_ms), t=id(c5dn_targets_rx_ms);
+      if (!epoch || !id(write_active) || id(write_stage)!=40u ||
+          id(main01_m6_session_epoch)!=epoch || id(main01_native_accepted_epoch)!=epoch ||
+          id(main01_m6_session_state)!=5u || id(main01_cm930_shadow_epoch)!=epoch ||
+          id(main01_cm930_shadow_version)!=242u || id(main01_cm930_info_product_epoch)!=epoch || id(main01_cm930_info_product_code)!=23u || !id(thermia_last_valid_frame_ms) ||
+          uint32_t(millis()-id(thermia_last_valid_frame_ms))>10000u || !t || int32_t(t-epoch)<0 ||
+          uint32_t(millis()-t)>300000u) return NAN;
+      const int16_t raw=int16_t(id(c5dn_targets_words)[0u]);
+      return raw==-100 ? NAN : float(raw);
+  - platform: template
+    id: svc34_optimum_start_flow
+    disabled_by_default: true
+    name: "Service | Optimum | Start Flow Heating (Eco Candidate)"
+    entity_category: diagnostic
+    icon: mdi:pump
+    unit_of_measurement: "V"
+    accuracy_decimals: 1
+    update_interval: 30s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const unsigned base=0x0492u-0x03E8u;
+      if(!epoch || !id(write_active) || !id(write_config_synced) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch || id(main01_cm930_shadow_epoch)!=epoch ||
+         id(main01_cm930_shadow_version)!=242u || id(main01_cm930_info_product_epoch)!=epoch || id(main01_cm930_info_product_code)!=23u ||
+         (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u) ||
+         id(w2r36_abort_latched) || !id(thermia_bus_healthy).state ||
+         !id(thermia_last_valid_frame_ms) || uint32_t(now-id(thermia_last_valid_frame_ms))>10000u)return NAN;
+      if(id(svc102_words).size()<base+11u || id(svc102_word_ms).size()<base+11u || id(svc102_word_epoch).size()<base+11u)return NAN;
+      const uint32_t ts=id(svc102_word_ms)[base];
+      if(!ts || int32_t(ts-epoch)<0 || uint32_t(now-ts)>300000u)return NAN;
+      for(unsigned j=0;j<11u;j++)if(id(svc102_word_ms)[base+j]!=ts || id(svc102_word_epoch)[base+j]!=epoch)return NAN;
+      const uint16_t v=id(svc102_words)[0x0492u-0x03E8u];
+      return (v>=30u && v<=100u)?float(v)*0.1f:NAN;
+  - platform: template
+    id: svc34_optimum_idle_flow
+    disabled_by_default: true
+    name: "Service | Optimum | Idle Flow (Eco Candidate)"
+    entity_category: diagnostic
+    icon: mdi:pump
+    unit_of_measurement: "V"
+    accuracy_decimals: 1
+    update_interval: 30s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const unsigned base=0x0492u-0x03E8u;
+      if(!epoch || !id(write_active) || !id(write_config_synced) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch || id(main01_cm930_shadow_epoch)!=epoch ||
+         id(main01_cm930_shadow_version)!=242u || id(main01_cm930_info_product_epoch)!=epoch || id(main01_cm930_info_product_code)!=23u ||
+         (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u) ||
+         id(w2r36_abort_latched) || !id(thermia_bus_healthy).state ||
+         !id(thermia_last_valid_frame_ms) || uint32_t(now-id(thermia_last_valid_frame_ms))>10000u)return NAN;
+      if(id(svc102_words).size()<base+11u || id(svc102_word_ms).size()<base+11u || id(svc102_word_epoch).size()<base+11u)return NAN;
+      const uint32_t ts=id(svc102_word_ms)[base];
+      if(!ts || int32_t(ts-epoch)<0 || uint32_t(now-ts)>300000u)return NAN;
+      for(unsigned j=0;j<11u;j++)if(id(svc102_word_ms)[base+j]!=ts || id(svc102_word_epoch)[base+j]!=epoch)return NAN;
+      const uint16_t v=id(svc102_words)[0x0493u-0x03E8u];
+      return (v>=30u && v<=100u)?float(v)*0.1f:NAN;
+  - platform: template
+    id: svc34_optimum_max_heat_flow
+    disabled_by_default: true
+    name: "Service | Optimum | Maximum Heating Flow (Eco Candidate)"
+    entity_category: diagnostic
+    icon: mdi:pump
+    unit_of_measurement: "V"
+    accuracy_decimals: 1
+    update_interval: 30s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const unsigned base=0x0492u-0x03E8u;
+      if(!epoch || !id(write_active) || !id(write_config_synced) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch || id(main01_cm930_shadow_epoch)!=epoch ||
+         id(main01_cm930_shadow_version)!=242u || id(main01_cm930_info_product_epoch)!=epoch || id(main01_cm930_info_product_code)!=23u ||
+         (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u) ||
+         id(w2r36_abort_latched) || !id(thermia_bus_healthy).state ||
+         !id(thermia_last_valid_frame_ms) || uint32_t(now-id(thermia_last_valid_frame_ms))>10000u)return NAN;
+      if(id(svc102_words).size()<base+11u || id(svc102_word_ms).size()<base+11u || id(svc102_word_epoch).size()<base+11u)return NAN;
+      const uint32_t ts=id(svc102_word_ms)[base];
+      if(!ts || int32_t(ts-epoch)<0 || uint32_t(now-ts)>300000u)return NAN;
+      for(unsigned j=0;j<11u;j++)if(id(svc102_word_ms)[base+j]!=ts || id(svc102_word_epoch)[base+j]!=epoch)return NAN;
+      const uint16_t v=id(svc102_words)[0x0494u-0x03E8u];
+      return (v>=30u && v<=100u)?float(v)*0.1f:NAN;
+  - platform: template
+    id: svc34_optimum_min_heat_flow
+    disabled_by_default: true
+    name: "Service | Optimum | Minimum Heating Flow (Eco Candidate)"
+    entity_category: diagnostic
+    icon: mdi:pump
+    unit_of_measurement: "V"
+    accuracy_decimals: 1
+    update_interval: 30s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const unsigned base=0x0492u-0x03E8u;
+      if(!epoch || !id(write_active) || !id(write_config_synced) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch || id(main01_cm930_shadow_epoch)!=epoch ||
+         id(main01_cm930_shadow_version)!=242u || id(main01_cm930_info_product_epoch)!=epoch || id(main01_cm930_info_product_code)!=23u ||
+         (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u) ||
+         id(w2r36_abort_latched) || !id(thermia_bus_healthy).state ||
+         !id(thermia_last_valid_frame_ms) || uint32_t(now-id(thermia_last_valid_frame_ms))>10000u)return NAN;
+      if(id(svc102_words).size()<base+11u || id(svc102_word_ms).size()<base+11u || id(svc102_word_epoch).size()<base+11u)return NAN;
+      const uint32_t ts=id(svc102_word_ms)[base];
+      if(!ts || int32_t(ts-epoch)<0 || uint32_t(now-ts)>300000u)return NAN;
+      for(unsigned j=0;j<11u;j++)if(id(svc102_word_ms)[base+j]!=ts || id(svc102_word_epoch)[base+j]!=epoch)return NAN;
+      const uint16_t v=id(svc102_words)[0x0496u-0x03E8u];
+      return (v>=30u && v<=100u)?float(v)*0.1f:NAN;
+  - platform: template
+    id: svc34_optimum_min_dhw_flow
+    disabled_by_default: true
+    name: "Service | Optimum | Minimum Hot Water Flow (Eco Candidate)"
+    entity_category: diagnostic
+    icon: mdi:pump
+    unit_of_measurement: "V"
+    accuracy_decimals: 1
+    update_interval: 30s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const unsigned base=0x0492u-0x03E8u;
+      if(!epoch || !id(write_active) || !id(write_config_synced) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch || id(main01_cm930_shadow_epoch)!=epoch ||
+         id(main01_cm930_shadow_version)!=242u || id(main01_cm930_info_product_epoch)!=epoch || id(main01_cm930_info_product_code)!=23u ||
+         (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u) ||
+         id(w2r36_abort_latched) || !id(thermia_bus_healthy).state ||
+         !id(thermia_last_valid_frame_ms) || uint32_t(now-id(thermia_last_valid_frame_ms))>10000u)return NAN;
+      if(id(svc102_words).size()<base+11u || id(svc102_word_ms).size()<base+11u || id(svc102_word_epoch).size()<base+11u)return NAN;
+      const uint32_t ts=id(svc102_word_ms)[base];
+      if(!ts || int32_t(ts-epoch)<0 || uint32_t(now-ts)>300000u)return NAN;
+      for(unsigned j=0;j<11u;j++)if(id(svc102_word_ms)[base+j]!=ts || id(svc102_word_epoch)[base+j]!=epoch)return NAN;
+      const uint16_t v=id(svc102_words)[0x0497u-0x03E8u];
+      return (v>=30u && v<=100u)?float(v)*0.1f:NAN;
+  - platform: template
+    id: svc34_optimum_min_cool_flow
+    disabled_by_default: true
+    name: "Service | Optimum | Minimum Cooling Flow (Eco Candidate)"
+    entity_category: diagnostic
+    icon: mdi:pump
+    unit_of_measurement: "V"
+    accuracy_decimals: 1
+    update_interval: 30s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const unsigned base=0x0492u-0x03E8u;
+      if(!epoch || !id(write_active) || !id(write_config_synced) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch || id(main01_cm930_shadow_epoch)!=epoch ||
+         id(main01_cm930_shadow_version)!=242u || id(main01_cm930_info_product_epoch)!=epoch || id(main01_cm930_info_product_code)!=23u ||
+         (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u) ||
+         id(w2r36_abort_latched) || !id(thermia_bus_healthy).state ||
+         !id(thermia_last_valid_frame_ms) || uint32_t(now-id(thermia_last_valid_frame_ms))>10000u)return NAN;
+      if(id(svc102_words).size()<base+11u || id(svc102_word_ms).size()<base+11u || id(svc102_word_epoch).size()<base+11u)return NAN;
+      const uint32_t ts=id(svc102_word_ms)[base];
+      if(!ts || int32_t(ts-epoch)<0 || uint32_t(now-ts)>300000u)return NAN;
+      for(unsigned j=0;j<11u;j++)if(id(svc102_word_ms)[base+j]!=ts || id(svc102_word_epoch)[base+j]!=epoch)return NAN;
+      const uint16_t v=id(svc102_words)[0x0498u-0x03E8u];
+      return (v>=30u && v<=100u)?float(v)*0.1f:NAN;
+  - platform: template
+    id: svc34_optimum_min_pool_flow
+    name: "Service | Optimum | Minimum Pool Flow (Eco Candidate)"
+    entity_category: diagnostic
+    icon: mdi:pump
+    unit_of_measurement: "V"
+    accuracy_decimals: 1
+    update_interval: 30s
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const unsigned base=0x0492u-0x03E8u;
+      if(!epoch || !id(write_active) || !id(write_config_synced) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch || id(main01_cm930_shadow_epoch)!=epoch ||
+         id(main01_cm930_shadow_version)!=242u || id(main01_cm930_info_product_epoch)!=epoch || id(main01_cm930_info_product_code)!=23u ||
+         (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u) ||
+         id(w2r36_abort_latched) || !id(thermia_bus_healthy).state ||
+         !id(thermia_last_valid_frame_ms) || uint32_t(now-id(thermia_last_valid_frame_ms))>10000u)return NAN;
+      if(id(svc102_words).size()<base+11u || id(svc102_word_ms).size()<base+11u || id(svc102_word_epoch).size()<base+11u)return NAN;
+      const uint32_t ts=id(svc102_word_ms)[base];
+      if(!ts || int32_t(ts-epoch)<0 || uint32_t(now-ts)>300000u)return NAN;
+      for(unsigned j=0;j<11u;j++)if(id(svc102_word_ms)[base+j]!=ts || id(svc102_word_epoch)[base+j]!=epoch)return NAN;
+      const uint16_t v=id(svc102_words)[0x0499u-0x03E8u];
+      return (v>=30u && v<=100u)?float(v)*0.1f:NAN;
+  - platform: template
+    id: svc34_optimum_max_dhw_charge
+    disabled_by_default: true
+    name: "Service | Optimum | Maximum Hot Water Charge (Eco Candidate)"
+    entity_category: diagnostic
+    icon: mdi:pump
+    unit_of_measurement: "°C"
+    accuracy_decimals: 0
+    update_interval: 30s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const unsigned base=0x0492u-0x03E8u;
+      if(!epoch || !id(write_active) || !id(write_config_synced) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch || id(main01_cm930_shadow_epoch)!=epoch ||
+         id(main01_cm930_shadow_version)!=242u || id(main01_cm930_info_product_epoch)!=epoch || id(main01_cm930_info_product_code)!=23u ||
+         (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u) ||
+         id(w2r36_abort_latched) || !id(thermia_bus_healthy).state ||
+         !id(thermia_last_valid_frame_ms) || uint32_t(now-id(thermia_last_valid_frame_ms))>10000u)return NAN;
+      if(id(svc102_words).size()<base+11u || id(svc102_word_ms).size()<base+11u || id(svc102_word_epoch).size()<base+11u)return NAN;
+      const uint32_t ts=id(svc102_word_ms)[base];
+      if(!ts || int32_t(ts-epoch)<0 || uint32_t(now-ts)>300000u)return NAN;
+      for(unsigned j=0;j<11u;j++)if(id(svc102_word_ms)[base+j]!=ts || id(svc102_word_epoch)[base+j]!=epoch)return NAN;
+      const uint16_t v=id(svc102_words)[0x049Au-0x03E8u];
+      return (v>=45u && v<=65u)?float(v)*1.0f:NAN;
+  - platform: template
+    id: svc34_optimum_min_dhw_charge
+    disabled_by_default: true
+    name: "Service | Optimum | Minimum Hot Water Charge (Eco Candidate)"
+    entity_category: diagnostic
+    icon: mdi:pump
+    unit_of_measurement: "°C"
+    accuracy_decimals: 0
+    update_interval: 30s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const unsigned base=0x0492u-0x03E8u;
+      if(!epoch || !id(write_active) || !id(write_config_synced) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_native_accepted_epoch)!=epoch || id(main01_cm930_shadow_epoch)!=epoch ||
+         id(main01_cm930_shadow_version)!=242u || id(main01_cm930_info_product_epoch)!=epoch || id(main01_cm930_info_product_code)!=23u ||
+         (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u) ||
+         id(w2r36_abort_latched) || !id(thermia_bus_healthy).state ||
+         !id(thermia_last_valid_frame_ms) || uint32_t(now-id(thermia_last_valid_frame_ms))>10000u)return NAN;
+      if(id(svc102_words).size()<base+11u || id(svc102_word_ms).size()<base+11u || id(svc102_word_epoch).size()<base+11u)return NAN;
+      const uint32_t ts=id(svc102_word_ms)[base];
+      if(!ts || int32_t(ts-epoch)<0 || uint32_t(now-ts)>300000u)return NAN;
+      for(unsigned j=0;j<11u;j++)if(id(svc102_word_ms)[base+j]!=ts || id(svc102_word_epoch)[base+j]!=epoch)return NAN;
+      const uint16_t v=id(svc102_words)[0x049Bu-0x03E8u];
+      return (v>=30u && v<=65u)?float(v)*1.0f:NAN;
+  - platform: template
+    update_interval: 30s
+    accuracy_decimals: 1
+    unit_of_measurement: "%"
+    id: svc24_dhw_lower_sensor_influence
+    name: "Hot Water | Lower Sensor Influence"
+    entity_category: diagnostic
+    icon: mdi:water-boiler
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x0422u))return NAN;
+      const float v=float(uint16_t(raw(0x0422u)))*5.0f;
+      return (v>=0.0f && v<=100.0f)?v:NAN;
+  - platform: template
+    update_interval: 30s
+    accuracy_decimals: 1
+    unit_of_measurement: "%"
+    id: svc24_dhw_eco_lower_sensor_influence
+    name: "Hot Water | Lower Sensor Influence Eco"
+    entity_category: diagnostic
+    icon: mdi:water-boiler
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x0423u))return NAN;
+      const float v=float(uint16_t(raw(0x0423u)))*5.0f;
+      return (v>=0.0f && v<=30.0f)?v:NAN;
+  - platform: template
+    update_interval: 30s
+    accuracy_decimals: 0
+    unit_of_measurement: "°C"
+    id: svc24_dhw_stop_temperature
+    name: "Hot Water | Stop Temperature"
+    entity_category: diagnostic
+    icon: mdi:water-boiler
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x0424u))return NAN;
+      const float v=float(uint16_t(raw(0x0424u)))*1.0f;
+      return (v>=30.0f && v<=65.0f)?v:NAN;
+  - platform: template
+    id: svc29_aux_max_step
+    name: "Auxiliary Heater | Maximum Step (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x0456u))return NAN;
+      const float v=float(uint16_t(raw(0x0456u)))*1.0f;
+      return (v>=0.0f && v<=6.0f)?v:NAN;
+  - platform: template
+    id: svc29_aux_max_step_compressor
+    name: "Auxiliary Heater | Maximum Step With Compressor (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x043Cu))return NAN;
+      const float v=float(uint16_t(raw(0x043Cu)))*1.0f;
+      return (v>=0.0f && v<=5.0f)?v:NAN;
+  - platform: template
+    id: svc29_aux_max_current
+    name: "Auxiliary Heater | Maximum Current (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    disabled_by_default: true
+    unit_of_measurement: "A"
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x0458u))return NAN;
+      if(!(fresh(0x0538u) && raw(0x0538u)>0u && raw(0x0538u)<=1u))return NAN;
+      const float v=float(uint16_t(raw(0x0458u)))*1.0f;
+      return (v>=16.0f && v<=35.0f)?v:NAN;
+  - platform: template
+    id: svc29_aux_start_delay_candidate
+    name: "Service | Auxiliary Heater | Start Delay (Eco Candidate)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    disabled_by_default: true
+    unit_of_measurement: "min"
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x0459u))return NAN;
+      const float v=float(uint16_t(raw(0x0459u)))*1.0f;
+      return (v>=0.0f && v<=120.0f)?v:NAN;
+  - platform: template
+    id: svc29_aux_external_enabled
+    name: "Service | Auxiliary Heater | External Auxiliary Enabled (OEM Candidate)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x045Au))return NAN;
+      const float v=float(uint16_t(raw(0x045Au)))*1.0f;
+      return (v>=0.0f && v<=1.0f)?v:NAN;
+  - platform: template
+    id: svc29_aux_external_pid
+    name: "Service | Auxiliary Heater | External Auxiliary Start Demand (OEM Candidate)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x045Bu))return NAN;
+      if(!(fresh(0x045Au) && raw(0x045Au)==1u))return NAN;
+      const float v=float(uint16_t(raw(0x045Bu)))*1.0f;
+      return (v>=10.0f && v<=110.0f)?v:NAN;
+  - platform: template
+    id: svc29_aux_external_offset
+    name: "Service | Auxiliary Heater | External Auxiliary Offset (OEM Candidate)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    disabled_by_default: true
+    unit_of_measurement: "K"
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x045Du))return NAN;
+      if(!(fresh(0x045Au) && raw(0x045Au)==1u))return NAN;
+      const float v=float(int16_t(raw(0x045Du)))*1.0f;
+      return (v>=-5.0f && v<=0.0f)?v:NAN;
+  - platform: template
+    id: svc29_cal_outdoor
+    disabled_by_default: true
+    name: "Service | Sensor Calibration | Outdoor (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    unit_of_measurement: "K"
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x046Au))return NAN;
+      const float v=float(int16_t(raw(0x046Au)))*1.0f;
+      return (v>=-5.0f && v<=5.0f)?v:NAN;
+  - platform: template
+    id: svc29_cal_system_supply
+    disabled_by_default: true
+    name: "Service | Sensor Calibration | System Supply (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    unit_of_measurement: "K"
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x046Bu))return NAN;
+      const float v=float(int16_t(raw(0x046Bu)))*1.0f;
+      return (v>=-5.0f && v<=5.0f)?v:NAN;
+  - platform: template
+    id: svc29_cal_supply
+    disabled_by_default: true
+    name: "Service | Sensor Calibration | Supply (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    unit_of_measurement: "K"
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x046Cu))return NAN;
+      const float v=float(int16_t(raw(0x046Cu)))*1.0f;
+      return (v>=-5.0f && v<=5.0f)?v:NAN;
+  - platform: template
+    id: svc29_cal_return
+    name: "Service | Sensor Calibration | Return (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    disabled_by_default: true
+    unit_of_measurement: "K"
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x046Du))return NAN;
+      if(!(fresh(0x0541u) && raw(0x0541u)==1u))return NAN;
+      const float v=float(int16_t(raw(0x046Du)))*1.0f;
+      return (v>=-5.0f && v<=5.0f)?v:NAN;
+  - platform: template
+    id: svc29_cal_dhw_lower
+    disabled_by_default: true
+    name: "Service | Sensor Calibration | Hot Water Lower (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    unit_of_measurement: "K"
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x046Eu))return NAN;
+      const float v=float(int16_t(raw(0x046Eu)))*1.0f;
+      return (v>=-5.0f && v<=5.0f)?v:NAN;
+  - platform: template
+    id: svc29_cal_dhw_top
+    disabled_by_default: true
+    name: "Service | Sensor Calibration | Hot Water Upper (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    unit_of_measurement: "K"
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x046Fu))return NAN;
+      const float v=float(int16_t(raw(0x046Fu)))*1.0f;
+      return (v>=-5.0f && v<=5.0f)?v:NAN;
+  - platform: template
+    id: svc29_cal_eq_tank
+    name: "Service | Sensor Calibration | EQ Tank (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    disabled_by_default: true
+    unit_of_measurement: "K"
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x0474u))return NAN;
+      if(!(fresh(0x0541u) && raw(0x0541u)==1u))return NAN;
+      const float v=float(int16_t(raw(0x0474u)))*1.0f;
+      return (v>=-5.0f && v<=5.0f)?v:NAN;
+  - platform: template
+    id: svc29_cal_buffer
+    name: "Service | Sensor Calibration | Buffer Tank (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    disabled_by_default: true
+    unit_of_measurement: "K"
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x0475u))return NAN;
+      if(!(fresh(0x0536u) && raw(0x0536u)==1u))return NAN;
+      const float v=float(int16_t(raw(0x0475u)))*1.0f;
+      return (v>=-5.0f && v<=5.0f)?v:NAN;
+  - platform: template
+    id: svc29_current_limiter_enabled
+    disabled_by_default: true
+    name: "Installation | Current Limiter Enabled (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x0538u))return NAN;
+      const float v=float(uint16_t(raw(0x0538u)))*1.0f;
+      return (v>=0.0f && v<=1.0f)?v:NAN;
+  - platform: template
+    id: svc29_split_enabled
+    name: "Installation | Split Enabled (OEM)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x0549u))return NAN;
+      const float v=float(uint16_t(raw(0x0549u)))*1.0f;
+      return (v>=0.0f && v<=1.0f)?v:NAN;
+  - platform: template
+    id: svc29_optimum_enabled_candidate
+    name: "Installation | Optimum Enabled (Eco Candidate)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    disabled_by_default: true
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x0537u))return NAN;
+      const float v=float(uint16_t(raw(0x0537u)))*1.0f;
+      return (v>=0.0f && v<=1.0f)?v:NAN;
+  - platform: template
+    id: svc29_log_interval_candidate
+    name: "Service | Installation | Log Interval (Eco Candidate)"
+    entity_category: diagnostic
+    icon: mdi:cog-outline
+    accuracy_decimals: 0
+    update_interval: 30s
+    disabled_by_default: true
+    unit_of_measurement: "min"
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      
+      if(!fresh(0x0546u))return NAN;
+      const float v=float(uint16_t(raw(0x0546u)))*1.0f;
+      return (v>=1.0f && v<=60.0f)?v:NAN;
 
   - platform: template
     id: w65_heat_demand_pid
@@ -18424,6 +19697,637 @@ binary_sensor:
 
 # --- STATUS / CALENDAR ---
 text_sensor:
+  - platform: template
+    id: service_clock_sync_status
+    name: "Clock | Automatic Sync Status"
+    entity_category: diagnostic
+    icon: mdi:clock-check-outline
+    update_interval: 10s
+    lambda: |-
+      if(id(svcclk_daily_pending))return {};
+      if(!id(svcclk_auto_sync_enable).state){
+        if(id(svcclk_state)==5u)return {};
+        return {"DISABLED / no automatic clock writes"};
+      }
+      if(!id(svc28_refresh_enable).state)return {"ENABLED / waiting for extended parameter refresh"};
+      if(id(svcclk_state)==4u || id(svcclk_state)==5u)return {};
+      if(id(svcclk_daily_last_check_epoch))return {"ENABLED / daily check scheduled"};
+      return {"ENABLED / waiting for fresh controller clock"};
+  - platform: template
+    id: wu104_service_coverage
+    name: "Diagnostic | Service Configuration Page Coverage"
+    entity_category: diagnostic
+    update_interval: 10s
+    lambda: |-
+      const uint32_t now=millis(),epoch=id(write_arm_ms);
+      if(!epoch || !id(write_active) || id(write_stage)!=40u || id(main01_m6_session_state)!=5u ||
+         id(main01_native_accepted_epoch)!=epoch || id(main01_m6_session_epoch)!=epoch ||
+         id(main01_cm930_shadow_epoch)!=epoch || id(main01_cm930_shadow_version)!=242u ||
+         id(main01_cm930_info_product_epoch)!=epoch || id(main01_cm930_info_product_code)!=23u ||
+         !id(thermia_bus_healthy).state || id(w2r36_abort_latched))return {"UNAVAILABLE / qualified XTR M 3N 2.4.2 required"};
+      static constexpr uint16_t starts[17]={0x03E8,0x03FC,0x0410,0x042E,0x0442,0x0456,0x046A,0x04A6,0x04BA,0x0532,0x0546,0x047E,0x0492,0x04D8,0x04F6,0x050A,0x051E};
+      static constexpr uint8_t counts[17]={14,11,22,15,13,12,18,13,22,18,20,19,11,27,14,19,10};
+      unsigned pages=0,words=0;std::string missing;
+      for(unsigned k=0;k<17u;k++){
+        const unsigned base=starts[k]-0x03E8u;const uint32_t ts=id(svc102_word_ms)[base];
+        bool fresh=ts && int32_t(ts-epoch)>=0 && uint32_t(now-ts)<=300000u;
+        for(unsigned j=0;j<counts[k];j++)if(id(svc102_word_ms)[base+j]!=ts || id(svc102_word_epoch)[base+j]!=epoch)fresh=false;
+        if(fresh){++pages;words+=counts[k];}else{char buf[8];snprintf(buf,sizeof(buf),"%04X ",unsigned(starts[k]));missing+=buf;}
+      }
+      return {std::to_string(pages)+"/17 Service configuration pages / "+std::to_string(words)+" fresh words (300s) / "+(missing.empty()?"ALL FRESH":"missing: "+missing)};
+  - platform: template
+    id: svc28_refresh_status
+    name: "Diagnostic | Native Service Parameter Refresh"
+    entity_category: diagnostic
+    icon: mdi:database-clock
+    update_interval: 5s
+    lambda: |-
+      const uint32_t now=millis(),epoch=id(write_arm_ms);
+      static constexpr uint16_t starts[14]={0x0532,0x0456,0x03FC,0x046A,0x04BA,0x04A6,0x047E,0x0492,0x04D8,0x04F6,0x050A,0x051E,0x0410,0x06EA};
+      static constexpr uint8_t counts[14]={18,12,11,18,22,13,19,11,27,14,19,10,22,7};
+      std::string out=id(svc28_refresh_enable).state?"AUTO / ":"OFF / enable extended refresh / ";
+      if(!epoch || !id(write_active) || id(main01_native_accepted_epoch)!=epoch)return {out+"WAIT NATIVE SESSION"};
+      if(!(id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u))return {"NOT ENABLED FOR THIS PROFILE / existing public behavior retained"};
+      for(unsigned k=0;k<14u;k++){
+        const unsigned base=starts[k]-0x03E8u;const uint32_t t=id(svc102_word_ms)[base];
+        bool fresh=t && uint32_t(now-t)<(k==13u?600000u:300000u);
+        for(unsigned j=0;j<counts[k];j++)if(id(svc102_word_ms)[base+j]!=t || id(svc102_word_epoch)[base+j]!=epoch)fresh=false;
+        char b[48];snprintf(b,sizeof(b),"%04X:%s%s ",unsigned(starts[k]),
+          id(svc28_index)==k?"WAIT":(id(svc28_failed)&(1u<<k))?"HELD":fresh?"FRESH":!id(svc28_refresh_enable).state?"OFF":"STALE",
+          (id(svc28_confirmed)&(1u<<k))?"*":"");out+=b;
+      }
+      return {out};
+  - platform: template
+    id: service_clock_local_time
+    name: "Clock | Home Assistant Time"
+    entity_category: diagnostic
+    icon: mdi:clock-outline
+    update_interval: 30s
+    lambda: |-
+      if (!id(service_ha_time_synced) || !id(service_ha_time).now().is_valid())
+        return {"Unavailable"};
+      return {id(service_ha_time).now().strftime("%Y-%m-%d %H:%M:%S %Z")};
+  - platform: template
+    id: service_clock_controller_local
+    name: "Clock | Heat Pump Time"
+    icon: mdi:clock-outline
+    update_interval: 10s
+    lambda: |-
+      constexpr unsigned base=unsigned(0x06EAu-0x03E8u);
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!id(thermia_bus_healthy).state || !(id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u))return {"UNAVAILABLE / local XTR profile or bus"};
+      if(epoch==0u || !id(write_active) || id(write_stage)!=40u ||
+         id(main01_m6_session_state)!=5u ||
+         id(main01_native_accepted_epoch)!=epoch ||
+         !id(svc102_word_ms)[base])
+        return {"WAITING / native 06EA/7 read"};
+      const uint32_t age=uint32_t(now-id(svc102_word_ms)[base]);
+      if(age>600000u) return {"STALE / no recent controller RTC"};
+      for(unsigned j=0u;j<7u;++j) {
+        if(id(svc102_word_ms)[base+j]==0u ||
+           id(svc102_word_epoch)[base+j]!=epoch ||
+           id(svc102_word_ms)[base+j]!=id(svc102_word_ms)[base])
+          return {"STALE / incomplete clock page"};
+      }
+      const unsigned sec=id(svc102_words)[base], minute=id(svc102_words)[base+1u],
+        hour=id(svc102_words)[base+2u], day=id(svc102_words)[base+3u],
+        month=id(svc102_words)[base+4u], year=id(svc102_words)[base+5u],
+        weekday=id(svc102_words)[base+6u];
+      if(sec>59u || minute>59u || hour>23u || day<1u || day>31u ||
+         month<1u || month>12u || year>99u || weekday>6u)
+        return {"INVALID / controller RTC fields"};
+      const int64_t source=id(svc27_wall_seconds)(2000u+year,month,day,hour,minute,sec);
+      if(source<0) return {"INVALID / controller RTC date"};
+      const time_t current=time_t(source+age/1000u);
+      struct tm display{};
+      if(gmtime_r(&current,&display)==nullptr) return {"INVALID / RTC conversion"};
+      char buf[32];
+      if(strftime(buf,sizeof(buf),"%Y-%m-%d %H:%M:%S",&display)==0u)
+        return {"INVALID / clock formatting"};
+      return {std::string(buf)};
+  - platform: template
+    id: service_clock_difference
+    name: "Clock | Difference vs Home Assistant"
+    entity_category: diagnostic
+    icon: mdi:clock-alert-outline
+    update_interval: 15s
+    lambda: |-
+      constexpr unsigned base=unsigned(0x06EAu-0x03E8u);
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      if(!id(thermia_bus_healthy).state || !(id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u))return {"UNAVAILABLE / local XTR profile or bus"};
+      auto ha=id(service_ha_time).now();
+      if(!ha.is_valid() || !id(service_ha_time_synced) || epoch==0u ||
+         !id(write_active) || id(write_stage)!=40u ||
+         id(main01_native_accepted_epoch)!=epoch ||
+         !id(svc102_word_ms)[base] || uint32_t(now-id(svc102_word_ms)[base])>600000u)
+        return {"UNAVAILABLE / HA or native clock not fresh"};
+      for(unsigned j=0;j<7u;++j) {
+        if(id(svc102_word_ms)[base+j]!=id(svc102_word_ms)[base] ||
+           id(svc102_word_epoch)[base+j]!=epoch) return {"UNAVAILABLE / incomplete native page"};
+      }
+      unsigned sec=id(svc102_words)[base], minute=id(svc102_words)[base+1u],
+        hour=id(svc102_words)[base+2u], day=id(svc102_words)[base+3u],
+        month=id(svc102_words)[base+4u], year=id(svc102_words)[base+5u];
+      if(sec>59u || minute>59u || hour>23u || day<1u || day>31u ||
+         month<1u || month>12u || year>99u) return {"UNAVAILABLE / invalid clock"};
+      const int64_t rtc_epoch=id(svc27_wall_seconds)(2000u+year,month,day,hour,minute,sec);
+      const int64_t ha_wall=id(svc27_wall_seconds)(ha.year,ha.month,ha.day_of_month,ha.hour,ha.minute,ha.second);
+      if(rtc_epoch<0 || ha_wall<0)return {"UNAVAILABLE / invalid local date"};
+      // Controller page is a timestamp at its FC16 receipt. Account for the
+      // age of that timestamp; do not mistake slow page refresh for clock drift.
+      const int64_t elapsed=int64_t(uint32_t(now-id(svc102_word_ms)[base]))/1000;
+      const int64_t delta=ha_wall-rtc_epoch-elapsed;
+      return {std::to_string(delta)+" s (HA minus Thermia; last observed page)"};
+  - platform: template
+    id: svc29_page_0410
+    internal: true
+    name: "Service Raw | Hot Water | 0410"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x0410u-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x0410u,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,2>{22u,21u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x0410u+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"0410/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x0410u+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_042e
+    internal: true
+    name: "Service Raw | Heating and DHW | 042E"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x042Eu-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x042Eu,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,1>{15u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x042Eu+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"042E/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x042Eu+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_0442
+    internal: true
+    name: "Service Raw | Cooling | 0442"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x0442u-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x0442u,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,1>{13u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x0442u+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"0442/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x0442u+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_0456
+    internal: true
+    name: "Service Raw | Auxiliary | 0456"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x0456u-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x0456u,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,1>{12u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x0456u+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"0456/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x0456u+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_046a
+    internal: true
+    name: "Service Raw | Calibration | 046A"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x046Au-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x046Au,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,1>{18u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x046Au+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"046A/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x046Au+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_047e
+    internal: true
+    name: "Service Raw | Cold Export | 047E"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x047Eu-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x047Eu,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,1>{19u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x047Eu+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"047E/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x047Eu+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_0492
+    internal: true
+    name: "Service Raw | Cold Export | 0492"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x0492u-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x0492u,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,2>{11u,9u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x0492u+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"0492/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x0492u+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_04a6
+    internal: true
+    name: "Service Raw | Service | 04A6"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x04A6u-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x04A6u,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,1>{13u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x04A6u+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"04A6/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x04A6u+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_04ba
+    internal: true
+    name: "Service Raw | Service | 04BA"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x04BAu-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x04BAu,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,1>{22u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x04BAu+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"04BA/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x04BAu+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_04d8
+    internal: true
+    name: "Service Raw | Cold Export | 04D8"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x04D8u-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x04D8u,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,1>{27u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x04D8u+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"04D8/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x04D8u+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_04f6
+    internal: true
+    name: "Service Raw | Cold Export | 04F6"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x04F6u-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x04F6u,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,1>{14u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x04F6u+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"04F6/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x04F6u+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_050a
+    internal: true
+    name: "Service Raw | Cold Export | 050A"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x050Au-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x050Au,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,1>{19u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x050Au+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"050A/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x050Au+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_051e
+    internal: true
+    name: "Service Raw | Cold Export | 051E"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x051Eu-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x051Eu,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,2>{10u,9u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x051Eu+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"051E/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x051Eu+j)));out+=b;}
+      return {out};
+  - platform: template
+    id: svc29_page_0546
+    internal: true
+    name: "Service Raw | Mode and Installation | 0546"
+    entity_category: diagnostic
+    disabled_by_default: true
+    icon: mdi:database-eye
+    update_interval: 60s
+    lambda: |-
+      const uint32_t now=millis(), epoch=id(write_arm_ms);
+      const bool qualified=epoch && id(write_active) && id(write_config_synced) && id(write_stage)==40u &&
+        id(main01_m6_session_state)==5u && id(main01_m6_session_epoch)==epoch &&
+        id(main01_native_accepted_epoch)==epoch && id(main01_cm930_shadow_epoch)==epoch &&
+        id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u &&
+        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+        !id(w2r36_abort_latched) && id(thermia_bus_healthy).state &&
+        id(thermia_last_valid_frame_ms) && uint32_t(now-id(thermia_last_valid_frame_ms))<=10000u;
+      const auto fresh=[&](unsigned reg,uint32_t maxAge=300000u)->bool {
+        if(!qualified || reg<0x03E8u || reg-0x03E8u>=id(svc102_words).size())return false;
+        const unsigned i=reg-0x03E8u;const uint32_t t=id(svc102_word_ms)[i];
+        return t && id(svc102_word_epoch)[i]==epoch && int32_t(t-epoch)>=0 && uint32_t(now-t)<=maxAge;
+      };
+      const auto raw=[&](unsigned reg)->uint16_t {return id(svc102_words)[reg-0x03E8u];};
+      const unsigned base=0x0546u-0x03E8u;
+      const uint32_t t=id(svc102_word_ms)[base];
+      if(!fresh(0x0546u,600000u))return {"UNAVAILABLE / no fresh same-session page"};
+      unsigned count=0;
+      for(const unsigned n:std::array<unsigned,1>{20u}){
+        bool exact=true;for(unsigned j=0;j<n;j++)if(!fresh(0x0546u+j,600000u)||id(svc102_word_ms)[base+j]!=t)exact=false;
+        if(exact){count=n;break;}
+      }
+      if(!count)return {"UNAVAILABLE / incomplete page"};
+      char b[24];snprintf(b,sizeof(b),"0546/%u raw:",count);std::string out=b;
+      for(unsigned j=0;j<count;j++){snprintf(b,sizeof(b)," %04X",unsigned(raw(0x0546u+j)));out+=b;}
+      return {out};
   # RC09F1: truthful post-TX evidence, observing controller 0864/4 only.
   # Previous OEMW 042E one-shot comparator remains INCONCLUSIVE by design;
   # this reports independent native application-state feedback, not heating yield.
@@ -18522,7 +20426,13 @@ text_sensor:
         case 2:
           if(id(w2r97_alarm_read_epoch)!=epoch) return {"CANCELLED / native session changed; no further TX"};
           return {"RUNNING / read-only 085F request sent once; awaiting exact controller FC16"};
-        case 3: return {"FRESH / qualified controller alarm snapshot received; periodic refresh enabled"};
+        case 3: {
+          const uint32_t rx=id(c5do_alarms_rx_ms);
+          if(!epoch || !rx || int32_t(rx-epoch)<0 || uint32_t(now-rx)>=300000u)
+            return {"STALE / waiting qualified periodic alarm read"};
+          if(uint32_t(now-rx)>=240000u)return {"FRESH / periodic alarm refresh due"};
+          return {"FRESH / qualified controller alarm snapshot received; periodic refresh enabled"};
+        }
         case 4: return {"UNAVAILABLE / last alarm read inconclusive; next refresh after cooldown"};
         case 5: return {"CANCELLED / native ABORT; no further alarm TX"};
         default: return {"UNKNOWN / no qualified alarm refresh yet"};
@@ -21326,7 +23236,7 @@ text_sensor:
         p==4?"RETAINED_085F_ACK_ONLY":
         p==3?"CONTROLLER_INIT_OFFERED_NOT_ACCEPTED":
         p==2?"CONTROLLER_RESTART_OBSERVED_C5Y":
-        p==1?"RETAINED_CONTEXT_MANUAL": "ESP_BOOT_UNKNOWN";
+        p==1?"RETAINED_CONTEXT": "ESP_BOOT_UNKNOWN";
       char buf[166];
       snprintf(buf,sizeof(buf),"%s / initFC16=%04X / M6=%u / TX_OWNER_SEPARATE / WRITE_USER_EXPLICIT_ONLY",
         label,unsigned(id(c5ag_controller_init_start)),unsigned(id(main01_m6_session_state)));
@@ -21344,7 +23254,7 @@ text_sensor:
       char msg[140];
       snprintf(msg,sizeof(msg),"OEM_INTERNAL=%s / FC16=%04X / OWNER=%s / TX_GUARDS_UNCHANGED",
         name,unsigned(id(c5_oem_accepted_fc16_start)),
-        id(write_active)?"EXISTING_MANUAL_SESSION":"UNKNOWN");
+        id(write_active)?"EXISTING_NATIVE_SESSION":"UNKNOWN");
       return {std::string(msg)};
 
   - platform: template
@@ -21364,7 +23274,7 @@ text_sensor:
           (m6==1)?"COLD_BOOTSTRAP_WAIT":
           (m6==3)?"REJOIN_EXPORT_PENDING":
           "MANUAL_NOT_QUALIFIED";
-        return std::string(owner_phase) + " / MANUAL SESSION / stage=" + std::to_string(id(write_stage)) +
+        return std::string(owner_phase) + " / NATIVE SESSION / stage=" + std::to_string(id(write_stage)) +
           " FC16_ACK=" + std::to_string(id(write_runtime_fc16_ack_count)) +
           " 04A6_SEEN=" + std::to_string(id(write_pre_resume_04a6_seen)) +
           " 0708_SERVED=" + std::to_string(id(write_runtime_0708_reply_count)) +
@@ -21504,7 +23414,8 @@ text_sensor:
   # WU1.02 SVC4: 24 retained mapped parameters, 137 redundant/unmapped NOT reintroduced.
   - platform: template
     id: svc102_parameter_041d
-    name: "Service ⁄ Warmwater ⁄ START [041D]"
+    disabled_by_default: true
+    name: "Service Raw | Hot Water | Start Temperature [041D]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21514,17 +23425,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_041e
-    name: "Service ⁄ Warmwater ⁄ WARMWATERTIJD [041E]"
+    disabled_by_default: true
+    name: "Service Raw | Hot Water | Maximum Production Time [041E]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21534,17 +23446,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_041f
-    name: "Service ⁄ Warmwater ⁄ DOORV. INTERVAL [041F]"
+    disabled_by_default: true
+    name: "Service Raw | Hot Water | Legionella Interval [041F]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21554,17 +23467,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_0420
-    name: "Service ⁄ Warmwater ⁄ TOPVERW. TIJD [0420]"
+    disabled_by_default: true
+    name: "Service Raw | Hot Water | Minimum Legionella Duration [0420]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21574,17 +23488,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_0433
-    name: "Service ⁄ Verwarming ⁄ OPSTART HT [0433]"
+    disabled_by_default: true
+    name: "Service Raw | Heating | Start Heating Demand [0433]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21594,17 +23509,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_0434
-    name: "Service ⁄ Verwarming ⁄ VERWARMINGSTIJD [0434]"
+    disabled_by_default: true
+    name: "Service Raw | Heating | Heating Time [0434]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21614,17 +23530,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_0446
-    name: "Service ⁄ Koeling ⁄ KOELING [0446]"
+    disabled_by_default: true
+    name: "Service Raw | Cooling | Cooling Setting [0446]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21634,17 +23551,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_0449
-    name: "Service ⁄ Koeling ⁄ KOELTIJD [0449]"
+    disabled_by_default: true
+    name: "Service Raw | Cooling | Cooling Time [0449]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21654,17 +23572,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_044c
-    name: "Service ⁄ Koeling ⁄ KAMERSENSOR [044C]"
+    disabled_by_default: true
+    name: "Service Raw | Cooling | Room Sensor [044C]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21674,17 +23593,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_044d
-    name: "Service ⁄ Koeling ⁄ KLHYS.KAMSNS.LG [044D]"
+    disabled_by_default: true
+    name: "Service Raw | Cooling | Room Sensor Hysteresis Low [044D]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21694,17 +23614,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_044e
-    name: "Service ⁄ Koeling ⁄ KLHYS.KAMSNS.HG [044E]"
+    disabled_by_default: true
+    name: "Service Raw | Cooling | Room Sensor Hysteresis High [044E]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21714,17 +23635,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_0456
-    name: "Service ⁄ Bijverwarming ⁄ MAX STAP [0456]"
+    disabled_by_default: true
+    name: "Service Raw | Auxiliary Heater | Maximum Step [0456]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21734,17 +23656,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_0459
-    name: "Service ⁄ Bijverwarming ⁄ MAX STROOM [0459]"
+    disabled_by_default: true
+    name: "Service Raw | Auxiliary Heater | Maximum Current [0459]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21754,17 +23677,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_045a
-    name: "Service ⁄ Bijverwarming ⁄ TOPVERW. EXT.BV. [045A]"
+    disabled_by_default: true
+    name: "Service Raw | Auxiliary Heater | External Auxiliary Offset [045A]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21774,17 +23698,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_046a
-    name: "Service ⁄ Installatie ⁄ KALIBR SENSOR ⁄ BUITEN [046A]"
+    disabled_by_default: true
+    name: "Service Raw | Sensor Calibration | Outdoor [046A]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21794,17 +23719,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_046b
-    name: "Service ⁄ Installatie ⁄ KALIBR SENSOR ⁄ AANV SYSTEEM [046B]"
+    disabled_by_default: true
+    name: "Service Raw | Sensor Calibration | System Supply [046B]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21814,17 +23740,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_046c
-    name: "Service ⁄ Installatie ⁄ KALIBR SENSOR ⁄ AANV LEIDING [046C]"
+    disabled_by_default: true
+    name: "Service Raw | Sensor Calibration | Supply [046C]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21834,17 +23761,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_046e
-    name: "Service ⁄ Installatie ⁄ KALIBR SENSOR ⁄ WARMWATERSENSOR [046E]"
+    disabled_by_default: true
+    name: "Service Raw | Sensor Calibration | Hot Water Lower [046E]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21854,17 +23782,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_046f
-    name: "Service ⁄ Installatie ⁄ KALIBR SENSOR ⁄ WAT SENSOR BOVEN [046F]"
+    disabled_by_default: true
+    name: "Service Raw | Sensor Calibration | Hot Water Upper [046F]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21874,17 +23803,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (cross-model kandidaat; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_0829
-    name: "Service ⁄ Buitenunit ⁄ MAX FREQ VERH [0829]"
+    disabled_by_default: true
+    name: "Service Raw | Outdoor Unit | Maximum Heating Frequency [0829]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21894,17 +23824,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (XTR runtime; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_0830
-    name: "Service ⁄ Buitenunit ⁄ HOGE DRUK [0830]"
+    disabled_by_default: true
+    name: "Service Raw | Outdoor Unit | High Pressure [0830]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21914,17 +23845,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw (XTR runtime; geen TX)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" raw"};
 
   - platform: template
     id: svc102_parameter_082a
-    name: "Service ⁄ Buitenunit ⁄ STROOM [082A]"
+    disabled_by_default: true
+    name: "Service Raw | Outdoor Unit | Current [082A]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21934,17 +23866,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
+        return {"Stale (no current controller value)"};
       const unsigned raw=unsigned(id(svc102_words)[ix]); return {std::to_string(raw/10u)+"."+std::to_string(raw%10u)+" A (raw="+std::to_string(raw)+")"};
 
   - platform: template
     id: svc102_parameter_082b
-    name: "Service ⁄ Buitenunit ⁄ VENT 1 TPM [082B]"
+    disabled_by_default: true
+    name: "Service Raw | Outdoor Unit | Fan 1 Speed [082B]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21954,17 +23887,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" rpm (controller-FC16)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" rpm"};
 
   - platform: template
     id: svc102_parameter_082d
-    name: "Service ⁄ Buitenunit ⁄ EXP KLEPSTAPPEN [082D]"
+    disabled_by_default: true
+    name: "Service Raw | Outdoor Unit | Expansion Valve Steps [082D]"
     entity_category: diagnostic
     icon: mdi:cog-outline
     update_interval: 30s
@@ -21974,17 +23908,18 @@ text_sensor:
       if(!epoch || !id(write_active) || id(write_stage)!=40u ||
          id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
          id(main01_native_accepted_epoch)!=epoch)
-        return {"Niet beschikbaar (DCM-sessie niet gekwalificeerd)"};
+        return {"Unavailable (native session not qualified)"};
       const uint32_t t=id(svc102_word_ms)[ix];
-      if(!t) return {"Niet beschikbaar (nog geen controller-FC16)"};
+      if(!t) return {"Unavailable (no controller data yet)"};
       if(id(svc102_word_epoch)[ix]!=epoch || !id(thermia_bus_healthy).state ||
          uint32_t(now-t)>600000u)
-        return {"Verouderd (geen actuele controllerwaarde)"};
-      return {std::to_string(unsigned(id(svc102_words)[ix]))+" stappen (controller-FC16)"};
+        return {"Stale (no current controller value)"};
+      return {std::to_string(unsigned(id(svc102_words)[ix]))+" steps"};
 
   - platform: template
     id: svc102_catalogue_status
-    name: "Service ⁄ Parameters Status"
+    disabled_by_default: true
+    name: "Service | Parameters Status"
     entity_category: diagnostic
     icon: mdi:database-check-outline
     update_interval: 30s
@@ -21992,7 +23927,7 @@ text_sensor:
       const uint32_t now=millis(), epoch=id(write_arm_ms);
       if(!epoch || !id(write_active) || id(main01_m6_session_state)!=5u ||
          id(main01_native_accepted_epoch)!=epoch || !id(thermia_bus_healthy).state)
-        return {"Niet beschikbaar (geen actuele native sessie)"};
+        return {"Unavailable (no current native session)"};
       unsigned fresh=0u;
       for(unsigned i=0u;i<1200u;i++)
         if(id(svc102_word_ms)[i] && id(svc102_word_epoch)[i]==epoch &&
@@ -22086,7 +24021,7 @@ text_sensor:
     entity_category: diagnostic
     update_interval: 60s
     lambda: |-
-      return {"Thermia WRITE USER 1.03 (FAMILY03) | CM930 2.4.0-2.4.3 + auto session recovery + F1 batch apply | PUBLIC | 2026-11-22"};
+      return {"Thermia WRITE USER 1.04 | CM930 2.4.0-2.4.3 | scoped XTR M 3N 2.4.2 reads + opt-in RTC | PUBLIC | 2026-11-24"};
 
   - platform: template
     name: "Heating Settings Source"
@@ -23299,7 +25234,7 @@ script:
             id(main01_m6_app_requested)=0;
             id(main01_m6_app_received)=0;
             id(main01_m6_app_pending)=0;
-            id(main01_m6_app_page_ms).assign(33,0);
+            id(main01_m6_app_page_ms).assign(39,0);
             id(main01_m6_app_sync_arm_ms)=0;
             id(main01_m6_app_sync_active)=false;
             id(main01_m6_app_sync_start_ms)=0;
@@ -23351,7 +25286,7 @@ script:
             id(main01_m6_app_requested)=0;
             id(main01_m6_app_received)=0;
             id(main01_m6_app_pending)=0;
-            id(main01_m6_app_page_ms).assign(33,0);
+            id(main01_m6_app_page_ms).assign(39,0);
             id(main01_m6_app_sync_arm_ms)=0;
             id(main01_m6_app_sync_active)=false;
             id(main01_m6_app_sync_start_ms)=0;
@@ -23436,7 +25371,7 @@ script:
             id(main01_m6_app_requested)=0;
             id(main01_m6_app_received)=0;
             id(main01_m6_app_pending)=0;
-            id(main01_m6_app_page_ms).assign(33,0);
+            id(main01_m6_app_page_ms).assign(39,0);
             id(main01_m6_app_sync_arm_ms)=0;
             id(main01_m6_app_sync_active)=false;
             id(main01_m6_app_sync_start_ms)=0;
@@ -23523,7 +25458,7 @@ script:
             id(main01_m6_app_requested)=0;
             id(main01_m6_app_received)=0;
             id(main01_m6_app_pending)=0;
-            id(main01_m6_app_page_ms).assign(33,0);
+            id(main01_m6_app_page_ms).assign(39,0);
             id(main01_m6_app_sync_arm_ms)=0;
             id(main01_m6_app_sync_active)=false;
             id(main01_m6_app_sync_start_ms)=0;
@@ -23653,7 +25588,7 @@ script:
             // data quality is assessed by m6s_oldest_ms and the HA sensors.
             if (active && owned &&
                 id(main01_m6_app_epoch)==id(write_arm_ms) &&
-                id(main01_m6_app_page_ms).size()==33) {
+                id(main01_m6_app_page_ms).size()==39) {
               id(main01_m6_app_pending)=id(main01_m6_app_requested) &
                 ~id(main01_m6_app_received);
             }
@@ -23701,7 +25636,7 @@ script:
             id(main01_m6_app_requested)=0;
             id(main01_m6_app_received)=0;
             id(main01_m6_app_pending)=0;
-            id(main01_m6_app_page_ms).assign(33,0);
+            id(main01_m6_app_page_ms).assign(39,0);
             id(main01_m6_app_sync_arm_ms)=0;
             id(main01_m6_app_sync_active)=false;
             id(main01_m6_app_sync_start_ms)=0;
@@ -23712,7 +25647,7 @@ script:
                 // FIX34: expire the orphaned ownership timestamp and all
                 // per-page receipts in the same fail-closed stop pass.
                 // Passive traffic must not resurrect them.
-                id(main01_m6_app_page_ms).assign(33,0);
+                id(main01_m6_app_page_ms).assign(39,0);
                 id(main01_native_sync_needed)=false;
                 id(main01_m6_session_epoch)=0;
                 id(s92_recovery_runtime_epoch)=0;
@@ -23796,55 +25731,60 @@ script:
               unsigned(accepted),unsigned(integrity),unsigned(profile),
               unsigned(fresh),unsigned(id(main01_m6_physical_tx_total)));
           }
-  - id: write_start_selected_write
-    mode: single
-    then:
-      - lambda: |-
-          id(waveshare_rs485_direction).turn_off();
-          const uint32_t now=millis();
-          const uint32_t rt_age=id(write_runtime_enter_ms)?now-id(write_runtime_enter_ms):0;
-          const uint8_t wi=id(write_write_word_index);
-          if (!id(write_active) || id(write_stage)!=40) {
-            id(thermia_write_last_event)->publish_state("WRITE REFUSED: persistent stage 40 not active"); return;
-          }
-          if (id(write_write_state)!=0) {
-            id(thermia_write_last_event)->publish_state("WRITE REFUSED: transaction already active; selection latch unchanged"); return;
-          }
-          if (!id(write_config_synced)) {
-            id(thermia_write_status)->publish_state("BLOCKED / Configuration not synchronized from controller");
-            id(thermia_write_last_event)->publish_state("WRITE REFUSED: CONFIG_NOT_SYNCED; wait authoritative controller FC16 03E8/count14");
-            ESP_LOGE("thermia_write","\033[31m[WRITE] ===== WRITE_REFUSED CONFIG_NOT_SYNCED reg=%04X word=%u target=%u NO_TX DE=LOW =====\033[0m",
-              unsigned(id(write_write_register)),unsigned(wi),unsigned(id(write_requested_target)));
-            return;
-          }
-          const uint32_t resync_delta=id(thermia_parser_resync_count)-id(write_resync_baseline);
-          const uint32_t drop_delta=id(thermia_rx_buffer_drop_count)-id(write_drop_baseline);
-          const bool runtime_qualified=id(write_runtime_fc16_ack_count)>=1 && id(write_runtime_0708_reply_count)>=1 &&
-            id(write_runtime_unknown_fc16_count)==0 && id(write_runtime_unknown_fc03_count)==0 && id(write_peer_fc17_count)==0 &&
-            id(write_peer_fc16_ack_count)==0 && resync_delta==0 && drop_delta==0;
-          if (!runtime_qualified || rt_age<10000UL || !(wi==0 || wi==1 || wi==2 || wi==3 || wi==4 || wi==5 || wi==6 || wi==7 || wi==8 || wi==12)) {
-            id(thermia_write_last_event)->publish_state("WRITE REFUSED: runtime/word guard not satisfied"); return;
-          }
-          // Thermia Write: each slider transaction starts from a fresh controller page.
-          // Thermia Write supports words 0..8 and 12 with per-setting bounds; no +/-1 or one-shot write limit.
-          // Counters used as per-transaction guards are reset here; confirmedWrites stays cumulative.
-          id(write_semantic_response_count)=0;
-          
-          id(write_original_value)=0;
-          id(write_target_value)=id(write_requested_target);
-          id(thermia_write_write_confirmed_sensor)->publish_state(false);
-          id(write_page_cache_valid)=false;
-          id(write_page_cache_ms)=0;
-          id(write_write_arm_ms)=now; id(write_selector_ms)=0; id(write_desired_ms)=0; id(write_refresh_request_ms)=0;
-          id(write_write_state)=5;
-          id(thermia_write_status)->publish_state("RUNNING / fresh 03E8 requested / slider transaction latched");
-          id(thermia_write_last_event)->publish_state("CACHE_REFRESH_ARM: fresh controller page required before semantic TX");
-          ESP_LOGE("thermia_write","\033[31m[WRITE] ===== SLIDER_WRITE_ARM reg=%04X word=%u requested=%u ALWAYS_FRESH=1 wait=0708 NO_SEMANTIC_TX =====\033[0m",
-            unsigned(id(write_write_register)),unsigned(wi),unsigned(id(write_requested_target)));
 
 
 
 # --- PARAMETER EDITORS ---
+datetime:
+  - platform: template
+    id: wu104_calendar_start_time
+    type: time
+    name: "Calendar | Start Time"
+    entity_category: config
+    icon: mdi:clock-edit-outline
+    update_interval: 2s
+    lambda: |-
+      if(!id(cal32_loaded) || !id(cal32_programmed) || id(cal32_mode)!=1u || !id(cal32_source_ms) ||
+         id(cal32_source_epoch)!=id(write_arm_ms) || id(main01_m6_session_state)!=5u ||
+         uint32_t(millis()-id(cal32_source_ms))>=300000u)return {};
+      if(id(cal32_stage)[0u]>59u || id(cal32_stage)[1u]>23u)return {};
+      ESPTime v{};v.hour=id(cal32_stage)[1u];v.minute=id(cal32_stage)[0u];v.second=0;
+      if(id(wu104_calendar_start_time).has_state()){const auto old=id(wu104_calendar_start_time).state_as_esptime();if(old.hour==v.hour && old.minute==v.minute && old.second==0)return {};}
+      return v;
+    set_action:
+      - lambda: |-
+          if(!id(cal32_loaded) || !id(cal32_programmed) || id(cal32_mode)!=1u || !id(cal32_source_ms) ||
+             id(cal32_source_epoch)!=id(write_arm_ms) || id(main01_m6_session_state)!=5u ||
+             uint32_t(millis()-id(cal32_source_ms))>=300000u || id(cal32_batch_active) || id(w2r56_batch_active) ||
+             x.hour>23u || x.minute>59u || x.second>59u){id(cal32_status)->publish_state("EDIT HELD / no fresh weekly source / NO TX");return;}
+          id(cal32_start_hour).make_call().set_value(float(x.hour)).perform();
+          id(cal32_start_minute).make_call().set_value(float(x.minute)).perform();
+          id(cal32_status)->publish_state("STAGED / press Write Changes to apply / NO TX");
+  - platform: template
+    id: wu104_calendar_end_time
+    type: time
+    name: "Calendar | End Time"
+    entity_category: config
+    icon: mdi:clock-edit-outline
+    update_interval: 2s
+    lambda: |-
+      if(!id(cal32_loaded) || !id(cal32_programmed) || id(cal32_mode)!=1u || !id(cal32_source_ms) ||
+         id(cal32_source_epoch)!=id(write_arm_ms) || id(main01_m6_session_state)!=5u ||
+         uint32_t(millis()-id(cal32_source_ms))>=300000u)return {};
+      if(id(cal32_stage)[2u]>59u || id(cal32_stage)[3u]>23u)return {};
+      ESPTime v{};v.hour=id(cal32_stage)[3u];v.minute=id(cal32_stage)[2u];v.second=0;
+      if(id(wu104_calendar_end_time).has_state()){const auto old=id(wu104_calendar_end_time).state_as_esptime();if(old.hour==v.hour && old.minute==v.minute && old.second==0)return {};}
+      return v;
+    set_action:
+      - lambda: |-
+          if(!id(cal32_loaded) || !id(cal32_programmed) || id(cal32_mode)!=1u || !id(cal32_source_ms) ||
+             id(cal32_source_epoch)!=id(write_arm_ms) || id(main01_m6_session_state)!=5u ||
+             uint32_t(millis()-id(cal32_source_ms))>=300000u || id(cal32_batch_active) || id(w2r56_batch_active) ||
+             x.hour>23u || x.minute>59u || x.second>59u){id(cal32_status)->publish_state("EDIT HELD / no fresh weekly source / NO TX");return;}
+          id(cal32_stop_hour).make_call().set_value(float(x.hour)).perform();
+          id(cal32_stop_minute).make_call().set_value(float(x.minute)).perform();
+          id(cal32_status)->publish_state("STAGED / press Write Changes to apply / NO TX");
+
 number:
   - platform: template
     id: cal32_start_minute
@@ -25114,8 +27054,8 @@ button:
             return;
           }
           if(id(c5do_alarms_rx_ms)!=0u && int32_t(id(c5do_alarms_rx_ms)-epoch)>=0 &&
-             uint32_t(now-id(c5do_alarms_rx_ms))<300000u) {
-            ESP_LOGI("thermia_alarm","[W2R97] ALARM_PAGE_ALREADY_FRESH no trial needed NO_TX");
+             uint32_t(now-id(c5do_alarms_rx_ms))<240000u) {
+            ESP_LOGI("thermia_alarm","[W2R97] ALARM_PAGE_NOT_DUE ageBelow240s NO_TX");
             return;
           }
           id(w2rfc_alarm_last_arm_epoch)=epoch;
@@ -25705,26 +27645,6 @@ button:
           ESP_LOGW("thermia_calendar","[W2R85] EXT_TRIAL_ARMED p=%u fields=%u extended=%u epoch=%u ttl=45s maxPhysicalPages=5 NO_TX=1",
             unsigned(p),changed,extended,unsigned(epoch));
 
-  - platform: template
-    id: w2r56_calendar_cancel_batch
-    internal: true
-    name: "Calendar | Hot Water | Stop Selected Program Batch"
-    entity_category: config
-    disabled_by_default: true
-    icon: mdi:stop-circle-outline
-    on_press:
-      - lambda: |-
-          // Existing already-armed OEMW field may still finish. This action
-          // disallows next fields; for immediate DE/owner ABORT use S92 ABORT.
-          id(w2r56_batch_active)=false;
-          id(w2r56_batch_verify_requested)=false;
-          id(w2r85_ext_batch)=false;
-          id(w2r85_ext_arm_ms)=0u;
-          // Stop prevents next field; current OEMW may finish as before.
-          // A new Apply still needs new owned F1 after last attempt.
-          id(exp452_status)->publish_state(
-            "W2R56 BATCH STOPPED BY USER / no subsequent fields; current OEMW may finish / use S92 ABORT for immediate revocation");
-          ESP_LOGW("thermia_w2r56", "BATCH_USER_STOP no_following_fields=1 inFlightMayFinish=1");
 
   - platform: template
     id: w2r25_start_heating_acceptance
@@ -25986,8 +27906,8 @@ button:
           // before any new calendar TX (observed CAL10 at 18:12:37).
           // Do NOT clear the independent last-good c5do_*_rx_ms cache.
           // This is bookkeeping only: original S92 physical TX gates intact.
-          if (id(main01_m6_app_page_ms).size()!=33u)
-            id(main01_m6_app_page_ms).assign(33,0u);
+          if (id(main01_m6_app_page_ms).size()!=39u)
+            id(main01_m6_app_page_ms).assign(39,0u);
           else
             for (unsigned i=11u;i<=22u;++i) id(main01_m6_app_page_ms)[i]=0u;
           id(main01_m6_app_sync_polls)=0;
@@ -26397,7 +28317,7 @@ button:
           id(main01_m6_app_requested)=0;
           id(main01_m6_app_received)=0;
           id(main01_m6_app_pending)=0;
-          id(main01_m6_app_page_ms).assign(33,0);
+          id(main01_m6_app_page_ms).assign(39,0);
           id(main01_m6_app_sync_arm_ms)=0;
           id(main01_m6_app_sync_active)=false;
           id(main01_m6_app_sync_start_ms)=0;
@@ -27850,7 +29770,7 @@ interval:
             id(main01_m6_app_pending)=0;
             // FIX45: revoke per-page and active-read proof in this same
             // watchdog tick, not after an asynchronously queued event6.
-            id(main01_m6_app_page_ms).assign(33,0);
+            id(main01_m6_app_page_ms).assign(39,0);
             id(main01_m6_app_sync_start_ms)=0;
             id(main01_m6_app_sync_polls)=0;
             id(main01_m6_app_sync_arm_ms)=0;
@@ -28730,7 +30650,7 @@ interval:
             id(main04b_retry_consumed)=false;
             id(c5ds_cal_auto_waiting)=false;
             id(c5ds_cal_auto_arm_ms)=0u;
-            id(main01_m6_app_page_ms).assign(33,0);
+            id(main01_m6_app_page_ms).assign(39,0);
             id(m6p_heating_ms)=0; id(m6p_heating_epoch)=0;
             id(m6p_dhw_ms)=0; id(m6p_dhw_epoch)=0;
             id(m6p_cooling_ms)=0; id(m6p_cooling_epoch)=0;
@@ -29781,3 +31701,155 @@ interval:
           // FIX13: the existing bus-health cycle reconciles the ONE M6
           // state owner. No UART, DE, pending TX or session approval here.
           id(main01_m6_transition).execute(8);
+
+  # WU1.04 bounded same-owner read scheduler; no direct UART TX.
+  - interval: 1s
+    then:
+      - lambda: |-
+          // WU104: 12 Service pages + 0410 + clock, one outstanding; master switch and all owner guards retained.
+          [&](){
+            const uint32_t now=millis(),epoch=id(write_arm_ms);
+            if(id(svcclk_daily_pending)) {
+              const unsigned st=id(svcclk_state);
+              const uint32_t stamp=st==1u?id(svcclk_arm_ms):st==2u?id(svcclk_selector_ms):id(svcclk_sent_ms);
+              const uint32_t limit=st==1u?45000u:st==2u?15000u:180000u;
+              const bool owner=epoch && id(svcclk_epoch)==epoch && id(write_active) && id(write_stage)==40u &&
+                id(main01_m6_session_state)==5u && id(main01_native_accepted_epoch)==epoch && !id(w2r36_abort_latched);
+              if(st==4u){id(svcclk_daily_pending)=false;}
+              else if(st==5u || !owner || !stamp || uint32_t(now-stamp)>limit || ((st==1u || st==2u) && !id(svc28_refresh_enable).state)) {
+                id(svcclk_state)=5u;id(svcclk_daily_pending)=false;
+                id(svcclk_auto_sync_enable).turn_off();
+                id(service_clock_sync_status)->publish_state("COMPLETE / INCONCLUSIVE / clock correction not confirmed; disabled; no automatic retry");
+              }
+              // Do not arm a competing scoped read until clock transaction completes.
+              if(id(svcclk_daily_pending))return;
+            }
+            static constexpr uint16_t starts[14]={0x0532,0x0456,0x03FC,0x046A,0x04BA,0x04A6,0x047E,0x0492,0x04D8,0x04F6,0x050A,0x051E,0x0410,0x06EA};
+            static constexpr uint8_t counts[14]={18,12,11,18,22,13,19,11,27,14,19,10,22,7};
+            static constexpr uint8_t indices[14]={9,5,1,6,8,7,33,34,35,36,37,38,2,23};
+            const auto source_fresh=[&](unsigned k,uint32_t age,uint32_t since)->bool {
+              const unsigned base=starts[k]-0x03E8u;
+              const uint32_t t=id(svc102_word_ms)[base];
+              if(!t || uint32_t(now-t)>age || int32_t(t-since)<0)return false;
+              for(unsigned j=0;j<counts[k];++j)
+                if(id(svc102_word_ms)[base+j]!=t || id(svc102_word_epoch)[base+j]!=epoch)return false;
+              return true;
+            };
+            if(id(svc28_epoch)!=epoch){
+              if(id(svc28_index)<14u)id(svc28_failed)|=uint16_t(1u<<id(svc28_index));
+              id(svc28_index)=255u;id(svc28_ledger_index)=255u;id(svc28_epoch)=epoch;
+              id(svc28_confirmed)=0u;id(svc28_cursor)=12u;id(svc28_last_end_ms)=0u;
+              // Failed pages remain quarantined until an explicit OFF/ON, even across rejoin.
+            }
+            if(id(svc28_index)<14u){
+              const unsigned k=id(svc28_index),idx=indices[k];
+              const uint64_t scope=uint64_t(1)<<idx;
+              const bool ours=epoch && id(main01_m6_app_sync_epoch)==epoch &&
+                id(main01_m6_app_requested)==scope;
+              const uint32_t sent=id(main01_m6_app_sync_start_ms);
+              const bool receipt=ours && id(main04d_app_receipt_state)==2u &&
+                id(main01_m6_app_pending)==0u && sent && int32_t(sent-id(svc28_arm_ms))>=0 &&
+                id(main01_m6_app_page_ms).size()==39u && id(main01_m6_app_page_ms)[idx] &&
+                int32_t(id(main01_m6_app_page_ms)[idx]-sent)>=0;
+              if(receipt && source_fresh(k,30000u,sent)){
+                id(svc28_confirmed)|=uint16_t(1u<<k);
+                id(svc28_last_end_ms)=now;id(svc28_index)=255u;id(svc28_ledger_index)=255u;
+                ESP_LOGW("svc28","PAGE_CONFIRMED %04X/%u exact owned FC16 and current source / no setting TX",unsigned(starts[k]),unsigned(counts[k]));
+                return;
+              }
+              const bool qualified=epoch && id(write_active) && id(write_stage)==40u &&
+                id(main01_native_accepted_epoch)==epoch && !id(w2r36_abort_latched);
+              const bool expired=sent && ours && int32_t(sent-id(svc28_arm_ms))>=0 ?
+                uint32_t(now-sent)>21000u : uint32_t(now-id(svc28_arm_ms))>30000u;
+              // Never steal another owner's ledger. Retire only our exact generation.
+              if(!qualified || !ours || expired || (!id(svc28_refresh_enable).state && !sent)){
+                if(ours){
+                  id(main01_m6_app_sync_arm_ms)=0u;id(main01_m6_app_sync_active)=false;
+                  id(main01_m6_app_requested)=0u;id(main01_m6_app_pending)=0u;
+                  id(main04d_app_receipt_state)=3u;
+                }
+                if(qualified && id(svc28_refresh_enable).state && sent && int32_t(sent-id(svc28_arm_ms))>=0)id(svc28_failed)|=uint16_t(1u<<k);
+                id(svc28_last_end_ms)=now;id(svc28_index)=255u;id(svc28_ledger_index)=255u;
+                ESP_LOGW("svc28","PAGE_INCOMPLETE %04X / no retry; next independent page may proceed",unsigned(starts[k]));
+              }
+              return;
+            }
+            if(!id(svc28_refresh_enable).state || !epoch || !id(write_active) || id(write_stage)!=40u ||
+               !id(write_config_synced) || id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
+               id(main01_native_accepted_epoch)!=epoch || id(main01_m6_app_epoch)!=epoch ||
+               id(main01_cm930_shadow_epoch)!=epoch || !(id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u) ||
+               (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u) ||
+               id(w2r36_abort_latched) || !id(write_runtime_fc16_ack_count) || !id(write_runtime_0708_reply_count) ||
+               !id(thermia_last_valid_frame_ms) || uint32_t(now-id(thermia_last_valid_frame_ms))>=2000u ||
+               id(thermia_rx_buffer_drop_count)!=id(write_drop_baseline) || id(thermia_parser_resync_count)!=id(write_resync_baseline) ||
+               id(s92_v5_crc_shadow_disagreements) || id(s92_v5_ambiguous_count) ||
+               id(write_runtime_unknown_fc16_count) || id(write_runtime_unknown_fc03_count) ||
+               id(write_peer_fc17_count) || id(write_peer_fc16_ack_count) ||
+               id(main01_m6_app_sync_arm_ms) || id(main01_m6_app_sync_active) || id(main01_m6_app_pending) ||
+               id(main01_m6_refresh_active) || id(main01_m3_refresh_armed_ms) || id(c5dk_auto_current_pending_kind) ||
+               id(main04b_retry_pending_kind) || id(c5ds_cal_auto_waiting) ||
+               (id(w2r97_alarm_read_state)==1u || id(w2r97_alarm_read_state)==2u) ||
+               id(w2r83_auto_f1_pending) || id(cal32_batch_active) || id(w2r56_batch_active) ||
+               id(write_write_state) || id(write_pending_valid) || id(write_dirty_mask) || id(write_delayed_refresh_pending) ||
+               id(native_transaction_state)[0] || id(native_transaction_state)[1] || (id(native_transaction_state)[2]>=1u && id(native_transaction_state)[2]<=4u) ||
+               id(oemw_alert_pending) || id(oemw_read_pending) || id(w1_curve_armed) || id(w2_curve_desired_pending) ||
+               id(exp445_state) || id(exp452_state) || id(exp378_dirty_mask) || id(exp379_dirty_mask) || id(exp380_dirty) || id(exp383_link_dirty) ||
+               id(write_recovery_in_progress) || id(write_hot_rejoin_in_progress) || id(write_hot_rejoin_wait_runtime) ||
+               (id(write_resume_started) && !id(write_resume_done)))return;
+            for(const auto d:id(w2r78_queue_descriptor))if(d)return;
+            const uint32_t alarm=id(c5do_alarms_rx_ms);
+            const bool alarm_due=!alarm || int32_t(alarm-epoch)<0 || uint32_t(now-alarm)>=240000u;
+            const bool alarm_cooldown=id(w2rfc_alarm_last_arm_epoch)==epoch && id(w2rfc_alarm_last_arm_ms) && uint32_t(now-id(w2rfc_alarm_last_arm_ms))<240000u;
+            if(alarm_due && !alarm_cooldown)return;
+            // Leave time for ordinary write requests and the other proven read lanes.
+            if(id(svc28_last_end_ms) && uint32_t(now-id(svc28_last_end_ms))<5000u)return;
+            if(id(m6s_epoch)!=epoch || !id(m6s_oldest_ms) || uint32_t(now-id(m6s_oldest_ms))>=240000u)return;
+            const auto ha=id(service_ha_time).now();
+            const uint32_t utc=ha.is_valid() && ha.year>=2000 && ha.year<=2099?uint32_t(ha.timestamp):0u;
+            const uint32_t last_check=id(svcclk_daily_last_check_epoch),last_write=id(svcclk_daily_last_write_epoch);
+            const bool daily_due=id(svcclk_auto_sync_enable).state && !id(w2r79f_write_user_manual_lockout) &&
+              id(service_ha_time_synced) && utc &&
+              (!last_check || (utc>last_check && utc-last_check>=86400u)) &&
+              (!last_write || (utc>last_write && utc-last_write>=86400u));
+            const bool clock_owned=(id(svc28_confirmed)&(1u<<13)) && source_fresh(13u,120000u,epoch) &&
+              id(main01_m6_app_page_ms).size()==39u && id(main01_m6_app_page_ms)[23u] &&
+              int32_t(id(main01_m6_app_page_ms)[23u]-epoch)>=0;
+            if(daily_due && clock_owned) {
+              constexpr unsigned base=0x06EAu-0x03E8u;
+              const auto &w=id(svc102_words);
+              const int64_t rtc=id(svc27_wall_seconds)(2000u+w[base+5u],w[base+4u],w[base+3u],w[base+2u],w[base+1u],w[base]);
+              const int64_t local=id(svc27_wall_seconds)(ha.year,ha.month,ha.day_of_month,ha.hour,ha.minute,ha.second);
+              if(rtc>=0 && local>=0 && w[base+6u]<=6u) {
+                const int64_t delta=local-rtc-int64_t(uint32_t(now-id(svc102_word_ms)[base])/1000u);
+                id(svcclk_daily_last_check_epoch)=utc;
+                if(llabs(delta)<=60LL) {
+                  id(service_clock_sync_status)->publish_state("CHECK OK / RTC within 60s / next daily comparison / NO WRITE");
+                  ESP_LOGI("service_clock","[WU104] AUTO_CLOCK_CHECK_OK drift=%llds noWrite=1",static_cast<long long>(delta));
+                } else {
+                  id(svcclk_daily_last_write_epoch)=utc;
+                  id(svcclk_epoch)=epoch;id(svcclk_arm_ms)=now?now:1u;
+                  id(svcclk_selector_ms)=0u;id(svcclk_sent_ms)=0u;id(svcclk_attempts)=0u;
+                  id(svcclk_daily_pending)=true;id(svcclk_state)=1u;
+                  id(service_clock_sync_status)->publish_state("RUNNING / one UTC correction armed / waiting native controller slot");
+                  ESP_LOGW("service_clock","[WU104] AUTO_CLOCK_SYNC_ARM drift=%llds oneShot=1 noTXyet=1",static_cast<long long>(delta));
+                  return;
+                }
+              }
+            }
+            for(unsigned n=0;n<14u;++n){
+              const unsigned k=(id(svc28_cursor)+n)%14u,idx=indices[k];
+              if(id(svc28_failed)&(1u<<k))continue;
+              if(source_fresh(k,k==13u?(daily_due?120000u:450000u):210000u,epoch) && id(main01_m6_app_page_ms).size()==39u && id(main01_m6_app_page_ms)[idx] && int32_t(id(main01_m6_app_page_ms)[idx]-epoch)>=0)continue;
+              const uint64_t scope=uint64_t(1)<<idx;
+              id(svc28_index)=uint8_t(k);id(svc28_ledger_index)=uint8_t(idx);id(svc28_arm_ms)=now?now:1u;
+              id(svc28_cursor)=uint8_t((k+1u)%14u);
+              id(main04d_app_receipt_state)=0u;id(main01_m6_app_sync_start_ms)=0u;
+              id(main01_m6_app_requested)=scope;id(main01_m6_app_received)&=~scope;id(main01_m6_app_pending)=scope;
+              if(id(main01_m6_app_page_ms).size()!=39u)id(main01_m6_app_page_ms).assign(39,0u);
+              else id(main01_m6_app_page_ms)[idx]=0u;
+              id(main01_m6_app_sync_polls)=0u;id(main04e_app_defer_logged)=false;
+              id(main01_m6_app_sync_epoch)=epoch;id(main01_m6_app_sync_arm_ms)=id(svc28_arm_ms);
+              ESP_LOGW("svc28","PAGE_ARM %04X/%u / exact native request / one physical poll / no setting TX",unsigned(starts[k]),unsigned(counts[k]));
+              return;
+            }
+          }();
