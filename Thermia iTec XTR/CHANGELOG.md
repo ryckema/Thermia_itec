@@ -18,11 +18,6 @@ For the current firmware and installation instructions, see the [main README](..
 - Additional read-only numeric Service parameters and English names/status texts. Advanced Optimum, calibration and installation diagnostics are disabled by default where appropriate; uncertain mappings retain candidate labels. The 24 existing raw register diagnostics remain available but disabled by default; 14 new page dumps are internal. Normal user controls and their names are unchanged. Existing Home Assistant registry settings may override default visibility; renamed read-only entities may need dashboard updates.
 - No new service-level writes, private dynamic handshake or proprietary authentication material included.
 
-### Local validation — 2026-11-24
-
-**LIVE / LOCALLY VERIFIED (pre-publication 1.04 candidate, XTR M 3N, CM930 2.4.2, ESPHome 2026.9.0):** OTA restart, automatic retained rejoin, M6=5 and CURRENT 4/4 at 18:41:03; Write User authorization enabled. Automatic Service refresh reached 17/17 pages and 278 current words at 18:43:40, with exact owned FC16 receipts. At 18:43:28, 1,452 CRC checks reported zero CRC differences and zero unexpected shapes; parser resyncs and RX drops were zero in the observed window. Clock sync started OFF; enabling it produced a qualified daily comparison with 19 seconds of drift and no write. RC1 also demonstrated the earlier periodic alarm refresh.
-
-**Final publication:** only entity presentation/default visibility and the firmware build label changed after this live test. Strict YAML and source-equivalence checks passed; no separate target compile or flash of the final UI-only variant has been performed. Long-duration periodic refresh and effective automatic clock correction are not yet verified in this build. Existing semantic user writes retain the previously validated route but were not separately exercised in this capture.
 
 The superseded 1.03 YAML is removed from the current tree; the original remains in [Git history](https://github.com/ryckema/Thermia_itec/blob/7048dc7d8086c077c96214ad626ed03953d8e233/Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.03.yaml) for rollback.
 
