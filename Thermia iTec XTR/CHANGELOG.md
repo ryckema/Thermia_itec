@@ -11,14 +11,11 @@ For the current firmware and installation instructions, see the [main README](..
 ### RTC independence update (2026-11-24)
 
 - Native RTC reads remain scheduled even when Extended Automatic Parameter Refresh is OFF. Automatic Time Sync alone controls automatic correction, with its existing 60-second tolerance, daily attempt limit, same-session ownership, exact readback, ABORT and single TX owner retained. Disabling Service refresh cancels only its unsent parameter requests; the RTC request and correction are not cancelled. An incomplete RTC read is held until a new qualified session or explicit Time Sync OFF/ON.
-- **SOURCE / OFFLINE TESTED; PREPARED / NOT RUN** for this revision: strict YAML, unchanged IDs, unchanged UART hardware and sole physical TX owner. No separate target compile or live confirmation of the decoupled path yet. Prior public 1.04 remains in Git history for rollback.
-
-### Added and improved
-
 - Improved recognition of valid short/long FC16 page geometries (`0492/9 or 11`, `051E/9 or 10`) and retained-session qualification. Existing public known-challenge cold start, single native TX owner, CRC/parser, epoch/freshness guards, ABORT and established user controls are retained.
 - Persistent automatic extended read-only refresh, enabled by default, without the RC trial expiry. The locally qualified XTR M 3N / CM930 2.4.2 profile retrieves 17 configuration pages / 278 words, with independently scheduled native RTC reads. Requests use the existing native owner. Other CM930 2.4.0–2.4.3 profiles retain their previous access range; expanded reads are not field-qualified there.
 - Periodic alarm read becomes due at 240 seconds rather than waiting until the 300-second cache expiry.
-- Native clock display, Home Assistant time and clock-difference diagnostics. Separate `Configuration | Automatic Time Sync` switch, persistent OFF by default. Explicit opt-in enables comparison on activation and daily thereafter; only drift above 60 seconds can trigger one correction attempt per 24 hours, with native readback and no automatic retry on failure. 
+- Native clock display, Home Assistant time and clock-difference diagnostics. 
+- Clock sync: added `Configuration | Automatic Time Sync` switch, persistent OFF by default. Explicit opt-in enables comparison on activation and daily thereafter; only drift above 60 seconds can trigger one correction attempt per 24 hours, with native readback and no automatic retry on failure. 
 - Native weekly calendar start/end time fields connected to the established FAMILY03 write route; old hour/minute controls remain. No new date-range/create/delete write semantics claimed.
 - Additional read-only numeric Service parameters and English names/status texts. Advanced Optimum, calibration and installation diagnostics are disabled by default where appropriate; uncertain mappings retain candidate labels. The 24 existing raw register diagnostics remain available but disabled by default; 14 new page dumps are internal. Normal user controls and their names are unchanged. Existing Home Assistant registry settings may override default visibility; renamed read-only entities may need dashboard updates.
 - No new service-level writes, private dynamic handshake or proprietary authentication material included.
