@@ -72,9 +72,9 @@ Examples include:
 **What's new in 1.04**
 
 - Improved FC16 frame recognition and retained-session recovery, with the existing guarded native owner.
-- Automatic extended read-only parameter refresh on the locally validated XTR M 3N / CM930 2.4.2 profile: 17 configuration pages (278 words), plus native controller clock. The refresh switch defaults ON; no trial timer.
+- Automatic extended read-only parameter refresh on the locally validated XTR M 3N / CM930 2.4.2 profile: 17 configuration pages (278 words). The refresh switch defaults ON; no trial timer. The native controller clock has its own independent read scheduling.
 - Earlier periodic alarm refresh, native weekly calendar start/end time fields and additional numeric read-only measurements.
-- `Configuration | Automatic Time Sync` defaults OFF. When enabled, the controller clock is compared with Home Assistant on enable and daily thereafter; a correction is attempted only above 60 seconds of drift, with native controller readback. The extended refresh must be enabled. The local automatic comparison was confirmed with 19 seconds of drift and no write; an actual automatic correction remains unverified in the public build.
+- `Configuration | Automatic Time Sync` defaults OFF. When enabled, the controller clock is compared with Home Assistant on enable and daily thereafter; a correction is attempted only above 60 seconds of drift, with native controller readback. Clock reads and correction are independent of the extended parameter refresh switch; read-only clock monitoring remains scheduled even when both switches are OFF. The local automatic comparison was confirmed with 19 seconds of drift and no write; an actual automatic correction remains unverified in the public build.
 - English entity names. Everyday user controls remain visible; advanced Optimum, calibration and candidate installation parameters are read-only and disabled by default where appropriate. Legacy raw diagnostics remain available to enable; the new raw page dumps are internal. No service-level parameter writes are added.
 
 Existing Home Assistant entity-registry preferences may override default visibility. If upgrading from an older version, check renamed read-only diagnostic entities in existing dashboards. The established writable entity names are retained.

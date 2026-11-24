@@ -1,5 +1,5 @@
-# Thermia iTec XTR — WRITE USER 1.04 (PUBLIC RELEASE CANDIDATE)
-# PREPARED / NOT RUN: RC1 baseline; persistent scoped read refresh and opt-in daily UTC RTC correction.
+# Thermia iTec XTR — WRITE USER 1.04 (PUBLIC)
+# WU104-RTC: independent native RTC reads and opt-in daily UTC correction; no dependency on extended parameter refresh. PREPARED / NOT RUN for this revision.
 # New scoped reads and opt-in RTC correction ONLY on locally observed XTR M 3N CM930 2.4.2. Existing public handshake unchanged.
 # WU105 (2026-11-20): prune 67 legacy Thermia Write HA entities and presentation-only publications; preserve native owner and counters.
 # WU107 (2026-11-22): automatic guarded native recovery at every boot; no WU103 HA toggle required, existing ABORT/S92 owner preserved.
@@ -185,6 +185,7 @@ switch:
     turn_on_action:
       - lambda: |-
           id(svcclk_daily_last_check_epoch)=0u;
+          id(svc28_failed)&=uint16_t(~(1u<<13));
           if(!id(svcclk_daily_pending))id(svcclk_state)=0u;
           id(service_clock_sync_status)->publish_state("ENABLED / wait qualified fresh RTC / daily comparison / 60s tolerance");
     turn_off_action:
@@ -204,17 +205,18 @@ switch:
     turn_on_action:
       - lambda: |-
           // WU104: exact local XTR M 3N 2.4.2 only; other profiles retain existing reads.
-          id(svc28_failed)=0u;
-          ESP_LOGW("svc28", "EXTENDED_REFRESH_ENABLED / 14 scoped read-only pages / one outstanding / no setting writes");
+          id(svc28_failed)&=uint16_t(1u<<13);
+          ESP_LOGW("svc28", "EXTENDED_REFRESH_ENABLED / 13 scoped parameter pages + independent RTC / one outstanding / no setting writes");
     turn_off_action:
       - lambda: |-
           // Cancel only our own unsent intent. A sent request may finish its ACK.
-          if(id(svc28_index)<14u && id(svc28_epoch)==id(write_arm_ms) &&
+          if(id(svc28_index)<13u && id(svc28_epoch)==id(write_arm_ms) &&
              id(main01_m6_app_sync_arm_ms)==id(svc28_arm_ms) && !id(main01_m6_app_sync_active) &&
+             !id(main01_m6_app_sync_start_ms) && !id(main01_m6_app_sync_polls) &&
              id(main01_m6_app_requested)==(uint64_t(1)<<id(svc28_ledger_index))) {
             id(main01_m6_app_sync_arm_ms)=0u;
             id(main01_m6_app_requested)=0u;id(main01_m6_app_pending)=0u;
-            id(main04d_app_receipt_state)=3u;id(svc28_index)=255u;
+            id(main04d_app_receipt_state)=3u;id(svc28_index)=255u;id(svc28_ledger_index)=255u;
           }
   # WU107: native session recovery is built-in (not a user-facing enable switch).
   # The existing single S92/M6 owner, retained W2R33 one-shot, CURRENT M3
@@ -5027,7 +5029,7 @@ uart:
                 // register writes, no separate UART driver, no background TX.
                 const uint32_t clk_now=millis();
                 const bool svcclk_wire_owner=!id(w2r36_abort_latched) && !id(w2r79f_write_user_manual_lockout) &&
-                  id(svcclk_auto_sync_enable).state && id(svc28_refresh_enable).state && id(svcclk_daily_pending) &&
+                  id(svcclk_auto_sync_enable).state && id(svcclk_daily_pending) &&
                   id(main01_cm930_shadow_epoch)==id(write_arm_ms) && id(main01_cm930_shadow_version)==242u &&
                   id(main01_cm930_info_product_epoch)==id(write_arm_ms) && id(main01_cm930_info_product_code)==23u &&
                   id(write_config_synced) && id(m6s_epoch)==id(write_arm_ms) && id(m6s_oldest_ms) &&
@@ -11703,7 +11705,7 @@ uart:
                       const uint32_t t=millis();
                       const bool ok=!id(w2r36_abort_latched) && !id(w2r79f_write_user_manual_lockout) &&
                         !id(w2r36_abort_latched) && !id(w2r79f_write_user_manual_lockout) &&
-                  id(svcclk_auto_sync_enable).state && id(svc28_refresh_enable).state && id(svcclk_daily_pending) &&
+                  id(svcclk_auto_sync_enable).state && id(svcclk_daily_pending) &&
                   id(main01_cm930_shadow_epoch)==id(write_arm_ms) && id(main01_cm930_shadow_version)==242u &&
                   id(main01_cm930_info_product_epoch)==id(write_arm_ms) && id(main01_cm930_info_product_code)==23u &&
                   id(write_config_synced) && id(m6s_epoch)==id(write_arm_ms) && id(m6s_oldest_ms) &&
@@ -11771,7 +11773,7 @@ uart:
                       const uint32_t t=millis();
                       const bool ok=!id(w2r36_abort_latched) && !id(w2r79f_write_user_manual_lockout) &&
                         !id(w2r36_abort_latched) && !id(w2r79f_write_user_manual_lockout) &&
-                  id(svcclk_auto_sync_enable).state && id(svc28_refresh_enable).state && id(svcclk_daily_pending) &&
+                  id(svcclk_auto_sync_enable).state && id(svcclk_daily_pending) &&
                   id(main01_cm930_shadow_epoch)==id(write_arm_ms) && id(main01_cm930_shadow_version)==242u &&
                   id(main01_cm930_info_product_epoch)==id(write_arm_ms) && id(main01_cm930_info_product_code)==23u &&
                   id(write_config_synced) && id(m6s_epoch)==id(write_arm_ms) && id(m6s_oldest_ms) &&
@@ -12641,7 +12643,7 @@ uart:
                           !id(s92_v5_crc_shadow_disagreements) && !id(s92_v5_ambiguous_count) && scoped_queue_clear &&
                           id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==id(write_arm_ms) && id(main01_cm930_info_product_code)==23u;
                         const bool app_owner=(app_new || app_continue) &&
-                          (!scoped_read || (app_new && id(main01_m6_app_sync_polls)==0u && id(svc28_refresh_enable).state && scoped_idle)) &&
+                          (!scoped_read || (app_new && id(main01_m6_app_sync_polls)==0u && (id(svc28_index)==13u || id(svc28_refresh_enable).state) && scoped_idle)) &&
                           id(main01_m6_app_sync_epoch)==id(write_arm_ms) &&
                           id(main01_m6_app_epoch)==id(write_arm_ms) &&
                           id(main01_m6_app_sync_polls)<48 &&
@@ -19709,7 +19711,7 @@ text_sensor:
         if(id(svcclk_state)==5u)return {};
         return {"DISABLED / no automatic clock writes"};
       }
-      if(!id(svc28_refresh_enable).state)return {"ENABLED / waiting for extended parameter refresh"};
+      if(id(svc28_failed)&(1u<<13))return {"HELD / RTC read incomplete; toggle Automatic Time Sync OFF/ON to retry"};
       if(id(svcclk_state)==4u || id(svcclk_state)==5u)return {};
       if(id(svcclk_daily_last_check_epoch))return {"ENABLED / daily check scheduled"};
       return {"ENABLED / waiting for fresh controller clock"};
@@ -19745,7 +19747,7 @@ text_sensor:
       const uint32_t now=millis(),epoch=id(write_arm_ms);
       static constexpr uint16_t starts[14]={0x0532,0x0456,0x03FC,0x046A,0x04BA,0x04A6,0x047E,0x0492,0x04D8,0x04F6,0x050A,0x051E,0x0410,0x06EA};
       static constexpr uint8_t counts[14]={18,12,11,18,22,13,19,11,27,14,19,10,22,7};
-      std::string out=id(svc28_refresh_enable).state?"AUTO / ":"OFF / enable extended refresh / ";
+      std::string out=id(svc28_refresh_enable).state?"AUTO / ":"SERVICE OFF / RTC AUTO / ";
       if(!epoch || !id(write_active) || id(main01_native_accepted_epoch)!=epoch)return {out+"WAIT NATIVE SESSION"};
       if(!(id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u))return {"NOT ENABLED FOR THIS PROFILE / existing public behavior retained"};
       for(unsigned k=0;k<14u;k++){
@@ -19753,7 +19755,7 @@ text_sensor:
         bool fresh=t && uint32_t(now-t)<(k==13u?600000u:300000u);
         for(unsigned j=0;j<counts[k];j++)if(id(svc102_word_ms)[base+j]!=t || id(svc102_word_epoch)[base+j]!=epoch)fresh=false;
         char b[48];snprintf(b,sizeof(b),"%04X:%s%s ",unsigned(starts[k]),
-          id(svc28_index)==k?"WAIT":(id(svc28_failed)&(1u<<k))?"HELD":fresh?"FRESH":!id(svc28_refresh_enable).state?"OFF":"STALE",
+          id(svc28_index)==k?"WAIT":(id(svc28_failed)&(1u<<k))?"HELD":fresh?"FRESH":(k!=13u && !id(svc28_refresh_enable).state)?"OFF":"STALE",
           (id(svc28_confirmed)&(1u<<k))?"*":"");out+=b;
       }
       return {out};
@@ -24021,7 +24023,7 @@ text_sensor:
     entity_category: diagnostic
     update_interval: 60s
     lambda: |-
-      return {"Thermia WRITE USER 1.04 | CM930 2.4.0-2.4.3 | scoped XTR M 3N 2.4.2 reads + opt-in RTC | PUBLIC | 2026-11-24"};
+      return {"Thermia WRITE USER 1.04 | CM930 2.4.0-2.4.3 | scoped XTR M 3N 2.4.2 reads + independent RTC | PUBLIC | 2026-11-24"};
 
   - platform: template
     name: "Heating Settings Source"
@@ -31706,7 +31708,7 @@ interval:
   - interval: 1s
     then:
       - lambda: |-
-          // WU104: 12 Service pages + 0410 + clock, one outstanding; master switch and all owner guards retained.
+          // WU104-RTC: 13 optional parameter pages + independent clock; one outstanding; all owner guards retained.
           [&](){
             const uint32_t now=millis(),epoch=id(write_arm_ms);
             if(id(svcclk_daily_pending)) {
@@ -31716,7 +31718,7 @@ interval:
               const bool owner=epoch && id(svcclk_epoch)==epoch && id(write_active) && id(write_stage)==40u &&
                 id(main01_m6_session_state)==5u && id(main01_native_accepted_epoch)==epoch && !id(w2r36_abort_latched);
               if(st==4u){id(svcclk_daily_pending)=false;}
-              else if(st==5u || !owner || !stamp || uint32_t(now-stamp)>limit || ((st==1u || st==2u) && !id(svc28_refresh_enable).state)) {
+              else if(st==5u || !owner || !stamp || uint32_t(now-stamp)>limit || ((st==1u || st==2u) && !id(svcclk_auto_sync_enable).state)) {
                 id(svcclk_state)=5u;id(svcclk_daily_pending)=false;
                 id(svcclk_auto_sync_enable).turn_off();
                 id(service_clock_sync_status)->publish_state("COMPLETE / INCONCLUSIVE / clock correction not confirmed; disabled; no automatic retry");
@@ -31736,10 +31738,11 @@ interval:
               return true;
             };
             if(id(svc28_epoch)!=epoch){
-              if(id(svc28_index)<14u)id(svc28_failed)|=uint16_t(1u<<id(svc28_index));
+              if(id(svc28_index)<13u)id(svc28_failed)|=uint16_t(1u<<id(svc28_index));
+              id(svc28_failed)&=uint16_t(~(1u<<13));
               id(svc28_index)=255u;id(svc28_ledger_index)=255u;id(svc28_epoch)=epoch;
               id(svc28_confirmed)=0u;id(svc28_cursor)=12u;id(svc28_last_end_ms)=0u;
-              // Failed pages remain quarantined until an explicit OFF/ON, even across rejoin.
+              // Parameter failures stay quarantined until refresh OFF/ON. RTC may requalify in a new session.
             }
             if(id(svc28_index)<14u){
               const unsigned k=id(svc28_index),idx=indices[k];
@@ -31762,19 +31765,19 @@ interval:
               const bool expired=sent && ours && int32_t(sent-id(svc28_arm_ms))>=0 ?
                 uint32_t(now-sent)>21000u : uint32_t(now-id(svc28_arm_ms))>30000u;
               // Never steal another owner's ledger. Retire only our exact generation.
-              if(!qualified || !ours || expired || (!id(svc28_refresh_enable).state && !sent)){
+              if(!qualified || !ours || expired || (k!=13u && !id(svc28_refresh_enable).state && !sent)){
                 if(ours){
                   id(main01_m6_app_sync_arm_ms)=0u;id(main01_m6_app_sync_active)=false;
                   id(main01_m6_app_requested)=0u;id(main01_m6_app_pending)=0u;
                   id(main04d_app_receipt_state)=3u;
                 }
-                if(qualified && id(svc28_refresh_enable).state && sent && int32_t(sent-id(svc28_arm_ms))>=0)id(svc28_failed)|=uint16_t(1u<<k);
+                if(qualified && (k==13u || id(svc28_refresh_enable).state) && sent && int32_t(sent-id(svc28_arm_ms))>=0)id(svc28_failed)|=uint16_t(1u<<k);
                 id(svc28_last_end_ms)=now;id(svc28_index)=255u;id(svc28_ledger_index)=255u;
                 ESP_LOGW("svc28","PAGE_INCOMPLETE %04X / no retry; next independent page may proceed",unsigned(starts[k]));
               }
               return;
             }
-            if(!id(svc28_refresh_enable).state || !epoch || !id(write_active) || id(write_stage)!=40u ||
+            if(!epoch || !id(write_active) || id(write_stage)!=40u ||
                !id(write_config_synced) || id(main01_m6_session_state)!=5u || id(main01_m6_session_epoch)!=epoch ||
                id(main01_native_accepted_epoch)!=epoch || id(main01_m6_app_epoch)!=epoch ||
                id(main01_cm930_shadow_epoch)!=epoch || !(id(main01_cm930_shadow_version)==242u && id(main01_cm930_info_product_epoch)==epoch && id(main01_cm930_info_product_code)==23u) ||
@@ -31838,6 +31841,7 @@ interval:
             }
             for(unsigned n=0;n<14u;++n){
               const unsigned k=(id(svc28_cursor)+n)%14u,idx=indices[k];
+              if(k!=13u && !id(svc28_refresh_enable).state)continue;
               if(id(svc28_failed)&(1u<<k))continue;
               if(source_fresh(k,k==13u?(daily_due?120000u:450000u):210000u,epoch) && id(main01_m6_app_page_ms).size()==39u && id(main01_m6_app_page_ms)[idx] && int32_t(id(main01_m6_app_page_ms)[idx]-epoch)>=0)continue;
               const uint64_t scope=uint64_t(1)<<idx;
