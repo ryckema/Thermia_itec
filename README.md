@@ -9,7 +9,7 @@ The integration is developed and tested on a Thermia iTec XTR M with Total Compa
 
 ## Features
 
-The repository currently provides three public XTR firmware configurations, each offering a different level of access to the heat pump.
+The repository currently provides four public XTR firmware configurations, each offering a different level of access to the heat pump.
 
 ### Firmware versions
 
@@ -17,7 +17,8 @@ The repository currently provides three public XTR firmware configurations, each
 |---|---|---|---|
 | **[Passive 1.1](Thermia%20iTec%20XTR/thermia_itec_xtr_passive_1.1.yaml)** | Yes | No | RX-only bus monitoring, OEM alarm decoding, source freshness and memory diagnostics |
 | **[DCM Read Only 1.0](Thermia%20iTec%20XTR/thermia_itec_xtr_DCM_readonly_1.0.yaml)** | Yes | No | Native DCM communication without parameter writes (transmits protocol traffic) |
-| **[Write User 1.04](Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.04.yaml)** | Yes | Yes | Public user controls, calendar, scoped automatic parameter refresh and opt-in clock sync; known-challenge cold start only |
+| **[Write User 1.1](Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.1.yaml)** | Yes | Yes | User controls, calendar, automatic read-only Service refresh, passive alarm presentation and opt-in clock sync |
+| **[Service 1.0](Thermia%20iTec%20XTR/Service/)** | Yes | Yes | Expert-only installer-level controls, separately enabled; see the Service README |
 
 ### 1. Passive
 
@@ -67,21 +68,26 @@ Examples include:
 - Heat pump operating mode
 - Other user-accessible settings supported by the controller
 
-**Write User 1.04 is distributed as one self-contained ESPHome YAML.** The complete local DCM session, RS485 handling, telemetry, Home Assistant entities and supported Write User / calendar controls are integrated in that file. You do not need to assemble separate project YAML packages, custom headers or a challenge-response CSV. Your personal network and API credentials still belong in your local ESPHome `secrets.yaml`.
+**Write User 1.1 is distributed as one self-contained ESPHome YAML.** The complete local DCM session, RS485 handling, telemetry, Home Assistant entities and supported Write User / calendar controls are integrated in that file. You do not need to assemble separate project YAML packages, custom headers or a challenge-response CSV. Your personal network and API credentials still belong in your local ESPHome `secrets.yaml`.
 
-**What's new in 1.04**
+**What's new in 1.1**
 
-- Improved FC16 frame recognition and retained-session recovery, with the existing guarded native owner.
-- Automatic extended read-only parameter refresh on the locally validated XTR M 3N / CM930 2.4.2 profile: 17 configuration pages (278 words). The refresh switch defaults ON; no trial timer. The native controller clock has its own independent read scheduling.
-- Earlier periodic alarm refresh, native weekly calendar start/end time fields and additional numeric read-only measurements.
-- `Configuration | Automatic Time Sync` defaults OFF. When enabled, the controller clock is compared with Home Assistant on enable and daily thereafter; a correction is attempted only above 60 seconds of drift, with native controller readback. Clock reads and correction are independent of the extended parameter refresh switch; read-only clock monitoring remains scheduled even when both switches are OFF. The local automatic comparison was confirmed with 19 seconds of drift and no write; an actual automatic correction remains unverified in the public build.
-- English entity names. Everyday user controls remain visible; advanced Optimum, calibration and candidate installation parameters are read-only and disabled by default where appropriate. Legacy raw diagnostics remain available to enable; the new raw page dumps are internal. No service-level parameter writes are added.
+- Consolidated native session management and guarded recovery, including bounded INFO synchronization continuation. The existing single UART/RX/TX owner, controller-confirmed writes and ABORT protections are retained.
+- Automatic extended read-only refresh: 17 configuration pages / 303 words on the locally verified XTR M 3N / CM930 2.4.2 profile. Read-only Service settings are included; installer-level writes are not part of Write User.
+- Improved active alarm refresh: completion requires the corresponding controller page and its physical acknowledgement. Passive alarm flags, history and outdoor-unit fault information can be published independently of local session qualification when valid source frames are actually received. Missing or stale information remains unknown, not alarm-free.
+- Shared calendar editor, including weekly schedule editing and locally tested calendar operations; controller readback remains required. Other models and calendar edge cases are not assumed validated.
+- Cleaner Home Assistant entity presentation, read-only Service register views, compressor and defrost observations, lifetime counters and reduced unused firmware state. Pump command is not measured flow or rotational speed.
+- Automatic parameter writes remain OFF by default. `Configuration | Automatic Time Sync` is separate and defaults OFF; opt-in permits bounded clock correction with controller readback. Native clock reads remain independent of the extended parameter refresh switch.
 
-Existing Home Assistant entity-registry preferences may override default visibility. If upgrading from an older version, check renamed read-only diagnostic entities in existing dashboards. The established writable entity names are retained.
+**Validation:** The exact 1.1 FINAL build was compiled, flashed and observed live on the development XTR M 3N / CM930 2.4.2 installation. Retained-session recovery, CURRENT 4/4, calendar 12/12, 17/17 Service pages and alarm refresh were confirmed. The RC05 release candidate also passed a controller-confirmed heating-curve change and restoration; cold start was confirmed by the owner on RC05. Full session-free availability of all alarm pages, historical alarm-code names, the exact additional INFO completion branch, and compatibility on other controller versions remain unverified. Only observed behavior is claimed.
 
-The existing CM930 2.4.0–2.4.3 access range is preserved; expanded reads and opt-in clock correction are qualified only for the tested XTR M 3N / 2.4.2 profile. Other models and controller versions remain unverified. See the [changelog](Thermia%20iTec%20XTR/CHANGELOG.md) for the exact validation scope.
+Existing Home Assistant entity-registry preferences may override default visibility. If upgrading, preserve device names and local secrets, and review renamed or removed diagnostic/read-only entities in dashboards. The established user controls remain available. Keep a backup of your previous YAML and controller settings. The previous [Write User 1.04 source](https://github.com/ryckema/Thermia_itec/blob/ffbbd711a7df428ba54380c0c9cfdfeb0d031e23/Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.04.yaml) remains in Git history.
 
-User-initiated setting changes are accepted only within their validated scope and require controller-origin feedback; an RS485 transport acknowledgement is not a confirmation that a setting changed. The UI2 Home Assistant state-bounce correction has been confirmed working on the development iTec XTR M. Compatibility and write semantics on other Thermia models/controller versions are not established.
+User-initiated setting changes require controller-origin feedback; an RS485 transport acknowledgement alone does not confirm a changed setting. See the [changelog](Thermia%20iTec%20XTR/CHANGELOG.md) for the release history.
+
+### 4. Service
+
+**Expert users only.** [Service 1.0](Thermia%20iTec%20XTR/Service/) is a separate firmware for supported installer-level adjustments. Incorrect settings can damage equipment or impair operation. Service write permission starts disabled and must be explicitly enabled. Read the [Service README](Thermia%20iTec%20XTR/Service/README.md) before installing or using it. Write User 1.1 is the recommended choice for ordinary user-setting control. The new Write User 1.1 alarm and recovery changes have not yet been ported to Service 1.0.
 
 ### Monitoring
 
@@ -117,7 +123,7 @@ Some values depend on the heat pump configuration, available bus messages and fi
 
 ## iTec Eco — separate Write Beta
 
-The repository also contains a **separate, experimental ESPHome integration for the Thermia iTec Eco** (Danfoss DHP-AQ controller family): [**Write (Beta) / iTec Eco**](Write%20(Beta)/iTec%20Eco/). This is **not** the iTec XTR Write User 1.04 firmware: the Eco profiles emulate the local **`0x0A` room sensor**, rather than providing the XTR's native DCM Write User control path.
+The repository also contains a **separate, experimental ESPHome integration for the Thermia iTec Eco** (Danfoss DHP-AQ controller family): [**Write (Beta) / iTec Eco**](Write%20(Beta)/iTec%20Eco/). This is **not** the iTec XTR Write User 1.1 firmware: the Eco profiles emulate the local **`0x0A` room sensor**, rather than providing the XTR's native DCM Write User control path.
 
 The iTec Eco beta provides a Home Assistant room thermostat (`climate`), indoor-temperature input, bidirectional room-setpoint requests and a one-shot domestic hot-water **top-up** control. The profiles also expose relevant controller settings and diagnostics. Two standalone YAML options are available:
 
@@ -205,11 +211,15 @@ The receive-only version, recommended as a starting point. It includes OEM-sourc
 
 The DCM-related development version. Review its operating requirements and supported functionality before use.
 
-**Write User 1.04 — public beta**
+**Write User 1.1 — current public release**
 
-[`thermia_itec_xtr_write_user_1.04.yaml`](Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.04.yaml)
+[`thermia_itec_xtr_write_user_1.1.yaml`](Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.1.yaml)
 
-The **single-file ESPHome configuration** for local XTR M monitoring and supported Home Assistant user-setting/calendar control. All project-specific firmware components are contained in this one YAML; no extra project headers, packages, provisioning CSV or hand-assembled source files are needed. Configure your own `secrets.yaml` as described below. This beta has been tested on the development iTec XTR M; other controller variants have not been verified.
+The **single-file ESPHome configuration** for local XTR M monitoring and supported Home Assistant user-setting/calendar control. All project-specific firmware components are contained in this one YAML; no extra project headers, packages, provisioning CSV or hand-assembled source files are needed. Configure your own `secrets.yaml` as described below. This release has been tested on the development iTec XTR M 3N / CM930 2.4.2; other controller variants have not been verified. Keep `wu11_info_completion_test: "true"` as shipped to reproduce the tested configuration.
+
+**Service 1.0 — expert users only**
+
+See the [Service directory and installation instructions](Thermia%20iTec%20XTR/Service/) for the separate installer-level firmware.
 
 ### Step 4 — Configure ESPHome
 
@@ -232,7 +242,7 @@ thermia_ota_password:
 thermia_fallback_password:
 ```
 
-Add the corresponding values to your ESPHome `secrets.yaml` file.
+Add the corresponding values to your ESPHome `secrets.yaml` file. Write User 1.1 uses `wifi_ssid`, `wifi_password`, `thermia_api_encryption_key` and `thermia_fallback_password`; check the selected YAML for any additional secret names required by other variants.
 
 Do not publish your actual passwords or encryption keys.
 
@@ -303,12 +313,14 @@ Once connected, the available Thermia sensors should appear as Home Assistant en
 The exact number of sensors depends on the firmware variant and the data available on the bus.
 
 ## Starting DCM session
-In order to start an active session where the ESP can request information from the heat pump and write parameters a DCM session needs to be established.
-You can do this by simply powering down the heat pump for at least 5 seconds while the ESP is powered, when the heatpump is powered on again a session will be started.
 
-The ESP kan rejoin an existing session after a short interruption (A update for example) but when disconnected for a longer time (several minutes) the sessions breaks and the heat pump will need to be restarted again.
+The active DCM variants transmit protocol traffic and require native session synchronization before active reads or writes. Do not use a second active DCM peer on the same bus.
 
-Known issue : If an alarm is active the ESP might have issues starting the session, restarting the HP once to reset the alarm and a second time to start the session works
+Write User 1.1 attempts automatic retained-session recovery after an ESP restart or OTA update. Initial recognition and refresh can take several minutes. Verify `Diagnostic | Native Session`, CURRENT 4/4, `Service ⁄ Parameters Status` and `Diagnostic | Write Readiness` before editing a setting. Automatic Write User readiness follows qualification; automatic parameter writes remain OFF by default.
+
+If the session does not recover, use the existing `Configuration | Start or Recover Native Session` action once when appropriate. Do not repeatedly retry a failed recovery. Use `Configuration | ABORT Native Session` if communication or setting behavior is unexpected. ABORT stops local native transmission, but does not undo settings already accepted by the controller.
+
+A normal controller cold start has been confirmed on the local XTR M release-candidate baseline; other controller versions and unrecognized startup exchanges are not validated. Restart the heat pump only when needed and in accordance with its normal operating instructions. An alarm or missing alarm source is not a reason to clear faults by repeated power cycling. Follow the manufacturer's fault guidance.
 
 ## Supported hardware
 
@@ -332,7 +344,7 @@ The ESP32 connects to Home Assistant through the native ESPHome API.
 
 Once correctly configured and running, the gateway can expose supported heat pump sensors and diagnostic information as Home Assistant entities.
 
-The integration supports local dashboards, history, automations and, with Write User 1.04, validated user-level control on the tested XTR M without relying on Thermia Online.
+The integration supports local dashboards, history, automations and, with Write User 1.1, validated user-level control on the tested XTR M without relying on Thermia Online.
 
 The exact entity list depends on the chosen YAML configuration and the information available from the heat pump.
 
@@ -364,7 +376,7 @@ Communication with the internal bus can potentially interfere with normal heat p
 
 The project distinguishes passive monitoring, native protocol responses and controller parameter writes.
 
-**Write User 1.04 (public beta)** enables deliberately initiated, validated Home Assistant **user-level** setting changes on the tested iTec XTR M, with native controller readback. Automatic parameter writes and the separate automatic clock-sync option remain disabled by default. Unsupported/service-level parameter writes are not included. A confirmed transport response alone does not prove the controller applied a new value.
+**Write User 1.1 (public release)** enables deliberately initiated, validated Home Assistant **user-level** setting changes on the tested iTec XTR M, with native controller readback. Automatic parameter writes and the separate automatic clock-sync option remain disabled by default. Unsupported/service-level parameter writes are not included in Write User. Service 1.0 is a separate expert-only firmware with separately enabled installer-level writes. A confirmed transport response alone does not prove the controller applied a new value.
 
 The integration is intended to preserve the heat pump's own controller logic, interlocks and safety mechanisms rather than bypass them.
 

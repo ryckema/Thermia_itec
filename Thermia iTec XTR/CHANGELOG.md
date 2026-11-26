@@ -1,12 +1,37 @@
 # Thermia iTec XTR — Firmware Changelog
 
-This file records the public iTec XTR firmware release history. Passive, DCM Read Only and Write User have separate functionality and version numbers; Passive 1.1 is **not** an upgrade to either active variant.
+This file records the public iTec XTR firmware release history. Passive, DCM Read Only, Write User and Service have separate functionality and version numbers; Passive 1.1 is **not** an upgrade to either active variant.
 
 For the current firmware and installation instructions, see the [main README](../README.md). Entries describe source changes and the verification available at the time; they are **not** a guarantee of full ESPHome compilation or live behaviour on another Thermia controller.
 # Write version
+## Write User 1.1 — 2026-11-27
+
+**Firmware:** [`thermia_itec_xtr_write_user_1.1.yaml`](thermia_itec_xtr_write_user_1.1.yaml)
+
+Single standalone ESPHome YAML, derived from the locally tested RC06 and published as the exact FINAL firmware. Tested platform: Thermia iTec XTR M 3N / Total Compact, CM930 2.4.2, ESP32-S3.
+
+### Added and improved
+
+- Native recovery and bounded INFO synchronization continuation using the existing single native TX owner. The tested configuration ships with the INFO continuation option enabled; the exact additional clear-response branch has not been directly captured.
+- Read-only Service coverage extended to 17 configuration pages / 303 words, with automatic refresh. Dedicated Service setting-write paths are removed from Write User; existing user and calendar controls are retained.
+- Alarm read completion now requires actual acknowledgement of the returned controller page. Passive alarm publication uses its own freshness-qualified receive cache, independent of local session qualification, without adding TX. Active alarm refresh remains separate.
+- Current alarm summary incorporates the independently received outdoor compressor-down indication. Missing, stale or invalid alarm sources remain unknown; historical event names and variable record content remain unverified.
+- Shared calendar editor, read-only installation and operating measurements, compressor/defrost observations, lifetime counters, and cleanup of redundant/dead state and diagnostic views.
+- Automatic parameter writes remain disabled by default; automatic clock correction is a separate opt-in (default OFF). Existing controller confirmation, ABORT, frame integrity and single-owner safeguards are retained.
+
+### Local verification
+
+**TARGET COMPILED / FLASHED / LIVE** — exact FINAL build, capture spanning 26–27 November 2026: retained-session recovery reached M6=5 and CURRENT 4/4, calendar 12/12, Service 17/17 (303 fresh words), automatic hot-water parameter refresh and active alarm read/ACK succeeded. At the end of the observation: 123 FC16 pages seen / 122 ACKs, 1,802 CRC checks with zero disagreements or unknown shapes, zero RX buffer drops or ambiguous frames, and two parser resyncs reported since boot. The single FC16 counter difference is not classified as a missed required ACK without frame-level evidence. No parameter edits were dispatched in this FINAL capture.
+
+**Release-candidate evidence:** RC05 controller-confirmed heating curve 38 → 39 → 38, one physical attempt per change, with restoration confirmed; cold start confirmed by the owner (no separate cold-start frame log). RC06 demonstrated passive alarm publication before full session qualification and successful active alarm refresh. No real fault was deliberately induced. Full passive availability of all alarm pages without a native session, the historical event mapping, and other CM930 models remain open. No universal cross-model compatibility is claimed.
+
+**Upgrade:** preserve device identity, local secrets and a rollback YAML. Review diagnostic entity names and existing Home Assistant registry preferences. Service settings remain read-only in Write User. The previous 1.04 is superseded and remains accessible through Git history.
+
+**SHA-256:** `7b58ecc6538c0b26b1920002a0adae1c7423aeac490794a32db5fbe6be5da3ad`.
+
 ## Write User 1.04 — 2026-11-24
 
-**Firmware:** [`thermia_itec_xtr_write_user_1.04.yaml`](thermia_itec_xtr_write_user_1.04.yaml)
+**Firmware (historical):** [`thermia_itec_xtr_write_user_1.04.yaml`](https://github.com/ryckema/Thermia_itec/blob/ffbbd711a7df428ba54380c0c9cfdfeb0d031e23/Thermia%20iTec%20XTR/thermia_itec_xtr_write_user_1.04.yaml)
 
 ### RTC independence update (2026-11-24)
 
@@ -83,6 +108,7 @@ This release combines the alarm decoding, data-freshness improvements, Home Assi
 ## Other published iTec XTR firmware variants
 
 - [DCM Read Only 1.0](thermia_itec_xtr_DCM_readonly_1.0.yaml) — native DCM read-only integration. Unlike Passive, it can transmit protocol traffic but does not change controller parameters.
-- [Write User 1.04](thermia_itec_xtr_write_user_1.04.yaml) — current public native user-setting-control variant; previous releases available in Git history.
+- [Write User 1.1](thermia_itec_xtr_write_user_1.1.yaml) — current public native user-setting-control variant; previous releases available in Git history.
+- [Service 1.0](Service/) — separate expert-only installer-level firmware; read its own README before use. The 1.1 alarm/recovery updates are not yet integrated into Service 1.0.
 
 **Scope:** This public changelog contains no proprietary handshake algorithms, keys, authenticated captures or controller secrets.
