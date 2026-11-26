@@ -235,10 +235,28 @@ This release combines the alarm decoding, data-freshness improvements, Home Assi
 - Initial public XTR receive-only ESPHome YAML with one RS485 receiver, Modbus RTU-like CRC checking, passive temperature and operating telemetry, selected heating-settings cache and Home Assistant integration.
 - Serves as the baseline for the consolidated Passive 1.1 release. Original release date is not asserted here.
 
+# Service version
+
+## Service 1.0 — maintenance update 2026-11-27
+
+**Firmware:** [Service-PUBLIC-1.0.yaml](Service/Service-PUBLIC-1.0.yaml)
+
+Version 1.0 and the existing filename are retained. The locally tested RC01 incorporates the shared Write User 1.1 alarm and recovery fixes into the existing Service baseline.
+
+- Independent freshness-qualified passive cache for current alarms, alarm history and outdoor fault data, without requiring local session qualification or adding passive TX.
+- Active alarm refresh completes only after the existing native owner physically acknowledges the matching controller page.
+- Current alarm summary includes the independently received outdoor compressor-down indication; missing or stale data remains unknown.
+- Bounded INFO continuation is included but disabled by default; its additional clear-response branch remains untested.
+- All existing Service controls, 36 historically validated fields, permissions, User controls, calendar and clock defaults remain unchanged.
+
+**LIVE / COMPLETE / POSITIVE (RC01, local XTR M 3N, CM930 2.4.2, ESPHome 2026.9.0):** retained-session OTA recovery, INFO 5/5, CURRENT 4/4, 17/17 Service pages / 303 fresh words, successful alarm refresh with ACK_SENT=1 and fresh passive alarm presentation. Zero CRC disagreements in 1,324 sampled checks, zero RX drops and parser resyncs. No new installer writes or cold controller restart were tested in this capture. Final published YAML differs from RC01 only in two build-identification strings.
+
+Previous 1.0 source remains available in [Git history](https://github.com/ryckema/Thermia_itec/blob/0468c33ddb5299df28d5bba02428debaafc85d75/Thermia%20iTec%20XTR/Service/Service-PUBLIC-1.0.yaml).
+
 ## Other published iTec XTR firmware variants
 
 - [DCM Read Only 1.0](thermia_itec_xtr_DCM_readonly_1.0.yaml) — native DCM read-only integration. Unlike Passive, it can transmit protocol traffic but does not change controller parameters.
 - [Write User 1.1](thermia_itec_xtr_write_user_1.1.yaml) — current public native user-setting-control variant; previous releases available in Git history.
-- [Service 1.0](Service/) — separate expert-only installer-level firmware; read its own README before use. The 1.1 alarm/recovery updates are not yet integrated into Service 1.0.
+- [Service 1.0](Service/) — separate expert-only installer-level firmware; read its own README before use. The shared 1.1 alarm fixes are included in the 2026-11-27 maintenance update; see the Service entry above.
 
 **Scope:** This public changelog contains no proprietary handshake algorithms, keys, authenticated captures or controller secrets.
