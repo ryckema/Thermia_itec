@@ -8,16 +8,156 @@ For the current firmware and installation instructions, see the [main README](..
 
 **Firmware:** [`thermia_itec_xtr_write_user_1.1.yaml`](thermia_itec_xtr_write_user_1.1.yaml)
 
-Single standalone ESPHome YAML, derived from the locally tested RC06 and published as the exact FINAL firmware. Tested platform: Thermia iTec XTR M 3N / Total Compact, CM930 2.4.2, ESP32-S3.
+Major feature, reliability and usability update following Write User 1.03 and 1.04. Based on the locally validated Service 1.0 architecture, with installer-level parameter writes removed and the existing User controls retained. Single standalone ESPHome YAML, published as the exact FINAL firmware derived from the locally tested RC06.
 
-### Added and improved
+### Performance monitoring
 
-- Native recovery and bounded INFO synchronization continuation using the existing single native TX owner. The tested configuration ships with the INFO continuation option enabled; the exact additional clear-response branch has not been directly captured.
-- Read-only Service coverage extended to 17 configuration pages / 303 words, with automatic refresh. Dedicated Service setting-write paths are removed from Write User; existing user and calendar controls are retained.
-- Alarm read completion now requires actual acknowledgement of the returned controller page. Passive alarm publication uses its own freshness-qualified receive cache, independent of local session qualification, without adding TX. Active alarm refresh remains separate.
-- Current alarm summary incorporates the independently received outdoor compressor-down indication. Missing, stale or invalid alarm sources remain unknown; historical event names and variable record content remain unverified.
-- Shared calendar editor, read-only installation and operating measurements, compressor/defrost observations, lifetime counters, and cleanup of redundant/dead state and diagnostic views.
-- Automatic parameter writes remain disabled by default; automatic clock correction is a separate opt-in (default OFF). Existing controller confirmation, ABORT, frame integrity and single-owner safeguards are retained.
+Added 11 performance monitoring entities, providing:
+
+- Observed compressor starts today.
+- Observed compressor running time today.
+- Compressor duty cycle today.
+- Mean running compressor frequency today.
+- Total observation time today.
+- Current compressor off time.
+- Last completed compressor off time.
+- Direct defrost cycle count since boot.
+- Last completed defrost duration.
+- Mean completed defrost duration since boot.
+- Supply temperature deviation based on paired OEM measured and target temperatures.
+
+Daily statistics follow the local calendar date and exclude unobserved periods. They are calculated from available observations and are not persistent lifetime counters.
+
+### Circulation pump and defrost monitoring
+
+- Added circulation pump command percentage, with separate primary and secondary source diagnostics.
+- Added direct outdoor-unit defrost detection, with qualified OEM data as fallback.
+- Added source selection and freshness diagnostics.
+- Improved defrost cycle and duration tracking.
+- Revised the interpretation and presentation of native defrost-related counters. Unconfirmed counter semantics remain explicitly labelled as candidates.
+- Pump command percentage is not presented as measured flow or actual pump speed.
+
+### Central operating state
+
+Added a unified `Operation | Operating State` entity for Home Assistant dashboards.
+
+Supported states include Heating, Hot Water, Cooling, Starting, Defrosting, Standby, Alarm and qualified running or compressor-off states.
+
+- Separates actual production from controller operating context.
+- Provides an independent operating activity entity without the alarm overlay.
+- Includes operating-state source and data-quality diagnostics.
+- Reports unknown or incomplete states instead of inferring unsupported activity.
+- Does not assume that standby means all auxiliary equipment is switched off.
+
+### Extended read-only Service monitoring
+
+- Extended native Service synchronization to 17 configuration pages and 303 words.
+- Added 49 read-only Service register views.
+- Expanded automatic parameter refresh through the existing native communication engine.
+- Added additional heating, hot-water, cooling, auxiliary-heater, Optimum, sensor-calibration and installation parameters.
+- Added outdoor-unit flow detection, four-way valve status, confirmed setpoint and frequency-limitation observations.
+- Added Service source, refresh and synchronization diagnostics.
+- Unverified register interpretations remain labelled as candidates.
+- Installer-level setting changes are not supported by Write User.
+
+### Calendar management
+
+- Extended the shared 32-slot calendar editor.
+- Added native Home Assistant start and end time fields.
+- Added start and end date fields and weekly/date-range schedule selection.
+- Added creation and clearing of calendar records.
+- Improved calendar transaction handling, input validation and controller readback.
+- Preserved the existing native TX owner and bounded transaction safeguards.
+- Clarified EVU or power-limitation calendar labels.
+
+The four legacy hour/minute controls have been replaced by native time entities. Existing dashboards and automations referencing those controls may require updates.
+
+### Native controller clock
+
+Includes the native clock functionality introduced in 1.04:
+
+- Live heat-pump clock display.
+- Home Assistant time and controller clock-difference diagnostics.
+- Manual clock synchronization.
+- Optional automatic daily synchronization.
+- Automatic correction only when the time difference exceeds 60 seconds.
+- Controller-confirmed readback and bounded correction attempts.
+- Independent RTC refresh, even when extended Service parameter refresh is disabled.
+
+Automatic clock correction remains disabled by default.
+
+### Alarm monitoring and fault reporting
+
+- Added an independent passive receive cache for current alarms, alarm history and outdoor-unit fault information.
+- Alarm presentation no longer requires a fully established local DCM session when valid controller-origin frames are received.
+- Added the outdoor compressor-down indication to the active alarm summary.
+- Added outdoor-unit and communication-kit fault presentation.
+- Extended alarm-history presentation to ten records where supported by the detected record layout.
+- Separated passive alarm availability from active alarm-refresh status.
+- Fixed active alarm-refresh completion so that a received page is not considered complete until its physical acknowledgement has been sent.
+- Missing, stale or invalid alarm sources remain unknown rather than being reported as alarm-free.
+
+Historical event identifiers are not automatically interpreted as Thermia UI error codes.
+
+Passive reception does not guarantee that the controller exports every alarm page without an active DCM peer.
+
+### Native communication and recovery
+
+- Improved retained-session recovery and INFO synchronization.
+- Added bounded INFO synchronization continuation through the existing native communication engine, enabled in the released configuration.
+- Improved recovery after ESP restart and incomplete synchronization.
+- Improved serialization of native reads, refreshes and user-setting transactions.
+- Preserved the existing single UART/RX/TX/DE owner, CRC checks, frame validation, session freshness, collision safeguards and ABORT functionality.
+- Retained controller-confirmed User parameter writes.
+
+The additional INFO clear-response recovery branch has not yet been directly observed in a live capture.
+
+### Data quality and Home Assistant improvements
+
+- Improved source-specific freshness handling and invalid-value presentation.
+- Improved synchronization of measured and target supply temperatures.
+- Separated direct measurements, OEM-reported values and candidate mappings.
+- Improved English labels, units, icons and diagnostic categorization.
+- Corrected the OEM outdoor-temperature label to Outdoor Average.
+- Reduced overlapping and redundant default-visible entities.
+- Expanded optional technical diagnostics without unnecessarily cluttering normal Home Assistant dashboards.
+
+### Internal architecture and cleanup
+
+- Rebased Write User on the shared Service 1.0 firmware architecture.
+- Removed the dedicated installer-level Service setting-write engine from Write User.
+- Retained the read-only Service register views and 17 supported User-write descriptors.
+- Removed obsolete state, redundant internal code and unused diagnostic paths.
+- Preserved the established native transaction owner and controller readback requirements.
+- No private authentication material, dynamic handshake implementation or experimental energy, COP, refrigerant or flow models are included.
+
+### Upgrade and compatibility notes
+
+- The locally validated platform is the Thermia iTec XTR M 3N / Total Compact with CM930 software 2.4.2 and ESP32-S3.
+- Several native session and write gates in 1.1 explicitly require CM930 2.4.2. The broader 2.4.0–2.4.3 access policy of Write User 1.03 should not be assumed to carry over.
+- Preserve the existing device name and hardware configuration when upgrading.
+- Review dashboards and automations referencing renamed or replaced entities.
+- Home Assistant may retain previous entity visibility settings.
+- Automatic parameter writes and automatic clock correction remain disabled by default.
+- Installer-level parameter writes require the separate Service firmware.
+
+### Local validation
+
+The release candidates and final firmware were tested on the local XTR M installation. The following observations are from the release validation sequence and do not imply that every feature was independently retested in the exact FINAL build.
+
+- Native session recovery and CURRENT synchronization: 4/4.
+- INFO synchronization: 5/5 on RC06.
+- Calendar synchronization: 12/12 pages.
+- Service synchronization: 17/17 pages, 303 words.
+- Successful active alarm refresh and acknowledgement.
+- Passive alarm-related publication before full native session qualification.
+- Controller-confirmed heating curve changes from 38 to 39 and back to 38 on RC05.
+- Successful cold start confirmed by the owner on RC05.
+- Zero CRC disagreements in the observed validation windows.
+
+Remaining research includes historical alarm identifiers, fully session-free alarm-page availability, the additional INFO recovery branch and compatibility with other CM930 controller profiles.
+
+Superseded firmware versions remain available through Git history.
 
 ## Write User 1.04 — 2026-11-24
 
