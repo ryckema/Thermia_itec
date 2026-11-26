@@ -17,7 +17,15 @@ Service is the advanced single-file ESPHome firmware for local monitoring and co
 
 ## Compatibility
 
-Locally tested on the iTec XTR M 3N with CM930 controller version 2.4.2. RC04.2, the release baseline, was compiled and flashed successfully on ESP32-S3 with ESPHome 2026.9.0. Retained-session recovery, parameter refresh, heating curve and heating startup time writes were demonstrated; the owner also confirmed cold start. A calendar deletion was accepted by the controller. These results do not establish compatibility with other models or controller firmware versions. The release changes the build identification only, not the operating code. The exact renamed release has not been separately flashed.
+Locally tested on the iTec XTR M 3N with CM930 controller version 2.4.2. RC04.2, the release baseline, was compiled and flashed successfully on ESP32-S3 with ESPHome 2026.9.0. Retained-session recovery, parameter refresh, heating curve and heating startup time writes were demonstrated; the owner also confirmed cold start. A calendar deletion was accepted by the controller. These results do not establish compatibility with other models or controller firmware versions. The original 1.0 release changed the build identification only relative to RC04.2.
+
+### 2026-11-27 maintenance update (version 1.0 retained)
+
+The updated standalone YAML integrates the Write User 1.1 alarm fixes into Service without removing its 36 historically validated installer settings or changing their permissions. Current alarms, history and outdoor fault information use a separate freshness-qualified passive receive cache; the active alarm refresh completes only after the matching controller page is physically acknowledged. Missing or stale alarm data remains unknown, not alarm-free. The independently received outdoor compressor-down indication is included in the active summary. Bounded INFO continuation is available as an explicit build-time option, disabled by default; its additional clear-response branch was not exercised.
+
+**LIVE validation on the local XTR M 3N / CM930 2.4.2 (ESPHome 2026.9.0, RC01):** automatic retained-session recovery after OTA, INFO 5/5, CURRENT 4/4, 17/17 Service pages / 303 fresh words, active alarm refresh with ACK_SENT=1, fresh passive alarm cache and no active alarm, zero CRC disagreements in 1,324 sampled checks, zero RX drops and parser resyncs. Write User readiness returned; automatic parameter writes remained OFF. No new installer-setting writes or cold controller restart were tested in this RC01 capture. The published file differs from that RC01 only in two build-identification strings; the renamed file has not separately been flashed.
+
+Previous Service 1.0 remains available in [Git history](https://github.com/ryckema/Thermia_itec/blob/0468c33ddb5299df28d5bba02428debaafc85d75/Thermia%20iTec%20XTR/Service/Service-PUBLIC-1.0.yaml).
 
 The public cold-start implementation supports only the existing known exchange; an unknown exchange is not supported. Do not operate a genuine DCM gateway and this emulation simultaneously on the same bus.
 
