@@ -1,4 +1,7 @@
-# Thermia iTec XTR — Service PUBLIC 1.0 (derived from locally tested RC04.2).
+# Thermia iTec XTR — Service PUBLIC 1.0 (2026-11-27 update) (derived from locally tested Service PUBLIC 1.0).
+# Port of Write User 1.1 FINAL alarm RX cache, summary and owned alarm ACK.
+# Bounded INFO continuation available as explicit opt-in; its exact clear branch remains unverified.
+# All Service write permissions, descriptors and scoped TX branches retained.
 # Source baseline dev084; selected read-only observations from owner-running dev085.3.
 # RC02 removes private dynamic handshake and lease; exact published cold-start path only.
 # RC03: historical local service-write allowlist; unqualified fields read-only; no new TX.
@@ -40,6 +43,7 @@ substitutions:
   c5cv_export_join_tx_enabled: "true"  # Inherited, unchanged: existing user-armed C5DE transport
   c5az_0546_role_recovery_enabled: "false"
   w2r20_heating_group_enabled: "true"
+  svc101_info_completion_test: "false"  # Explicit bounded recovery experiment; set true before compiling only to test.
 
 
 # --- BOOT / COLD-START ---
@@ -1499,27 +1503,38 @@ globals:
         } else if(!append_text("; Schedule type unknown")) return "Invalid calendar formatting";
         return std::string(buffer);
       }
-  # Pure presentation helper; callable from template lambdas; no physical bus access.
-  - id: thermia_inline_history_source
-    type: "std::function<uint8_t(uint32_t,uint32_t,uint32_t,uint32_t,bool,unsigned,uint32_t,uint32_t,unsigned,uint32_t)>"
+  # RC06 passive alarm state: timestamps [085F,0884,0820,07E4],
+  # separate raw arrays for flags, history, outdoor word and fault codes; identity [version,product].
+  # Never read by TX, refresh scheduling, owner or defrost bookkeeping.
+  - { id: passive_alarm_ms, type: 'std::array<uint32_t, 4>', restore_value: no, initial_value: 'std::array<uint32_t, 4>{}' }
+  - { id: passive_alarm_flags, type: 'std::array<uint16_t, 5>', restore_value: no, initial_value: 'std::array<uint16_t, 5>{}' }
+  - { id: passive_alarm_history, type: 'std::array<uint16_t, 60>', restore_value: no, initial_value: 'std::array<uint16_t, 60>{}' }
+  - { id: passive_alarm_odu, type: uint16_t, restore_value: no, initial_value: '65535' }
+  - { id: passive_alarm_codes, type: 'std::array<uint16_t, 2>', restore_value: no, initial_value: 'std::array<uint16_t, 2>{}' }
+  - { id: passive_alarm_identity, type: 'std::array<uint16_t, 2>', restore_value: no, initial_value: 'std::array<uint16_t, 2>{65535u,65535u}' }
+  - id: passive_alarm_profile
+    type: 'std::function<bool(const std::array<uint16_t,2>&)>'
     restore_value: no
     initial_value: |-
-      [](uint32_t receipt_ms, uint32_t now_ms,
-          uint32_t arm_ms, uint32_t floor, bool write_active, unsigned write_stage,
-          uint32_t m6_epoch, uint32_t accepted_epoch, unsigned m6_state,
-          uint32_t last_valid_frame_ms) -> uint8_t {
-        if (!receipt_ms) return uint8_t(0);
-        // Existing 300s history expiration rule (wrap-safe on ESP32 millis()).
-        if (uint32_t(now_ms-receipt_ms)>300000u) return uint8_t(1);
-        if (!arm_ms || !write_active || write_stage!=40u ||
-            m6_epoch!=arm_ms || accepted_epoch!=arm_ms ||
-            (m6_state!=4u && m6_state!=5u) ||
-            uint32_t(now_ms-receipt_ms)>uint32_t(now_ms-floor))
-          return uint8_t(2);
-        // Same CRC-backed bus-health horizon as CLEAN07 operation telemetry.
-        if (!last_valid_frame_ms || uint32_t(now_ms-last_valid_frame_ms)>10000u)
-          return uint8_t(3);
-        return uint8_t(4);
+      [](const std::array<uint16_t,2>& ident) {return ident[0]==242u && ident[1]==23u;}
+  - id: passive_alarm_fresh
+    type: 'std::function<bool(uint32_t,uint32_t,uint32_t,uint32_t,uint32_t)>'
+    restore_value: no
+    initial_value: |-
+      [](uint32_t stamp,uint32_t now,uint32_t bus,uint32_t controller,uint32_t ttl) {
+        return stamp && bus && uint32_t(now-stamp)<ttl && uint32_t(now-bus)<=10000u &&
+          (!controller || uint32_t(now-controller)<=10000u);
+      }
+  - id: thermia_inline_history_source
+    type: 'std::function<uint8_t(uint32_t,uint32_t,uint32_t,uint32_t,bool)>'
+    restore_value: no
+    initial_value: |-
+      [](uint32_t receipt_ms,uint32_t now,uint32_t bus,uint32_t controller,bool profile)->uint8_t {
+        if(!receipt_ms) return 0u;
+        if(uint32_t(now-receipt_ms)>=300000u) return 1u;
+        if(!profile) return 2u;
+        if(!bus || uint32_t(now-bus)>10000u || (controller && uint32_t(now-controller)>10000u)) return 3u;
+        return 4u;
       }
   # Pure presentation helper; callable from template lambdas; no physical bus access.
   - id: thermia_inline_history_format
@@ -3924,7 +3939,7 @@ globals:
   - { id: w2r97_alarm_read_tx_ms, type: uint32_t, restore_value: no, initial_value: '0' }
   - { id: w2r97_alarm_read_attempt_epoch, type: uint32_t, restore_value: no, initial_value: '0' }
   # 0=not run, 1=armed waiting for next 0708, 2=sent waiting for FC16,
-  # 3=matching controller 085F accepted, 4=inconclusive, 5=aborted.
+  # 3=matching controller 085F physically ACKed, 4=inconclusive, 5=aborted.
   - { id: w2r97_alarm_read_state, type: uint8_t, restore_value: no, initial_value: '0' }
   # RC09FC: common cooldown for manual/automatic read requests, independently of completion state.
   - { id: w2rfc_alarm_last_arm_ms, type: uint32_t, restore_value: no, initial_value: '0' }
@@ -4884,6 +4899,26 @@ uart:
                   (t-id(thermia_last_valid_frame_ms))<=1500UL;
               };
 
+              // WU11-RC05-R01: C5BA must be able to clear its read-request
+              // flags on real controller polls after the final physical INFO ACK.
+              // This is a bounded read-only continuation, not a session grant.
+              // Same original 55s epoch and total 12 follow-up budget. Opt-in only.
+              const auto svc101_info_completion_offer = [&]() -> bool {
+                const uint32_t t=millis(), e=id(write_arm_ms);
+                return ${svc101_info_completion_test} && e!=0u &&
+                  id(main01_m6_session_state)==2u &&
+                  id(main01_native_accepted_epoch)==0u &&
+                  !id(w2r36_abort_latched) && !id(svc32_peer_latched) &&
+                  !id(write_config_synced) && c5cp_retained_transport_scope() &&
+                  id(c5av_first_join_read_used) && !id(c5av_first_join_read_pending) &&
+                  id(c5ax_info_acked_mask)==0x1Fu && id(c5ba_followup_count)<12u &&
+                  id(native_stamp_since_floor)(id(c5ax_info_request_ms),id(native_session_order_floor),t) &&
+                  uint32_t(t-e)<=55000UL && uint32_t(t-id(c5ax_info_request_ms))<=55000UL &&
+                  (id(c5aw_runtime_first_ack_used) || id(c5cg_first_0884_ack_epoch)==e) &&
+                  id(write_runtime_fc16_ack_count)>=5u && id(write_runtime_0708_reply_count)>=1u &&
+                  id(native_stamp_since_floor)(id(write_runtime_last_ack_ms),id(native_session_order_floor),t);
+              };
+
               // Sole physical UART/DE owner for all native session TX.
               // Identical bytes/state machine; no second UART instance.
               auto s92_tx_owner_send = [&](const uint8_t *payload, size_t length) -> bool {
@@ -5826,7 +5861,7 @@ uart:
                   const bool c5ba_scoped_info_followup =
                     id(c5av_first_join_read_used) && !id(c5av_first_join_read_pending) &&
                     id(c5ax_info_request_ms)!=0 &&
-                    c5bk_info_mask!=0x1Fu &&
+                    (c5bk_info_mask!=0x1Fu || svc101_info_completion_offer()) &&
                     id(c5ba_followup_count)<12u &&
                     ((id(c5aw_runtime_first_ack_used) &&
                       id(write_runtime_fc16_ack_count)>0) ||
@@ -6200,6 +6235,44 @@ uart:
                   geom[7u*(d-1u)]==page && geom[7u*(d-1u)+2u]==word;
               };
               const uint32_t now_ms = millis();
+              // RC06 PASSIVE_ALARM_RX_BEGIN: already CRC-valid V5 frame; no TX or session access.
+              {
+                auto &stamps=id(passive_alarm_ms);
+                auto &ident=id(passive_alarm_identity);
+                const uint32_t last_bus=id(thermia_last_valid_frame_ms), last_controller=id(thermia_last_s02_ms);
+                // Invalidate observations after actual observed silence, not a local ABORT/rejoin.
+                if ((last_bus && uint32_t(now_ms-last_bus)>=5000u) ||
+                    (slave==0x02u && last_controller && uint32_t(now_ms-last_controller)>=5000u)) {
+                  stamps.fill(0u); ident.fill(0xFFFFu);
+                }
+                if(slave==0x0Fu && fc==0x10u && bytes.size()>=9u) {
+                  const uint16_t start=(uint16_t(bytes[2])<<8)|bytes[3];
+                  const uint16_t count=(uint16_t(bytes[4])<<8)|bytes[5];
+                  if(unsigned(bytes[6])==unsigned(count)*2u && bytes.size()==9u+unsigned(bytes[6])) {
+                    const auto word=[&](unsigned i)->uint16_t {return (uint16_t(bytes[7u+2u*i])<<8)|bytes[8u+2u*i];};
+                    const uint32_t receipt=now_ms?now_ms:1u;
+                    if((start==0x0864u && count==4u) || (start==0x0532u && count==18u)) {
+                      const unsigned i=start==0x0864u?0u:1u;
+                      const uint16_t value=word(i==0u?3u:7u);
+                      // Contradictory identity revokes earlier alarm data; require fresh receipts.
+                      if(ident[i]!=0xFFFFu && ident[i]!=value) {stamps.fill(0u);ident.fill(0xFFFFu);}
+                      ident[i]=value;
+                    }
+                    if(start==0x085Fu && count==5u) {
+                      for(unsigned i=0;i<5u;++i) id(passive_alarm_flags)[i]=word(i);
+                      stamps[0]=receipt;
+                    } else if(start==0x0884u && count==60u) {
+                      for(unsigned i=0;i<60u;++i) id(passive_alarm_history)[i]=word(i);
+                      stamps[1]=receipt;
+                    } else if(start==0x0820u && count==18u) {
+                      id(passive_alarm_odu)=word(15u);stamps[2]=receipt;
+                    } else if(start==0x07E4u && count==17u) {
+                      id(passive_alarm_codes)[0]=word(8u);id(passive_alarm_codes)[1]=word(9u);stamps[3]=receipt;
+                    }
+                  }
+                }
+              }
+              // RC06 PASSIVE_ALARM_RX_END
               id(thermia_last_valid_frame_ms) = now_ms;
               id(thermia_valid_frame_count)++;
               if (slave == 0x02) id(thermia_last_s02_ms) = now_ms;
@@ -7083,17 +7156,8 @@ uart:
                         if (st==0x085Fu && ct==5u) {
                           for (unsigned i=0;i<5u;i++) id(c5do_alarms_words)[i]=(uint16_t(bytes[7+2*i])<<8)|uint16_t(bytes[8+2*i]);
                           id(c5do_alarms_rx_ms)=c5do_now ? c5do_now : 1u;
-                          // Only a fresh CRC-valid, correctly shaped, controller-origin FC16
-                          // after the one real read-selector TX counts as trial completion.
-                          if (id(w2r97_alarm_read_state)==2u &&
-                              id(w2r97_alarm_read_epoch)==id(write_arm_ms) &&
-                              id(w2r97_alarm_read_tx_ms)!=0u &&
-                              int32_t(c5do_now-id(w2r97_alarm_read_tx_ms))>=0 &&
-                              uint32_t(c5do_now-id(w2r97_alarm_read_tx_ms))<=15000u) {
-                            id(w2r97_alarm_read_state)=3u;
-                            ESP_LOGW("thermia_alarm","[W2R97] COMPLETE_POSITIVE CONTROLLER_FC16_085F_5 epoch=%u ageMs=%u ONE_REQUEST NO_RETRY",
-                              unsigned(id(write_arm_ms)), unsigned(c5do_now-id(w2r97_alarm_read_tx_ms)));
-                          }
+                          // WU11 RC04: receipt is passive evidence; the read completes only
+                          // after the matching response has been physically ACKed below.
                         }
                         if (st==0x0884u && ct==60u) {
                           for (unsigned i=0;i<60u;i++) id(c5do_history_words)[i]=(uint16_t(bytes[7+2*i])<<8)|uint16_t(bytes[8+2*i]);
@@ -10367,19 +10431,7 @@ uart:
                           c5cp_retained_transport_scope();
                         const bool c5df_alarm_transport =
                           local_085f_known && c5df_alarm_transport_lease();
-                        // NATIVE_ALARM: preserve legacy explicit contexts; additionally
-                        // permit only the physically anchored bounded retained path.
-                        const bool native_alarm_085f_explicit_context =
-                          local_085f_known &&
-                          (c5db_retained_alarm_transport || c5df_alarm_transport ||
-                           id(write_tx_used) ||
-                           id(write_recovery_in_progress) ||
-                           id(write_hot_rejoin_in_progress) ||
-                           id(write_hot_rejoin_wait_runtime) ||
-                           (id(write_resume_started) && !id(write_resume_done)));
 
-                        const bool native_alarm_085f_stable_retained_no_context =
-                          local_085f_known && !native_alarm_085f_explicit_context;
 
                         // C5AF: observe repeated exact zero-payload 085F independently
                         // of sparse join, without accepting any session or authorizing TX.
@@ -10765,6 +10817,40 @@ uart:
                           id(write_peer_fc16_ack_count)==0u &&
                           id(thermia_parser_resync_count)==id(write_resync_baseline) &&
                           id(thermia_rx_buffer_drop_count)==id(write_drop_baseline);
+                        // WU11 RC04: owned alarm refresh is independent of the startup route.
+                        // A single real selector TX, the same accepted M6 epoch, known payload,
+                        // and the original runtime owner are required. No passive RX grant.
+                        const uint32_t alarm_ack_epoch=id(write_arm_ms);
+                        const bool w2r97_owned_alarm_ack =
+                          local_085f_known && s92_runtime_fc16_owner &&
+                          id(w2r97_alarm_read_state)==2u && alarm_ack_epoch!=0u &&
+                          id(w2r97_alarm_read_epoch)==alarm_ack_epoch &&
+                          id(w2r97_alarm_read_attempt_epoch)==alarm_ack_epoch &&
+                          id(w2r97_alarm_read_tx_ms)!=0u &&
+                          uint32_t(now_ms-id(w2r97_alarm_read_tx_ms))<=15000u &&
+                          id(native_stamp_since_floor)(id(w2r97_alarm_read_tx_ms),id(native_session_order_floor),now_ms) &&
+                          id(main01_m6_session_state)==5u && id(write_config_synced) &&
+                          id(native_session_identity)(alarm_ack_epoch,id(main01_m6_session_epoch),id(main01_native_accepted_epoch),id(main01_cm930_shadow_epoch),id(main01_cm930_shadow_version)) &&
+                          (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
+                          !id(w2r36_abort_latched) && !id(svc32_peer_latched) &&
+                          !id(write_recovery_in_progress) && !id(write_hot_rejoin_in_progress) &&
+                          !id(write_hot_rejoin_wait_runtime) &&
+                          !(id(write_resume_started) && !id(write_resume_done)) &&
+                          id(c5bo_peer_native_reply_seen)==0u &&
+                          id(native_bus_counters_clean)(id(thermia_parser_resync_count),id(write_resync_baseline),id(thermia_rx_buffer_drop_count),id(write_drop_baseline),id(s92_v5_crc_shadow_disagreements),id(s92_v5_ambiguous_count));
+                        // NATIVE_ALARM: preserve legacy explicit contexts; additionally
+                        // permit only the physically anchored bounded retained path.
+                        const bool native_alarm_085f_explicit_context =
+                          local_085f_known &&
+                          (w2r97_owned_alarm_ack || c5db_retained_alarm_transport || c5df_alarm_transport ||
+                           id(write_tx_used) ||
+                           id(write_recovery_in_progress) ||
+                           id(write_hot_rejoin_in_progress) ||
+                           id(write_hot_rejoin_wait_runtime) ||
+                           (id(write_resume_started) && !id(write_resume_done)));
+
+                        const bool native_alarm_085f_stable_retained_no_context =
+                          local_085f_known && !native_alarm_085f_explicit_context;
                         const bool s92_runtime_known_shape =
                           native_alarm_085f_explicit_context ||
                           (st==0x07D0 && ct==19) ||
@@ -11390,8 +11476,13 @@ uart:
                               unsigned(millis()-id(svc6f4_first_0884_ms)),
                               unsigned(id(c5ax_info_request_ms)!=0u));
                           }
-                          if (c5cn_info_bit)
+                          if (c5cn_info_bit) {
+                            const uint8_t before=id(c5ax_info_acked_mask);
                             id(c5ax_info_acked_mask)|=c5cn_info_bit;
+                            if (before!=0x1Fu && id(c5ax_info_acked_mask)==0x1Fu)
+                              ESP_LOGW("thermia_write","[WU11-RC05] INFO_ALL_PHYSICAL_ACKS page=%04X/%u mask=1F epoch=%u m6=%u",
+                                unsigned(st),unsigned(ct),unsigned(id(write_arm_ms)),unsigned(id(main01_m6_session_state)));
+                          }
                           id(write_runtime_last_ack_start)=st;
                           id(write_runtime_last_ack_count)=ct;
                           id(write_runtime_last_ack_ms)=millis();
@@ -12975,6 +13066,11 @@ uart:
                             if (st==0x085F && ct==5) {
                               id(write_runtime_085f_acked)++;
                               id(exp419_085f_context_ack_count)++;
+                              if (w2r97_owned_alarm_ack) {
+                                id(w2r97_alarm_read_state)=3u;
+                                ESP_LOGW("thermia_alarm","[WU11-RC04] COMPLETE_POSITIVE CONTROLLER_FC16_085F_5 ACK_SENT=1 epoch=%u ageMs=%u ONE_REQUEST NO_RETRY",
+                                  unsigned(alarm_ack_epoch),unsigned(now_ms-id(w2r97_alarm_read_tx_ms)));
+                              }
                               ESP_LOGE("thermia_native_alarm",
                                 "\033[38;5;130m[NATIVE_ALARM] ===== 085F_CONTEXT_ACK_EXECUTED payload=%s "
                                 "contextAckCount=%u freshApproval=%u recovery=%u hotRejoin=%u "
@@ -13724,7 +13820,7 @@ uart:
                         st==0x0708 && ct==6 &&
                         id(c5av_first_join_read_used) && !id(c5av_first_join_read_pending) &&
                         id(c5ax_info_request_ms)!=0 &&
-                        c5ba_mask!=0x1Fu &&
+                        (c5ba_mask!=0x1Fu || svc101_info_completion_offer()) &&
                         id(c5ba_followup_count)<12u &&
                         (((id(c5aw_runtime_first_ack_used) || c5df_alarm_transport_lease()) &&
                           id(write_runtime_fc16_ack_count)>0) ||
@@ -13949,9 +14045,13 @@ uart:
                           }
                           id(c5ba_followup_last_mask)=have;
                           id(c5ba_followup_count)++;
-                          ESP_LOGE("thermia_write",
-                            "[C5BA] INFO_PENDING_READ_SENT have=%02X/1F reply=%u/12 outstanding=%02X owner=UNPROVEN DE_LOW",
-                            unsigned(have),unsigned(id(c5ba_followup_count)),unsigned((~have)&0x1Fu));
+                          if (have==0x1Fu)
+                            ESP_LOGW("thermia_write","[WU11-RC05] INFO_CLEAR_PHYSICAL_SENT mask=1F reply=%u/12 owner=UNPROVEN DE_LOW",
+                              unsigned(id(c5ba_followup_count)));
+                          else
+                            ESP_LOGE("thermia_write",
+                              "[C5BA] INFO_PENDING_READ_SENT have=%02X/1F reply=%u/12 outstanding=%02X owner=UNPROVEN DE_LOW",
+                              unsigned(have),unsigned(id(c5ba_followup_count)),unsigned((~have)&0x1Fu));
                           return;
                         }
                         // SVC13: an explicitly started single fixed 041D trial.
@@ -22784,13 +22884,13 @@ text_sensor:
           return {"ARMED / one existing controller 0708 poll; read-only W4bit7; NO TX YET"};
         case 2:
           if(id(w2r97_alarm_read_epoch)!=epoch) return {"CANCELLED / native session changed; no further TX"};
-          return {"RUNNING / read-only 085F request sent once; awaiting exact controller FC16"};
+          return {"RUNNING / read-only 085F request sent once; awaiting exact controller FC16 and ACK"};
         case 3: {
           const uint32_t rx=id(c5do_alarms_rx_ms);
-          if(!epoch || !rx || !id(native_stamp_since_floor)(rx,id(native_session_order_floor),millis()) || uint32_t(now-rx)>=300000u)
+          if(!epoch || id(w2r97_alarm_read_epoch)!=epoch || !rx || !id(native_stamp_since_floor)(rx,id(native_session_order_floor),millis()) || uint32_t(now-rx)>=300000u)
             return {"STALE / waiting qualified periodic alarm read"};
           if(uint32_t(now-rx)>=240000u)return {"FRESH / periodic alarm refresh due"};
-          return {"FRESH / qualified controller alarm snapshot received; periodic refresh enabled"};
+          return {"FRESH / qualified controller alarm snapshot received and ACKed; periodic refresh enabled"};
         }
         case 4: return {"UNAVAILABLE / last alarm read inconclusive; next refresh after cooldown"};
         case 5: return {"CANCELLED / native ABORT; no further alarm TX"};
@@ -22803,31 +22903,17 @@ text_sensor:
     icon: mdi:shield-alert-outline
     update_interval: 15s
     lambda: |-
-      const uint32_t now=millis(), ts=id(c5do_alarms_rx_ms);
-      if (!ts) {
-        if(id(w2r97_alarm_read_state)==1u) return {"Waiting / native alarm read queued; no TX yet"};
-        if(id(w2r97_alarm_read_state)==2u) return {"Loading... / waiting for controller FC16 085F/5"};
-        if(id(w2r97_alarm_read_state)==4u) return {"Unavailable / 085F read inconclusive; do not infer no active alarm"};
-        return {"Waiting / automatic 085F/5 snapshot not yet received in this session"};
-      }
-      if (uint32_t(now-ts)>=300000u) return {"Stale | 085F/5 older than 5 minutes"};
-      if (!id(thermia_last_valid_frame_ms) ||
-          uint32_t(now-id(thermia_last_valid_frame_ms))>10000u)
-        return {"Bus stale | retained 085F is not live"};
-      const uint32_t epoch=id(write_arm_ms);
-      if (!epoch || !id(write_active) || id(write_stage)!=40u ||
-          id(main01_m6_session_epoch)!=epoch || id(main01_native_accepted_epoch)!=epoch ||
-          (id(main01_m6_session_state)!=4u && id(main01_m6_session_state)!=5u))
-        return {"Session unqualified | 085F cannot confirm live alarms"};
-      if (!id(native_stamp_since_floor)(ts,id(native_session_order_floor),millis()))
-        return {"Previous session | 085F must be received again"};
-      if (id(main01_cm930_shadow_epoch)!=epoch ||
-          id(main01_cm930_shadow_version)!=242u ||
-          (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u))
-        return {"Unknown profile | do not decode 085F as XTR 2.4.2"};
-      char buf[90];
-      snprintf(buf,sizeof(buf),"Fresh | qualified 085F/5, age %lus",static_cast<unsigned long>((now-ts)/1000u));
+      const uint32_t now=millis();
+      const bool profile=id(passive_alarm_profile)(id(passive_alarm_identity));
+      auto fresh=[&](unsigned i,uint32_t ttl=300000u){return id(passive_alarm_fresh)(id(passive_alarm_ms)[i],now,id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),ttl);};
+      if (!id(passive_alarm_ms)[0]) return {"Waiting / no passive 085F/5 received"};
+      if (!fresh(0u)) return {"Stale / 085F or controller bus not recent"};
+      if (!profile) return {"Fresh raw 085F / XTR 2.4.2 M 3N identity not observed"};
+      for(auto w:id(passive_alarm_flags)) if(w==0xFFFFu) return {"Invalid / 085F sentinel"};
+      char buf[100];
+      snprintf(buf,sizeof(buf),"Fresh | passive 085F/5, age %lus; XTR profile observed",static_cast<unsigned long>((now-id(passive_alarm_ms)[0])/1000u));
       return {std::string(buf)};
+
   - platform: template
     id: user_oem_page_source
     name: "Diagnostic | Operation Data Sources"
@@ -24629,31 +24715,15 @@ text_sensor:
           return x;
     update_interval: 10s
     lambda: |-
-      // Raw FC16 085F flags are controller receipts, not a user-display alarm reset.
-      // Never substitute a previously reported "None" for a missing/expired page.
-      const uint32_t received=id(c5do_alarms_rx_ms);
-      if (!received) return {"WAITING / no qualified controller 085F snapshot yet"};
-      const uint32_t epoch=id(write_arm_ms), now=millis();
-      const bool qualified=epoch!=0u && id(native_stamp_since_floor)(received,id(native_session_order_floor),millis()) &&
-        id(write_active) && id(write_stage)==40u &&
-        id(main01_m6_session_epoch)==epoch &&
-        id(main01_native_accepted_epoch)==epoch &&
-        id(main01_m6_session_state)==5u &&
-        id(main01_cm930_shadow_epoch)==epoch &&
-        id(main01_cm930_shadow_version)==242u &&
-        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u) &&
-        id(thermia_last_valid_frame_ms)!=0u &&
-        uint32_t(now-id(thermia_last_valid_frame_ms))<10000u;
-      if (!qualified) return {"UNQUALIFIED / controller alarm snapshot not current"};
-      if (uint32_t(now-received)>=300000u) {
-        for (unsigned i=0u;i<5u;i++)
-          if (id(c5do_alarms_words)[i]) return {"STALE / previous nonzero 085F flags retained"};
-        return {"STALE / last 085F alarm snapshot expired"};
-      }
+      const uint32_t now=millis(), received=id(passive_alarm_ms)[0];
+      if(!received) return {"WAITING / no passive controller 085F received"};
+      if(!id(passive_alarm_fresh)(received,now,id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),300000u))
+        return {"STALE / last passive 085F or controller bus expired"};
       char buf[144];
       snprintf(buf,sizeof(buf),"RAW 085F=%04X 0860=%04X 0861=%04X 0862=%04X 0863=%04X",
-        unsigned(id(c5do_alarms_words)[0]),unsigned(id(c5do_alarms_words)[1]),unsigned(id(c5do_alarms_words)[2]),unsigned(id(c5do_alarms_words)[3]),unsigned(id(c5do_alarms_words)[4]));
+        unsigned(id(passive_alarm_flags)[0]),unsigned(id(passive_alarm_flags)[1]),unsigned(id(passive_alarm_flags)[2]),unsigned(id(passive_alarm_flags)[3]),unsigned(id(passive_alarm_flags)[4]));
       return {std::string(buf)};
+
   - platform: template
     id: c5do_history_record_1
     disabled_by_default: true
@@ -24668,18 +24738,16 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src!=uint8_t(4))
         return {src==uint8_t(0) ||
                 src==uint8_t(1) ?
                 "Unavailable / history page stale" :
                 src==uint8_t(3) ?
                 "Unavailable / controller bus stale" :
-                "Unavailable / history source from previous session"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),0u,true)};
+                "Unavailable / XTR profile not observed"};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),0u,true)};
 
   - platform: template
     id: c5do_history_record_2
@@ -24695,18 +24763,16 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src!=uint8_t(4))
         return {src==uint8_t(0) ||
                 src==uint8_t(1) ?
                 "Unavailable / history page stale" :
                 src==uint8_t(3) ?
                 "Unavailable / controller bus stale" :
-                "Unavailable / history source from previous session"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),1u,true)};
+                "Unavailable / XTR profile not observed"};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),1u,true)};
 
   - platform: template
     id: c5do_history_record_3
@@ -24722,18 +24788,16 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src!=uint8_t(4))
         return {src==uint8_t(0) ||
                 src==uint8_t(1) ?
                 "Unavailable / history page stale" :
                 src==uint8_t(3) ?
                 "Unavailable / controller bus stale" :
-                "Unavailable / history source from previous session"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),2u,true)};
+                "Unavailable / XTR profile not observed"};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),2u,true)};
 
   - platform: template
     id: c5do_history_record_4
@@ -24749,18 +24813,16 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src!=uint8_t(4))
         return {src==uint8_t(0) ||
                 src==uint8_t(1) ?
                 "Unavailable / history page stale" :
                 src==uint8_t(3) ?
                 "Unavailable / controller bus stale" :
-                "Unavailable / history source from previous session"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),3u,true)};
+                "Unavailable / XTR profile not observed"};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),3u,true)};
 
   - platform: template
     id: c5do_history_record_5
@@ -24776,18 +24838,16 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src!=uint8_t(4))
         return {src==uint8_t(0) ||
                 src==uint8_t(1) ?
                 "Unavailable / history page stale" :
                 src==uint8_t(3) ?
                 "Unavailable / controller bus stale" :
-                "Unavailable / history source from previous session"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),4u,true)};
+                "Unavailable / XTR profile not observed"};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),4u,true)};
 
   - platform: template
     id: c5do_history_record_6
@@ -24803,18 +24863,16 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src!=uint8_t(4))
         return {src==uint8_t(0) ||
                 src==uint8_t(1) ?
                 "Unavailable / history page stale" :
                 src==uint8_t(3) ?
                 "Unavailable / controller bus stale" :
-                "Unavailable / history source from previous session"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),5u,true)};
+                "Unavailable / XTR profile not observed"};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),5u,true)};
 
   - platform: template
     id: c5do_history_record_7
@@ -24830,18 +24888,16 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src!=uint8_t(4))
         return {src==uint8_t(0) ||
                 src==uint8_t(1) ?
                 "Unavailable / history page stale" :
                 src==uint8_t(3) ?
                 "Unavailable / controller bus stale" :
-                "Unavailable / history source from previous session"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),6u,true)};
+                "Unavailable / XTR profile not observed"};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),6u,true)};
 
   - platform: template
     id: c5do_history_record_8
@@ -24857,18 +24913,16 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src!=uint8_t(4))
         return {src==uint8_t(0) ||
                 src==uint8_t(1) ?
                 "Unavailable / history page stale" :
                 src==uint8_t(3) ?
                 "Unavailable / controller bus stale" :
-                "Unavailable / history source from previous session"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),7u,true)};
+                "Unavailable / XTR profile not observed"};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),7u,true)};
 
   - platform: template
     id: c5do_history_record_9
@@ -24884,18 +24938,16 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src!=uint8_t(4))
         return {src==uint8_t(0) ||
                 src==uint8_t(1) ?
                 "Unavailable / history page stale" :
                 src==uint8_t(3) ?
                 "Unavailable / controller bus stale" :
-                "Unavailable / history source from previous session"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),8u,true)};
+                "Unavailable / XTR profile not observed"};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),8u,true)};
 
   - platform: template
     id: c5do_history_record_10
@@ -24911,18 +24963,16 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src!=uint8_t(4))
         return {src==uint8_t(0) ||
                 src==uint8_t(1) ?
                 "Unavailable / history page stale" :
                 src==uint8_t(3) ?
                 "Unavailable / controller bus stale" :
-                "Unavailable / history source from previous session"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),9u,true)};
+                "Unavailable / XTR profile not observed"};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),9u,true)};
 
   - platform: template
     id: c5do_alarm_active_decoded
@@ -24935,110 +24985,104 @@ text_sensor:
           return x;
     update_interval: 15s
     lambda: |-
-      // OEM 930 alarm definitions: 29 flags in 085F; 082F.10 is shown separately.
-      // This summary covers 085F only, never a global all-clear.
-      // 085F is controller-origin FC16, but not itself evidence that an M6 session survived.
-      const uint32_t ts=id(c5do_alarms_rx_ms), now=millis();
-      if (!ts) return {"Alarm status unknown / waiting for controller alarm snapshot"};
-      if (uint32_t(now-ts)>=300000u) {
-        for (unsigned i=0;i<5;i++)
-          if (id(c5do_alarms_words)[i])
-            return {"Alarm status stale / earlier active flags cannot be confirmed now"};
-        return {"Last known: no active alarm (stale)"};
+      const uint32_t now=millis();
+      const bool profile=id(passive_alarm_profile)(id(passive_alarm_identity));
+      auto fresh=[&](unsigned i,uint32_t ttl=300000u){return id(passive_alarm_fresh)(id(passive_alarm_ms)[i],now,id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),ttl);};
+      bool flags_ok=profile && fresh(0u);
+      for(auto w:id(passive_alarm_flags)) if(w==0xFFFFu) flags_ok=false;
+      const bool odu_known=profile && fresh(2u) && id(passive_alarm_odu)!=0xFFFFu;
+      const bool odu_down=odu_known && (id(passive_alarm_odu)&0x0400u)!=0u;
+      if(!flags_ok) {
+        if(odu_down) return {"Outdoor compressor down / 085F unavailable"};
+        if(!profile) return {"Alarm status unknown / XTR profile not observed"};
+        return {"Alarm status unknown / 085F missing, stale or invalid"};
       }
-      const uint32_t epoch=id(write_arm_ms);
-      const bool owner=epoch && id(write_active) && id(write_stage)==40u &&
-        id(main01_m6_session_epoch)==epoch && id(main01_native_accepted_epoch)==epoch &&
-        (id(main01_m6_session_state)==4u || id(main01_m6_session_state)==5u);
-      if (!owner) return {"Alarm status unknown / native controller session not qualified"};
-      if (!id(native_stamp_since_floor)(ts,id(native_session_order_floor),millis()))
-        return {"Alarm status unknown / snapshot belongs to previous native session"};
-      if (!id(thermia_last_valid_frame_ms) ||
-          uint32_t(now-id(thermia_last_valid_frame_ms))>10000u)
-        return {"Alarm status unknown / controller bus is stale"};
-      const bool profile=id(main01_cm930_shadow_epoch)==epoch &&
-        id(main01_cm930_shadow_version)==242u &&
-        (id(main01_cm930_shadow_state)==1u || id(main01_cm930_shadow_state)==2u);
-      if (!profile) return {"Alarm status unknown / OEM firmware profile not verified"};
-      struct NamedBit {uint16_t reg; uint8_t bit; const char *description;};
-      // Each known flag/name is source-backed. OEM additional configuration
-      // conditions (1353, 1333, 1331 and 2151) are NOT in this live page.
-      static const NamedBit known[] = {
-        {2143u,2u,"Auxiliary heater fault"},
-        {2143u,10u,"Condenser circulation pump fault"},
-        {2143u,11u,"Heating system circulation pump fault"},
-        {2143u,12u,"Circulation pump fault"},
-        {2143u,13u,"Outdoor temperature sensor fault"},
-        {2143u,14u,"Tank temperature sensor fault (EQ only)"},
-        {2143u,15u,"Supply line temperature sensor fault"},
-        {2144u,0u,"System supply temperature sensor fault"},
-        {2144u,1u,"Return line temperature sensor fault"},
-        {2144u,2u,"Four-way valve issue"},
-        {2144u,3u,"Buffer tank sensor fault"},
-        {2144u,5u,"Hot water temperature sensor fault"},
-        {2144u,6u,"Hot water tank top sensor fault"},
-        {2144u,9u,"Condenser inlet sensor flag (SPLIT condition unverified)"},
-        {2144u,10u,"Condenser outlet sensor flag (SPLIT condition unverified)"},
-        {2144u,11u,"REF1 sensor flag (SPLIT condition unverified)"},
-        {2144u,13u,"Outdoor compressor alarm"},
-        {2144u,14u,"Outdoor unit alarm"},
-        {2144u,15u,"Outdoor communication kit alarm"},
-        {2145u,1u,"Room temperature sensor fault"},
-        {2145u,2u,"Unsupported old HUB card version"},
-        {2145u,3u,"Distribution circuit 1 sensor fault"},
-        {2145u,4u,"Distribution circuit 2 sensor flag (config unverified)"},
-        {2145u,5u,"Pool sensor flag (config unverified)"},
-        {2145u,7u,"Outdoor unit compatibility flag (condition unverified)"},
-        {2145u,8u,"Indoor I/O HUB communication fault"},
-        {2145u,9u,"Communication kit communication fault"},
-        {2145u,10u,"Expansion card communication fault"},
-        {2145u,11u,"Internet gateway communication issue"},
-      };
-      const uint16_t words[5] = {
-        id(c5do_alarms_words)[0],id(c5do_alarms_words)[1],
-        id(c5do_alarms_words)[2],id(c5do_alarms_words)[3],
-        id(c5do_alarms_words)[4]};
-      // OEM formula 2143.10 requires NOT 2143.9;
-      // OEM formula 2143.12 requires NOT 2144.4.
-      const bool condenser_condition=(words[0]&0x0200u)==0u;
-      const bool circulation_condition=(words[1]&0x0010u)==0u;
-      unsigned total=0u, hidden=0u;
-      std::string display="";
-      for (unsigned i=0u;i<5u;i++) for (unsigned bit=0u;bit<16u;bit++) {
-        if ((words[i] & (uint16_t(1u)<<bit))==0u) continue;
-        const unsigned reg=2143u+i;
-        // 2143.9 and 2144.4 are OEM alarm-condition inputs, not alarm
-        // definitions: never present them as independent unknown faults.
-        if (reg==2143u && bit==9u) continue;
-        if (reg==2144u && bit==4u) continue;
-        if (reg==2143u && bit==10u && !condenser_condition) continue;
-        if (reg==2143u && bit==12u && !circulation_condition) continue;
-        const char *label=nullptr;
-        for (const auto &entry : known)
-          if (entry.reg==reg && entry.bit==bit) {label=entry.description;break;}
-        char unmapped[40];
-        if (!label) {
-          snprintf(unmapped,sizeof(unmapped),"Unmapped OEM flag %u.%u",reg,bit);
-          label=unmapped;
+      const uint16_t words[5]={id(passive_alarm_flags)[0],id(passive_alarm_flags)[1],id(passive_alarm_flags)[2],id(passive_alarm_flags)[3],id(passive_alarm_flags)[4]};
+      const auto format_alarms=[](const uint16_t (&words)[5], bool odu_known, bool odu_down) -> std::string {
+        struct NamedBit {uint16_t reg; uint8_t bit; const char *description;};
+        // Each known flag/name is source-backed. OEM additional configuration
+        // conditions (1353, 1333, 1331 and 2151) are NOT in this live page.
+        static const NamedBit known[] = {
+          {2143u,2u,"Auxiliary heater fault"},
+          {2143u,10u,"Condenser circulation pump fault"},
+          {2143u,11u,"Heating system circulation pump fault"},
+          {2143u,12u,"Circulation pump fault"},
+          {2143u,13u,"Outdoor temperature sensor fault"},
+          {2143u,14u,"Tank temperature sensor fault (EQ only)"},
+          {2143u,15u,"Supply line temperature sensor fault"},
+          {2144u,0u,"System supply temperature sensor fault"},
+          {2144u,1u,"Return line temperature sensor fault"},
+          {2144u,2u,"Four-way valve issue"},
+          {2144u,3u,"Buffer tank sensor fault"},
+          {2144u,5u,"Hot water temperature sensor fault"},
+          {2144u,6u,"Hot water tank top sensor fault"},
+          {2144u,9u,"Condenser inlet sensor flag (SPLIT condition unverified)"},
+          {2144u,10u,"Condenser outlet sensor flag (SPLIT condition unverified)"},
+          {2144u,11u,"REF1 sensor flag (SPLIT condition unverified)"},
+          {2144u,13u,"Outdoor compressor alarm"},
+          {2144u,14u,"Outdoor unit alarm"},
+          {2144u,15u,"Outdoor communication kit alarm"},
+          {2145u,1u,"Room temperature sensor fault"},
+          {2145u,2u,"Unsupported old HUB card version"},
+          {2145u,3u,"Distribution circuit 1 sensor fault"},
+          {2145u,4u,"Distribution circuit 2 sensor flag (config unverified)"},
+          {2145u,5u,"Pool sensor flag (config unverified)"},
+          {2145u,7u,"Outdoor unit compatibility flag (condition unverified)"},
+          {2145u,8u,"Indoor I/O HUB communication fault"},
+          {2145u,9u,"Communication kit communication fault"},
+          {2145u,10u,"Expansion card communication fault"},
+          {2145u,11u,"Internet gateway communication issue"},
+        };
+        // OEM formula 2143.10 requires NOT 2143.9;
+        // OEM formula 2143.12 requires NOT 2144.4.
+        const bool condenser_condition=(words[0]&0x0200u)==0u;
+        const bool circulation_condition=(words[1]&0x0010u)==0u;
+        unsigned total=0u, hidden=0u;
+        std::string display="";
+        for (unsigned i=0u;i<5u;i++) for (unsigned bit=0u;bit<16u;bit++) {
+          if ((words[i] & (uint16_t(1u)<<bit))==0u) continue;
+          const unsigned reg=2143u+i;
+          // 2143.9 and 2144.4 are OEM alarm-condition inputs, not alarm
+          // definitions: never present them as independent unknown faults.
+          if (reg==2143u && bit==9u) continue;
+          if (reg==2144u && bit==4u) continue;
+          if (reg==2143u && bit==10u && !condenser_condition) continue;
+          if (reg==2143u && bit==12u && !circulation_condition) continue;
+          const char *label=nullptr;
+          for (const auto &entry : known)
+            if (entry.reg==reg && entry.bit==bit) {label=entry.description;break;}
+          char unmapped[40];
+          if (!label) {
+            snprintf(unmapped,sizeof(unmapped),"Unmapped OEM flag %u.%u",reg,bit);
+            label=unmapped;
+          }
+          const std::string piece=(total==0u?"":"; ")+std::string(label);
+          ++total;
+          if (display.size()+piece.size()<=196u && hidden==0u) display+=piece;
+          else ++hidden;
         }
-        const std::string piece=(total==0u?"":"; ")+std::string(label);
-        ++total;
-        if (display.size()+piece.size()<=196u && hidden==0u) display+=piece;
-        else ++hidden;
-      }
-      if (total==0u) return {"No active alarm"};
-      // A locally observed 2145.11 connectivity bit does not prove a
-      // heat-pump operating fault; show exactly what OEM reports.
-      if (total==1u && (words[2]&0x0800u)!=0u &&
-          words[0]==0u && words[1]==0u && words[2]==0x0800u &&
-          words[3]==0u && words[4]==0u)
-        return {"Internet gateway communication issue (only 085F flag; heat pump status unverified)"};
-      if (hidden) {
-        char tail[48];
-        snprintf(tail,sizeof(tail)," (+%u more; see raw 085F)",hidden);
-        display+=tail;
-      }
-      return {display};
+        if (odu_down) {
+          const std::string piece=(total==0u?"":"; ")+std::string("Outdoor compressor down");
+          ++total;
+          if (display.size()+piece.size()<=196u && hidden==0u) display+=piece;
+          else ++hidden;
+        }
+        if (total==0u) return odu_known ? "No active alarm" : "No active 085F alarm / outdoor compressor status unknown";
+        // A locally observed 2145.11 connectivity bit does not prove a
+        // heat-pump operating fault; show exactly what OEM reports.
+        if (!odu_down && total==1u && (words[2]&0x0800u)!=0u &&
+            words[0]==0u && words[1]==0u && words[2]==0x0800u &&
+            words[3]==0u && words[4]==0u)
+          return "Internet gateway communication issue (only 085F flag; heat pump status unverified)";
+        if (hidden) {
+          char tail[48];
+          snprintf(tail,sizeof(tail)," (+%u more; see raw 085F)",hidden);
+          display+=tail;
+        }
+        return display;
+      };
+      return {format_alarms(words,odu_known,odu_down)};
+
   - platform: template
     id: svc62_fault_display_0
     name: "Alarms | Outdoor Communication Kit Fault"
@@ -25049,22 +25093,16 @@ text_sensor:
           if (x == id(svc62_fault_display_0).state) return {};
           return x;
     lambda: |-
-      const uint32_t e=id(write_arm_ms), now=millis(), a=id(c5do_alarms_rx_ms);
-      if (!e || !id(write_active) || id(write_stage)!=40u ||
-          id(main01_m6_session_epoch)!=e || id(main01_native_accepted_epoch)!=e ||
-          id(main01_m6_session_state)!=5u || id(main01_cm930_shadow_epoch)!=e ||
-          id(main01_cm930_shadow_version)!=242u ||
-          (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u) ||
-          !id(thermia_last_valid_frame_ms) || uint32_t(now-id(thermia_last_valid_frame_ms))>10000u ||
-          !a || !id(native_stamp_since_floor)(a,id(native_session_order_floor),millis()) || uint32_t(now-a)>300000u)
-        return {"Alarm status unavailable / no fresh qualified alarm snapshot"};
-      if ((id(c5do_alarms_words)[1] & (1u<<15u))==0u)
-        return {"No active outdoor communication kit fault flag (085F)"};
-      const uint32_t f=id(svc62_fault_ms);
-      if (id(svc62_fault_epoch)!=e || !f || uint32_t(now-f)>60000u ||
-          !id(native_stamp_since_floor)(f,id(native_session_order_floor),millis()) || uint32_t(now-a)>60000u)
+      const uint32_t now=millis();
+      const bool profile=id(passive_alarm_profile)(id(passive_alarm_identity));
+      auto fresh=[&](unsigned i,uint32_t ttl=300000u){return id(passive_alarm_fresh)(id(passive_alarm_ms)[i],now,id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),ttl);};
+      bool flags_ok=profile && fresh(0u);
+      for(auto w:id(passive_alarm_flags)) if(w==0xFFFFu) flags_ok=false;
+      if(!flags_ok) return {"Alarm status unavailable / no fresh mapped 085F snapshot"};
+      if((id(passive_alarm_flags)[1] & (1u<<15u))==0u) return {"No active outdoor communication kit fault flag (085F)"};
+      if(!fresh(3u,60000u) || !fresh(0u,60000u) || id(passive_alarm_codes)[0u]==0xFFFFu)
         return {"Outdoor Communication Kit Fault / fault code unavailable or stale"};
-      return {id(svc62_fault_text)(id(svc62_fault_codes)[0])};
+      return {id(svc62_fault_text)(id(passive_alarm_codes)[0u])};
 
   - platform: template
     id: svc62_fault_display_1
@@ -25076,22 +25114,16 @@ text_sensor:
           if (x == id(svc62_fault_display_1).state) return {};
           return x;
     lambda: |-
-      const uint32_t e=id(write_arm_ms), now=millis(), a=id(c5do_alarms_rx_ms);
-      if (!e || !id(write_active) || id(write_stage)!=40u ||
-          id(main01_m6_session_epoch)!=e || id(main01_native_accepted_epoch)!=e ||
-          id(main01_m6_session_state)!=5u || id(main01_cm930_shadow_epoch)!=e ||
-          id(main01_cm930_shadow_version)!=242u ||
-          (id(main01_cm930_shadow_state)!=1u && id(main01_cm930_shadow_state)!=2u) ||
-          !id(thermia_last_valid_frame_ms) || uint32_t(now-id(thermia_last_valid_frame_ms))>10000u ||
-          !a || !id(native_stamp_since_floor)(a,id(native_session_order_floor),millis()) || uint32_t(now-a)>300000u)
-        return {"Alarm status unavailable / no fresh qualified alarm snapshot"};
-      if ((id(c5do_alarms_words)[1] & (1u<<14u))==0u)
-        return {"No active outdoor unit fault flag (085F)"};
-      const uint32_t f=id(svc62_fault_ms);
-      if (id(svc62_fault_epoch)!=e || !f || uint32_t(now-f)>60000u ||
-          !id(native_stamp_since_floor)(f,id(native_session_order_floor),millis()) || uint32_t(now-a)>60000u)
+      const uint32_t now=millis();
+      const bool profile=id(passive_alarm_profile)(id(passive_alarm_identity));
+      auto fresh=[&](unsigned i,uint32_t ttl=300000u){return id(passive_alarm_fresh)(id(passive_alarm_ms)[i],now,id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),ttl);};
+      bool flags_ok=profile && fresh(0u);
+      for(auto w:id(passive_alarm_flags)) if(w==0xFFFFu) flags_ok=false;
+      if(!flags_ok) return {"Alarm status unavailable / no fresh mapped 085F snapshot"};
+      if((id(passive_alarm_flags)[1] & (1u<<14u))==0u) return {"No active outdoor unit fault flag (085F)"};
+      if(!fresh(3u,60000u) || !fresh(0u,60000u) || id(passive_alarm_codes)[1u]==0xFFFFu)
         return {"Outdoor Unit Fault / fault code unavailable or stale"};
-      return {id(svc62_fault_text)(id(svc62_fault_codes)[1])};
+      return {id(svc62_fault_text)(id(passive_alarm_codes)[1u])};
 
   - platform: template
     id: c5do_history_display_1
@@ -25105,19 +25137,17 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src==uint8_t(0))
         return {"History unavailable / no controller history received"};
       if (src==uint8_t(1))
         return {"History unavailable / last controller history expired"};
       if (src==uint8_t(2))
-        return {"History unavailable / session or snapshot not qualified"};
+        return {"History unavailable / XTR profile not observed"};
       if (src==uint8_t(3))
         return {"History unavailable / controller bus stale"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),0u,false)};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),0u,false)};
 
   - platform: template
     id: c5do_history_display_2
@@ -25131,19 +25161,17 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src==uint8_t(0))
         return {"History unavailable / no controller history received"};
       if (src==uint8_t(1))
         return {"History unavailable / last controller history expired"};
       if (src==uint8_t(2))
-        return {"History unavailable / session or snapshot not qualified"};
+        return {"History unavailable / XTR profile not observed"};
       if (src==uint8_t(3))
         return {"History unavailable / controller bus stale"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),1u,false)};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),1u,false)};
 
   - platform: template
     id: c5do_history_display_3
@@ -25157,19 +25185,17 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src==uint8_t(0))
         return {"History unavailable / no controller history received"};
       if (src==uint8_t(1))
         return {"History unavailable / last controller history expired"};
       if (src==uint8_t(2))
-        return {"History unavailable / session or snapshot not qualified"};
+        return {"History unavailable / XTR profile not observed"};
       if (src==uint8_t(3))
         return {"History unavailable / controller bus stale"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),2u,false)};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),2u,false)};
 
   - platform: template
     id: c5do_history_display_4
@@ -25183,19 +25209,17 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src==uint8_t(0))
         return {"History unavailable / no controller history received"};
       if (src==uint8_t(1))
         return {"History unavailable / last controller history expired"};
       if (src==uint8_t(2))
-        return {"History unavailable / session or snapshot not qualified"};
+        return {"History unavailable / XTR profile not observed"};
       if (src==uint8_t(3))
         return {"History unavailable / controller bus stale"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),3u,false)};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),3u,false)};
 
   - platform: template
     id: c5do_history_display_5
@@ -25209,19 +25233,17 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src==uint8_t(0))
         return {"History unavailable / no controller history received"};
       if (src==uint8_t(1))
         return {"History unavailable / last controller history expired"};
       if (src==uint8_t(2))
-        return {"History unavailable / session or snapshot not qualified"};
+        return {"History unavailable / XTR profile not observed"};
       if (src==uint8_t(3))
         return {"History unavailable / controller bus stale"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),4u,false)};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),4u,false)};
 
   - platform: template
     id: c5do_history_display_6
@@ -25235,19 +25257,17 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src==uint8_t(0))
         return {"History unavailable / no controller history received"};
       if (src==uint8_t(1))
         return {"History unavailable / last controller history expired"};
       if (src==uint8_t(2))
-        return {"History unavailable / session or snapshot not qualified"};
+        return {"History unavailable / XTR profile not observed"};
       if (src==uint8_t(3))
         return {"History unavailable / controller bus stale"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),5u,false)};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),5u,false)};
 
   - platform: template
     id: c5do_history_display_7
@@ -25261,19 +25281,17 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src==uint8_t(0))
         return {"History unavailable / no controller history received"};
       if (src==uint8_t(1))
         return {"History unavailable / last controller history expired"};
       if (src==uint8_t(2))
-        return {"History unavailable / session or snapshot not qualified"};
+        return {"History unavailable / XTR profile not observed"};
       if (src==uint8_t(3))
         return {"History unavailable / controller bus stale"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),6u,false)};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),6u,false)};
 
   - platform: template
     id: c5do_history_display_8
@@ -25287,19 +25305,17 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src==uint8_t(0))
         return {"History unavailable / no controller history received"};
       if (src==uint8_t(1))
         return {"History unavailable / last controller history expired"};
       if (src==uint8_t(2))
-        return {"History unavailable / session or snapshot not qualified"};
+        return {"History unavailable / XTR profile not observed"};
       if (src==uint8_t(3))
         return {"History unavailable / controller bus stale"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),7u,false)};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),7u,false)};
 
   - platform: template
     id: c5do_history_display_9
@@ -25313,19 +25329,17 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src==uint8_t(0))
         return {"History unavailable / no controller history received"};
       if (src==uint8_t(1))
         return {"History unavailable / last controller history expired"};
       if (src==uint8_t(2))
-        return {"History unavailable / session or snapshot not qualified"};
+        return {"History unavailable / XTR profile not observed"};
       if (src==uint8_t(3))
         return {"History unavailable / controller bus stale"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),8u,false)};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),8u,false)};
 
   - platform: template
     id: c5do_history_display_10
@@ -25339,19 +25353,17 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src==uint8_t(0))
         return {"History unavailable / no controller history received"};
       if (src==uint8_t(1))
         return {"History unavailable / last controller history expired"};
       if (src==uint8_t(2))
-        return {"History unavailable / session or snapshot not qualified"};
+        return {"History unavailable / XTR profile not observed"};
       if (src==uint8_t(3))
         return {"History unavailable / controller bus stale"};
-      return {id(thermia_inline_history_format)(id(c5do_history_words),9u,false)};
+      return {id(thermia_inline_history_format)(id(passive_alarm_history),9u,false)};
 
   - platform: template
     id: c5do_history_layout
@@ -25366,18 +25378,16 @@ text_sensor:
     update_interval: 30s
     lambda: |-
       const auto src=id(thermia_inline_history_source)(
-        id(c5do_history_rx_ms),millis(),id(write_arm_ms),id(native_session_order_floor),
-        id(write_active),id(write_stage),id(main01_m6_session_epoch),
-        id(main01_native_accepted_epoch),id(main01_m6_session_state),
-        id(thermia_last_valid_frame_ms));
+        id(passive_alarm_ms)[1],millis(),id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),
+        id(passive_alarm_profile)(id(passive_alarm_identity)));
       if (src!=uint8_t(4))
         return {src==uint8_t(0) ||
                 src==uint8_t(1) ?
                 "Unavailable / history page stale" :
                 src==uint8_t(3) ?
                 "Unavailable / controller bus stale" :
-                "Unavailable / history source from previous session"};
-      const unsigned stride=id(thermia_inline_history_layout)(id(c5do_history_words));
+                "Unavailable / XTR profile not observed"};
+      const unsigned stride=id(thermia_inline_history_layout)(id(passive_alarm_history));
       if (stride==6u) return {"0884/60: 10 x 6-word historical records; names unknown"};
       if (stride==7u) return {"0884/60: 8 x 7-word historical records plus 4 words; names unknown"};
       return {"0884/60: controller record geometry unverified"};
@@ -25555,29 +25565,17 @@ text_sensor:
     disabled_by_default: true
     update_interval: 10s
     lambda: |-
-      const uint32_t epoch=id(write_arm_ms);
-      const bool owned=epoch!=0 && id(write_active) && id(write_stage)==40 &&
-        id(write_config_synced) && id(main01_m6_session_epoch)==epoch &&
-        id(main01_native_accepted_epoch)==epoch &&
-        id(main01_cm930_shadow_epoch)==epoch &&
-        (id(main01_cm930_shadow_state)==1 || id(main01_cm930_shadow_state)==2) &&
-        id(main01_cm930_shadow_version)==242 &&
-        id(thermia_rx_buffer_drop_count)==id(write_drop_baseline) &&
-        id(thermia_parser_resync_count)==id(write_resync_baseline) &&
-        id(write_peer_fc17_count)==0 && id(write_peer_fc16_ack_count)==0 &&
-        id(write_runtime_unknown_fc16_count)==0 &&
-        id(write_runtime_unknown_fc03_count)==0;
-      if (!owned || id(main01_cm930_oem_085f_epoch)!=epoch)
-        return {"UNKNOWN / NO QUALIFIED OEM 085F RECEIPT"};
-      const uint32_t last=id(main01_cm930_oem_085f_ms);
-      // Local read-only freshness policy; not a proven OEM alarm polling TTL.
-      if (!last || (millis()-last)>=300000UL)
-        return {"STALE / OEM 085F NOT RECENT"};
-      if (id(main01_cm930_oem_085f_word2145)==0x0800)
+      const uint32_t now=millis();
+      const bool profile=id(passive_alarm_profile)(id(passive_alarm_identity));
+      auto fresh=[&](unsigned i,uint32_t ttl=300000u){return id(passive_alarm_fresh)(id(passive_alarm_ms)[i],now,id(thermia_last_valid_frame_ms),id(thermia_last_s02_ms),ttl);};
+      bool flags_ok=profile && fresh(0u);
+      for(auto w:id(passive_alarm_flags)) if(w==0xFFFFu) flags_ok=false;
+      if(!flags_ok) return {"UNKNOWN / NO FRESH MAPPED PASSIVE 085F"};
+      const auto &w=id(passive_alarm_flags);
+      if(w[0]==0u && w[1]==0u && w[2]==0x0800u && w[3]==0u && w[4]==0u)
         return {"OEM 2145.11 GATEWAY COMM FLAG / OBSERVED"};
-      if (id(main01_cm930_oem_085f_word2145)==0x0000)
-        return {"OEM 085F MAPPED BITS CLEAR / OTHER ALARMS UNKNOWN"};
-      return {"UNKNOWN / UNVERIFIED OEM ALARM PAYLOAD"};
+      for(auto v:w) if(v) return {"OEM 085F NONZERO FLAGS / SEE RAW AND DECODED ALARMS"};
+      return {"OEM 085F MAPPED BITS CLEAR / OTHER ALARMS UNKNOWN"};
 
   - platform: template
     id: thermia_cm930_oem_operation_summary
@@ -25968,7 +25966,7 @@ text_sensor:
     entity_category: diagnostic
     update_interval: 60s
     lambda: |-
-      return {"Service PUBLIC 1.0 | CM930 2.4.2 | XTR M 3N | 36 Service fields"};
+      return {"Service PUBLIC 1.0 (2026-11-27 update) | CM930 2.4.2 | XTR M 3N | 36 Service fields | INFO completion ${svc101_info_completion_test}"};
 
   - platform: template
     name: "Heating Settings Source"
@@ -36644,7 +36642,7 @@ interval:
             } else if(id(w2r97_alarm_read_tx_ms)!=0u &&
                       uint32_t(now-id(w2r97_alarm_read_tx_ms))>15000u) {
               id(w2r97_alarm_read_state)=4u;
-              ESP_LOGW("thermia_alarm","[W2R97] COMPLETE_INCONCLUSIVE no controller FC16 085F/5 within15s NO_RETRY");
+              ESP_LOGW("thermia_alarm","[W2R97] COMPLETE_INCONCLUSIVE no matching FC16 085F/5 ACK within15s NO_RETRY");
             }
           }
 
@@ -36749,8 +36747,9 @@ interval:
             uint32_t(observation_now-alarm_ms)<=300000u &&
             id(native_stamp_since_floor)(alarm_ms,id(native_session_order_floor),observation_now);
           auto *alarm=id(native_odu_compressor_down_alarm);
-          if (alarm_valid && id(w2r65_0820_words)[15u]!=0xFFFFu) {
-            const bool down=(id(w2r65_0820_words)[15u]&0x0400u)!=0u;
+          if (id(passive_alarm_profile)(id(passive_alarm_identity)) &&
+              id(passive_alarm_fresh)(id(passive_alarm_ms)[2],observation_now,last,id(thermia_last_s02_ms),300000u) && id(passive_alarm_odu)!=0xFFFFu) {
+            const bool down=(id(passive_alarm_odu)&0x0400u)!=0u;
             if (!alarm->has_state() || alarm->state!=down) alarm->publish_state(down);
           } else if (alarm->has_state()) {
             alarm->invalidate_state(); // unknown, not false
@@ -36810,16 +36809,18 @@ interval:
           const bool defrost_known=direct_defrost_known || oem_defrost_known;
           const bool defrost=direct_defrost_known?id(dev081_defrost_direct).state:
             (oem_defrost_known && (id(w2r65_0820_words)[15u]&0x0004u));
-          const bool compressor_alarm=odu_qualified && (id(w2r65_0820_words)[15u]&0x0400u);
+          const bool passive_profile=id(passive_alarm_profile)(id(passive_alarm_identity));
+          const bool passive_odu=passive_profile && id(passive_alarm_fresh)(id(passive_alarm_ms)[2],now,bus_ms,id(thermia_last_s02_ms),300000u) && id(passive_alarm_odu)!=0xFFFFu;
+          const bool compressor_alarm=passive_odu && (id(passive_alarm_odu)&0x0400u);
           // Alarm page uses the existing 5-minute TTL (240s refresh policy).
           // Only unconditionally mapped operating faults and the two already-decoded
           // pump conditions enter this overlay. Unknown flags, conditional equipment
           // flags and internet gateway connectivity do not claim an operating fault.
-          bool alarm_page=page_fresh(id(c5do_alarms_rx_ms),300000u);
-          if (alarm_page) for (unsigned i=0;i<5u;++i) if (id(c5do_alarms_words)[i]==0xFFFFu) alarm_page=false;
+          bool alarm_page=passive_profile && id(passive_alarm_fresh)(id(passive_alarm_ms)[0],now,bus_ms,id(thermia_last_s02_ms),300000u);
+          if (alarm_page) for (auto w:id(passive_alarm_flags)) if (w==0xFFFFu) alarm_page=false;
           bool page_fault=false;
           if (alarm_page) {
-            const auto &a=id(c5do_alarms_words);
+            const auto &a=id(passive_alarm_flags);
             constexpr uint16_t mask0=(1u<<2)|(1u<<11)|(1u<<13)|(1u<<15);
             constexpr uint16_t mask1=(1u<<0)|(1u<<1)|(1u<<2)|(1u<<3)|(1u<<5)|(1u<<6)|(1u<<13)|(1u<<14)|(1u<<15);
             constexpr uint16_t mask2=(1u<<1)|(1u<<2)|(1u<<3)|(1u<<8)|(1u<<9)|(1u<<10);
@@ -36827,7 +36828,7 @@ interval:
               ((a[0]&0x0400u) && !(a[0]&0x0200u))||((a[0]&0x1000u) && !(a[1]&0x0010u));
           }
           const bool fault=compressor_alarm || page_fault;
-          const bool fault_known=fault || (alarm_page && odu_qualified);
+          const bool fault_known=fault || (alarm_page && passive_odu);
           auto *f=id(dev084_known_fault);
           if (fault_known) {if (!f->has_state() || f->state!=fault) f->publish_state(fault);}
           else if (f->has_state()) f->invalidate_state();
@@ -36856,7 +36857,7 @@ interval:
           char quality[240];
           snprintf(quality,sizeof(quality),"Bus: %s | Compressor: %s | Direct production: %s | OEM mode: %s | Defrost: %s | Fault coverage: %s | Aux: unknown%s",
             bus?"live":"stale",compressor_known?"fresh":"unknown",production_known?"fresh":"unknown",mode_known?"fresh":"unknown",
-            defrost_known?"fresh":"unknown",(alarm_page && odu_qualified)?"mapped sources":"partial / unknown",mode_diff?" | Mode discrepancy":"");
+            defrost_known?"fresh":"unknown",(alarm_page && passive_odu)?"mapped sources":"partial / unknown",mode_diff?" | Mode discrepancy":"");
           auto publish=[](auto *sensor,const char *value) {
             if (!sensor->has_state() || sensor->state!=value) sensor->publish_state(value);
           };
