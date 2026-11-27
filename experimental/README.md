@@ -23,7 +23,6 @@ The following table describes targeted compatibility, not a list of fully suppor
 | **iTec XTR M 3N** | **M, three-phase** | **2.4.2** | **Confirmed** | **Confirmed: automatic retained-session recovery** | **Confirmed in development baseline (see note)** | **Yes — dev011 and earlier XTR builds** |
 | Other iTec XTR combinations | S 1N; M 1N/3N; L and XL 1N/3N (excluding the confirmed combination above) | 2.4.2, 2.4.3 | Mapped | Experimental | Not validated / not released | No |
 | Atec / Danfoss DHP-AQ | 6, 9, 11, 13, 16 and 18 kW Atec mappings | 2.2.0, 2.2.1, 3.0.0, 3.0.2, 3.0.3, 3.1.0, 3.1.1 | Mapped; capture replay tested | Experimental; offline cold-start/rejoin evidence, not live qualified | Calendar not validated; limited private write trial only | No |
-| Unknown controller | Other models or firmware | Not explicitly mapped | Passive discovery; coverage may be limited | Disabled by default | Not available | No |
 
 **How to read the table:**
 
