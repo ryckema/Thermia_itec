@@ -1,0 +1,573 @@
+## 2026-10-26 — Handoff: C5CP-R1 actually OTA-flashed, C5CQ SOURCE fix prepared
+
+2026-10-26 user XTR ESPHome log shows build MAIN03-C5CP-R1 and reset reason esphome.ota. Retained native auto-entry at 22:40:56, controller-owned FC16 and FC03 0708 responses, 0884/60 physical ACK and M6 event 4 to state 4 around 22:41:15; continues in stage 40. At same time CURRENT H/D/C/M 0/4, snapGen=0, NaN sensors, cache report session=NOT_QUALIFIED config=NOT_SYNCED. No HA parameter writes. Transport live positive; 4/4 data sync NOT verified. Internal MANUAL_START log is not proof of user button press.
+
+C5CQ private full C5CP-R1-derived firmware SOURCE/OFFLINE TESTED PREPARED / NOT RUN, YAML SHA256 86af5d65957c4a3d6d23e3b587943b3c40492c36e87a5c5813215095be881a45. ONE read-only publication/freshness correction: remove cold-export write_config_synced prerequisite from 22 native H/D/C/M sensors, count and CURRENT/CM930 observational diagnostics. Never mark cold configuration synced; preserve M6 same-epoch accepted transport, observed 242 identity, real four-page owner-ACK snapshot, 300s TTL, peer, CRC and parser guards. Existing OEM-grounded user-armed FC03 W2=0001 W3=0019 read is untouched; 91 S92 owner-send text call occurrences, two UART write sites and HA entity parity unchanged. 656 distinct globals, single UART config, YAML parse and ZIP integrity passed; no ESPHome target compile, user flash, new XTR LIVE evidence, new auto TX or parameter write permission.
+
+CURRENT MILESTONE: retained hot-rejoin then FC03 H/D/C/M 4/4. DELIVERABLE: C5CQ private complete source patch, PREPARED / NOT RUN, while C5CP-R1 presently runs on ESP. REAL BLOCKER: after OTA the controller has not supplied a user-armed full CURRENT 4/4 set. ONE NEXT ACTION: without another flash/reboot, on healthy running C5CP-R1 press existing MAIN01 Arm One-Shot Four-Page CURRENT Refresh exactly once; check real H/D/C/M controller receipts or explicit denial. STOP/ABORT on real bus error, C5BX rollback. Do not do HA setting writes.
+
+---
+
+## 2026-10-26 — HANDOFF: C5CP-R1 actually flashed, XTR transport live; cache NOT synced
+
+User-supplied 2026-10-26 22:34:43–22:39:13 ESPHome log, beginning ~361 s after boot (boot/auto-arm sequence NOT included). Firmware identity periodically reports `Thermia MAIN03-C5CP-R1 | NATIVE RETAINED ONE ENGINE / C5BX COLD PATH | 2026-10-26`: actual TARGET COMPILED/FLASHED/LIVE on XTR is confirmed by running build identity; local transport operations LIVE POSITIVE, but auto ESP-only rejoin without S92 START NOT PROVEN. `stage=40`, M6=4 `TRANSPORT QUALIFIED / DATA SYNC NEEDED`, FC16 ACK count rises 154→266 and FC03/0708 served 84→146; C5CP per-frame physical FC16 ACK visible for `0x0864/4`, `0x0870/17`, `0x07D0/19`, `0x07E4/17`, `0x07F8/17`, `0x080C/18`, `0x0820/18`, `0x0848/23`. `0x0884/60` physical ACK also logged through existing native handler. Parser CRC_DIFF=0, resync=0, RX drops=0, peer17/peer16ack=0, DE LOW; no ABORT/session loss in excerpt, no HA parameter writes. Live config/current remains `H/D/C/M 0/4`, `snapGen=0`, `ackMask=00`, `LEGACY_03E8_MISSING`, many native sensors NaN; FC03/cache summary says `session=NOT_QUALIFIED config=NOT_SYNCED refresh=WAIT_SESSION_OWNER`, in tension with lifecycle M6=4. `AUTO_REJOIN` says `MANUAL SESSION`, `REJOIN_ARMED=0`. Do NOT equate observed transport with full semantic session/cache success. Leave running system undisturbed; no unsolicited flash, restart, S92 START, or setting TX. Need inspect the existing qualifier-to-cache owner handoff with current exact YAML; no extra page-whitelist tests.
+
+CURRENT MILESTONE: ESP-only native retained rejoin followed by FC03/cache 4/4.
+DELIVERABLE: C5CP-R1 SOURCE/OFFLINE TESTED and user confirmed FLASHED/LIVE by build identity; live session evaluation RUNNING / PARTIAL.
+REAL BLOCKER: lifecycle M6=4 but cache qualifier NOT_QUALIFIED and no H/D/C/M receipts; auto-rejoin without manual START still unproved.
+ONE NEXT ACTION: inspect exact integrated M6/cache source flow using live evidence; do not disturb running firmware.
+
+---
+
+## 2026-10-26 — HANDOFF: reviewed C5CP-R1 private source PREPARED / NOT RUN
+
+2026-10-26 MAIN03-C5CP-R1 review: SOURCE / OFFLINE TESTED; PREPARED / NOT RUN. Replaces earlier unreviewed private C5CP ZIP (DO NOT FLASH it). Complete private C5CO-derived YAML SHA256 7720439872ce5681c4d9e7d46c26515dac449fa803e94b982f9d1c35504be1fa. The consolidated review found/fixed misleading C5CO build label, first FC03 INFO-receipt mask loss, retained-vs-cold isolation, peer/setup/parser checks and old per-page fallback bypassing a denied same-session lease. Shared bounded transport-only scope is used for exact known controller FC16 and initial FC03; the prior verified C5BX cold/recovery path, single UART/RX/DE owner, S92 ABORT and HA parameter-write HOLD are preserved. The C5CP transport FC03 alone must not mark runtime/M6 accepted. YAML/entities/globals/ZIP checked and extracted predicate compiled/executed C++17 offline; NO ESPHome TARGET COMPILE, FLASH, XTR LIVE or semantic acceptance proof. One next action: user target compiles C5CP-R1 (no flash on failure), then ONE expressly user-initiated bounded ESP-only OTA with controller and room sensor running, ABORT/rollback C5BX on errors. No repeated page-by-page hotfix tests.
+
+Use current roadmap and Research state; earlier C5CP design and C5CO LIVE NEGATIVE remain historical and must not override C5CP-R1 review. Do not expose private firmware/source in GitHub.
+
+---
+
+## 2026-10-26 — C5CE LIVE 07D0/0708 deadlock, OEM source reviewed, C5CF private FIX PREPARED / NOT RUN
+
+OBSERVED XTR C5CE ESP-only OTA 19:50–19:51: compiled/flashed MAIN03-C5CE build confirmed. After stage40 M6 RETAINED_UNPROVEN (2), one physical native FC16 ACK, repeated exact controller FC16 07D0/19 (~2s), and 14 actual FC03 0708/6 polls with 0 replies. 60.008s bounded session expires M6 SESSION_LOST (7), DE LOW. FC16 ACK 1, physicalTX 1, H/D/C/M 0/4, config unsynced; CRC difference 0, RX drops 0, session-relative parser resync/drops 0. OEM_INTERNAL=ACCEPTED / FC16=042E is internal observation, does not identify the actual first physically ACKed frame unambiguously: 042E first anchor is a STRONGLY SUPPORTED HYPOTHESIS, not PROVEN in clipped C5CE trace. C5CE's earlier 0884 transport fix was NOT reached because no 0708 reply or info pages; do not call 0884 fix disproven.
+
+OEM SOURCE REVIEW: supplied standalone device_client.zip and 2.1.105 extracted_appfs.zip contain byte-identical OEM device_client/cm/modbus_server15.py (sha256 9afc455fb50472012ae31d0767a0c39878647643ea9c37d7155142e097621d4f). OEM 0x0F Modbus RTU slave starts with holding-register banks, processes FC03 reads using standard slave read independent of later application/data-collector readiness, and separately dispatches FC16 data receipt and CM application/handshake states. This supports separating safe transport responder, semantic acceptance and data freshness; it does NOT prove XTR bus ownership, a specific first ACK page, authentication or full hot-rejoin. Keep proprietary handshake details/source PRIVATE.
+
+CONCRETE ESP SOURCE DEFECT: physically ACKed 042E/15 normal first frame is correctly saved as c5az_first_normal_ack_ms and prefix_tx_count=0 because 042E is not a prefix bitmap credit, while seven reader/INFO continuation conditions improperly demand prefix_tx_count>0. Physically ACKed 0442/13 gets prefix_tx_count=1; 042E case can deadlock FC03 even with valid stage40, no peer/error. SOURCE C5CF fixes only this mismatch: records 042E ACK after successful sole TX owner flush as current write_arm_ms-scoped c5cf_042e_ack_epoch; reset with existing START/STOP/ABORT/controller-return paths; seven original read/INFO guards permit (genuine prefix_count>0 OR same-current-epoch 042E physical ACK), without fabricating prefix count, FC03 payload, owner, profile or cache; preserves previous guarded 07D0/0870 and 0884 paths and HA setting writes HOLD. XTR TX outside user-initiated bounded OTA remains unauthorized.
+
+OFFLINE: complete C5CE-derived C5CF YAML syntax pass, 652 unique globals, unchanged 89 central s92_tx_owner_send calls and UART writes count; isolated C++17 predicate compiled and eight guarded cases executed; ZIP CRC and embedded YAML identity verified, full private ZIP/diff/manifest/instructions provided. NOT ESPHome target compiled, NOT flashed, NOT LIVE. C5CE OTA rejoin COMPLETE / NEGATIVE, C5CF-OTA-01 PREPARED / NOT RUN. C5BX remains LOCALLY VERIFIED controller cold recovery baseline/rollback. Keep room sensor attached.
+
+CURRENT MILESTONE: one native OEM-equivalent ESP-only retained-session recovery engine with valid FC03/FC16 continuation and H/D/C/M freshness.
+DELIVERABLE: C5CF complete PRIVATE firmware ZIP with OEM-grounded 042E first-read transport correction; SOURCE / OFFLINE TESTED.
+REAL BLOCKER: C5CF hardware target compile/live first-ACK page provenance, 0708 served, and semantic H/D/C/M freshness not yet verified.
+ONE NEXT ACTION: user target-compiles C5CF and executes ONE bounded ESP-only OTA, no controller restart/S92 START; inspect actual first ACK page and subsequent FC03 0708 physical replies, then actual INFO and H/D/C/M. ABORT on bus anomaly, rollback C5BX.
+
+---
+
+## 2026-10-26 — C5CE retained runtime 0884/M6 fix — PREPARED / NOT RUN
+
+OBSERVED: User C5CD ESP-only OTA 18:48–18:49 LIVE automatically armed stage40, physically ACKed 0870/17, served FC03 0708, ACKed INFO 0532/18 and 06F1/3 (mask03/1F), then controller repeatedly offered 0884/60 but native responder blocked NO_OWNER, M6 RETAINED_UNPROVEN state2, 14 0708 polls with 13 blocked and H/D/C/M 0/4; 60.171s expired. CRC_DIFF=0, RX drops=0, no session-relative parser resync. C5CD complete ESP-only rejoin COMPLETE / NEGATIVE despite initial positive exchange.
+
+INTEGRATED C5CE PRIVATE SOURCE based on C5CD: Exactly one first ACK for controller-offered exact CRC-valid 0884/60 in guarded current auto-retained S92 stage40 after REAL 0870 ACK, real 0708 served, INFO 0532+06F1 physical ACK receipts; reject setup/export, wrong frame, peer/collision, parser/drop change, dirty writes, wrong session/epoch, timeout, repeated first 0884 or manual-only context. Same sole S92 UART/DE owner and unchanged physical TX call sites, no unsolicited master. Store scoped 0884 receipt only after physical flush; M6 event4 separately qualifies this real retained TRANSPORT (not cloud Online or H/D/C/M freshness). Subsequent normal native FC16 and controller FC03 both use same qualified retained epoch, including gate in central physical S92 owner; pending existing INFO requests can continue only in existing bounded 12-poll/55s read-only path. Reset scoped receipt on START/ABORT/STOP/controller return. Preserve C5BX locally verified cold recovery, CRC/V5 parser/B11C/B11D/DE/ABORT, HA setting/parameter writes ON HOLD, room sensor connected.
+
+OFFLINE TESTED: full YAML !secret-aware parsed, 651 unique globals, physical TX-owner call sites 89 and UART write_array 2 unchanged; isolated C++17 predicate compiled and 10 guarded scenarios passed; ZIP CRC and SHA verified. TARGET COMPILE NOT RUN, FLASHED NOT RUN, LIVE NOT RUN. C5CE-OTA-01 PREPARED / NOT RUN. Deliverable ONE full private ZIP with YAML/patch/manifest/build/ABORT/rollback. C5BX latest LOCALLY VERIFIED baseline. Do not repeat proven controller cold-start.
+
+CURRENT MILESTONE: ESP-only native retained hot rejoin then sustained FC03/cache freshness.
+DELIVERABLE: C5CE complete integrated PRIVATE firmware, SOURCE / OFFLINE TESTED.
+REAL BLOCKER: post-0884 transport qualification and sustained H/D/C/M 4/4 still need user live evidence; no target compile.
+ONE NEXT ACTION: user target compiles C5CE and performs ONE bounded ESP-only OTA, checks real 0884 ACK -> M6 transport qualified -> FC03 and cache. ABORT/rollback C5BX if abnormal.
+
+---
+
+## 2026-10-26 — C5CD ESP-only OTA automatic activation works, session remains unqualified — COMPLETE / NEGATIVE
+
+OBSERVED LIVE (user C5CD build label, ESPHome OTA reset, 18:48–18:49): [C5CD] AUTO_NATIVE_ENTRY_ARMED at 18:48:14 route=RETAINED_RUNTIME normalFC16=0 FC03_0708=3 runtimeFC16=6 setupFC16=0. IMPORTANT: this used the pre-existing runtime-0708 arm, not C5CD's new 042E/0442 normal-entry branch. Automatic activation and first physical native response positively observed: 0870/17 ACK at 18:48:15; genuine 0708 reply at 18:48:19; bounded info request then 0532/18 and 06F1/3 accepted as transport ACK, infoMask=03/1F. Total session physicalTX=4, FC16 ACK=3, FC03 served=1. Controller next repeatedly offered real 0884/60, which remained unACKed; explicit FIX32 RUNTIME_FC16_NO_OWNER and FIX39 KNOWN_FC16_NO_OWNER at 18:48:44. M6 stayed RETAINED_UNPROVEN state2; FC03 14 received, 13 withheld; no profile, no H/D/C/M (0/4). Session FIX18 RETAINED_UNPROVEN_EXPIRED after 60171ms at 18:49:14, DE LOW. CRC_DIFF=0, RX drops=0; parser resync total 19 but session-relative resync delta 0. OEM_INTERNAL=ACCEPTED is internal only, NOT controller semantic owner acceptance. C5CD-OTA-01 COMPLETE / NEGATIVE for complete automatic ESP-only recovery; intermediate TX exchange positive but does not convert final status.
+
+SOURCE REVIEW: C5CD's 0884/60 C5BW handler requires a *different* configuration export (0546 init, >=3 ordered resume pages, write_resume_started, M6 state3); actual automatic retained info-first runtime branch has 0870 ACK, 0708 read, C5AX info mask 03, M6 state2, so 0884 handling falls through to NO_OWNER. Separately M6 event4 transport-qualification still demands full export or 07E4/c5al handoff and cannot promote solely from the observed transport exchange. These are distinct implementation gates; a one-page exception alone cannot prove semantic acceptance or refresh cache. FIX decision: integrate normal retained-session response continuation (same UART/DE owner, actual addressed valid CRC/geometry, bounded/ABORT) and separate responder/transport qualification from cache/application freshness without inventing owner epochs, auth, profile, or permitted HA writes. No new physical bus experiment until user-initiated bounded validation. Preserve C5BX controller cold recovery LOCALLY VERIFIED, don't repeat it.
+
+CURRENT MILESTONE: ESP-only native hot-rejoin and FC03 H/D/C/M freshness in a single S92 engine.
+DELIVERABLE: C5CD compiled, flashed and LIVE validated automatic arm + 4 physical responses; full recovery COMPLETE / NEGATIVE.
+REAL BLOCKER: phase2 M6 retained-unproven continuation blocks 0884/60 and M6 full-export-only promotion prevents real retained runtime qualifying.
+ONE NEXT ACTION: integrated targeted correction to retained-runtime continuation and M6 acceptance separation, followed by ONE bounded user-started OTA, preserve C5BX cold restart and all CRC/DE/ABORT safeguards. HA parameter writes HOLD.
+
+---
+
+## 2026-10-26 — C5CC user ESP-only rejoin not observed; C5CD source fix PREPARED / NOT RUN
+
+OBSERVED FACTS: The user reports no automatic rejoin on C5CC. Shared excerpt 17:41:44–17:41:49 shows M6 BOOT_RX_ONLY, passive FC16 internal acceptance (042E), ongoing controller and room sensor frames, H/D/C/M not fresh. This short excerpt does NOT confirm the C5CC build label, exact FC16 word count, complete 30s observer outcome, or actual controller 0708 polling. Do not claim independent live failure beyond the user report.
+
+SOURCE DEFECT: C5CC passive auto-entry credits only runtime 07D0+ shaped FC16 with prior 0708, despite the existing S92 C5AZ/C5AA first-normal-ACK path already recognizing locally evidenced 042E/15 and 0442/13. Therefore this normal entry phase cannot trigger the one existing S92 responder. The old requirement risks waiting for a 0708 read that the controller may not send until earlier native FC16 has been answered.
+
+ONE INTEGRATED CHANGE: Private C5CD extends the existing sole RX classifier to credit ONLY exact CRC-valid 042E/15 and 0442/13 as normal-entry evidence. Three matching frames within the guarded passive window permit automatic S92 stage40 before 0708 (the prior separate runtime+0708 path remains). The existing C5AA/C5AZ single first-ACK handler may now respond once to an exact real controller request after auto-entry, without a redundant same-page repeat; manual-start behavior remains unchanged. New current-session epoch gate prevents that auto authorization leaking to later manual starts. All original DE/UART, CRC, shape, peer, ABORT, cold-start and HA-write HOLD safeguards remain. ACK does NOT prove semantic acceptance or fresh config. No new autonomous discovery/TX writer.
+
+VERIFICATION: YAML parsing, 650 unique globals, 89 s92_tx_owner_send calls and 2 UART write_array calls unchanged; 11 branch scenarios and isolated C++17 expression syntax passed; ZIP integrity and identical embedded YAML verified. This is SOURCE / OFFLINE TESTED, NOT target compiled, NOT flashed/LIVE. C5BX controller-restart cold recovery remains last locally verified baseline. Experiment C5CD-OTA-NORMAL-ENTRY-01 PREPARED / NOT RUN; user-initiated one bounded OTA, ABORT and rollback C5BX.
+
+CURRENT MILESTONE: OEM-equivalent native ESP-only retained-session reconnect in one existing engine.
+DELIVERABLE: C5CD full private firmware ZIP with normal-FC16 first-entry fix.
+REAL BLOCKER: XTR live automatic post-OTA acceptance/H-D-C-M freshness still unverified; short new excerpt lacks exact frame geometry.
+ONE NEXT ACTION: user target-compiles C5CD; if successful, one user-initiated bounded ESP-only OTA and inspect first real native ACK, subsequent 0708, semantic session/cache.
+
+---
+
+## 2026-10-26 — C5CC native RX/session-core refactor — PREPARED / NOT RUN
+
+OBSERVED FACTS: C5BX controller-only restart/cold recovery remains COMPLETE / POSITIVE and LOCALLY VERIFIED. C5BY ESP-only rejoin failed to arm in last live trace with known FC16 (0442) but no native 0708; no conclusion that retained runtime was offered then. C5BZ had a target compiler parentheses defect; C5CA corrected syntax at source level; C5CB predicate refactor still not target compiled or live tested.
+
+INTEGRATED PRIVATE C5CC SOURCE: full C5CB YAML refactored in two native-core areas. The single V5 RX owner now uses ONE switch for 7 setup/export and 9 runtime exact page/count pairs, plus the pre-existing 12-page known-shape diagnostic scope (06F4 remains diagnostic only); no authorization from the classifier. The passive rolling native FC16 15/3, >=3-second candidate detector now has ONE equivalent window reset on stale RX, changed parser integrity, malformed known shape, competing native slave reply or 30s rollover. Auto OTA phase, lifecycle and integrity predicates are named but logically unchanged; still needs actual runtime 0708 + runtime FC16 and zero setup pages; delegates to existing S92 engine. Existing first-0870-ACK, FC03, controller-cold-recovery, DE/CRC/peer/ABORT and HA entity behavior retained. HA parameter writes ON HOLD. No public proprietary source/handshake details.
+
+VERIFICATION: full YAML parser pass, 649 unique IDs, same physical TX-owner call sites (89) and write_array call sites (2), complete ZIP CRC verified, offline exact classifier equivalence for 1,048,576 address/count combinations and 128 passive reset-state cases. No ESPHome target build here; status SOURCE / OFFLINE TESTED, NOT TARGET COMPILED, NOT FLASHED, NOT LIVE. One complete private C5CC ZIP available to user; C5BX remains latest locally verified controller-recovery rollback. C5CC-REFACTOR-01 PREPARED / NOT RUN.
+
+CURRENT MILESTONE: consolidate one native RX/session engine while advancing ESP-only automatic retained rejoin.
+DELIVERABLE: C5CC integrated full private YAML ZIP plus manifest, private patch, activation/ABORT/rollback.
+REAL BLOCKER: C5CC target compilation and ESP-only semantic rejoin not yet validated; last user live trace offered no 0708.
+ONE NEXT ACTION: user target-compiles C5CC; if successful, one bounded user-initiated OTA to observe genuine controller runtime requests and fresh H/D/C/M. Never repeat verified controller cold-start experiment.
+
+---
+
+## 2026-10-26 — C5BX ESP-only OTA negative; C5BY guarded first 0870 ACK PREPARED / NOT RUN
+
+C5BX user-LIVE ESP-only OTA: CRC-clean controller FC16 0870/count17 repeats every ~2s; valid FC03 0708/count6 14 times; M6 RETAINED_UNPROVEN and `EXP418_0870_NO_TOKEN` suppress all TX, FC16 ACK 0, FC03 served 0, H/D/C/M 0/4; timeout 60.075s, DE LOW, CRC/parser/drop counters zero. C5BX controller-restart cold recovery remains COMPLETE/POSITIVE LOCALLY VERIFIED; never retest it without contrary evidence.
+
+C5BY complete private firmware based on C5BX: ONE change to existing stage40 C5AW/C5BT one-shot first native FC16 response branch, adding exact controller-offered 0870/count17, byteCount34 frameLen43 when auto OTA attempted and genuine runtime phase proved (>=1 0708 poll, >=3 runtime FC16, zero config/export offers). Prior 0848/23 and 07D0/19 still use original single owner, 55s epoch/approval, no peer reply, parser CRC freshness, queue/DE/ABORT protections. Physical 0870 ACK does not invent EXP418 token or semantic accepted owner; subsequent real 0708 may use existing one-real-ACK qualify path and cache is stale until verified fresh. HA parameter writes HOLD. YAML syntax parsed, 647 unique globals, single TX writer count unchanged, ZIP CRC verified, source-only NOT target compiled or flashed. C5BY-OTA-01 PREPARED / NOT RUN; rollback C5BX (latest locally verified cold controller route), C5BN older fallback. User triggers one OTA while controller and room sensor remain connected; examine first ACK, FC03 reply, semantic session and cache, abort on real bus errors.
+
+CURRENT MILESTONE: native ESP-only retained hot rejoin. DELIVERABLE: C5BY integrated complete private ZIP SOURCE/OFFLINE TESTED. REAL BLOCKER: no live semantic acceptance after first 0870 ACK. ONE NEXT ACTION: one user-initiated bounded C5BY OTA test and review resulting first ACK/0708 owner/cache status.
+
+---
+
+## 2026-10-26 — C5BX user reports valid DCM after restart (RUNNING / PARTIAL pending evidence)
+
+USER REPORT: C5BX flashed, DCM valid following restart. Positive user-observed recovery outcome, but restart actor (ESP vs controller) and exact native owner, FC16/FC03, H/D/C/M freshness evidence not supplied in this message. Do not mark LOCALLY VERIFIED or infer cold-start/hot-rejoin specific success without controller-facing log. No further restart needed; request existing success trace/status snapshot only. HA parameter writes remain HOLD; C5BN remains last independently locally verified baseline until evidence qualified.
+
+CURRENT MILESTONE: integrated C5BX automatic phase-qualified recovery. DELIVERABLE: user-reported positive DCM restoration after restart. REAL BLOCKER: distinguishing controller vs ESP restart path and independent native session/cache freshness evidence. ONE NEXT ACTION: review the already captured successful C5BX log and classify recovery route and acceptance, without re-running restart.
+
+---
+
+## 2026-10-26 — C5BW OTA LIVE misclassified new config export; C5BX phase fix — PREPARED / NOT RUN
+
+OBSERVED: User 16:15:18 C5BW OTA auto hot-rejoin armed from passive 15/3 known-FC16 classifier; the controller then offered 04A6/13, 085F/5, 04BA/22, 059C/33, 05FF/33, 0662/33 (real physical FC16 ACKs, OEM page export), zero FC03 0708 polls; after 60.011s M6 SESSION_LOST, FC16ACK=5 0708SERVED=0 physicalTX=6, no semantic ownership, H/D/C/M 0/4, DE LOW, CRC_DIFF=0/parser resync=0. A valid FC16 count is insufficient to classify retained runtime. C5BW OTA session COMPLETE / NEGATIVE, but controller restart not tested.
+
+IMPLEMENTED C5BX complete PRIVATE integrated source from C5BW: passive RX tracks CRC-validated controller 0x0F exact 0708/count6 FC03 polls, exact runtime FC16 07D0/07E4/07F8/080C/0820/0848/0864/0870/0884, and exact config/setup FC16 04A6/085F/0546/04BA/059C/05FF/0662. Auto retained activation now REQUIRES >=1 real 0708 poll + >=3 runtime pages + ZERO recognized config/start pages since ESP boot, alongside unchanged 15/3 generic passive, peer, parser, CRC, stage, epoch, dirty queue and ABORT guards. On observed configuration export, remain RX_ONLY, do not automatically press retained S92 start, and leave controller-gap/C5BN original cold-R1 route intact. No new TX, no session acceptance/HA writes. SOURCE / OFFLINE TESTED: YAML parsed, 647 unique globals, same number of physical s92_tx_owner_send and thermia_uart.write_array calls as C5BW, ZIP integrity verified. NOT TARGET COMPILED/FLASHED/LIVE. C5BN is latest LOCALLY VERIFIED rollback. C5BX-PHASE-01 PREPARED / NOT RUN. NEXT ACTION: one bounded user OTA and verify BUILDTAG, proper RX-only config phase vs retained runtime activation; ABORT on abnormal physical TX and rollback C5BN.
+
+CURRENT MILESTONE: unified ESP/controller native DCM recovery with controller phase discrimination. DELIVERABLE: full private C5BX phase-qualified firmware ZIP. REAL BLOCKER: full native ownership/cache after reboot still not live validated and controller restart not yet validated for this branch. ONE NEXT ACTION: one controlled user-initiated C5BX OTA validation, no controller restart unless explicitly separately initiated.
+
+---
+
+## 2026-10-26 — C5BU unified ESP reboot + controller restart recovery — PREPARED / NOT RUN
+
+Private full MAIN03-C5BU firmware ZIP prepared from complete C5BT user-LIVE source (actual prior C5BT physical FC16 07D0 ACK + INFO 0708 + 0532/06F1/07E4 ACK positive, but native owner and cache freshness negative). C5BU uses same sole S92 RX/UART/DE/TX engine. ESP-only retained route now responds to ACTUAL CRC/shape-validated controller 07F8/count17 in same guarded C5AX information-response handler only when prior same-epoch info ACK mask includes 0532+06F1+07E4 (0B), 55s bound and all native collision/CRC/DE/ABORT checks; does not credit 07F8 as the fifth info page or grant owner. Distinct controller-restart route extends C5BN proven automatic cold start eligibility to M6 SESSION_LOST (7) after previous failed retained session, and watches controller 0x02 absence >=5s independently of 0x0A room-sensor messages. If 0x02 has been present in this ESP boot then disappears, and there are no active semantic transactions, route the existing S92 lifecycle into cold stage1 even if room sensor keeps bus active; detection itself sends zero bytes, first cold TX remains exact original challenge with unchanged A80E/A80F, CRC and DE guards. One-shot c5ai_rearm_used prevents loops. Corrected visible build label to C5BU. HA parameter writes remain HOLD, no autonomous OTA. This changes controller-restart detection outside previously live-verified full-bus silence scope; requires user-initiated bounded validation, not claimed PROVEN. C5BN remains latest LOCALLY VERIFIED fallback. SOURCE/OFFLINE TESTED only: YAML parsed, 644 globally unique IDs, sole TX-owner call count unchanged, ZIP CRC passed. NOT ESPHome TARGET COMPILED, FLASHED, LIVE. C5BU-UNIFIED-01 PREPARED / NOT RUN.
+
+CURRENT MILESTONE: integrated ESP-only hot rejoin and controller-only cold restart recovery. DELIVERABLE: one complete private C5BU integrated firmware ZIP. REAL BLOCKER: controller-gap cold detection and retained 07F8 continuation not yet live validated, and semantic native owner/fresh H/D/C/M unproven. ONE NEXT ACTION: user compile and one explicitly bounded controlled OTA experiment; inspect BUILD, first 07D0/0708, 07F8 continuation, actual owner/cache; only test controller reboot as deliberately authorized and needed, ABORT rollback C5BN on faults.
+
+---
+
+## 2026-10-26 — User C5BR ESP-only OTA hot rejoin: auto-arm positive, native owner negative
+
+USER LIVE log 14:01:36–14:02:45 confirms actual postboot firmware BUILD MAIN03-C5BR at 14:02:29 (not C5BS; C5BS source-only compile correction not flashed). OTA reset reason explicitly `Reboot request from esphome.ota`. `[C5BP] AUTO_OTA_REJOIN_ARMED` at 14:01:39 automatically invoked original stage40 S92 handler, no user click established. Controller kept issuing authentic `0x0F FC16 0x07D0/count19` repeatedly, plus 0x0F FC03 0708 polls. Controller offers therefore NOT missing. But `[FIX32] RUNTIME_FC16_NO_OWNER` and `[FIX39] KNOWN_FC16_NO_OWNER` blocked response: FC16 ACK=0, FC03 served=0, physical TX=0, DE LOW; 60.199s session expired to RX_ONLY. CRC_DIFF=0, SHAPE_OTHER=0, resync/drop=0 in excerpt, room sensor and production telemetry continue. H/D/C/M 0/4, cache stale. OEM_INTERNAL=ACCEPTED with OWNER=EXISTING_MANUAL_SESSION is observational and NOT an accepted physical TX epoch. C5BR-AUTO-OTA-01 is COMPLETE / NEGATIVE for full hot rejoin; **POSITIVE only for automatic trigger and controller continued native offers**. Existing s92_runtime_fc16_owner requires full export/certain scoped first-entry paths; no existing 07D0/count19 owner bootstrap in inspected C5BS source. Current 07D0 is recognized runtime traffic but NOT yet validated automatic first-owner ACK after OTA; do not bypass real CRC, collision, peer, epoch, ABORT guards or invent new frames. C5BN remains latest LOCALLY VERIFIED firmware. HA writes HOLD. No repeated blind OTA or controller restart. C5BS not user flashed.
+
+CURRENT MILESTONE: automatic ESP-only retained native session hot rejoin. DELIVERABLE: C5BR OTA LIVE analysis and concrete retained-owner gate conflict identified. REAL BLOCKER: qualified owner acquisition on existing 07D0/count19-only controller offer without false inherited ownership. ONE NEXT ACTION: implement a single tightly scoped existing-owner-path fix based on locally validated runtime FC16 ACK evidence, retaining sole UART/DE and all guards, then one bounded user-initiated validation; no speculative tests.
+
+---
+
+## 2026-10-26 — C5BQ review correction: C5BR replaces unflashed C5BQ (PREPARED / NOT RUN)
+
+Double-check of complete C5BQ against C5BP identified two **test-reporter defects** (not evidence of native TX failure): `FIX_BUS_INTEGRITY` was subordinate to arm/owner failures, potentially masking an integrity event; RX/parser/CRC/peer counters were boot-absolute, not measured as deltas within the 120-second test window. C5BR corrects classification priority and records 5 test-window baseline/deltas including malformed FC16 shapes. Native C5BP hot-rejoin activation and physical UART/DE/CRC guards are untouched, no additional TX or HA parameter writes. Full private ZIP validated offline (YAML parse, 643 unique globals, DE-high count parity with C5BP, ZIP integrity); NOT target compiled/FLASHED/LIVE. C5BN remains last LOCALLY VERIFIED. C5BQ superseded as prospective deliverable, do not flash; C5BR-AUTO-OTA-01 PREPARED / NOT RUN. Single user-initiated bounded OTA only where native controller offers already exist; observe BUILD and final report, ABORT on errors, rollback C5BN. Long-term FC03/cache remains OPEN.
+
+CURRENT MILESTONE: ESP-only OTA hot rejoin. DELIVERABLE: C5BR private full ZIP source/offline checked. REAL BLOCKER: no user live C5BR outcome. ONE NEXT ACTION: one user-initiated C5BR OTA and evaluate native offers/accepted owner/freshness.
+
+---
+
+## 2026-10-26 — Next step: C5BQ one-shot OTA validation
+
+C5BQ private full ZIP derives from C5BP and adds a non-transmitting 120s automatic post-boot test observer (begins at 5s uptime). User OTA-flashes ONE time after verifying existing native 0x0F FC16 controller offers; controller and room sensor remain powered; do not manually S92 START. Observe postboot C5BQ BUILD and final `AUTO_TEST_FINAL` to decide GO/FIX/NO-GO. Status SOURCE/OFFLINE TESTED PREPARED / NOT RUN, no target compile or LIVE. C5BN locally verified rollback; ABORT on unexpected TX or bus errors; no repeat blind resets. No HA parameter writes. Next only if retained controller offers exist. Persistent FC03 refresh follows successful hot rejoin.
+
+---
+
+## 2026-10-26 — C5BO automatic ESP-only OTA hot rejoin — PREPARED / NOT RUN
+
+OBSERVED: C5BN locally verified full automatic WP restart, FC23/FC16 and H/D/C/M 4/4; C5AR verified fallback. ATEC V3 supports short ESP-only OTA rejoin if controller keeps polling. XTR no independently verified unattended ESP-OTA rejoin. Cold join without controller restart remains outside scope.
+
+ONE CHANGE: Complete PRIVATE C5BN-derived C5BO automatically invokes existing S92 stage40 initialization at most ONCE per ESP boot after >=15 CRC-valid bus frames and >=3 controller-originated known-shape 0x0F FC16 requests in an unambiguous clean >=3s rolling window (ESP uptime>=5s), with no observed competing 0x0F FC16 or FC03 slave responses since ESP boot, no dirty HA queues, no active session, no parser/CRC integrity faults and no ABORT lockout. Auto-arm itself sends NO bytes; only later real requests can be answered through the one original UART/DE TX owner and original physical guards. Same manual START/ABORT controls remain. No semantic accepted owner or fresh H/D/C/M inherited across boot, no new unsolicited master TX, HA writes ON HOLD.
+
+LIMIT: When controller sends only 0708 or nothing after OTA, no auto-arm; remains RX_ONLY rather than invent a poll. Does not solve silent-controller cold join. One bounded user-initiated OTA trial, not autonomous flashing.
+
+OFFLINE TESTED: Complete ESPHome YAML parsed with !secret placeholders; 635 global IDs (632 baseline + 3), single physical UART writer and DE-high owner; ZIP CRC/integrity passed. YAML SHA256 627c00d919ad50a877d8108bd16fdc38205f88284ff926572233ca5102cb922c; archive THERMIA_MAIN03_C5BO_AUTO_OTA_HOT_REJOIN_PRIVATE_20261026.zip SHA256 14dec9b0be5adf61c46faf1ee9e6e5f86533459601b4baf081c58b761cf53a0b. Not TARGET COMPILED, FLASHED, LIVE, LOCALLY VERIFIED. PRIVATE firmware stays out of public repository.
+
+EXPERIMENT C5BO-AUTO-OTA-01 PREPARED / NOT RUN: User OTA-flashes once while XTR and room sensor remain powered, no manual S92 START. Observe passive FC16 qualification, AUTO_OTA_REJOIN_ARMED, real FC16 ACK and 0708, independent owner and fresh cache. If no FC16 offer: COMPLETE / INCONCLUSIVE, no TX; do not repeat blind experiments or WP restart. Abort on collision, unexpected TX, integrity faults and rollback to C5BN verified baseline.
+
+CURRENT MILESTONE: Automatic ESP-only retained-session OTA hot rejoin.
+
+DELIVERABLE: One complete C5BO PRIVATE firmware ZIP SOURCE/OFFLINE TESTED PREPARED / NOT RUN.
+
+REAL BLOCKER: XTR live post-OTA controller FC16 offering and semantic unattended rejoin not yet proven.
+
+ONE NEXT ACTION: User-initiated bounded one-time C5BO OTA live validation and GO/FIX/NO-GO.
+
+---
+
+
+## 2026-10-26 — USER PRIORITY CHANGE: OTA hot rejoin BEFORE FC03 refresh
+
+**USER INTENT:** Prioritize automatic hot rejoin when ESP32 is OTA-flashed/reboots, with the XTR controller continuously running. Objective: restore existing DCM session without manually pressing S92 START or rebooting the WP. Cold join to a never-recognized DCM on an already-running WP REMAINS OUT OF SCOPE; normal transient ESP downtime during flashing cannot be zero, but should recover when controller keeps polling.
+
+**OBSERVED FACTS:** C5BN LOCALLY VERIFIED one automatic controller cold-start with fresh H/D/C/M 4/4. The subsequent user C5BN runtime log shows 0x0F controller-led FC16 ACKs and 0708 replies continuing with NO new R1, CRC_DIFF=0, resync=0, RX drops=0, DE LOW. However the lifecycle text states 'EXISTING_MANUAL_SESSION' and 'MANUAL SESSION', so this does NOT prove autonomous takeover immediately after an ESP-only OTA restart; it establishes useful runtime protocol evidence only. ATEC V3's retained-session short ESP reboot does show controller continued polling, but cross-model support is not XTR live proof.
+
+**DECISION:** MOVE automatic ESP-only OTA hot-rejoin / retained-session recovery AHEAD of automatic FC03 refresh on active roadmap. Retain C5BN as the latest LOCALLY VERIFIED baseline and C5AR rollback. One integrated C5BN-derived hot-rejoin change only if needed: passive observe retained controller 0x0F FC16/0708, auto-qualify the existing native session through real controller-authored requests and existing physical TX, parser/DE/collision/ABORT guards (no artificial epoch, fake FC16 ACK, unsolicited master frames, or parallel UART owner). Do not label transport ACK as full semantic cache validity; after rejoin mark H/D/C/M stale until refreshed. HA parameter writes remain ON HOLD.
+
+**TEST GATE:** Prepare ONE complete private firmware ZIP then user compiles/flashes OTA and records ONE bounded ESP-only reboot; WP and room sensor stay powered. On controller still polling, expect auto owner recovery and guarded FC16/0708 responses without S92 user click, and clearly mark cache freshness separately. If controller stops polling, do not claim hot rejoin success or re-open cold join; no blind repeated resets. ABORT and C5AR rollback preserved.
+
+**CURRENT MILESTONE:** Automatic ESP-only OTA hot rejoin to already recognized, polling XTR native DCM session.
+**DELIVERABLE:** Roadmap reordered, no firmware change or physical TX in this priority decision.
+**REAL BLOCKER:** C5BN hot-rejoin after real ESP-only OTA reboot is not yet locally verified; existing MANUAL SESSION label and boot RX_ONLY owner guard require targeted source reconciliation.
+**ONE NEXT ACTION:** Compare C5BN's ESP reboot/retained-session RX handling and owner guards with the real runtime trace, then implement one integrated automatic hot-rejoin fix where proven necessary; FC03 refresh follows.
+
+---
+
+## 2026-10-26 CONTINUITY — C5BN automatic WP (re)start is now LOCALLY VERIFIED (C5BN-AUTO-COLD-01 COMPLETE / POSITIVE)
+
+**User LIVE result:** C5BN identified on ESP; controller `0x02` previously seen followed by 5078ms whole-bus loss => `[C5BN] AUTO_CONTROLLER_COLD_WAIT` at 12:49:09.989, `BOOT_RETURN` at 12:49:14.919, genuine guarded native FC23 at 12:49:16.247, 35 initial FC16, then runtime FC16 ACK and 0708 => `RECOVERY_POSITIVE success=1 ... recoveryRearmed=1 DE=LOW` at 12:49:50.401. At 12:50:06.565 `session=RUNTIME config=SYNCED page=FRESH H=1 D=1 C=1 M=1 receiptPages=4/4 snapGen=1 FC03=4 RX0708=4`; 12:50:08 M6 entered current-fresh owner=accepted and 12:50:09 `M6 / TRANSPORT QUALIFIED / CURRENT FRESH (NOT ONLINE PROOF)`. CRC_DIFF=0, SHAPE_OTHER=0, RX drops=0, parser resync=0 in sampled log; no HA setting writes (`semanticSettingTX=DISABLED`). The `[S92-FIX] MANUAL_START` log is emitted by the *internally invoked existing S92 start handler* in the C5BN auto branch and DOES NOT imply a user HA click.
+
+**STATUS:** C5BN-AUTO-COLD-01 **COMPLETE / POSITIVE**, C5BN **USER FLASHED / LIVE / LOCALLY VERIFIED** for ONE automatic controller-only cold-start/restart with ESP already seeing controller 0x02 (not previously marked verified; update latest working firmware baseline to C5BN). C5AR remains proven safety rollback. `recoveryRearmed=1` is source/state proof, not repeated-live-restarter proof. Long-term native FC03 freshness/runtime remains OPEN. No-controller-restart cold join is explicitly OUT OF SCOPE. No further blind reboots or new TX. HA parameter writes remain ON HOLD. Preserve UART/DE owner, CRC, ABORT, room sensor.
+
+**CURRENT MILESTONE:** Persistent FC03 refresh/cache freshness and native runtime session upkeep after the proven C5BN automatic WP restart.
+**DELIVERABLE:** One actual full automatic WP restart with FC23, native FC16/0708, H/D/C/M 4/4 and clean parser, locally verified.
+**REAL BLOCKER:** Sustained FC03 freshness/runtime maintenance beyond startup not yet locally verified.
+**ONE NEXT ACTION:** Review actual C5BN source runtime refresh/cache-freshness against new LIVE owner/acceptance evidence and integrate one concrete defect fix if found. Do not reopen cold join, repeat startup or change HA write hold.
+
+---
+
+## 2026-10-26 CONTINUITY — C5BN AUTO WP START (PRIVATE, PREPARED / NOT RUN)
+
+Current target: native DCM on each REAL WP power-on/reboot without requiring the S92 manual START/one-shot recovery switch. The discontinued no-controller-restart COLD JOIN is NOT reopened. C5AR remains LOCALLY VERIFIED full controller-cold-start native FC23 + FC16 + H/D/C/M 4/4 rollback. C5BM is last user FLASHED/LIVE; its no-offer trial COMPLETE / INCONCLUSIVE. New complete C5BM-derived C5BN SOURCE/OFFLINE TESTED, PREPARED / NOT RUN: automatic recovery arms the SAME original C5AR/C5Y stage1 ONLY when actual valid controller 0x02 traffic was observed in this ESP boot followed by >=5s complete valid-bus silence. Normal ESP boot on healthy running WP stays RX_ONLY. No new on-wire payload, owner or HA writes; C5BM single UART/DE, cold FC23 safety guard, FC16/FC03, CRC, room sensor, ABORT and rollback preserved. Manual S92 START+ABORT remain under Configuration; obsolete one-time enable switch removed. After physically qualified recovery the latch re-arms for next restart; ABORT blocks until intentional ESP reboot. ESP boot before WP with NO previously seen controller 0x02 is outside this narrowly validated detector (fail passive). No flash/target compile/live C5BN result claimed.
+
+PRIVATE artifact: THERMIA_MAIN03_C5BN_AUTO_WP_COLD_START_PRIVATE_20261026.zip in conversation only; do not commit protected code. C5BN-AUTO-COLD-01 PREPARED / NOT RUN. User selects and flashes ONE bounded validation during genuine controller restart with ESP powered and previously seeing 0x02. Abort on bus/CRC/frame or unexpected TX; restore C5AR. HA parameter/setting writes ON HOLD.
+
+CURRENT MILESTONE: Automatic qualified DCM startup after real controller cold boot/reboot; then session recovery, FC03 refresh and fresh Home Assistant data.
+DELIVERABLE: One full integrated C5BN private ZIP; SOURCE / OFFLINE TESTED only.
+REAL BLOCKER: Automatic trigger and semantic H/D/C/M 4/4 after C5BN cold restart not user LIVE validated.
+ONE NEXT ACTION: One user-initiated bounded C5BN validation at a real WP reboot, then decide GO/FIX/NO-GO from controller log, without reintroducing cold join.
+
+---
+
+## 2026-10-26 — SCOPE DECISION: no-controller-restart cold join REMOVED from active roadmap
+
+**USER DECISION:** Stop the no-controller-restart *cold join* investigation. Do not resume the first-discovery/first 0x0F offer/first DCM icon search, active-discovery hypothesis, installation capture hunt, sideband trigger analysis, no-offer S92 experiments or unsolicited bus TX as an active workstream. Mark the previously proposed next-action/gate for this track **SUPERSEDED / NOT RUN** as a roadmap item only; retain the experiment history and all observed statuses unchanged.
+
+**Scope clarified:** 'Cold join' here means inserting/booting a *new, unrecognized* ESP/DCM while the XTR has remained running with no accepted DCM session. This DOES NOT remove the LOCALLY VERIFIED C5AR controller-power-on **cold start**, nor future normal validated **hot rejoin/session maintenance after ESP reboot**, FC16 sync, FC03 refresh/cache freshness, passive monitoring, Home Assistant production integration, electrical protections or ABORT/rollback. Room sensor stays installed. Do not introduce controller restart as an automatic workaround; user performs all flashing and any physical interventions. **HA parameter writes remain ON HOLD.**
+
+**Retained evidence:** C5AR LOCALLY VERIFIED full controller cold-start and fresh H/D/C/M 4/4 rollback; C5AZ user LIVE partial first attach INFO 2/5 scoped COMPLETE / POSITIVE; C5BM latest user FLASHED/LIVE tested a bounded 60.225 s no-offer window with TX0, DE LOW, COMPLETE / INCONCLUSIVE for untriggered INFO/FC16 fixes. The previous cold-join discovery blocker is **out of scope**, not solved and no longer a prerequisite to other milestones. Earlier analysis remains archived to preserve source history; it must not supersede this decision.
+
+**NEW ACTIVE MILESTONE:** Consolidate OEM-equivalent native session recovery for already-recognized/valid controller-start sessions in the *single existing* ESPHome UART/RX/DE engine, then FC03 refresh/synchronization and reliable HA monitoring. No repeated research-only studies or speculative new tests; retain C5AR baseline and use existing C5BM source only where it preserves the verified cold-start path.
+
+**DELIVERABLE:** Active roadmap scope changed; NO firmware, physical bus TX or HA write produced.
+**REAL BLOCKER:** No current user-LIVE validation yet of automatic hot-rejoin/recovery and FC03 freshness in a controller-established native session, while preserving the verified C5AR cold-start baseline.
+**ONE NEXT ACTION:** Reconcile current C5BM native session lifecycle and FC03 refresh against the C5AR verified cold-start path, then implement ONE concrete integrated defect fix if demonstrated; otherwise choose explicit GO/FIX/NO-GO without adding a cold-join experiment.
+
+---
+
+**2026-10-26 DISCOVERY-TX HYPOTHESIS UPDATE:** User checked physical XTR display: NO DCM accessory icon. C5BM native offer 0 and TX 0. Active gateway initiation is NOW an explicit hypothesis worth testing when evidence exists, not excluded by policy; however genuine CM930 2018 is Modbus-slave 0x0F, V3's resync needs existing polls, and all five captured XTR 0x0F slave replies followed real controller requests. No identifiable validated unsolicited discovery frame, electrical trigger or safe target yet. OEM installation guide reboots Connect accessory after serial-number pairing, not expressly controller. **NO-GO to an arbitrary new physical TX frame** (unvalidated bus role/collision), but **GO to source a genuine Connect/DCM *first-install on already-running XTR* capture or OEM sideband-detection proof**. If it shows a concrete gateway-originated action, prepare ONE manual bounded TX experiment, ABORT + C5AR rollback. Keep C5BM RX_ONLY, room sensor installed, HA parameter writes HOLD. This closes the previous "check DCM icon" next action with a user-observed absence, without pretending to solve first-offer.
+
+## CONTINUITY GATE — 2026-10-26 C5BM USER FLASHED/LIVE no-offer result
+
+**Evidence distinctions:**
+- C5AR: LOCALLY VERIFIED full native controller cold-start, semantically synchronized fresh H/D/C/M 4/4; operating rollback.
+- C5AZ: highest proven running-controller first attach, user LIVE controller FC16 ACK + 0x0F 0708 INFO-FIRST + 2/5 INFO; scoped COMPLETE / POSITIVE, full native session still OPEN.
+- C5BL: earlier user FLASHED/LIVE no-offer 60.036s trial COMPLETE / INCONCLUSIVE; persisted pending-INFO replies untriggered.
+- **C5BM: latest user FLASHED/LIVE build (main03-c5bm) with OEM repeated INFO FC16 re-ACK source fix; user S92 manual stage40 started 11:24:51.094 and expired ~11:25:51.310 after 60225ms. NO qualifying 0x0F native FC16/0708 first offer; FC16ACK=0, FC03SERVED=0, INFO 0/5, fresh H/D/C/M 0/4, physical TX=0, DE LOW, CRC_DIFF=0, resync/drops0. Status C5BM-FC16-DUPACK-01 = COMPLETE / INCONCLUSIVE for its untriggered retry feature, NOT negative. Device identification proves FLASHED/LIVE even though build entity still says 'SOURCE PREPARED'. Terminal 'validated config cache ... skipping validation' does not independently prove target compile validation. Manual 'EXISTING_MANUAL_SESSION' status is not acceptedOwner. A80E 0000/0020, A80F 004B and 0x06 polls never prove DCM recognition.**
+
+**CURRENT MILESTONE:** Running-XTR first attach, INFO 5/5, qualified fresh H/D/C/M 4/4. **DELIVERABLE:** C5BM user LIVE one bounded zero-TX experiment documented, no new code. **REAL BLOCKER:** controller does not reliably offer first native 0x0F request; C5BM duplicate ACK and C5BL pending INFO followup unvalidated LIVE. **ONE NEXT ACTION:** evaluate C5BM only when the XTR naturally offers genuine qualified 0x0F FC16/0708 in an explicitly user-initiated bounded session. Do not repeat blind idle S92, reboot controller to solicit, add unsolicited master TX or remove collision/DE guards. Keep C5AR rollback, single UART/DE, room sensor connected, ABORT and HA parameter write HOLD. Proprietary mailbox code stays PRIVATE.
+
+---
+
+**2026-10-26 XTR historical-offer distinction (NEW local capture evidence):** In `thermia_capture_20260925_090550.log`, actual controller 0x0F `0708/count6` was already offered at t=0.987; 17 such polls and 32 repeated `0870/count17` configuration FC16 requests were offered without any observed corresponding gateway responses until first FC16 ACK t=66.860 and first mailbox response t=68.235; `03E8/count13` followed t=68.304. Historical A80E was 0000 while actively offering, so A80E=0000 also occurs in later no-offer and is NOT a recognition criterion. **Response only after first ACK**: no evidence for 0708 TX before locally proven FC16. By contrast user-C5BM saw NO first 0x0F FC16/0708, no physical TX. This strengthens the distinction between `OFFER PRESENT / NO RESPONSE` and `NO OFFER`; changing FC16 retry or 0708 response guards will not create an offer. Next ONE action remains controller-side native first-offer activation/retention evidence, not more blind S92/firmware variants. See latest Research files.
+
+
+
+## 2026-10-26 — PRIORITY RECOVERY C5AZ running-controller INFO progression + C5BK RX parity FIX — PREPARED / NOT RUN
+
+OBSERVED FACTS / EVIDENCE ORDER: The strongest XTR running-controller FIRST-ATTACH LIVE event remains MAIN03-C5AZ: user manually started bounded S92, genuine normal controller config FC16 pages physically ACKed, controller read served with OEM INFO-first request, actual information replies for 2/5 groups physically confirmed. Twelve later controller read offers were withheld (FIX21); full controller-semantic owner/profile/fresh H/D/C/M 4/4 NOT established. The separate fully LOCALLY VERIFIED controller-restart cold-start baseline remains C5AR (with earlier C5BC positive depending on track). C5BA later implemented bounded pending-INFO continuation in SOURCE, but user LIVE C5BA observed an alarm-only sequence without the normal prefix and NEVER exercised that continuation. Subsequent C5BE and C5BJ live trials differ: some offered config/FC23, most C5BJ/C5BI did not offer a native first-attach frame at all. Their no-offer INCONCLUSIVE results do NOT supersede C5AZ scoped COMPLETE / POSITIVE evidence. Do not confuse serial number registration, alarm-only empty polling or recurring online slot detection with native INFO progression.
+
+CONCRETE SOURCE DEFECT found in exact user FLASHED/LIVE MAIN03-C5BJ complete private YAML (not only in historical C5BA): native INFO-followup upstream RX gate required a transient send-only 'pending' latch that is asserted only inside a physical TX callback and cleared before any later offered read. Consequently, even if the same user/manual-epoch receives further requested INFO data and the actual controller offers a second native read, RX could reject it before the sole physical TX owner evaluates its already-correct information-progress guard. This is a SOURCE-level impossible prerequisite in this path; NOT a live-confirmed cause of C5BJ no-offer (which never exercised it).
+
+ONE INTEGRATED FIX: PRIVATE full MAIN03-C5BK firmware derived byte-for-byte from user LIVE C5BJ baseline, preserving entire C5AZ/C5BA native paths and production HA. Change only the INFO-followup upstream RX eligibility to mirror the existing sole TX-owner state: real received-info progress since prior reply, same user-armed original config epoch, unreceived groups remain, no more than two outstanding follow-ups, existing 55s info window inside 60s S92, valid later controller-offered read; all CRC/peer/collision/dirty/DE/ABORT and HA setting-write HOLD unchanged. No new UART writer, new physical TX class, spontaneous probe, owner promotion, falsely reported groups, or forced controller restart. Protect private OEM mailbox/source and challenge bytes.
+
+Private complete ZIP THERMIA_MAIN03_C5BK_INFO_FOLLOWUP_RX_GATE_PRIVATE_20261026.zip; YAML SHA256 68896ecb17a3d853488af36d5aa90d8b377a7bedd7f8c6693a4d87dfce6936fa; ZIP SHA256 c26261c80efd23f3111d39d8b3dc0009de8bc82ff21b4c8c4a70105c07065da0. Exact source delta only RX gate and firmware label. Offline ESPHome !secret-compatible YAML parser, unchanged global ID set and production HA component counts, same single UART writer/DE-high calls, manifest and ZIP CRC PASS. SOURCE / OFFLINE TESTED; NOT TARGET COMPILED, NOT FLASHED, NOT LIVE; status PREPARED / NOT RUN. User C5BJ remains latest FLASHED/LIVE candidate; C5AZ remains strongest scoped LIVE protocol continuation. Original first controller offer remains an independent OPEN condition — C5BK cannot force it.
+
+CURRENT MILESTONE: OEM-equivalent first native DCM attach on already-running XTR, complete missing INFO and then semantic owner/runtime + FRESH H/D/C/M 4/4.
+DELIVERABLE: C5AZ evidence reprioritized; C5BK single integrated private RX/TX gate parity source package PREPARED / NOT RUN.
+REAL BLOCKER: 3/5 INFO groups, semantic owner and full native export unverified; next normal controller config+read offer may be absent in given live epoch.
+ONE NEXT ACTION: user compiles/flashes C5BK and runs AT MOST ONE guarded manual S92 trial on already-running XTR, only real controller offers cause responses; evaluate actual progress from 2/5, ABORT faults and rollback C5AR. Do not repeat no-offer button-only trials, don't publish private code, HA writes HOLD.
+
+---
+
+## 2026-10-26 — MAIN03-C5BJ unified OEM first-attach guard simplification — PREPARED / NOT RUN
+
+OBSERVED FACTS: User FLASHED/LIVE MAIN03-C5BI twice, each 60s no controller 0x0F FC16/FC23/0708 offer; physical TX 0 and DE LOW. Earlier user-LIVE C5BE physically ACKed actual 04A6/13, 04BA/22, 085F/5 and then saw 14 genuine controller FC23. C5BC controller-cold-start LOCALLY VERIFIED RUNTIME/SYNCED and fresh H/D/C/M 4/4. OEM Connect 2018/2.1.105 behaves as a controller-polled Modbus slave. No OEM/XTR evidence demands extra 12s timing after physically ACKed 085F within a separately bounded manual session.
+
+ONE INTEGRATED SOURCE FIX: Full PRIVATE MAIN03-C5BJ starts from byte-verified user-LIVE C5BI YAML SHA256 7c39386bc68a44e80154b7e36e6559517dcab98c971e769a3b38b1de136087e9. (1) Remove extra invented 12s after genuine physically ACKed 085F before a controller-offered FC23; preserve physical same-epoch 04A6→04BA→085F proof, 60s user-manual window, exact challenge geometry, one-shot and all native guards. (2) Remove extra invented sparse 04A6→085F 12s subwindow for a page-ACKed first join, retaining bounded same manual epoch/physical ACK prerequisites. (3) Consolidate duplicated partial 04A6/04BA RX/sole-TX FC03 evidence into ONE shared lambda c5bj_proven_partial_04a6_resume; normalize only this eligibility window 55s to existing 60s session cap. Normal verified cold-start, runtime, FC16/FC03, cache freshness, OEM secrets, V5 CRC/framing, UART/DE/collision, B11C/B11D, ABORT and HA entity controls are otherwise SOURCE UNCHANGED. HA parameter writes ON HOLD. No invented frames, 0x06-to-0x0F role confusion, unlicensed source or extra physical UART owner; physically ACKing any Modbus frame does not grant semantic accepted owner.
+
+PRIVATE package: THERMIA_MAIN03_C5BJ_UNIFIED_OEM_FIRST_ATTACH_GUARDS_PRIVATE_20261026.zip. New YAML SHA256 74f6ad067275f212f2895f924996c6ad394da13512a38bbe6e25127372b6221f. ZIP SHA256 1c49aa969e5d022411042851821d63b6f0924bf56b4434d5fad5e8d3a2918e1b. Full 1.1MB YAML + README/experiment/ABORT/rollback + manifest; offline ESPHome !secret-safe YAML parsing, 632 global IDs all unique, same 815 id() references as baseline, preserved HA counts (116 sensors / 37 text / 57 binary / 10 buttons / 27 numbers / 5 selects / 13 switches), same ONE UART write_array and DE HIGH owner, ZIP CRC PASS. SOURCE / OFFLINE TESTED; NOT TARGET COMPILED, NOT FLASHED, NOT LIVE. C5BI is latest user FLASHED/LIVE first-attach; C5BC last LOCALLY VERIFIED native controller cold-start; C5AR safe rollback.
+
+ENGINEERING DECISION: FIX for self-imposed extra native session timing and duplicated gate, NO-GO inventing controller initiation. REAL BLOCKER remains no initial native 0x0F offer on currently running XTR: source fix cannot fabricate controller requests. Exactly ONE user-initiated bounded S92 test permitted with controller unchanged and room sensor connected; if controller offers nothing, COMPLETE / INCONCLUSIVE and do not repeat idle probes. ABORT on genuine bus faults; HA writes HOLD.
+
+CURRENT MILESTONE: OEM-equivalent FIRST DCM ATTACH while XTR controller already runs with no DCM since reboot.
+DELIVERABLE: complete C5BJ PRIVATE firmware ZIP SOURCE/OFFLINE TESTED, PREPARED / NOT RUN.
+REAL BLOCKER: genuine controller initial 0x0F offer/recognition unavailable in recent live runs.
+ONE NEXT ACTION: user compiles/flashes C5BJ and conducts at most ONE bounded manually initiated S92 first-attach when genuinely controller-offered native frames can be observed; verify H/D/C/M fresh 4/4 and semantic owner, otherwise do not repeat.
+
+---
+
+## 2026-10-25 — HANDOFF: First cold join with no preceding DCM, no controller reboot
+
+2026-10-25 — User resumed previously PARKED FIRST native cold join on a RUNNING XTR M controller 2.4.2, with NO preceding DCM and NO controller restart. This is NOT C5AU retained hot rejoin, nor C5AR controller-cold-start (proven LIVE), nor C5AS 042E refresh (parked). Previous actual C5AB/C5AD/C5AF first-attach experiments already demonstrated physical ACK on 04BA and later 059C, ACKs for qualifying 059C/05FF/0662, and a standalone 085F ACK that stopped retries, but NEVER a fully qualified first DCM session. Do NOT repeat individual-page ACK microtests.
+
+OEM Connect 2.1.105 SOURCE: slave internally recognizes a qualifying incoming FC16 and may request missing data on later controller FC03 polls. C5AR sparse cold-join code already produces a guarded first config ACK but both RX and sole-TX FC03 runtime read gates required complete 22-page export to permit even a single CURRENT read request. One integrated candidate MAIN03-C5AV built from exact LIVE C5AR: only in ONE explicitly user-started S92 session, after actual CRC-good known config FC16 and PHYSICALLY successful first ACK, in same manually authorized sparse first-attach epoch, when controller itself later offers genuine native controller read within existing 120s export window, send ONE existing read-only CURRENT request with read-only request words (PRIVATE) through SAME physical S92 UART/DE owner and unchanged CRC/peer/collision/dirty/ABORT guards. No invented start or auth frames, no new UART writer, no HA setting/parameter writes; do not mark acceptedOwner, config SYNCED, or H/D/C/M 4/4 until real controller export independently proves it. If controller offers only 085F or no FC03 runtime read, the gateway slave cannot initiate and experiment would be inconclusive; no retry loops. OEM guide describes gateway reboot during pairing without prescribing controller reboot; this is NOT local XTR first-attach proof.
+
+Full PRIVATE C5AV ZIP: THERMIA_MAIN03_C5AV_FIRST_ATTACH_NO_RESTART_XTR_242_PRIVATE_20261025.zip; exactly ONE complete full YAML + README + manifest; YAML SHA256 72f980d71b6026207ab89094f3500247c440845404795bb83fb31847d6c196d4; ZIP SHA256 f81b257dab4ee1069ff3fb1111e0c0a18ef6736a34abc91266d962fc687c809c. PyYAML, 852 unique IDs, 800 resolved ID refs, no new physical write_array/DE HIGH, unchanged production HA section counts, ZIP integrity PASS. SOURCE / OFFLINE TESTED, PREPARED / NOT RUN; not ESPHome target compiled, not FLASHED/LIVE. OEM private source and C5AV private YAML NOT published. C5AR remains last user LIVE and locally verified; C5AU hot rejoin + C5AS refresh parked.
+
+CURRENT MILESTONE: first native DCM cold join from zero on already-running controller. DELIVERABLE: single integrated C5AV private source prepared. REAL BLOCKER: actual first qualifying FC16 -> following FC03 runtime read -> controller full native export/accepted owner/FRESH 4/4 unverified; no evidence for unsolicited slave TX. ONE NEXT ACTION: user compiles/flashes C5AV in one explicitly authorized bounded S92 first-attach experiment with continuous logs, no pump restart/room sensor disconnect, ABORT for real fault, rollback C5AR, HA writes ON HOLD.
+
+---
+
+## 2026-10-25 — HANDOFF C5AU retained hot-rejoin candidate prepared; not flashed
+
+**User instruction:** prepare actual hot-rejoin fix now, **TEST ONLY LATER WHEN A DCM IS RUNNING AGAIN**. Last live verified XTR 2.4.2 firmware C5AR, native controller cold-start FC23→FC16→FC03 + first H/D/C/M 4/4. C5AT actual ESP-only manually started session 21:25:55 shows ACKed 042E/15 and 0662/33, repeated 0848/23 and 14 genuine 0708/6 polls withheld, no 0864/0870, owner NOT_QUALIFIED; log ended before original 120s timeout, C5AT RUNNING/PARTIAL. C5AS 042E current-refresh patch stays PARKED and never merged/flashed. **MAIN03-C5AU private ZIP prepared** (`THERMIA_MAIN03_C5AU_RETAINED_HOT_REJOIN_XTR_242_PRIVATE_20261025.zip`), one complete full C5AU YAML+README+MANIFEST, SHA256 YAML `a3f260d6a1ab7b4b95325d19866a81aac88c0c9ebc53a6867ca944fcbb55614a`; source/offline parsed/852 IDs/800 refs, no target compile/flash/LIVE. C5AU adds a bounded one-shot *retained transport* bridge to same M6/S92 engine after user START, physical 0662 ACK, genuine later 0708, exact controller 0848, then subsequent actual served 0708; 120s unsynced failback and all V5 parser/CRC/DE/ABORT, cold-start and HA entity functionality preserved. No invented start frame, no extra UART owner, no HA setting writes and no false CURRENT 4/4 or Online claim. OEM Modbus slave ordinary FC16 behavior supports direction but XTR semantic owner still unproven. **ONE NEXT ACTION:** user saves C5AU to deploy/test later with ONE manually initiated bounded ESP-only rejoin when a real DCM is available, understanding flash loses current epoch; collect full log, decide GO/FIX/NO-GO, rollback C5AR on fault.
+
+---
+
+## 2026-10-25 — CURRENT HANDOFF: C5AT ESP-only hot rejoin partial, native running context not requalified
+
+Latest user live: `Pasted text(20261025-202729).txt` 21:25:51–21:27:04, real MAIN03-C5AR firmware after ESP-only OTA, manual S92 21:25:55.782. Controller XTR 2.4.2 remains running. Genuine FC16 `042E/15` ACK once + `0662/33` ACK once (2 physical TX/DE LOW), repeated `0848/23` NO_ACK because new epoch unowned, FC03 `0708/6` 14 received/withheld. No native 0864/0870, no new 04A6/0683–06F4 full config. State remains M6 RESPONSE_SENT/WAIT ACCEPTANCE, owner0, SYNCED false, H/D/C/M 0/4. V5 CRC_DIFF0/resync0/drops0, no HA writes. `OEM_INTERNAL=ACCEPTED` only local classification.
+
+**C5AJ source** sets a 120-second bounded tail on ACKed 0662; upload stops before timeout, so new experiment `C5AT-HOT-REJOIN-ESP-ONLY-01` is **RUNNING / PARTIAL**, not COMPLETE/NEGATIVE; native hot rejoin not yet achieved in observed 68s. C5AR controller-cold-start previously COMPLETE/POSITIVE. C5AS refresh fix private SOURCE/OFFLINE TESTED PREPARED/NOT RUN and PARKED by user's request. **ONE NEXT ACTION:** examine remaining SAME run after 21:27:04 through 120s window, preferably until ~21:27:59, to confirm final fail-close; then grounded OEM retained-session fix in ONE existing S92 engine, not blind ACK/owner promotion. No repeated identical live test, extra UART writers, fake session init, controller reset, room sensor disconnect or HA parameter writes.
+
+---
+
+## 2026-10-25 21:02 — Hot rejoin priority, C5AS parked — C5AT-HOT-REJOIN-ESP-ONLY-01 PREPARED / NOT RUN
+
+User reports a currently running native DCM on last user-FLASHED/LIVE MAIN03-C5AR (XTR controller 2.4.2) and explicitly prioritizes a hot-rejoin test. C5AS 042E refresh source package stays PREPARED / NOT RUN and PARKED; do not flash it for this test. C5AR controller-cold-return FC23→FC16→FC03/0708 and first CURRENT H/D/C/M 4/4 was locally VERIFIED and is not being retested.
+
+Exact current private C5AR source review: a user press of `S92 Native DCM | Start Session Manually` after ESP-only reboot on a healthy RS485 bus creates a new bounded stage40 epoch (60 seconds), with no unsolicited TX. The existing sole UART/DE RX owner may respond to FIRST CRC-good controller-originated 0864/count4 and then 0870/count17 and genuine FC03/0708 in that epoch with existing CRC/peer/collision/ABORT guards. Earlier C5AK ESP-only OTA trace saw controller 0864 and 0708 offered without qualified owner; actual offers are NOT guaranteed. C5AQ manual start on unchanged running controller without a recent DCM session got no DCM offers. No new firmware is required.
+
+One user-initiated experiment: capture baseline status and logs while C5AR actually has RUNTIME/acceptedOwner and fresh 4/4; leave Cold Recovery one-shot OFF; continue capturing logs; restart the ESP32 ONLY (not heat-pump controller, room sensor, or wires; no C5AS flash); as soon as ESP API reconnects press S92 Start Session Manually ONE time; collect log through 60s expiry or verified qualification. Expected success requires real 0864→0870→0708, acceptedOwner, RUNTIME/SYNCED, fresh H/D/C/M 4/4 and clean CRC/DE. A transport ACK alone is NOT success. On controller alarms/collision/CRC faults use S92 ABORT; otherwise let bounded window fall back RX ONLY. Do NOT repeat idle S92 probes or invent a master session-init. HA parameter writes remain ON HOLD.
+
+**Important risk**: the ESP reboot irrevocably loses the currently accepted native epoch; if the still-running controller does not renew its session, currently working DCM can be LOST until a later legitimate controller restart. This is an intentional disruption; disclose before user acts. **Status PREPARED / NOT RUN** until actual user log. **CURRENT MILESTONE:** native ESP-only hot rejoin. **DELIVERABLE:** current C5AR with source-reviewed test plan, C5AS parked. **REAL BLOCKER:** genuine controller-reoffered 0864/0870/0708 after ESP reboot has not been confirmed. **ONE NEXT ACTION:** one user-authorized ESP-only hot-rejoin test with complete before/after log, GO/FIX/NO-GO.
+
+---
+
+## 2026-10-25 — LATEST HANDOFF MAIN03-C5AS prepared; last user-LIVE and locally verified C5AR
+
+**Target Thermia iTec XTR M controller 2.4.2.** C5AR 2026-10-25 user-requested controller restart, one-shot recovery consumed switch OFF after >5s actual bus silence, genuine guarded FC23 / full controller FC16 config / four FC03 0708 replies, native acceptedOwner=1, SYNCED, fresh H/D/C/M 4/4 **COMPLETE / POSITIVE**. OEM full Online/cloud and future hot-rejoin not yet proven; HA parameter writes ON HOLD.
+
+**Latest REAL blocker found with exact chronology:** C5AR existing EXP378 read-only 042E/current selector started at 19:44:54.988, physical TX at 19:44:55.010, **ABORT state6 age28ms resyncDelta11** at 19:44:55.015 despite historical, non-growing 11 resyncs. This was missing snapshot of EXP378 baseline at state7→6 read-only start (only semantic write arm set it), **not new CRC loss**. Controller replied with 042E/15 FC16 at 19:44:55.113 but after EXP378 state changed to5, old EXP420 withheld ACK due no page-specific owner, causing repeated 042E. Do not add made-up authentication or repeat isolated ACK tests.
+
+**MAIN03-C5AS PRIVATE delivered source only:** derived from verified C5AR complete YAML, one integrated read-refresh ownership correction: snapshot increment-only parser/drop/peer counters at new state6 transaction and allow exact normal controller 042E FC16 through original S92 native runtime owner after EXP378 returns idle/disabled (with no competing write). Preserve native cold-start/FC03/CURRENT 4/4 and 0864/0870, safety, all HA, S92 ABORT, no boot auto start. Single complete latest YAML+README+manifest in private ZIP, no older YAMLs. YAML SHA256 `3e5c092d83b83f375657879cbbccc5536c38bf5678787f5dac121f38361cd7b3`. SOURCE/OFFLINE TESTED / PREPARED/NOT RUN, **not ESPHome target compiled, not flashed or LIVE**.
+
+**ONE NEXT ACTION:** user compiles/flashes C5AS, confirms BOOT_RX_ONLY on ESP reboot, then validates the 042E read-refresh in one controller-originated accepted native session when such an event legitimately occurs. Do not claim that a passive S92 start against already-running controller validates refresh; ESP OTA necessarily forfeits previous DCM owner. ABORT/rollback to saved C5AR if fault. Full OEM Online equivalence remains open. HA setting writes HOLD.
+
+---
+
+## 2026-10-25 — LATEST HANDOFF C5AR TRUE DCM native transport achieved; next ordinary 042E refresh correction
+
+User provided `Pasted text(20261025-184535).txt`, full 5000-line ESPHome log after explicit controller restart while C5AR C5AI cold-recovery one-shot was ON. **19:43:59.997** genuine 5235ms RS485 silence => opt-in switch consumed automatically OFF and guarded native stage1; 19:44:06 valid controller return; 19:44:08 CRC-good original controller FC23 and response + exact 03E8/14 config FC16, subsequent full config export, FC03/0708 x4, 0864→0870→0884 FC16 normal ACK; 19:44:58 `session=RUNTIME config=SYNCED page=FRESH receiptPages=4/4 H=D=C=M=1`; 19:45:00 M6 owner accepted/integrity/profile/fresh all =1, normal native DCM local transport. Later 33/33 application pages observed but local status **NOT_ONLINE manualReadOnly**, no OEM cloud or sustained refresh equivalence claim. V5 CRC_DIFF0, RX drops0, 11 resync baseline unchanged, DE LOW; HA writes held. **C5AR-OPTIN-COLD-RETURN-01 COMPLETE / POSITIVE** for real cold-return and initial native runtime; no more pump restart to re-prove.
+
+**Current real gap** is no longer missing native attach: EXP378 read-only 042E CURRENT selector at 19:44:55 was followed by repeated controller 042E/count15 FC16 `NO_ACK EXP420_CONFIG_NO_OWNER e378=5`. Confirmed private source's exp420_042e_owner only permits states4/6. EXP378 status INCONCLUSIVE/timeout, periodic cache freshness OPEN. **ONE NEXT ACTION:** one integrated C5AR successor fixing ordinary controller 042E/15 FC16 ACK and exp378/exp420 ownership/refresh coordination in same UART/DE engine, without HA parameter writes or unvalidated speculative TX. No new external user tests until code fix prepared. Keep room sensor connected and preexisting ABORT/rollback protections.
+
+---
+
+## 2026-10-25 — Latest HANDOFF: C5AR user LIVE, recovery one-shot ON at last log, no outage
+
+**Latest user FLASHED/LIVE** firmware **MAIN03-C5AR** (XTR controller 2.4.2), observed `Pasted text(20261025-183448).txt` at 19:32:02–19:34:39 after ESP OTA. Passive BOOT_RX_ONLY with ordinary controller/room/outdoor bus. User-initiated Cold Recovery ON **19:32:28**, OFF **19:32:59**, ON **19:34:30**, last seen ON at 19:34:39. C5AI switch operates; no physical TX, no 5s bus outage, no controller FC23/FC16/FC03, no native owner, current snapshot H/D/C/M 0/4. V5 parser has CRC_DIFF 0, RX drops 0, 11 parser resyncs **since boot but stable** during this recording. Source build label SOURCE PREPARED is not evidence state. **Boot/manual control COMPLETE / POSITIVE**; actual C5AR native cold-return **RUNNING / PARTIAL (external trigger unobserved)**. No reason for new YAML or forced pump/room sensor power cycling. Keep one S92 UART/DE owner, CRC and ABORT, user scoped authorization; HA writes HOLD. **ONE NEXT ACTION:** user determines whether to leave one-shot ON to permit later authentic controller outage/return; otherwise OFF, and provide full log only when a genuine return occurs, to decide GO/FIX/NO-GO.
+
+---
+
+## 2026-10-25 — HANDOFF C5AR prepared: opt-in C5AK cold return from normal passive boot
+
+**User target:** Thermia iTec XTR M controller **2.4.2** (not gateway 2.1.105). **Last FLASHED/LIVE** firmware **C5AQ**: correct BOOT_RX_ONLY, manual S92 19:08:46.695, no 04A6/059C/085F/0864/0870/0708 native offers and no TX, RX-only expiry at 19:09:46.956, clean parser. Native hot-rejoin still unexercised and cannot be forced via unsupported Modbus initiation.
+
+**Next firmware PRIVATE MAIN03-C5AR** derives from exact live C5AQ. Found concrete local C5AI bug: opt-in one-shot cold recovery only eligible after failed retained 60s run (origin5/M6=7); a properly passive C5AQ boot is origin0/M6=0 and thus could never arm on a later actual controller outage from boot. Integrated **one predicate FIX**: allow both exact pairs, while requiring explicit user switch (ALWAYS_OFF on reboot), verified >=5s real bus silence, stage99, full existing dirty/refresh/accepted-owner guards and consume one-shot before same S92 START; then preserved C5AK/C5Y guarded controller-response path. All UART/DE, V5 CRC, FC23/FC16/FC03, 0864/0870, HA entities and ABORT unchanged. No automatic session start at boot and no new unsolicited TX.
+
+**STATUS C5AR:** SOURCE/OFFLINE TESTED, PREPARED / NOT RUN. One compact private ZIP `THERMIA_MAIN03_C5AR_OPTIN_COLD_RETURN_XTR_242_PRIVATE_20261025.zip` includes only full C5AR YAML+README+MANIFEST (no historical YAML); YAML SHA256 `ef50a552c1a737f88286fc9313a79d772cf891d8176a46349533985e5492e45b`; no target compilation, user flash, or live evidence. Existing C5AQ remains live verified.
+
+**ONE NEXT ACTION:** User compiles/flashes C5AR then confirms passive boot and default cold-recovery switch OFF. For one actual controller outage/restart, user may explicitly enable opt-in beforehand with logging and let the existing bounded C5AK engine await genuinely observed controller return (not artificially restart heat pump or disconnect room sensor). Log native qualification/fresh H/D/C/M 4/4; ABORT and restore saved C5AQ as necessary. HA parameter writes ON HOLD. Do not repeat empty S92 idle experiment.
+
+---
+
+## 2026-10-25 — LATEST C5AQ LIVE handoff: real manual start, no native DCM controller offer
+
+**Source of truth:** user `Pasted text(20261025-181012).txt`; main target iTec XTR M controller 2.4.2. Firmware MAIN03-C5AQ **FLASHED/LIVE**, not merely source prepared; initial 19:08:03–19:08:46 OTA passive BOOT_RX_ONLY/TX LOCKED, proving unwanted C5Y boot auto-start fixed (**COMPLETE / POSITIVE**). The sole S92 event at **19:08:46.695 was triggered by the USER** (not automatically). Session lasted 60.247s, no controller DCM 04A6/059C/085F/0864/0870 offers, no FC03/0708, no ACK/TX and fresh CURRENT H/D/C/M 0/4. Automatic RX-only/DE LOW expiry at 19:09:46.956, CRC/resync/drops zero, ordinary controller/room/outdoor frames present. Native running-controller attach in this attempt COMPLETE / NEGATIVE; 0864/0870 implementation COMPLETE / INCONCLUSIVE (unexercised). C5AP remains superseded/unflashed; do not revert to it.
+
+**Milestone C5:** full OEM native controller-originated attach/rejoin, not hand-waved ACK. Existing C5AQ source preserves verified C5AK cold-start and initial 04A6/059C/085F/0864/0870/FC03/C3/HA; manual S92 cannot force a controller that does not offer any DCM request. **ONE NEXT ACTION:** NO-GO repeat idle 60s manual experiment; plan actual integration/qualification at controller-originated known C5AK startup path, no unverified unsolicited TX, no forced controller restart/room-sensor disconnect, HA parameter writes ON HOLD. Preserve this corrected handoff across chats.
+
+---
+
+## 2026-10-25 — HANDOFF C5AQ: boot auto-START confirmed BUG; correct complete source prepared
+
+**Attention: do NOT flash older prepared C5AP.** User actual log from C5AO at 18:22 after OTA showed stage40/RETAINED_CONTEXT_MANUAL even though user did NOT press S92; 0 FC16 ACK and 0 physical TX; after 60s automatically expired RX ONLY / DE LOW. The full C5AP source inherited a 5s ESPHome on_boot button.press on the MANUAL S92 control and conditional 07E4 autoarm. This incorrectly grants user-only authority at boot, not an OEM native session. **C5AP SUPERSEDED / NOT RUN**. Private **C5AQ** now removes the boot callback and leaves original DE LOW/RX-only initialization, changes build/status label. Retains all other C5AP native first 0864, 0870, 0708, config/085F, C5AK cold-start, C3 FC03/CURRENT, existing HA and collision/CRC/TX guards. Full source offline YAML checks PASS; target build/flash/LIVE NOT DONE. ZIP has ONE YAML, README, manifest; no old YAML.
+
+**ONE NEXT ACTION:** User flash C5AQ, confirm RX ONLY/DE LOW and stage inactive *before* pressing Configuration → S92 Native DCM | Start Session Manually. Then user-initiated ONE bounded native session with controller/room sensor connected; abort or rollback if needed. No HA parameter writes. Only true RUNTIME+SYNCED+fresh CURRENT H/D/C/M 4/4 is success.
+
+---
+
+## 2026-10-25 — HANDOFF: C5AP private SOURCE prepared; C5AO remains last user LIVE
+
+**Milestone C5 native rejoin on iTec XTR M controller 2.4.2.** Genuine OEM Connect 2018/2.1.105 is a Modbus slave, no established outbound rejoin initiator. Local original DCM 2026-10-03 XTR capture ACKs FIRST `0864/count4`, then FIRST `0870/count17`, then FC03/0708. The old C5AL branch in latest LIVE C5AO would reject that genuine 0864 payload and wait for a second 0864, prearm button and earlier 0708. **One integrated full private C5AP fix** now handles the FIRST controller-offered CRC-valid 0864 in one explicitly manually started S92 session with existing sole UART/DE owner, no invented second-offer/payload/prearm/12-15s constraints, then existing 0870/0708/CURRENT follow-up. Removes obsolete extra C5AL HA arm button, preserves all other production controls, V5/CRC/de/collision safeguards, C5AK FC23 cold-start, first config/085F responder, C3 refresh and HA writes HOLD. One compact ZIP: only complete latest C5AP YAML + README + manifest. SOURCE/OFFLINE TESTED, **NOT** TARGET COMPILED/FLASHED/LIVE. No device TX and no private code on GitHub. C5AO last XTR live native join COMPLETE / NEGATIVE.
+
+**One next action:** user-initiated ONE bounded full C5AP manual S92 rejoin with complete log captured BEFORE pressing start; 0864 may be absent and that's still a real blocker, not trigger failure. Observe only actual native RUNTIME/SYNCED+CURRENT fresh H/D/C/M 4/4 as positive. S92 ABORT/DE LOW and saved C5AO rollback; keep room sensor and controller running, HA settings writes ON HOLD. Then GO/FIX/NO-GO.
+
+---
+
+## 2026-10-25 — C5AO FLASHED / LIVE, native DCM still not accepted; focus OEM entry
+
+**Controller:** user Thermia iTec XTR M 2.4.2. Private C5AO first config-ACK firmware (user flashed) now has one bounded S92 session with `initFC16=059C`, `runtimeFC16ACK=1`, physical TX 1, `OEM_INTERNAL=ACCEPTED` *only internal*, no 04A6, 085F, further config, FC03/0708 or fresh H/D/C/M 4/4. First request/ACK occurred before log started 17:42:28; exact first-offer timing not proven. At 17:43:25.806 unqualified 60.031s expiry, RX-only/DE LOW, CRC/resync/drop 0. Complete end-to-end native join **COMPLETE / NEGATIVE**, fail-safe **COMPLETE / POSITIVE**. Genuine OEM XTR full export had 04A6 BEFORE 059C; therefore C5AO's corrected first normal FC16 ACK by itself does not create a native attach.
+
+**NO-GO further ACK-gate microtests. ONE NEXT ACTION:** find and integrate the specific legitimate OEM native session-entry/re-entry behavior from original Connect (2018/2.1.105) vs C5AK locally verified cold-start, or explicit NO-GO if no supporting XTR evidence. Preserve sole UART/DE, room sensor, all production HA; controller restart NOT requested, HA parameter writes ON HOLD. Do not publish private OEM firmware/YAML.
+
+---
+
+## 2026-10-25 — LATEST HANDOFF MAIN03-C5AO prepared for XTR 2.4.2
+
+**Current milestone C5.** User controller **2.4.2** (iTec XTR M, older/non-Genesis); Connect firmware **2.1.105** is gateway image, not controller version. C5AN user-flashed first-join attempt on still-running controller offered 059C twice, ACK sent on duplicate, no FC03/0708/CURRENT, owner not qualified and 60s RX-only rollback (COMPLETE / NEGATIVE full DCM; first-085F branch untriggered). Genuine OEM XTR 2026-10-03 answered first 059C immediately. **Private C5AO complete single-YAML ZIP SOURCE / OFFLINE TESTED / PREPARED / NOT RUN:** one integrated first-offer FC16 fix covers 04A6/count13 and existing 22 C5AC config geometries via same S92 UART/DE TX owner, preserves 2.4.2 profile fields, C5AN 085F, previous cold-start, hot-rejoin, native FC03/CURRENT, HA and real bus protection; no semantic session acceptance from mere ACK and HA writes HOLD. Full target compile/flash/live NOT done. GitHub docs only, never publish protected firmware code.
+
+**ONE NEXT ACTION:** user compiles/flashes private C5AO and runs one bounded manual S92 stage40 full cold-join on running controller (room sensor connected, no heat-pump restart), full log; assess real native RUNTIME + FRESH H/D/C/M 4/4 and safety/ABORT. Rollback to user's saved C5AN (not included in ZIP). Continue GO/FIX/NO-GO rather than extra speculative experiments.
+
+---
+
+## 2026-10-25 — C5AN live result and next source FIX
+
+C5AN user-flashed and live. One S92 stage40 session on running controller captured CRC-valid 059C/count33 twice at 17:15:58.285/59.072 and one C5AD ACK at 17:15:59.088. No 04A6/085F/further export/0708/FC03 or 4/4; after 60s RX-only/DE LOW, zero CRC/resync/drops. Full native cold join COMPLETE / NEGATIVE; specific new first-085F path NOT TRIGGERED, retained as RUNNING / PARTIAL validation. New SOURCE discrepancy: existing C5AD needs duplicate 059C before first ACK; genuine local OEM Connect XTR 2026-10-03 ACKed its first 059C within ~14ms. Next FIX one integrated OEM first-config-offer responder through existing manually armed S92 UART/DE path and real guards, no old YAMLs in ZIP. Do not confuse ACK with owner; no WP restart, room sensor removal or HA setting writes. See latest top canonical Research entries.
+
+## 2026-10-25 — CURRENT HANDOFF: MAIN03-C5AN prepared, not yet live
+
+**Milestone C5.** The exact complete private C5AM source ZIP is now supplied and its YAML hash matches previously recorded source. The source-availability blocker is therefore closed. Original Connect 2018/2.1.105 + genuine XTR DCM capture justify removing C5AM's extra PREARM/two-offer/POST0662 restriction for alarm FC16 transport. A complete private C5AN YAML ZIP has been prepared (SOURCE / OFFLINE TESTED, not target compiled/flashed/live). First exact known 085F response after a single user-initiated S92 stage40 start is bounded to one new unvalidated physical ACK; no session ACCEPTED/owner/write privilege inferred. Existing native/HA features, UART/DE safeguards, parser and rollback preserved. Early transport-only alarm ACK excluded from C5AB/C5AD/C5AL initial-entry config ACK counting. Prior C5AM-COLD-JOIN-01 is still RUNNING / PARTIAL (its specific gated branch never triggered); C5AN-OEM-085F-01 is PREPARED / NOT RUN. **ONE NEXT ACTION:** one complete user-initiated C5AN cold join test on running controller, with room sensor connected, no controller restart, no setting writes, S92 ABORT/rollback available. Only actual RUNTIME/SYNCED/FRESH CURRENT 4/4 counts positive.
+
+---
+
+## 2026-10-25 — OFFLINE: OEM 085F first-offer ACK vs C5AM two-offer gate — SOURCE / OFFLINE TESTED
+
+**Evidence review (no live test, no new firmware, no TX):** Original Connect 2.1.105 appfs (`device_client/cm/modbus_server15.py`, version 0.2.8) exposes Modbus RTU server at the existing DCM slave address and receives FC16 through normal slave handler. `CM_Client_Constants.ALARM_START_ADDRESS=2143 (0x085F)`; `_on_function16` publishes every received register event, but *excludes ALARM_START_ADDRESS* from setting internal `HandshakeState.ACCEPTED`. Thus ordinary alarm FC16 transport response and acceptance are independent. Do not infer session/owner/semantic acceptance from ACK.
+
+**Verified exact XTR genuine DCM capture (2026-10-03, local file `thermia_capture_20261003_165355.log`):** controller FC16 04A6/13 at 38.419s, ACK 38.433s; 0662/33 at 55.187s, ACK 55.202s; 0683/33 at 56.599s, ACK 56.611s; final export 06F4/19 at 61.461s, ACK 61.475s; FIRST 085F/5 at 61.529s, OEM ACK at 61.542s (13ms). NEXT 085F not until 84.572s (ACK 84.586s). All 12 cited request/ACK frames individually passed Modbus CRC16 offline. There is NO requirement of two 085F requests before first ACK in this successful genuine XTR DCM trace.
+
+**Implementation discrepancy:** Current C5AM source description in Research state requires special POST0662_PREARM and TWO new zero-085F offers before one response; that is more restrictive than original normal FC16 server / this live DCM reference. It may explain controller repeatedly offering zero 085F and withholding further export after C5AL's five ACKs, but CAUSALITY is a HYPOTHESIS, not PROVEN: in successful genuine trace the 085F occurs AFTER completion 06F4, whereas C5AL encountered retries early after 0662. Neither C5AL nor C5AM has established semantically accepted rejoin. The 2026-10-25 C5AM live logs show missing prearm/offer prerequisites, so the NEW C5AM condition was **NOT EXERCISED**, not failed. C5AM-COLD-JOIN-01 retains **RUNNING / PARTIAL** status.
+
+**Integrated engineering decision (offline FIX identified, source blocked):** On receipt of FIRST full CRC-valid, exact 085F/count5 request in one explicitly authorized native session, service it through existing single S92 Modbus ACK implementation with existing bus/DE/collision, source address/shape, ABORT and rollback guards, without a second M7/POST0662 button or two-duplicate requirement. Its receipt/ACK MUST NOT set ownership, handshake ACCEPTED, FC03 read permissions or HA parameter-write permission. Keep normal FC16 export/FC03 chain qualified independently. Scope as one bounded user-initiated future full cold-session validation, not a 085F microtest or autonomous TX.
+
+**Real source blocker:** latest user-flashed C5AM *full private YAML/dependencies* are absent from currently available mounted/conversation files and not committed to GitHub; last byte-verified available private YAML is older C5AK. NEVER fabricate a C5AM-based ZIP from C5AK or erase C5AL/C5AM features. This offline review establishes a specific integration change but cannot honestly claim SOURCE FIXED / TARGET COMPILED / FLASHED / LIVE. No reason to ask user to act while away.
+
+**ONE NEXT ACTION:** Apply this single OEM-equivalent 085F first-offer responder correction into the actual C5AM complete YAML when accessible, preserving all native and HA functionality; then one end-to-end user-started validation at home and GO/FIX/NO-GO. No independent test of a lone 085F frame.
+
+---
+
+**2026-10-25 C5AM LIVE LOG REVIEW:** Two uploaded logs are overlapping (short is exact prefix of long). Device confirms C5AM flashed; initial S92 session began before log and sent one FC16 ACK (085F counter=1, no C5AM proof), timed out 13:12:35. Second explicit S92 START at 13:13:21 stage40 sent 0 TX and timed out 13:14:21. No `POST0662_PREARMED`, `POST0662_ARM_BOUND`, 04A6→0662 pages, 0708 or current 4/4; clean CRC/RX and DE LOW. **C5AM-COLD-JOIN-01 RUNNING / PARTIAL**, its post-0662 085F fix NOT TRIGGERED, not proven negative. Next: confirm real controller first-attach offers before one correctly prearmed run; avoid unarmed repeated START. See Research/EXPERIMENT_LOG.md.
+
+**2026-10-25 CURRENT C5 COLD-JOIN FIX: MAIN03-C5AM SOURCE PREPARED / NOT RUN.** Live C5AL 04A6→04BA→059C→05FF→0662 sent five ACKs on continuously running controller; no 0683/0708/runtime. Exact source review found existing OEM-consistent one-shot alarm response reachable on C5AD path but missing from C5AB 04A6 path. Private C5AM enables ONLY one manually prearmed, post-0662 two-offer one-shot existing reply via sole S92 TX owner, preserving no-acceptance until qualified runtime and fresh H/D/C/M. Offline YAML, patch and source tests done; target compile/flash/live NOT done. No private YAML committed; no WP reboot. Next: ONE user-initiated C5AM-COLD-JOIN-01 with ABORT and rollback. See Research/EXPERIMENT_LOG.md.
+
+**2026-10-25 C5AL cold-join LIVE:** User actually runs MAIN03-C5AL (not presumed C5AK). One S92 START on already-running controller at 12:41:57 (stage40); controller offers 04A6→04BA→059C→05FF→0662 and five guarded ACKs are physically sent. Controller then only repeats zero-context 085F, with no 0683/FC03/0708 and 0/4 CURRENT; 60s timeout -> RX ONLY DE LOW. **COMPLETE / NEGATIVE** full cold join; safe expiry positive. C5AL hot-0864 ARM NOT used, hot rejoin still PREPARED / NOT RUN. NO-GO speculative 085F reply; one next action: reconcile OEM 085F/0662 continuation against XTR evidence for a real implementation fix. See Research/EXPERIMENT_LOG.md. HA parameter writes HOLD.
+
+**2026-10-25 — CURRENT USER PRIORITY: COLD JOIN, NO HEAT-PUMP RESTART.** Previous C5AK controller cold-start restoration plan is SUPERSEDED / NOT RUN by user preference. Current warmtepomp works without DCM; next: one bounded, user-initiated **C5AK stage40 native cold join on live controller bus** with complete log, existing sole UART/DE and ABORT. C5AL is retained hot rejoin only, PREPARED / NOT RUN, not the right present entry. HA parameter writes remain ON HOLD. See Research/EXPERIMENT_LOG.md.
+
+**2026-10-25 NEXT MILESTONE ACTION — C5AK-DCM-RESTORE-01 (PREPARED / NOT RUN):** After the locally observed C5AK ESP-only hot-rejoin failure, user confirmed expected Online-module communications alarm, manually restarted the heat pump and reports normal heat-pump operation **without DCM**. The user explicitly requests to restore DCM first using the **locally verified C5AK guarded controller cold-start path**. No C5AL hot-rejoin experiment until the user reports healthy owned RUNTIME and fresh H/D/C/M 4/4. No new firmware or HA parameter write; no autonomous flash or power cycle. Details: Research/EXPERIMENT_LOG.md.
+
+**2026-10-25 C5AL prepared:** Exact C5AK hot-rejoin blocker addressed by PRIVATE integrated C5AL source (offline YAML and patch checked; NOT compiled/flashed/live). One user-armed, guarded controller-offered 0864→0870→0708 candidate in the existing single S92 engine, followed by one proven CURRENT 4/4 request; HA parameter writes ON HOLD. No private firmware code published. NEXT: one bounded, user-initiated C5AL-HOT-ENTRY-01 with ABORT/rollback. See Research/EXPERIMENT_LOG.md.
+
+**25 October 2026 — current C5AK source-gate decision:** The full *manually armed controller-restart* C5AK native cold-start chain is **LIVE COMPLETE / POSITIVE** (FC23→FC16 through 06F4→FC03/0708→fresh H/D/C/M 4/4). Exact C5AK source review against genuine prior C5AB/C5AC/C5AD/C5AJ offers and original Connect (2018/2.1.105) found **no new demonstrable missed authorized controller request in the deployed ESP-boot gate**. Earlier sparse `04BA→059C` and direct `059C` entry fixes are present; `0662` ACK alone did not prove `0683` acceptance. **NO-GO speculative firmware fix.** Cold join with already-running controller and ESP-only retained hot rejoin remain OPEN. ONE NEXT ACTION: one user-initiated bounded complete first-attach cold join on unchanged C5AK, not another isolated ACK test; preserve abort/rollback and HA writes ON HOLD.
+
+> **LATEST HANDOFF — 2026-10-25 / MAIN03 C5AK:** The active roadmap priority is **C5 native session continuity**, superseding the older V5DCM and C3S "next steps" preserved below. **Locally proven:** C5Y recovered from a genuine controller cold restart using existing guarded FC23 → ordered FC16 export through 06F4 → runtime FC03/0708; C3 manual CURRENT one-shot returned four H/D/C/M pages (snapGen 1→2). **Not proven:** C5AK complete controller-cold-start chain or safe ESP-only automatic retained hot-rejoin. C5AJ's 0662/count33 physical ACK with no later 0683 was transport-only. C5AK repaired a competing timer; its subsequent retained OTA log recorded no controller DCM offer, no TX, bounded expiry. C5AK is not a newly fully verified runtime release. **Current next action:** one user-initiated, bounded full controller-offered cold-start observation on existing C5AK using C5Y as reference, evaluating complete FC23/FC16/FC03, fresh H/D/C/M 4/4, RX/DE and HA parity; not another isolated ACK experiment. Do not infer controller acceptance from an ACK, send invented requests, perform autonomous flashing or HA parameter writes. ABORT/rollback for alarm, collision or corruption. The three canonical Research files record the detailed evidence and unchanged ON HOLD write policy.
+
+---
+
+> **S62 FINAL DECISION — 2026-10-21 (overrides older open/prerequisite wording below for this unchanged XTR installation).** On user's explicit instruction, **G01 controller epoch, G02 conditional external native peer/owner and G04 native response-slot risk are COMPLETE / POSITIVE — USER-ACCEPTED OPERATIONAL RISK CLOSURE**. This is a documented risk acceptance, **not** false claims of independently probed controller rail, universal absent peer or measured FC23 acceptance window. New user TTL waveform recordings showed 2,280/2,280 9600-8E1 CRC-valid frames in 267.387s with 2,280 matching GPIO1-like marker edges (EOF-to-marker median 19.268ms) and 373 native 0x0F FC16 requests each followed by at least 102.311ms of observed no-next-frame time. Earlier user-performed G01-09 intervention/video, preaccepted conditional G02 installation inventory and bounded XTR V4.1 success retained. **Do not routinely reopen these THREE gates, request inaccessible GPIO18, or insist on new power/peer/slot probes in future work;** reconsider only changed hardware/wiring/profile, observed competing 0x0F output, a concrete contradicting fault or explicit user reopening. Historical uncertainty stays archived and is not converted to physical `true` booleans or auto-arm. Separate UART/DE safe drain/reset and full ESPHome embedded build remain independent safety work. Reference: `Research/V5DCM/V5_NATIVE_S62_TIMED_TTL_RISK_CLOSEOUT_20261021.md`. No new flash/TX.
+
+---
+
+# 2026-10-18 HANDOFF UPDATE: User YES: MANUAL THERMIA CONTROLLER POWER CYCLE CONFIRMED for V5DCM32-LIVE-OBS-01. Previously noted 'unconfirmed restart' in older entries is superseded by the user's follow-up, not retroactively established as independent hardware measurement. Arm 22:02:23, B11D incomplete 22:02:30, 12923ms gap 22:02:43, FC23 22:02:45, BadIntegrity verdict5 Denied, 0/0 ledger, localGen0, TX HARD_DENY. Status COMPLETE / NEGATIVE rejoin. V5DCM33-INTEGRITY-RECOVERY-OFFLINE-01 PREPARED / NOT RUN. Next OFFLINE study exact incomplete-frame latch; no repeated physical restart until reviewed.
+
+---
+
+# LATEST 2026-10-18 V5DCM32 LIVE ARMED ATTEMPT COMPLETE / NEGATIVE FOR REJOIN. Real user log 22:00:23–22:03:44 SHA256 94c3121d56ff70c2bef30e621f82eac97fb80f7b1d7ab2d4e006f1fef6842c11. Arm at 22:02:23, B11D FIRST_FAULT incomplete 22:02:30, R6-P24 12923ms gap 22:02:43, 14 FC23 afterward, Bridge step=2 verdict=5 BadIntegrity (confirmed exact policy enum) and localGen=0; V5DCM23 1/33→0/0 fail-closed. Software TX HARD_DENY/DE LOW. No native Online or epoch ownership proved; user physical restart not separately confirmed. NEXT V5DCM33-INTEGRITY-RECOVERY-OFFLINE-01 PREPARED / NOT RUN; read exact B11D parser before any repeat live restart. Full provenance: V5DCM/V5DCM32_LIVE_REJOIN_INTEGRITY_DENIAL_20261018.md.
+
+---
+
+# LATEST 2026-10-18 HANDOFF — V5DCM32 FIRST LIVE ARM CONFIRMED (REJOIN STILL UNKNOWN)
+
+V5DCM32-LIVE-OBS-01 stays **RUNNING / PARTIAL** after second user API log (5,000 lines; 21:42:09–21:45:31; SHA256 1187ff2b...). **21:45:09.681** user pressed `V5DCM32 Arm Fresh RX Rejoin (NO TX)` and `FRESH_RX_REJOIN_ARMED userArmed=1` executed on-device. At **21:45:18.308** status `step=1 scope=1 localGen=0 verdict=8` = **WAITING / MissingContext** (verified against exact private V5DCM31 header). No current native FC23, new R6 gap/return or cold controller event in supplied excerpt; portable V5DCM23 & V5DCM22 remain **1/33**, software TX HARD_DENY, healthy B11C/B11D parity/no fault, DE=0. The log ends **22 seconds** after arm, before 30s limit; **not a failed/expired scope conclusion**. Ask user only if manual controller restart was performed after 21:45:09, and for smallest continuation log ~21:45:30 to 21:45:50 if yes; no need for arbitrary new experiments or a second arm yet. G01–G06 residual risk acceptance stands. Current device V5DCM32 RX-only, FIX2 baseline fallback. [Detailed finding](V5DCM/V5DCM32_LIVE_ARM_PARTIAL_20261018.md).
+
+
+---
+
+# NEWEST HANDOFF — V5DCM32 IS NOW USER-FLASHED AND RUNNING (2026-10-18)
+
+User explicitly confirmed V5DCM32 OTA on their XTR ESP32 and supplied 1514-line 63s live API log. **V5DCM32-LIVE-OBS-01 RUNNING / PARTIAL** (NOT previously PREPARED/NOT RUN; NOT COMPLETE). Two [V5DCM32] lines: RX_ONLY step=0 scope=0 localGen=0 verdict=0 TX=HARD_DENY: first-stage live parser integration works, but **fresh arm/rejoin has not been attempted**. Strict V5DCM22+portable V5DCM23 both 1/33, FC23=0, no controller gap/cold transition in log; B11C/B11D parity zero mismatches, no parser faults, normal HA readings, 88/88 software output attempts blocked/physical=0, DE=0. Legacy R6 D=4 sticky unrelated, unknown first fault. First V5DCM32 code log hash unverified as flashed binary and ESPHome CLI cache names GAP51D, but actual V5DCM32 logger runs. Prior FIX2 is **fallback**, not active image. [LIVE evidence report](V5DCM/V5DCM32_LIVE_OBS_PARTIAL_20261018.md); offline source result remains COMPLETE/POSITIVE [here](V5DCM/V5DCM32_RX_REJOIN_SOURCE_INTEGRATION_OFFLINE_20261018.md). If user intentionally starts fresh test, press `V5DCM32 Arm Fresh RX Rejoin (NO TX)` in Configuration immediately before controlled manual restart; 30-second/8192-observation scope, new gap/return + cold pattern + canonical current 0x0F FC23 required, and all TX remains HARD_DENY; no spontaneous hardware action. Require minimal log of V5DCM32/23/22 R6-P24 B11C/B11D S8 and first fault, rollback FIX2 on regression. G01–G06 remain accepted residual engineering risks.
+
+
+---
+
+# LATEST HANDOFF — V5DCM32 (2026-10-18)
+
+**NEW V5DCM32-RX-REJOIN-INTEGRATION-01 COMPLETE / POSITIVE, OFFLINE SOURCE/HOST/STATIC ONLY**: full private FIX2-derived RX-only candidate ZIP `V5DCM32_RX_REJOIN_INTEGRATION_OFFLINE_NOT_FLASHED.zip` SHA256 346966b47cad7a184936a905e40e46fa19bb6fbe8e7140eeee505cbbc1dc9374, source reference [V5DCM32 detailed report](V5DCM/V5DCM32_RX_REJOIN_SOURCE_INTEGRATION_OFFLINE_20261018.md). V5DCM31 bounded accepted-risk Fresh policy now connected to ORIGINAL V5DCM23 33-group collector in same single native CRC callback, after original R6-P24 observer; prior FC23 revocation + manual Configuration arm + **new post-arm gap/return, cold status and same-frame canonical FC23** required to locally reselect portable 0/33. Retained/recovery and other V5 readiness layers NOT connected. Host exact portable C++ 34/34 PASS with synthetic and genuine historical FC23, V5DCM31 policy 61/61 PASS, YAML parser+includes+HA identity source checks PASS. No full ESPHome compile, no flash, no device TX. **LIVE current user-flashed V5DCM23 FIX2 remains RUNNING / PARTIAL RX-only 1/33, HARD_DENY**; exact flash digest unknown. Candidate has 2 new HA Configuration experiment buttons, preserve 117 sensors/13 binary/47 text. Next **V5DCM32-LIVE-OBS-01 PREPARED / NOT RUN** must be separately user-initiated after reviewing candidate + rollback; don't claim user ran it. G01–G06 residual research risks already accepted; don't re-open as gate. v5dcm22 since-boundary witness still independently revoked, no native DCM C2/Online acceptance evidence. Older V5DCM26 15–20-minute unchanged-FIX2 observation remains PREPARED / NOT RUN.
+
+
+---
+
+# LATEST HANDOFF — 2026-10-18 V5DCM31 COMPLETE / POSITIVE OFFLINE
+
+A new **nontransmitting accepted-risk, user-armed, finite native-session policy** has been compiled and host tested (61 strict assertions + original GAP24A/B join PASS). **G01–G06 risk acceptance is standing; do NOT restart those proof projects.** This new policy emits **RX-only `RxCandidateUnderAcceptedRisk`** for explicit fresh/retained/recovery experiment context, NOT an independent physical epoch witness, native Online acceptance, owner/slot or TX approval; never fake V5DCM29 `IndependentProof`. Private V5DCM31 archive SHA256 cc576fed... NONFLASHABLE and **not integrated into current YAML**. [V5DCM31 report](V5DCM/V5DCM31_ACCEPTED_RISK_SESSION_POLICY_OFFLINE_20261018.md). Next **V5DCM32-RX-REJOIN-INTEGRATION-01 PREPARED / NOT RUN**: modify only strict RX-collector reselect using monotonic LOCAL generation and exact FIX2 callback; preserve HA identities and TX HARD_DENY; keep live user-flashed **V5DCM23 FIX2 RX-only RUNNING / PARTIAL 1/33**. Distinct V5DCM26 long passive observation still PREPARED / NOT RUN. No physical flash or output performed in V5DCM31.
+
+
+---
+
+# LATEST USER DECISION — 2026-10-18: G01–G06 ACCEPTED RISKS
+
+User explicitly reconfirmed **all G01–G06 residual research risks are accepted** for the documented unchanged XTR installation. This was ALREADY reflected in standing [native autonomous TX authorization](NATIVE_AUTONOMOUS_TX_AUTHORIZATION_20261018.md): do NOT repeatedly reopen six proof projects or present their missing strict electrical evidence as mandatory blockers to development and a properly bounded user-initiated native test. Technical states remain as originally evidenced; G01-09 intervention-video POSITIVE, G02 scoped installed-topology CONDITIONAL acceptance, G03/G04/G06 OPEN and G05 PARTIAL. V5DCM30 `COMPLETE / INCONCLUSIVE` concerns unavailable **verified current epoch witness only**, not a general veto. Next V5DCM31 should design actual bounded V4.1-derived session integration with a distinct **accepted-research-risk experiment policy** instead of pretending a `V5DCM29 IndependentProof` exists. Do not change the installed FIX2 RX-only/HARD_DENY or transmit until a specified user-initiated live test has known slot, timing, limited response policy, abort/rollback. No new experiment run in recording this reaffirmation.
+
+---
+
+# CURRENT HANDOFF — 2026-10-18 V5DCM30
+
+Latest **V5DCM30-INDEPENDENT-WITNESS-AUDIT-01 COMPLETE / INCONCLUSIVE** for usable CURRENT independently witnessed controller epoch. Report: [G01/G02 provenance audit](V5DCM/V5DCM30_INDEPENDENT_WITNESS_AUDIT_20261018.md). Historical **G01-09 video+user switch/display off/on was positively documented**, not main-controller rail measured or current FIX2 restart proof. Earlier **G02 is already user-approved COMPLETE / POSITIVE (CONDITIONAL)** for unchanged no-DCM external port and bounded historical work; don't reopen this acceptance, but don't claim electrical exclusive slot/owner. V4.1 EXP386/387 locally proven guarded native recovery, EXP388 PARTIAL; no current V5 permission. The original G01-09 raw video/log not mounted for this audit; earlier report used with explicit provenance. Installed XTR remains **V5DCM23 FIX2 RX-only RUNNING / PARTIAL 1/33 in short live log, 0 captured FC23, TX HARD_DENY**, exact flashed SHA/slot and D=4 fault origin unknown. No actual runtime V5DCM29 independent proof issuer. **V5DCM31-MANUAL-SESSION-SCOPE-01 PREPARED / NOT RUN** is next offline source/policy action to distinguish manual bounded proof from autonomous proof. Previously V5DCM26 15–20min passive live obs remains PREPARED / NOT RUN. No new code/ESPHome/flash, controller restart or native TX.
+
+
+---
+
+# CURRENT HANDOFF — 2026-10-18 V5DCM29
+
+**Latest:** V5DCM29 source-only physical-epoch versus local session generation contract COMPLETE / POSITIVE on three strict C++ host tests. Original historic FC23 drives real unchanged V5DCM28 ledger to revoked; there is NO genuine current physical witness/owner/slot/Online proof and no production wiring. Private ZIP is nonflashable. **Deployed user device remains V5DCM23 FIX2 RX-only, RUNNING / PARTIAL (1/33 short first log), TX HARD_DENY.** V5DCM26 15–20-minute passive observation still PREPARED / NOT RUN; **V5DCM30 INDEPENDENT WITNESS AUDIT PREPARED / NOT RUN** is next offline action. V5DCM28 numeric `proven_controller_epoch` MUST NOT be used as both physical epoch and monotonically increasing local generation; source contract separates them. No new firmware, ESPHome compilation, flashing or TX. [Result](V5DCM/V5DCM29_SESSION_PROVENANCE_CONTRACT_OFFLINE_20261018.md). Canonical project state above older summaries remains authoritative.
+
+---
+
+# CURRENT HANDOFF — V5DCM28 2026-10-18
+
+Live user-flashed **V5DCM23 FIX2: RUNNING / PARTIAL RX-only**, first short log 1/33 strict page groups and clean RX, no FC23 captured, native TX HARD_DENY. Latest **V5DCM28-EPOCH-GUARD-01 COMPLETE / POSITIVE for OFFLINE host tests only**: one inert V5DCM27 source reselect guard now refuses repeated/older controller generation *labels*, cross-tested with the real historical 20261003 FC23 and gap24a/b Fresh/Retained/Recovery metadata. No current independent actual owner/physical epoch/slot proof; proof flag in host test synthetic only; 1/33 unresolved. New ZIP is **NOT FLASHABLE**, no ESPHome/HA changes. V5DCM29 trustworthy independent-session contract PREPARED / NOT RUN; V5DCM26 15–20-minute same-FIX2 passive run also PREPARED / NOT RUN. [Source/host result](V5DCM/V5DCM28_EPOCH_GUARD_AND_LIFECYCLE_PROVENANCE_OFFLINE_20261018.md). Verify newest canonical file headings below, not older snapshots.
+
+---
+
+
+
+---
+
+# CURRENT VERIFIED HANDOFF — 2026-10-18 V5DCM27
+
+Latest user-flashed device is **V5DCM23 FIX2 RX-only, RUNNING / PARTIAL** (first ~2m25 log, actual portable ledger 1/33, clean B11C/B11D and TX HARD_DENY). Previous V5DCM20 18m33 RX-only positive is a different device build. Latest OFFLINE step **V5DCM27-SOURCE-REJOIN-01 COMPLETE / POSITIVE**: strict original-private-C++ host tests confirm native 0x0F FC23 revokes V5DCM23 package ledger and the only reselect call is on ESP boot. Further FC16 alone cannot restore the package ledger, but this has NOT happened in the current short live FIX2 log (no observed FC23). Internal CM930 handshake shadow is NOT physical owner or TX authorization. Next **V5DCM27-REJOIN-BRIDGE-01 PREPARED / NOT RUN**: source-only externally qualified profile/epoch reselect, preserve all 180 current private HA entities, TX hard deny, no extra UART, no automatic FC23 rearm. Report: [V5DCM27 source and regression](V5DCM/V5DCM27_NATIVE_REJOIN_SOURCE_AUDIT_20261018.md). Prior V5DCM26 passive 15-20min live observation also PREPARED / NOT RUN. Verify exact flashed bytes before any code change. This block supersedes older dated snapshots below only for current state.
+
+---
+
+# START HERE — Thermia iTec XTR M
+> Compact, evidence-bound entry point for a NEW ChatGPT session. Updated 2026-10-18. This is a navigation and handoff document, NOT a replacement for the canonical evidence. Verify the latest dated canonical entries before acting.
+
+## Standing autonomous native TX authorization (2026-10-18)
+User explicitly authorizes **general, autonomous native TX** for Online/Connect/DCM development and controlled deployment: no repeated general consent per handshake or response in an already scoped and armed user-initiated experiment. This is **permission, not evidence** of protocol acceptance or electrical ownership. G01–G06 previously accepted research risks remain technically scoped; do not demand repeating them simply to continue research. The verified installed V5DCM19 FIX1/V5DCM20 device remains **RX-only/TX HARD_DENY** until a separately documented live activation; no live TX/flash occurred by changing this note. Preserve fail-closed session/CRC/owner/slot/retry and abort/rollback, confidentiality, and no uncontrolled scans/unknown ACKs/speculative writes. [Authoritative user decision](NATIVE_AUTONOMOUS_TX_AUTHORIZATION_20261018.md).
+
+## Latest cross-project handoff — 2026-10-18
+- **V5DCM21 source-derived package coverage update (2026-10-18):** 2.1.105 modern profile sensor/config 570 definitions -> 541 numeric dependencies -> **33 candidate significant groups** (W2=15, W3=10, W4=8); v31 FIX4 only tracks 13/33, so `Native Settings Pages Seen` is not C2 evidence. [Source audit, limits and CI](V5DCM/V5DCM21_PROFILE_242_SIGNIFICANT_PACKAGES_20261018.md).
+- **Actual latest user-run firmware:** v31 FIX4 **read-only**, with `03E8:Y` and the other 12 native settings pages `N` at 151s; user subsequently says missing pages **still N**, without a new exact uptime or no-reboot confirmation. This is READ-V31-UNKNOWN-01 **RUNNING / PARTIAL**, NOT an active V5DCM21 trial.
+- **Historical native XTR proof:** EXP325–329 owned ACKs in a qualified native session advanced `03E8→03FC→0410→042E→0442`. This supports the hypothesis that missing current-service pages can require native synchronization; it is not permission or evidence of a complete new session.
+- **V5DCM21 latest:** **RUNNING / PARTIAL**; actual firmware-repo HEAD CI [39124813711](https://github.com/ryckema/Thermia_Connect_Firmware/actions/runs/39124813711) PASS, including **26 new** 2.1.105 three-mask package-readiness checks plus prior source/RX/delivery cases. W2/W3/W4 bit-to-range mapping is firmware-derived and verified; *exact significant subset* for XTR profile 2.4.2 remains unknown. [Result](V5DCM/V5DCM21_2105_PACKAGE_COMPLETENESS_OFFLINE_20261018.md).
+- **Autonomous native TX** authorized by user as standing permission; accepted G01–G06 risks must not be reopened by default. No new active TX or code flash was performed by this V5DCM21 offline substep; any first autonomous deployment requires an explicitly scoped/armed test.
+
+## First five minutes
+1. Read **this file** and [CONTINUITY_WORKFLOW.md](CONTINUITY_WORKFLOW.md).
+2. Read the **TOP/current sections** of [THERMIA_PROJECT_STATE.md](THERMIA_PROJECT_STATE.md), [EXPERIMENT_LOG.md](EXPERIMENT_LOG.md), and [PROTOCOL_FINDINGS.md](PROTOCOL_FINDINGS.md). These large files contain historical entries: do NOT treat every older 'LATEST' heading as current.
+3. For the active experiment, read the linked experiment-specific PREPARED/RESULT report and the exact code/YAML provenance.
+4. Inspect relevant [Thermia Connect firmware research](https://github.com/ryckema/Thermia_Connect_Firmware) and actual firmware files when firmware claims matter.
+5. Check for newer commits/experiments than this handoff. If found, update this file; never override newer evidence with this snapshot.
+
+## Verified handoff snapshot — 2026-10-18
+- **Most recent locally confirmed live test:** **V5DCM20 COMPLETE / POSITIVE** for passive RX-only stability. User-provided log covered **18 min 33 sec**; B11C/B11D raw-vs-portable parity with zero observed count/byte differences, drops 0, **2,619 TX candidates denied and physical TX attempts 0**. Some HA values briefly NaN through natural fan/compressor transitions: semantics unresolved.
+- **Deployed baseline in the latest result:** V5DCM19 FIX1, RX-only, TX HARD_DENY. Do NOT infer it has since changed without current source/log verification.
+- **Next planned step:** **V5DCM21 PREPARED / NOT RUN** — *offline* TX-readiness/source/evidence audit from V4.1 plus original CM930 reference. Not approval to transmit.
+- **Independent unresolved task:** V5DCM18 original Python reference-Core full fixture/stateful replay remains **RUNNING / PARTIAL**; separately bounded ZIP C++ tests/replays passed but do not close it.
+- **Accepted constraints:** G01–G06 residual risks remain accepted/closed pending genuinely new evidence. Physical owner, response slot, native challenge acceptance, Online icon/cloud readiness remain unproven locally. User has **now authorized general autonomous native TX in principle** for documented/armed controller-driven integration; **authorization is not evidence of safe electrical or protocol readiness**.
+- **Firmware distinction:** user ZIP portable Core and firmware-repo HEAD have differed; never transfer test validity between them without checking provenance.
+- **Important evidence:** [V5DCM20 live result](V5DCM/V5DCM20_LIVE_RX_ONLY_RESULT_20261018.md), [V5DCM19 FIX1 live result](V5DCM/V5DCM19_FIX1_LIVE_RESULT_20261018.md), [V5DCM18 functional gap handoff](V5DCM/V5DCM18_FUNCTIONAL_GAP_HANDOFF_20261018.md).
+
+## Do next
+1. Check whether V5DCM21 has subsequently been prepared/performed.
+2. Review V4.1, original firmware reference, current deployed code and **accepted G01–G06 research risks**; prepare qualified autonomous TX behavior without reopening these gates reflexively.
+3. Keep the **currently installed** RX-only TX hard-deny unchanged until a bounded user-initiated, explicitly armed deployment/test; standing general authorization does not itself execute code.
+4. After any material result, update canonical files, then refresh this handoff in the **same documentation change**. Verify commit and report SHA.
+
+## What NOT to do
+- Do not ask for a DCM module, disconnect room sensor or silently repeat rejected tests.
+- Do not confuse synthetic/offline acceptance with native local confirmation.
+- Do not mark PREPARED as COMPLETE; do not invent compilation, flashing or TX.
+- Do not expose confidential response algorithms/private 0x0F or 0x0708 material.
