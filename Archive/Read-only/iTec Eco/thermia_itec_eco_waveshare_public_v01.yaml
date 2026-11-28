@@ -1497,11 +1497,16 @@ uart:
                       0.5f
                     );
 
-                    // Eco 8 manual-test mapping: A80C is an output bitfield.
-                    // bit 0 = DHW reversing valve; bit 6 = controller active.
+                    // Eco 8 manual-test & HA measurement mapping: A80C is an output bitfield.
+                    // bit 0 (0x01) = DHW reversing valve
+                    // bits 1..3 (0x02, 0x04, 0x08) = unconfirmed / Stage 2 auxiliary heater candidates
+                    // bits 4..5 (0x10, 0x20) = observed without supply-temp rise (not auxiliary heater)
+                    // bit 6 (0x40) = controller active
+                    // bit 7 (0x80) = Stage 1 auxiliary heater (candidate; +3..+5 C supply jump)
                     // Keep the text summary neutral because other output bits may coexist.
                     const bool eco_controller_active = (a80c & 0x0040U) != 0;
                     const bool eco_dhw_valve = (a80c & 0x0001U) != 0;
+                    const bool eco_aux_stage_1 = (a80c & 0x0080U) != 0;
                     const char *controller_context = "Controller inactive";
                     if (eco_controller_active && eco_dhw_valve) {
                       controller_context = "Active / DHW valve";
@@ -1515,15 +1520,24 @@ uart:
                       controller_context
                     );
 
+                    publish_bool_if_changed(id(thermia_auxiliary_heater_stage_1), eco_aux_stage_1);
+                    publish_float_if_changed(
+                      id(thermia_auxiliary_heater_stage),
+                      eco_aux_stage_1 ? 1.0f : 0.0f,
+                      0.5f
+                    );
+
                     publish_float_if_changed(
                       id(thermia_controller_state_a80e),
                       float(a80e),
                       0.5f
                     );
 
-                    // Keep these raw bit sensors neutral. A80C is primarily
-                    // treated as a controller context/sequence value, while A80E
-                    // behaves as a controller/accessory status bitfield.
+                    // Diagnostic raw bit sensors for A80C (0x02/0x04/0x08 are Stage 2 candidates)
+                    // and A80E accessory status bitfield.
+                    publish_bool_if_changed(id(thermia_a80c_flag_0x02), (a80c & 0x0002U) != 0);
+                    publish_bool_if_changed(id(thermia_a80c_flag_0x04), (a80c & 0x0004U) != 0);
+                    publish_bool_if_changed(id(thermia_a80c_flag_0x08), (a80c & 0x0008U) != 0);
                     publish_bool_if_changed(id(thermia_a80c_flag_0x10), (a80c & 0x0010U) != 0);
                     publish_bool_if_changed(id(thermia_a80c_flag_0x20), (a80c & 0x0020U) != 0);
                     publish_bool_if_changed(id(thermia_a80e_flag_0x08), (a80e & 0x0008U) != 0);
@@ -2043,6 +2057,14 @@ sensor:
     accuracy_decimals: 0
     entity_category: diagnostic
     disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_auxiliary_heater_stage
+    name: "Auxiliary Heater Stage (candidate)"
+    icon: "mdi:heating-coil"
+    accuracy_decimals: 0
+    state_class: measurement
     update_interval: never
 
   - platform: template
@@ -2631,6 +2653,30 @@ binary_sensor:
   - platform: template
     id: thermia_outdoor_unit_command_0008
     name: "Outdoor Unit Run Enable 0008"
+    entity_category: diagnostic
+    disabled_by_default: true
+
+  - platform: template
+    id: thermia_auxiliary_heater_stage_1
+    name: "Auxiliary Heater Stage 1 (candidate)"
+    device_class: heat
+    icon: "mdi:heating-coil"
+
+  - platform: template
+    id: thermia_a80c_flag_0x02
+    name: "Controller A80C Flag 0x02"
+    entity_category: diagnostic
+    disabled_by_default: true
+
+  - platform: template
+    id: thermia_a80c_flag_0x04
+    name: "Controller A80C Flag 0x04"
+    entity_category: diagnostic
+    disabled_by_default: true
+
+  - platform: template
+    id: thermia_a80c_flag_0x08
+    name: "Controller A80C Flag 0x08"
     entity_category: diagnostic
     disabled_by_default: true
 
