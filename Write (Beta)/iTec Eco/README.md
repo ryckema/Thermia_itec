@@ -66,8 +66,9 @@ When flashed to an ESP32, this configuration exposes the following control and d
 | `number.thermia_target_room_setpoint` | Number | Target room setpoint (10.0–30.0 °C, step 1.0 °C). Synchronized bidirectionally with both the heat pump panel and `climate.thermia_room_thermostat`. | `20.0 °C` |
 | `button.thermia_trigger_dhw_topup` | Button | One-shot trigger to start hot-water top-up. | — |
 | `binary_sensor.thermia_dhw_topup_active` | Binary Sensor | Status of hot-water top-up (`true` when active, mirrors `@46022 == 2`). | `false` |
-| `binary_sensor.thermia_auxiliary_heater_stage_1` | Binary Sensor | **Auxiliary Heater Stage 1 (candidate):** `true` when `a80c & 0x80 != 0` (observed +3…+5 °C supply jump). | `false` |
-| `sensor.thermia_auxiliary_heater_stage` | Sensor | **Auxiliary Heater Stage (candidate):** `0` = off, `1` = Stage 1 (`0x80`). Stage 2 candidates (`a80c` bits `0x02`/`0x04`/`0x08`) are exposed as disabled-by-default diagnostic binary sensors. | `0` |
+| `binary_sensor.thermia_auxiliary_heater_stage_1` | Binary Sensor | Auxiliary Heater Stage 1 (`IMM. HEAT 1`, ~+2.7 kW): `true` when `a80c & 0x80 != 0`. | `false` |
+| `binary_sensor.thermia_auxiliary_heater_stage_2` | Binary Sensor | Auxiliary Heater Stage 2 (`IMM. HEAT 2`, ~+5.2 kW): `true` when `a80d & 0x10 != 0`. | `false` |
+| `sensor.thermia_auxiliary_heater_stage` | Sensor | Combined auxiliary heater stage (`0` = off, `1` = Stage 1, `2` = Stage 2, `3` = Stage 1 + 2). `A80C` outputs `0x02` (Bypass Cooling), `0x04` (Potential-Free Output), and `0x08` (External Aux Heater) are exposed as disabled-by-default diagnostic binary sensors. | `0` |
 | `number.thermia_room_temp_timeout_min` | Number | Safety watchdog timeout in minutes (0–120 min, 0 = disabled). | `30 min` |
 | `sensor.thermia_room_sensor_status` | Text Sensor | Emulation status (`DISABLED`, `ACTIVE`, `TIMEOUT: Stale HA data`, `BLOCKED: External sensor on bus`). | `DISABLED` |
 | `sensor.thermia_room_sensor_responses_sent` | Sensor | Total count of 0x0A responses transmitted. | `0` |
