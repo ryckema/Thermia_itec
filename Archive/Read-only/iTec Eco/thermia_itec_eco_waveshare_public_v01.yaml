@@ -1489,6 +1489,7 @@ uart:
                     }
 
                     const uint16_t a80c = uint16_t(write_reg_s(0xA80C));
+                    const uint16_t a80d = uint16_t(write_reg_s(0xA80D));
                     const uint16_t a80e = uint16_t(write_reg_s(0xA80E));
 
                     publish_float_if_changed(
@@ -1497,11 +1498,24 @@ uart:
                       0.5f
                     );
 
-                    // Eco 8 manual-test mapping: A80C is an output bitfield.
-                    // bit 0 = DHW reversing valve; bit 6 = controller active.
+                    // Eco 8 MANUAL TEST mapping: A80C & A80D are controller output bitfields.
+                    // A80C:
+                    //   bit 0 (0x01) = REV.V. HOT WATER (DHW valve, also set during defrost)
+                    //   bit 1 (0x02) = BY-PASS COOLING
+                    //   bit 2 (0x04) = POT.FREE (potential-free output)
+                    //   bit 3 (0x08) = EXT.AUX.HEATER (external aux heater relay)
+                    //   bit 4 (0x10) = unknown (pump exercise with b5)
+                    //   bit 5 (0x20) = came on with EXT.AUX.HEATER (candidate: external source active)
+                    //   bit 6 (0x40) = controller active / heating context
+                    //   bit 7 (0x80) = IMM. HEAT 1 (immersion heater stage 1, ~+2.7 kW)
+                    // A80D:
+                    //   bit 4 (0x10) = IMM. HEAT 2 (immersion heater stage 2, ~+5.2 kW)
                     // Keep the text summary neutral because other output bits may coexist.
                     const bool eco_controller_active = (a80c & 0x0040U) != 0;
                     const bool eco_dhw_valve = (a80c & 0x0001U) != 0;
+                    const bool eco_aux_stage_1 = (a80c & 0x0080U) != 0;
+                    const bool eco_aux_stage_2 = (a80d & 0x0010U) != 0;
+                    const int eco_aux_stage = (eco_aux_stage_1 ? 1 : 0) + (eco_aux_stage_2 ? 2 : 0);
                     const char *controller_context = "Controller inactive";
                     if (eco_controller_active && eco_dhw_valve) {
                       controller_context = "Active / DHW valve";
@@ -1515,15 +1529,24 @@ uart:
                       controller_context
                     );
 
+                    publish_bool_if_changed(id(thermia_auxiliary_heater_stage_1), eco_aux_stage_1);
+                    publish_bool_if_changed(id(thermia_auxiliary_heater_stage_2), eco_aux_stage_2);
+                    publish_float_if_changed(
+                      id(thermia_auxiliary_heater_stage),
+                      float(eco_aux_stage),
+                      0.5f
+                    );
+
                     publish_float_if_changed(
                       id(thermia_controller_state_a80e),
                       float(a80e),
                       0.5f
                     );
 
-                    // Keep these raw bit sensors neutral. A80C is primarily
-                    // treated as a controller context/sequence value, while A80E
-                    // behaves as a controller/accessory status bitfield.
+                    // Diagnostic raw/output bit sensors for A80C and A80E.
+                    publish_bool_if_changed(id(thermia_a80c_flag_0x02), (a80c & 0x0002U) != 0);
+                    publish_bool_if_changed(id(thermia_a80c_flag_0x04), (a80c & 0x0004U) != 0);
+                    publish_bool_if_changed(id(thermia_a80c_flag_0x08), (a80c & 0x0008U) != 0);
                     publish_bool_if_changed(id(thermia_a80c_flag_0x10), (a80c & 0x0010U) != 0);
                     publish_bool_if_changed(id(thermia_a80c_flag_0x20), (a80c & 0x0020U) != 0);
                     publish_bool_if_changed(id(thermia_a80e_flag_0x08), (a80e & 0x0008U) != 0);
@@ -2043,6 +2066,14 @@ sensor:
     accuracy_decimals: 0
     entity_category: diagnostic
     disabled_by_default: true
+    update_interval: never
+
+  - platform: template
+    id: thermia_auxiliary_heater_stage
+    name: "Auxiliary Heater Stage"
+    icon: "mdi:heating-coil"
+    accuracy_decimals: 0
+    state_class: measurement
     update_interval: never
 
   - platform: template
@@ -2631,6 +2662,36 @@ binary_sensor:
   - platform: template
     id: thermia_outdoor_unit_command_0008
     name: "Outdoor Unit Run Enable 0008"
+    entity_category: diagnostic
+    disabled_by_default: true
+
+  - platform: template
+    id: thermia_auxiliary_heater_stage_1
+    name: "Auxiliary Heater Stage 1"
+    device_class: heat
+    icon: "mdi:heating-coil"
+
+  - platform: template
+    id: thermia_auxiliary_heater_stage_2
+    name: "Auxiliary Heater Stage 2"
+    device_class: heat
+    icon: "mdi:heating-coil"
+
+  - platform: template
+    id: thermia_a80c_flag_0x02
+    name: "Bypass Cooling (A80C 0x02)"
+    entity_category: diagnostic
+    disabled_by_default: true
+
+  - platform: template
+    id: thermia_a80c_flag_0x04
+    name: "Potential-Free Output (A80C 0x04)"
+    entity_category: diagnostic
+    disabled_by_default: true
+
+  - platform: template
+    id: thermia_a80c_flag_0x08
+    name: "External Aux Heater Output (A80C 0x08)"
     entity_category: diagnostic
     disabled_by_default: true
 
